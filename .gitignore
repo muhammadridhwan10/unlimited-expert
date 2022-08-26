@@ -13,3 +13,7 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
+storage/framework/cache/
+storage/framework/views
+storage/framework/sessions
+storage/uploads/traker_images/

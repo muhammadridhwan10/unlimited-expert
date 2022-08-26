@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use App\Models\AssignProject;
 use App\Models\Project;
+use App\Models\ProjectUser;
 use App\Models\Utility;
 use App\Models\Tag;
 use App\Models\ProjectTask;
