@@ -126,7 +126,7 @@
             })
         });
 
-    </script
+    </script>
 @endpush
 
 @section('breadcrumb')
@@ -2324,12 +2324,6 @@
                         </div>
                         <!-- </form>  -->
                     </div>
-
-
-
-
-
-
 
                 </div>
 
