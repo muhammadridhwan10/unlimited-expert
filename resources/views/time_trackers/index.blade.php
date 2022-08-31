@@ -56,8 +56,9 @@
                             <tr>
 
                                 <th> {{__('Description')}}</th>
+                                <th> {{__('Employee')}}</th>
                                 <th> {{__('Task')}}</th>
-                                 <th> {{__('Project')}}</th>
+                                <th> {{__('Project')}}</th>
                                 <th> {{__('Start Time')}}</th>
                                 <th> {{__('End Time')}}</th>
                                 <th>{{__('Total Time')}}</th>
@@ -73,6 +74,7 @@
                                 @endphp
                                 <tr>
                                     <td>{{$trecker->name}}</td>
+                                    <td>{{$trecker->user->name}}</td>
                                     <td>{{$trecker->project_task}}</td>
                                     <td>{{$trecker->project_name}}</td>
                                     <td>{{date("H:i:s",strtotime($trecker->start_time))}}</td>

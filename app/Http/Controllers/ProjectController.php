@@ -1078,7 +1078,7 @@ class ProjectController extends Controller
 
     public function tracker($id)
     {
-        $treckers=TimeTracker::where('project_id',$id)->get();
+        $treckers=TimeTracker::with('user')->where('project_id',$id)->get();
         return view('time_trackers.index',compact('treckers'));
     }
 

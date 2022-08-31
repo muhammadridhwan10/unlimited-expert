@@ -237,7 +237,7 @@ class ZoomMeetingController extends Controller
         $transdate = date('Y-m-d', time());
 
 
-        if($user->type == 'company' || $user->type == 'HR' || $user->type == 'accountant')
+        if($user->type == 'company' || $user->type == 'HR' || $user->type == 'accountant' || $user->type == 'user')
         {
             $zoomMeetings = ZoomMeeting::where('created_by', '=', \Auth::user()->creatorId())->get();
         }

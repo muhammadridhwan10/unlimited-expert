@@ -27,6 +27,10 @@ class TimeTracker extends Model
         'total',
     );
 
+    public function user(){
+        return $this->belongsTo(User::class, "created_by", "id");
+    }
+
     public function getProjectNameAttribute($value)
     {
         $project = Project::select('id', 'project_name')->where('id', $this->project_id)->first();

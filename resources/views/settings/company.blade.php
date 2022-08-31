@@ -379,6 +379,8 @@
                                                 <input type="radio" class="theme_color" name="color" value="theme-3" style="display: none;">
                                                 <a href="#!" class="{{($settings['color'] == 'theme-4') ? 'active_color' : ''}}" data-value="theme-4" onclick="check_theme('theme-4')"></a>
                                                 <input type="radio" class="theme_color" name="color" value="theme-4" style="display: none;">
+                                                <a href="#!" class="{{($settings['color'] == 'theme-5') ? 'active_color' : ''}}" data-value="theme-5" onclick="check_theme('theme-5')"></a>
+                                                <input type="radio" class="theme_color" name="color" value="theme-5" style="display: none;">
                                             </div>
                                         </div>
                                         <div class="col-lg-4 col-xl-4 col-md-4">
