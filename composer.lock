@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8d666eabca5cf8e0e02837db2290a32a",
+    "content-hash": "982ef4e21815934ed9d438b07281b8c4",
     "packages": [
         {
             "name": "anandsiddharth/laravel-paytm-wallet",
@@ -3996,16 +3996,16 @@
         },
         {
             "name": "munafio/chatify",
-            "version": "v1.5.2",
+            "version": "v1.2.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/munafio/chatify.git",
-                "reference": "29a24b66dcef3966bdabc7a31ac7b6d3f5c0c7ea"
+                "reference": "476d846267be9a1743482548833a92c1f75fe2a1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/munafio/chatify/zipball/29a24b66dcef3966bdabc7a31ac7b6d3f5c0c7ea",
-                "reference": "29a24b66dcef3966bdabc7a31ac7b6d3f5c0c7ea",
+                "url": "https://api.github.com/repos/munafio/chatify/zipball/476d846267be9a1743482548833a92c1f75fe2a1",
+                "reference": "476d846267be9a1743482548833a92c1f75fe2a1",
                 "shasum": ""
             },
             "require": {
@@ -4052,9 +4052,9 @@
             ],
             "support": {
                 "issues": "https://github.com/munafio/chatify/issues",
-                "source": "https://github.com/munafio/chatify/tree/v1.5.2"
+                "source": "https://github.com/munafio/chatify/tree/v1.2.5"
             },
-            "time": "2022-07-08T15:41:00+00:00"
+            "time": "2021-08-18T10:36:34+00:00"
         },
         {
             "name": "myclabs/php-enum",

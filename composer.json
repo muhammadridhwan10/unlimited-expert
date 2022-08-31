@@ -27,7 +27,7 @@
         "mercadopago/dx-php": "^2.4",
         "milon/barcode": "^8.0",
         "mollie/mollie-api-php": "^2.37",
-        "munafio/chatify": "^1.2",
+        "munafio/chatify": "v1.2.5",
         "obydul/laraskrill": "^1.1",
         "paymentwall/paymentwall-php": "^2.2",
         "paypal/rest-api-sdk-php": "^1.14",
