@@ -14,7 +14,7 @@ class BugStatus extends Model
 
     public function bugs($project_id)
     {
-      if(\Auth::user()->type == 'company')
+      if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         return Bug::where('status', '=', $this->id)->where('project_id', '=', $project_id)->orderBy('order')->get();
       elseif(\Auth::user()->type == 'client'){
         return Bug::where('status', '=', $this->id)->where('project_id', '=', $project_id)->orderBy('order')->get();

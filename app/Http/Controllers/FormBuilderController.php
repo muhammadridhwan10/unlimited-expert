@@ -21,9 +21,24 @@ class FormBuilderController extends Controller
         $usr = \Auth::user();
         if($usr->can('manage form builder'))
         {
-            $forms = FormBuilder::where('created_by', '=', $usr->creatorId())->get();
+            if($usr->type = 'admin')
+            {
+                $forms = FormBuilder::all();
 
-            return view('form_builder.index', compact('forms'));
+                return view('form_builder.index', compact('forms'));
+            }
+            elseif($usr->type = 'comapany')
+            {
+                $forms = FormBuilder::all();
+
+                return view('form_builder.index', compact('forms'));
+            }
+            else
+            {
+                $forms = FormBuilder::where('created_by', '=', $usr->creatorId())->get();
+
+                return view('form_builder.index', compact('forms'));
+            }
         }
         else
         {
@@ -75,6 +90,10 @@ class FormBuilderController extends Controller
         if(\Auth::user()->can('manage form field'))
         {
             if($formBuilder->created_by == \Auth::user()->creatorId())
+            {
+                return view('form_builder.show', compact('formBuilder'));
+            }
+            elseif($document->created_by == \Auth::user()->creatorId())
             {
                 return view('form_builder.show', compact('formBuilder'));
             }
@@ -361,6 +380,10 @@ class FormBuilderController extends Controller
             {
                 return view('form_builder.response', compact('form'));
             }
+            elseif($document->created_by == \Auth::user()->creatorId())
+            {
+                return view('form_builder.response', compact('form'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission Denied . ')], 401);
@@ -380,6 +403,12 @@ class FormBuilderController extends Controller
             $formResponse = FormResponse::find($response_id);
             $form         = FormBuilder::find($formResponse->form_id);
             if($form->created_by == \Auth::user()->creatorId())
+            {
+                $response = json_decode($formResponse->response, true);
+
+                return view('form_builder.response_detail', compact('response'));
+            }
+            elseif($document->created_by == \Auth::user()->creatorId())
             {
                 $response = json_decode($formResponse->response, true);
 

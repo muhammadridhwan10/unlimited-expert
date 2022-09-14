@@ -22,11 +22,18 @@ class TravelController extends Controller
                 $emp     = Employee::where('user_id', '=', \Auth::user()->id)->first();
                 $travels = Travel::where('created_by', '=', \Auth::user()->creatorId())->where('employee_id', '=', $emp->id)->get();
             }
+            elseif(Auth::user()->type == 'admin')
+            {
+                $travels = Travel::all();
+            }
+            elseif(Auth::user()->type == 'company')
+            {
+                $travels = Travel::all();
+            }
             else
             {
                 $travels = Travel::where('created_by', '=', \Auth::user()->creatorId())->get();
             }
-
             return view('travel.index', compact('travels'));
         }
         else
@@ -39,9 +46,18 @@ class TravelController extends Controller
     {
         if(\Auth::user()->can('create travel'))
         {
-            $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $employees = Employee::all()->pluck('name', 'id');
 
-            return view('travel.create', compact('employees'));
+                return view('travel.create', compact('employees'));
+            }
+            else
+            {
+                $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+
+                return view('travel.create', compact('employees'));
+            }
         }
         else
         {
@@ -117,9 +133,14 @@ class TravelController extends Controller
 
         if(\Auth::user()->can('edit travel'))
         {
-            $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             if($travel->created_by == \Auth::user()->creatorId())
             {
+                $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                return view('travel.edit', compact('travel', 'employees'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $employees = Employee::get()->pluck('name', 'id');
                 return view('travel.edit', compact('travel', 'employees'));
             }
             else
@@ -166,6 +187,34 @@ class TravelController extends Controller
 
                 return redirect()->route('travel.index')->with('success', __('Travel successfully updated.'));
             }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'employee_id' => 'required',
+                                       'start_date' => 'required',
+                                       'end_date' => 'required',
+                                       'purpose_of_visit' => 'required',
+                                       'place_of_visit' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $travel->employee_id      = $request->employee_id;
+                $travel->start_date       = $request->start_date;
+                $travel->end_date         = $request->end_date;
+                $travel->purpose_of_visit = $request->purpose_of_visit;
+                $travel->place_of_visit   = $request->place_of_visit;
+                $travel->description      = $request->description;
+                $travel->save();
+
+                return redirect()->route('travel.index')->with('success', __('Travel successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -182,6 +231,12 @@ class TravelController extends Controller
         if(\Auth::user()->can('delete travel'))
         {
             if($travel->created_by == \Auth::user()->creatorId())
+            {
+                $travel->delete();
+
+                return redirect()->route('travel.index')->with('success', __('Travel successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
                 $travel->delete();
 

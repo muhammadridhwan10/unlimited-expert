@@ -22,6 +22,14 @@ class PromotionController extends Controller
                 $emp        = Employee::where('user_id', '=', \Auth::user()->id)->first();
                 $promotions = Promotion::where('created_by', '=', \Auth::user()->creatorId())->where('employee_id', '=', $emp->id)->get();
             }
+            elseif(Auth::user()->type == 'admin')
+            {
+                $promotions = Promotion::all();
+            }
+            elseif(Auth::user()->type == 'company')
+            {
+                $promotions = Promotion::all();
+            }
             else
             {
                 $promotions = Promotion::where('created_by', '=', \Auth::user()->creatorId())->get();
@@ -39,10 +47,20 @@ class PromotionController extends Controller
     {
         if(\Auth::user()->can('create promotion'))
         {
-            $designations = Designation::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $employees    = Employee::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
-
-            return view('promotion.create', compact('employees', 'designations'));
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $designations = Designation::all()->pluck('name', 'id');
+                $employees    = Employee::all()->pluck('name', 'id');
+    
+                return view('promotion.create', compact('employees', 'designations'));
+            }
+            else
+            {
+                $designations = Designation::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $employees    = Employee::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
+    
+                return view('promotion.create', compact('employees', 'designations'));
+            }
         }
         else
         {
@@ -115,12 +133,18 @@ class PromotionController extends Controller
 
     public function edit(Promotion $promotion)
     {
-        $designations = Designation::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $employees    = Employee::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
         if(\Auth::user()->can('edit promotion'))
         {
             if($promotion->created_by == \Auth::user()->creatorId())
             {
+                $designations = Designation::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $employees    = Employee::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
+                return view('promotion.edit', compact('promotion', 'employees', 'designations'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $designations = Designation::get()->pluck('name', 'id');
+                $employees    = Employee::get()->pluck('name', 'id');
                 return view('promotion.edit', compact('promotion', 'employees', 'designations'));
             }
             else
@@ -165,6 +189,33 @@ class PromotionController extends Controller
 
                 return redirect()->route('promotion.index')->with('success', __('Promotion successfully updated.'));
             }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'employee_id' => 'required',
+                                       'designation_id' => 'required',
+                                       'promotion_title' => 'required',
+                                       'promotion_date' => 'required',
+                                   ]
+                );
+
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $promotion->employee_id     = $request->employee_id;
+                $promotion->designation_id  = $request->designation_id;
+                $promotion->promotion_title = $request->promotion_title;
+                $promotion->promotion_date  = $request->promotion_date;
+                $promotion->description     = $request->description;
+                $promotion->save();
+
+                return redirect()->route('promotion.index')->with('success', __('Promotion successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -181,6 +232,12 @@ class PromotionController extends Controller
         if(\Auth::user()->can('delete promotion'))
         {
             if($promotion->created_by == \Auth::user()->creatorId())
+            {
+                $promotion->delete();
+
+                return redirect()->route('promotion.index')->with('success', __('Promotion successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
                 $promotion->delete();
 

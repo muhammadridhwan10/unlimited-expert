@@ -14,6 +14,7 @@
                     </div>
                 </div>
             </div>
+            @if(\Auth::user()->type != 'client')
             <div class="col-sm-auto text-sm-end d-flex align-items-center">
                 <div class="action-btn bg-danger ms-2">
                     {!! Form::open(['method' => 'DELETE', 'route' => ['projects.user.destroy',  [$project->id,$user->id]]]) !!}
@@ -22,6 +23,7 @@
                     {!! Form::close() !!}
                 </div>
             </div>
+            @endif
         </div>
     </li>
 @endforeach

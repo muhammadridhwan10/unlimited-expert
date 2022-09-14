@@ -76,7 +76,7 @@
 
                             <div class="form-group col-md-6">
                                 {{ Form::label('branch_id', __('Branch'),['class'=>'form-label']) }}
-                                {{ Form::select('branch_id', $branches,null, array('class' => 'form-control select','required'=>'required','id' => 'branch_id')) }}
+                                {{ Form::select('branch_id', $branches,null, array('class' => 'form-control select', 'placeholder' => 'Select Branch', 'required'=>'required','id' => 'branch_id')) }}
                             </div>
                             <div class="form-group col-md-6">
                                 {{ Form::label('department_id', __('Department'),['class'=>'form-label']) }}

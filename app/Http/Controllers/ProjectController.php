@@ -47,10 +47,27 @@ class ProjectController extends Controller
     {
         if(\Auth::user()->can('create project'))
         {
-          $users   = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '!=', 'client')->get()->pluck('name', 'id');
-          $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
-          $clients->prepend('Select Client', '');
-          $users->prepend('Select User', '');
+            if(\Auth::user()->type == 'company')
+            {
+                $users   = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
+                $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
+                $clients->prepend('Select Client', '');
+                $users->prepend('Select User', '');
+            }
+            elseif(\Auth::user()->type == 'admin')
+            {
+                $users   = User::where('type', '!=', 'client')->get()->pluck('name', 'id');
+                $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
+                $clients->prepend('Select Client', '');
+                $users->prepend('Select User', '');
+            }
+            else
+            {
+                $users   = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
+                $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
+                $clients->prepend('Select Client', '');
+                $users->prepend('Select User', '');
+            }
             return view('projects.create', compact('clients','users'));
         }
         else
@@ -73,7 +90,7 @@ class ProjectController extends Controller
             $validator = \Validator::make(
                 $request->all(), [
                                 'project_name' => 'required',
-                                'project_image' => 'required',
+                                // 'project_image' => 'required',
                             ]
             );
             if($validator->fails())
@@ -138,7 +155,6 @@ class ProjectController extends Controller
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
     }
-
     /**
      * Display the specified resource.
      *
@@ -152,10 +168,15 @@ class ProjectController extends Controller
         {
 
             $usr           = Auth::user();
-            if(\Auth::user()->type == 'client'){
-              $user_projects = Project::where('client_id',\Auth::user()->id)->pluck('id','id')->toArray();;
-            }else{
-              $user_projects = $usr->projects->pluck('id')->toArray();
+            if(\Auth::user()->type == 'client')
+            {
+                $user_projects = Project::where('client_id',\Auth::user()->id)->pluck('id','id')->toArray();;
+            }elseif(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+            {
+                $user_projects = Project::all()->pluck('id','id')->toArray();
+            }else
+            {
+                $user_projects = $usr->projects->pluck('id')->toArray();
             }
             if(in_array($project->id, $user_projects))
             {
@@ -210,7 +231,14 @@ class ProjectController extends Controller
                 // end Day left
 
                 // Open Task
+                if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+                {
+                    $remaining_task = ProjectTask::where('project_id', '=', $project->id)->where('is_complete', '=', 0)->count();
+                }
+                else
+                {
                     $remaining_task = ProjectTask::where('project_id', '=', $project->id)->where('is_complete', '=', 0)->where('created_by',\Auth::user()->creatorId())->count();
+                }
                     $total_task     = $project->tasks->count();
 
                 $project_data['open_task'] = [
@@ -303,18 +331,38 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
+        $usr = \Auth::user();
         if(\Auth::user()->can('edit project'))
         {
-          $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
-          $project = Project::findOrfail($project->id);
-          if($project->created_by == \Auth::user()->creatorId())
-          {
-              return view('projects.edit', compact('project', 'clients'));
-          }
-          else
-          {
-              return response()->json(['error' => __('Permission denied.')], 401);
-          }
+            if($usr->type == 'admin')
+            {
+                $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
+                $project = Project::findOrfail($project->id);
+
+                return view('projects.edit', compact('project', 'clients'));
+
+            }
+            elseif($usr->type == 'company')
+            {
+                $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
+                $project = Project::findOrfail($project->id);
+
+                return view('projects.edit', compact('project', 'clients'));
+
+            }
+            else{
+                
+                $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
+                $project = Project::findOrfail($project->id);
+                if($project->created_by == \Auth::user()->creatorId())
+                {
+                    return view('projects.edit', compact('project', 'clients'));
+                }
+                else
+                {
+                    return response()->json(['error' => __('Permission denied.')], 401);
+                }
+            }
             return view('projects.edit',compact('project'));
         }
         else
@@ -399,7 +447,14 @@ class ProjectController extends Controller
 
         $user_project = $project->users->pluck('id')->toArray();
 
-        $user_contact = User::where('created_by', \Auth::user()->creatorId())->where('type','!=','client')->whereNOTIn('id', $user_project)->pluck('id')->toArray();
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $user_contact = User::where('type','!=','client')->whereNOTIn('id', $user_project)->pluck('id')->toArray();
+        }
+        else
+        {
+            $user_contact = User::where('created_by', \Auth::user()->creatorId())->where('type','!=','client')->whereNOTIn('id', $user_project)->pluck('id')->toArray();
+        }
         $arrUser      = array_unique($user_contact);
         $users        = User::whereIn('id', $arrUser)->get();
 
@@ -609,9 +664,14 @@ class ProjectController extends Controller
         {
             $usr           = Auth::user();
             if(\Auth::user()->type == 'client'){
-              $user_projects = Project::where('client_id',\Auth::user()->id)->where('created_by',\Auth::user()->creatorId())->pluck('id','id')->toArray();;
-            }else{
-              $user_projects = $usr->projects()->pluck('project_id', 'project_id')->toArray();
+                $user_projects = Project::where('client_id',\Auth::user()->id)->where('created_by',\Auth::user()->creatorId())->pluck('id','id')->toArray();
+            }
+            elseif(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+            {
+                $user_projects = Project::all()->pluck('id','id')->toArray();
+            }
+            else{
+                $user_projects = $usr->projects()->pluck('project_id', 'project_id')->toArray();
             }
             if($request->ajax() && $request->has('view') && $request->has('sort'))
             {
@@ -745,16 +805,20 @@ class ProjectController extends Controller
                     }
                 }
 
-                if($user->type == 'company')
-                {
-                    $bugs = Bug::where('project_id', '=', $project_id)->get();
-                }
+                // if($user->type == 'company')
+                // {
+                //     $bugs = Bug::where('project_id', '=', $project_id)->get();
+                // }
 
                 return view('projects.bug', compact('project', 'bugs'));
             }
             else
             {
-                return redirect()->back()->with('error', __('Permission denied.'));
+                if($user->type == 'admin' || $user->type == 'company')
+                {
+                    $bugs = Bug::where('project_id', '=', $project_id)->get();
+                }
+                return view('projects.bug', compact('project', 'bugs'));
             }
         }
         else
@@ -769,7 +833,14 @@ class ProjectController extends Controller
         {
 
             $priority     = Bug::$priority;
-            $status       = BugStatus::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('title', 'id');
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $status       = BugStatus::get()->pluck('title', 'id');
+            }
+            else
+            {
+                $status       = BugStatus::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('title', 'id');
+            }
             $project_user = ProjectUser::where('project_id', $project_id)->get();
 
 
@@ -794,7 +865,14 @@ class ProjectController extends Controller
 
     function bugNumber()
     {
-        $latest = Bug::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $latest = Bug::latest()->first();
+        }
+        else
+        {
+            $latest = Bug::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        }
         if(!$latest)
         {
             return 1;
@@ -871,7 +949,14 @@ class ProjectController extends Controller
         {
             $bug          = Bug::find($bug_id);
             $priority     = Bug::$priority;
-            $status       = BugStatus::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('title', 'id');
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $status       = BugStatus::get()->pluck('title', 'id');
+            }
+            else
+            {
+                $status       = BugStatus::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('title', 'id');
+            }
             $project_user = ProjectUser::where('project_id', $project_id)->get();
             $users        = array();
             foreach($project_user as $user)

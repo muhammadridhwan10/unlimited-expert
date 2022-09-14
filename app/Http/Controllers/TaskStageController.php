@@ -6,6 +6,7 @@ use App\Models\Utility;
 use App\Models\TaskStage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class TaskStageController extends Controller
 {
@@ -18,7 +19,19 @@ class TaskStageController extends Controller
     {
         if(\Auth::user()->can('manage project task stage'))
         {
-            $task_stages = TaskStage::where('created_by', '=', \Auth::user()->creatorId())->orderBy('order','asc')->get();
+            $user = Auth::user();
+            if($user->type == 'admin')
+            {
+                $task_stages = TaskStage::all();
+            }
+            elseif($user->type == 'company')
+            {
+                $task_stages = TaskStage::all();
+            }
+            else
+            {
+                $task_stages = TaskStage::where('created_by', '=', \Auth::user()->creatorId())->orderBy('order','asc')->get();
+            }
 
             return view('task_stage.index',compact('task_stages'));
         }
@@ -161,6 +174,10 @@ class TaskStageController extends Controller
       {
           return view('task_stage.edit', compact('taskStage'));
       }
+      elseif(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+      {
+        return view('task_stage.edit', compact('taskStage'));
+      }
       else
       {
           return response()->json(['error' => __('Permission denied.')], 401);
@@ -196,6 +213,26 @@ class TaskStageController extends Controller
           $taskStage->save();
 
           return redirect()->route('project-task-stages.index')->with('success', __('Bug status successfully updated.'));
+      }
+      elseif(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+      {
+        $validator = \Validator::make(
+            $request->all(), [
+                               'name' => 'required|max:20',
+                           ]
+        );
+        if($validator->fails())
+        {
+            $messages = $validator->getMessageBag();
+
+            return redirect()->route('project-task-stages.index')->with('error', $messages->first());
+        }
+
+        $taskStage->name = $request->name;
+        $taskStage->color      = '#' . $request->color;
+        $taskStage->save();
+
+        return redirect()->route('project-task-stages.index')->with('success', __('Bug status successfully updated.'));
       }
       else
       {

@@ -13,7 +13,7 @@
         <a href="{{ route('contract.grid') }}"  data-bs-toggle="tooltip" title="{{__('Grid View')}}" class="btn btn-sm btn-primary">
             <i class="ti ti-layout-grid"></i>
         </a>
-        @if(\Auth::user()->type == 'company')
+        @if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
             <a href="#" data-size="md" data-url="{{ route('contract.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Contract')}}" class="btn btn-sm btn-primary">
                 <i class="ti ti-plus"></i>
             </a>
@@ -39,7 +39,7 @@
                                 <th scope="col">{{__('Start Date')}}</th>
                                 <th scope="col">{{__('End Date')}}</th>
                                 <th scope="col">{{__('Description')}}</th>
-                                @if(\Auth::user()->type=='company')
+                                @if(\Auth::user()->type=='company' ||  \Auth::user()->type=='admin')
                                     <th scope="col" class="text-end">{{__('Action')}}</th>
                                 @endif
                             </tr>
@@ -59,7 +59,7 @@
                                     <td>
                                         <a href="#" class="action-item" data-url="{{ route('contract.description',$contract->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Desciption')}}" data-title="{{__('Desciption')}}"><i class="fa fa-comment"></i></a>
                                     </td>
-                                    @if(\Auth::user()->type=='company')
+                                    @if(\Auth::user()->type=='company' ||  \Auth::user()->type=='admin')
                                         <td class="action text-end">
                                             <div class="action-btn bg-info ms-2">
                                                 <a href="#" class="mx-3 btn btn-sm d-inline-flex align-items-center" data-url="{{ route('contract.edit',$contract->id) }}" data-ajax-popup="true" data-size="md" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-title="{{__('Edit Contract')}}">

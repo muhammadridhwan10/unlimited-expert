@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Competencies;
 use App\Models\PerformanceType;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class CompetenciesController extends Controller
@@ -13,9 +14,18 @@ class CompetenciesController extends Controller
     {
         if(\Auth::user()->can('Manage Competencies'))
         {
-            $competencies = Competencies::where('created_by', \Auth::user()->creatorId())->get();
+            if(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $competencies = Competencies::all();
 
-            return view('competencies.index', compact('competencies'));
+                return view('competencies.index', compact('competencies'));
+            }
+            else
+            {
+                $competencies = Competencies::where('created_by', \Auth::user()->creatorId())->get();
+
+                return view('competencies.index', compact('competencies'));
+            }
         }
         else
         {
@@ -26,7 +36,14 @@ class CompetenciesController extends Controller
 
     public function create()
     {
-        $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+        {
+            $performance     = PerformanceType::all()->pluck('name', 'id');
+        }
+        else
+        {
+            $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        }
             return view('competencies.create', compact('performance'));
 
     }
@@ -74,7 +91,14 @@ class CompetenciesController extends Controller
     public function edit($id)
     {
         $competencies = Competencies::find($id);
-        $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $performance     = PerformanceType::get()->pluck('name', 'id');
+        }
+        else
+        {
+            $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        }
         return view('competencies.edit', compact('performance', 'competencies'));
 
     }

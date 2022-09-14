@@ -11,9 +11,18 @@ class AllowanceOptionController extends Controller
     {
         if(\Auth::user()->can('manage allowance option'))
         {
-            $allowanceoptions = AllowanceOption::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $allowanceoptions = AllowanceOption::all();
 
-            return view('allowanceoption.index', compact('allowanceoptions'));
+                return view('allowanceoption.index', compact('allowanceoptions'));
+            }
+            else
+            {
+                $allowanceoptions = AllowanceOption::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('allowanceoption.index', compact('allowanceoptions'));
+            }
         }
         else
         {
@@ -77,6 +86,10 @@ class AllowanceOptionController extends Controller
 
                 return view('allowanceoption.edit', compact('allowanceoption'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                return view('allowanceoption.edit', compact('allowanceoption'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission denied.')], 401);
@@ -112,6 +125,26 @@ class AllowanceOptionController extends Controller
 
                 return redirect()->route('allowanceoption.index')->with('success', __('AllowanceOption successfully updated.'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required|max:20',
+
+                                   ]
+                );
+
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+                $allowanceoption->name = $request->name;
+                $allowanceoption->save();
+
+                return redirect()->route('allowanceoption.index')->with('success', __('AllowanceOption successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -128,6 +161,12 @@ class AllowanceOptionController extends Controller
         if(\Auth::user()->can('delete allowance option'))
         {
             if($allowanceoption->created_by == \Auth::user()->creatorId())
+            {
+                $allowanceoption->delete();
+
+                return redirect()->route('allowanceoption.index')->with('success', __('AllowanceOption successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $allowanceoption->delete();
 

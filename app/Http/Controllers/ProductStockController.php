@@ -19,9 +19,24 @@ class ProductStockController extends Controller
 
         if(\Auth::user()->can('manage product & service'))
         {
-            $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type = 'admin')
+            {
+                $productServices = ProductService::all();
 
-            return view('productstock.index', compact('productServices'));
+                return view('productstock.index', compact('productServices'));
+            }
+            elseif(\Auth::user()->type = 'company')
+            {
+                $productServices = ProductService::all();
+
+                return view('productstock.index', compact('productServices'));
+            }
+            else
+            {
+                $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('productstock.index', compact('productServices'));
+            }
         }
         else
         {
@@ -81,6 +96,10 @@ class ProductStockController extends Controller
             {
                 return view('productstock.edit', compact('productService'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                return view('productstock.edit', compact('productService'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission denied.')], 401);
@@ -109,6 +128,21 @@ class ProductStockController extends Controller
             $total          = $productService->quantity + $request->quantity;
 
             if($productService->created_by == \Auth::user()->creatorId())
+            {
+                $productService->quantity   = $total;
+                $productService->created_by = \Auth::user()->creatorId();
+                $productService->save();
+
+                //Product Stock Report
+                $type        = 'manually';
+                $type_id     = 0;
+                $description = $request->quantity . '  ' . __('quantity added by manually');
+                Utility::addProductStock($productService->id, $request->quantity, $type, $description, $type_id);
+
+
+                return redirect()->route('productstock.index')->with('success', __('Product quantity updated manually.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $productService->quantity   = $total;
                 $productService->created_by = \Auth::user()->creatorId();

@@ -16,17 +16,26 @@ class ComplaintController extends Controller
     {
         if(\Auth::user()->can('manage complaint'))
         {
-            if(Auth::user()->type == 'employee')
-            {
-                $emp        = Employee::where('user_id', '=', \Auth::user()->id)->first();
-                $complaints = Complaint::where('complaint_from', '=', $emp->id)->get();
-            }
-            else
-            {
-                $complaints = Complaint::where('created_by', '=', \Auth::user()->creatorId())->get();
-            }
-
-            return view('complaint.index', compact('complaints'));
+                if(Auth::user()->type == 'employee')
+                {
+                    $emp        = Employee::where('user_id', '=', \Auth::user()->id)->first();
+                    $complaints = Complaint::where('complaint_from', '=', $emp->id)->get();
+                }
+                elseif(Auth::user()->type == 'company')
+                {
+                    $complaints = Complaint::all();
+                }
+                elseif(Auth::user()->type == 'admin')
+                {
+                    $complaints = Complaint::all();
+                }
+                else
+                {
+                    $complaints = Complaint::where('created_by', '=', \Auth::user()->creatorId())->get();
+                }
+    
+                return view('complaint.index', compact('complaints'));
+            
         }
         else
         {
@@ -43,6 +52,11 @@ class ComplaintController extends Controller
                 $user             = \Auth::user();
                 $current_employee = Employee::where('user_id', $user->id)->get()->pluck('name', 'id');
                 $employees        = Employee::where('user_id', '!=', $user->id)->get()->pluck('name', 'id');
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $current_employee = Employee::all()->pluck('name', 'id');
+                $employees        = Employee::all()->pluck('name', 'id');
             }
             else
             {
@@ -155,6 +169,12 @@ class ComplaintController extends Controller
                 $current_employee = Employee::where('user_id', $user->id)->get()->pluck('name', 'id');
                 $employees        = Employee::where('user_id', '!=', $user->id)->get()->pluck('name', 'id');
             }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $user             = \Auth::user();
+                $current_employee = Employee::where('user_id', $user->id)->get()->pluck('name', 'id');
+                $employees = Employee::get()->pluck('name', 'id');
+            }
             else
             {
                 $user             = \Auth::user();
@@ -162,6 +182,10 @@ class ComplaintController extends Controller
                 $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             }
             if($complaint->created_by == \Auth::user()->creatorId())
+            {
+                return view('complaint.edit', compact('complaint', 'employees', 'current_employee'));
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 return view('complaint.edit', compact('complaint', 'employees', 'current_employee'));
             }
@@ -224,6 +248,50 @@ class ComplaintController extends Controller
 
                 return redirect()->route('complaint.index')->with('success', __('Complaint successfully updated.'));
             }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                if(\Auth::user()->type != 'employee')
+                {
+                    $validator = \Validator::make(
+                        $request->all(), [
+                                           'complaint_from' => 'required',
+                                       ]
+                    );
+                }
+
+                $validator = \Validator::make(
+                    $request->all(), [
+
+                                       'complaint_against' => 'required',
+                                       'title' => 'required',
+                                       'complaint_date' => 'required',
+                                   ]
+                );
+
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                if(\Auth::user()->type == 'employee')
+                {
+                    $emp                       = Employee::where('user_id', '=', \Auth::user()->id)->first();
+                    $complaint->complaint_from = $emp->id;
+                }
+                else
+                {
+                    $complaint->complaint_from = $request->complaint_from;
+                }
+                $complaint->complaint_against = $request->complaint_against;
+                $complaint->title             = $request->title;
+                $complaint->complaint_date    = $request->complaint_date;
+                $complaint->description       = $request->description;
+                $complaint->save();
+
+                return redirect()->route('complaint.index')->with('success', __('Complaint successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -240,6 +308,12 @@ class ComplaintController extends Controller
         if(\Auth::user()->can('delete complaint'))
         {
             if($complaint->created_by == \Auth::user()->creatorId())
+            {
+                $complaint->delete();
+
+                return redirect()->route('complaint.index')->with('success', __('Complaint successfully deleted.'));
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $complaint->delete();
 

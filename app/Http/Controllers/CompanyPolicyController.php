@@ -14,9 +14,18 @@ class CompanyPolicyController extends Controller
     {
         if(\Auth::user()->can('manage company policy'))
         {
-            $companyPolicy = CompanyPolicy::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $companyPolicy = CompanyPolicy::all();
 
-            return view('companyPolicy.index', compact('companyPolicy'));
+                return view('companyPolicy.index', compact('companyPolicy'));
+            }
+            else
+            {
+                $companyPolicy = CompanyPolicy::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('companyPolicy.index', compact('companyPolicy'));
+            }
         }
         else
         {
@@ -29,9 +38,16 @@ class CompanyPolicyController extends Controller
     {
         if(\Auth::user()->can('create company policy'))
         {
-            $branch = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $branch->prepend('Select Branch','');
-
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $branch = Branch::all()->pluck('name', 'id');
+                $branch->prepend('Select Branch','');
+            }
+            else
+            {
+                $branch = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $branch->prepend('Select Branch','');
+            }
             return view('companyPolicy.create', compact('branch'));
         }
         else
@@ -120,8 +136,17 @@ class CompanyPolicyController extends Controller
 
         if(\Auth::user()->can('edit company policy'))
         {
-            $branch = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $branch->prepend('Select Branch','');
+            if(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $branch = Branch::get()->pluck('name', 'id');
+                $branch->prepend('Select Branch','');
+            }
+            else
+            {
+                $branch = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $branch->prepend('Select Branch','');
+            }
+            
 
             return view('companyPolicy.edit', compact('branch', 'companyPolicy'));
         }
@@ -190,6 +215,18 @@ class CompanyPolicyController extends Controller
         if(\Auth::user()->can('delete document'))
         {
             if($companyPolicy->created_by == \Auth::user()->creatorId())
+            {
+                $companyPolicy->delete();
+
+                $dir = storage_path('uploads/companyPolicy/');
+                if(!empty($companyPolicy->attachment))
+                {
+                    unlink($dir . $companyPolicy->attachment);
+                }
+
+                return redirect()->route('company-policy.index')->with('success', __('Company policy successfully deleted.'));
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $companyPolicy->delete();
 

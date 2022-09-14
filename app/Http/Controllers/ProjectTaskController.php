@@ -24,17 +24,49 @@ class ProjectTaskController extends Controller
         $usr = \Auth::user();
         if(\Auth::user()->can('manage project task'))
         {
-            $project = Project::find($project_id);
-            $stages  = TaskStage::orderBy('order')->where('created_by',\Auth::user()->creatorId())->get();
-            foreach($stages as $status)
+            if($usr->type == 'admin')
             {
-                $stageClass[] = 'task-list-' . $status->id;
-                $task         = ProjectTask::where('project_id', '=', $project_id);
-                // check project is shared or owner
+                $project = Project::find($project_id);
+                $stages  = TaskStage::orderBy('order')->get();
+                foreach($stages as $status)
+                {
+                    $stageClass[] = 'task-list-' . $status->id;
+                    $task         = ProjectTask::where('project_id', '=', $project_id);
+                    // check project is shared or owner
 
-                //end
-                $task->orderBy('order');
-                $status['tasks'] = $task->where('stage_id', '=', $status->id)->get();
+                    //end
+                    $task->orderBy('order');
+                    $status['tasks'] = $task->where('stage_id', '=', $status->id)->get();
+                }
+            }
+            elseif($usr->type == 'company')
+            {
+                $project = Project::find($project_id);
+                $stages  = TaskStage::orderBy('order')->get();
+                foreach($stages as $status)
+                {
+                    $stageClass[] = 'task-list-' . $status->id;
+                    $task         = ProjectTask::where('project_id', '=', $project_id);
+                    // check project is shared or owner
+
+                    //end
+                    $task->orderBy('order');
+                    $status['tasks'] = $task->where('stage_id', '=', $status->id)->get();
+                }
+            }
+            else{
+                $project = Project::find($project_id);
+                $stages  = TaskStage::orderBy('order')->where('created_by',\Auth::user()->creatorId())->get();
+                foreach($stages as $status)
+                {
+                    $stageClass[] = 'task-list-' . $status->id;
+                    $task         = ProjectTask::where('project_id', '=', $project_id);
+                    // check project is shared or owner
+    
+                    //end
+                    $task->orderBy('order');
+                    $status['tasks'] = $task->where('stage_id', '=', $status->id)->get();
+                }
             }
 
             return view('project_task.index', compact('stages', 'stageClass', 'project'));
@@ -134,11 +166,18 @@ class ProjectTaskController extends Controller
     // For Taskboard View
     public function taskBoard($view)
     {
+        $user = Auth::user();
         if($view == 'list'){
             return view('project_task.taskboard', compact('view'));
           }else{
-              $tasks = ProjectTask::where('created_by',\Auth::user()->creatorId())->get();
-            return view('project_task.grid', compact('tasks','view'));
+            if($user->type = 'admin'){
+                $tasks = ProjectTask::all();
+                return view('project_task.grid', compact('tasks','view'));
+            }else{
+                $tasks = ProjectTask::where('created_by',\Auth::user()->creatorId())->get();
+                return view('project_task.grid', compact('tasks','view'));
+            }
+              
           }
           return redirect()->back()->with('error', __('Permission Denied.'));
 
@@ -175,8 +214,11 @@ class ProjectTaskController extends Controller
 
         $usr           = Auth::user();
         if(\Auth::user()->type == 'client'){
-          $user_projects = Project::where('client_id',\Auth::user()->id)->pluck('id','id')->toArray();
-        }elseif(\Auth::user()->type != 'client'){
+            $user_projects = Project::where('client_id',\Auth::user()->id)->pluck('id','id')->toArray();
+        }elseif(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin'){
+            $user_projects = Project::all()->pluck('id','id')->toArray();
+        }
+        elseif(\Auth::user()->type != 'client'){
           $user_projects = $usr->projects()->pluck('project_id','project_id')->toArray();
         }
         if($request->ajax() && $request->has('view') && $request->has('sort'))
@@ -184,9 +226,12 @@ class ProjectTaskController extends Controller
             $sort  = explode('-', $request->sort);
             $task = ProjectTask::whereIn('project_id', $user_projects)->get();
             $tasks = ProjectTask::whereIn('project_id', $user_projects)->orderBy($sort[0], $sort[1]);
-            if(\Auth::user()->type != 'company'){
+            if(\Auth::user()->type != 'super admin'){
               if(\Auth::user()->type == 'client'){
                   $tasks->where('created_by',\Auth::user()->creatorId());
+              }
+              elseif(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin'){
+                $tasks->get();
               }
               else{
                 $tasks->whereRaw("find_in_set('" . $usr->id . "',assign_to)");
@@ -354,14 +399,28 @@ class ProjectTaskController extends Controller
 
             if($task->is_complete == 0)
             {
-                $last_stage        = TaskStage::orderBy('order', 'DESC')->where('created_by',\Auth::user()->creatorId())->first();
+                if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+                {
+                    $last_stage        = TaskStage::orderBy('order', 'DESC')->first();
+                }
+                else
+                {
+                    $last_stage        = TaskStage::orderBy('order', 'DESC')->where('created_by',\Auth::user()->creatorId())->first();
+                }
                 $task->is_complete = 1;
                 $task->marked_at   = date('Y-m-d');
                 $task->stage_id    = $last_stage->id;
             }
             else
             {
-                $first_stage       = TaskStage::orderBy('order', 'ASC')->where('created_by',\Auth::user()->creatorId())->first();
+                if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+                {
+                    $first_stage       = TaskStage::orderBy('order', 'ASC')->first();
+                }
+                else
+                {
+                    $first_stage       = TaskStage::orderBy('order', 'ASC')->where('created_by',\Auth::user()->creatorId())->first();
+                }
                 $task->is_complete = 0;
                 $task->marked_at   = NULL;
                 $task->stage_id    = $first_stage->id;
@@ -676,7 +735,14 @@ class ProjectTaskController extends Controller
 
                 $new_stage  = TaskStage::find($request->new_stage);
                 $old_stage  = TaskStage::find($request->old_stage);
-                $last_stage = TaskStage::where('created_by',\Auth::user()->creatorId())->orderBy('order', 'DESC')->first();
+                if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+                {
+                    $last_stage = TaskStage::orderBy('order', 'DESC')->first();
+                }
+                else
+                {
+                    $last_stage = TaskStage::where('created_by',\Auth::user()->creatorId())->orderBy('order', 'DESC')->first();
+                }
                 $last_stage = $last_stage->id;
 
                 $task = ProjectTask::find($request->id);
@@ -885,16 +951,21 @@ class ProjectTaskController extends Controller
         $usr = Auth::user();
         $transdate = date('Y-m-d', time());
 
-        if($usr->type != 'admin')
+        if($usr->type != 'super admin')
         {
             if(\Auth::user()->type == 'client'){
-              $user_projects = Project::where('client_id',\Auth::user()->id)->pluck('id','id')->toArray();
+                $user_projects = Project::where('client_id',\Auth::user()->id)->pluck('id','id')->toArray();
+            }elseif(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin'){
+                $user_projects = Project::all()->pluck('id','id')->toArray();
             }else{
               $user_projects = $usr->projects()->pluck('project_id','project_id')->toArray();
             }
             $user_projects = (!empty($project_id) && $project_id > 0) ? [$project_id] : $user_projects;
-            if(\Auth::user()->type == 'company'){
-              $tasks = ProjectTask::whereIn('project_id', $user_projects);
+            // if(\Auth::user()->type == 'company'){
+            //   $tasks = ProjectTask::whereIn('project_id', $user_projects);
+            // }
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin'){
+                $tasks = ProjectTask::whereIn('project_id', $user_projects);
             }
             elseif(\Auth::user()->type != 'company'){
               if(\Auth::user()->type == 'client'){

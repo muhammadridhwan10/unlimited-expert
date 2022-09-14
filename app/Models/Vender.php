@@ -54,7 +54,7 @@ class Vender extends Authenticatable
 
     public function creatorId()
     {
-        if($this->type == 'company' || $this->type == 'super admin')
+        if($this->type == 'company' || $this->type == 'super admin' || $this->type == 'admin')
         {
             return $this->id;
         }

@@ -18,9 +18,24 @@ class CreditNoteController extends Controller
     {
         if(\Auth::user()->can('manage credit note'))
         {
-            $invoices = Invoice::where('created_by', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type = 'admin')
+            {
+                $invoices = Invoice::all();
 
-            return view('creditNote.index', compact('invoices'));
+                return view('creditNote.index', compact('invoices'));
+            }
+            elseif(\Auth::user()->type = 'company')
+            {
+                $invoices = Invoice::all();
+
+                return view('creditNote.index', compact('invoices'));
+            }
+            else
+            {
+                $invoices = Invoice::where('created_by', \Auth::user()->creatorId())->get();
+
+                return view('creditNote.index', compact('invoices'));
+            }
         }
         else
         {
@@ -168,8 +183,14 @@ class CreditNoteController extends Controller
     {
         if(\Auth::user()->can('create credit note'))
         {
-
-            $invoices = Invoice::where('created_by', \Auth::user()->creatorId())->get()->pluck('invoice_id', 'id');
+            if(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $invoices = Invoice::get()->pluck('invoice_id', 'id');
+            }
+            else
+            {
+                $invoices = Invoice::where('created_by', \Auth::user()->creatorId())->get()->pluck('invoice_id', 'id');
+            }
 
             return view('creditNote.custom_create', compact('invoices'));
         }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JobCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class JobCategoryController extends Controller
 {
@@ -12,9 +13,18 @@ class JobCategoryController extends Controller
     {
         if(\Auth::user()->can('manage job category'))
         {
-            $categories = JobCategory::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $categories = JobCategory::all();
 
-            return view('jobCategory.index', compact('categories'));
+                return view('jobCategory.index', compact('categories'));
+            }
+            else
+            {
+                $categories = JobCategory::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('jobCategory.index', compact('categories'));
+            }
         }
         else
         {
@@ -107,6 +117,12 @@ class JobCategoryController extends Controller
         if(\Auth::user()->can('delete job category'))
         {
             if($jobCategory->created_by == \Auth::user()->creatorId())
+            {
+                $jobCategory->delete();
+
+                return redirect()->back()->with('success', __('Job category successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $jobCategory->delete();
 

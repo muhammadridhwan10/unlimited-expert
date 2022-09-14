@@ -15,12 +15,28 @@ class TrainingController extends Controller
 
     public function index()
     {
+        $user = \Auth::user();
         if(\Auth::user()->can('manage training'))
         {
-            $trainings = Training::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $status    = Training::$Status;
-
-            return view('training.index', compact('trainings', 'status'));
+            if($user->type = 'admin'){
+                $trainings = Training::all();
+                $status    = Training::$Status;
+    
+                return view('training.index', compact('trainings', 'status'));
+            }
+            elseif($user->type = 'company')
+            {
+                $trainings = Training::all();
+                $status    = Training::$Status;
+    
+                return view('training.index', compact('trainings', 'status'));
+            }
+            else{
+                $trainings = Training::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $status    = Training::$Status;
+    
+                return view('training.index', compact('trainings', 'status'));
+            }
         }
         else
         {
@@ -33,13 +49,26 @@ class TrainingController extends Controller
     {
         if(\Auth::user()->can('create training'))
         {
-            $branches      = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $trainingTypes = TrainingType::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $trainers      = Trainer::where('created_by', \Auth::user()->creatorId())->get()->pluck('firstname', 'id');
-            $employees     = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $options       = Training::$options;
-
-            return view('training.create', compact('branches', 'trainingTypes', 'trainers', 'employees', 'options'));
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $branches      = Branch::all()->pluck('name', 'id');
+                $trainingTypes = TrainingType::all()->pluck('name', 'id');
+                $trainers      = Trainer::all()->pluck('firstname', 'id');
+                $employees     = Employee::all()->pluck('name', 'id');
+                $options       = Training::$options;
+    
+                return view('training.create', compact('branches', 'trainingTypes', 'trainers', 'employees', 'options'));
+            }
+            else
+            {
+                $branches      = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $trainingTypes = TrainingType::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $trainers      = Trainer::where('created_by', \Auth::user()->creatorId())->get()->pluck('firstname', 'id');
+                $employees     = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $options       = Training::$options;
+    
+                return view('training.create', compact('branches', 'trainingTypes', 'trainers', 'employees', 'options'));
+            }
         }
         else
         {
@@ -107,11 +136,22 @@ class TrainingController extends Controller
     {
         if(\Auth::user()->can('create training'))
         {
-            $branches      = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $trainingTypes = TrainingType::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $trainers      = Trainer::where('created_by', \Auth::user()->creatorId())->get()->pluck('firstname', 'id');
-            $employees     = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $options       = Training::$options;
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $branches      = Branch::get()->pluck('name', 'id');
+                $trainingTypes = TrainingType::get()->pluck('name', 'id');
+                $trainers      = Trainer::get()->pluck('firstname', 'id');
+                $employees     = Employee::get()->pluck('name', 'id');
+                $options       = Training::$options;
+            }
+            else
+            {
+                $branches      = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $trainingTypes = TrainingType::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $trainers      = Trainer::where('created_by', \Auth::user()->creatorId())->get()->pluck('firstname', 'id');
+                $employees     = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $options       = Training::$options;
+            }
 
             return view('training.edit', compact('branches', 'trainingTypes', 'trainers', 'employees', 'options', 'training'));
         }
@@ -169,6 +209,12 @@ class TrainingController extends Controller
         if(\Auth::user()->can('delete training'))
         {
             if($training->created_by == \Auth::user()->creatorId())
+            {
+                $training->delete();
+
+                return redirect()->route('training.index')->with('success', __('Training successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
                 $training->delete();
 

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::post('login', 'ApiController@login');
+Route::get('zoom', 'ZoomMeetingController@getToken');
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('logout', 'ApiController@logout');
     Route::get('get-projects', 'ApiController@getProjects');

@@ -68,6 +68,73 @@ class DashboardController extends Controller
             {
                 return redirect()->route('client.dashboard.view');
             }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                    $data['latestIncome']  = Revenue::orderBy('id', 'desc')->limit(5)->get();
+                    $data['latestExpense'] = Payment::orderBy('id', 'desc')->limit(5)->get();
+
+
+                    $incomeCategory = ProductServiceCategory::where('type', '=', 1)->get();
+                    $inColor        = array();
+                    $inCategory     = array();
+                    $inAmount       = array();
+                    for($i = 0; $i < count($incomeCategory); $i++)
+                    {
+                        $inColor[]    = '#' . $incomeCategory[$i]->color;
+                        $inCategory[] = $incomeCategory[$i]->name;
+                        $inAmount[]   = $incomeCategory[$i]->incomeCategoryRevenueAmount();
+                    }
+
+
+                    $data['incomeCategoryColor'] = $inColor;
+                    $data['incomeCategory']      = $inCategory;
+                    $data['incomeCatAmount']     = $inAmount;
+
+
+                    $expenseCategory = ProductServiceCategory::where('type', '=', 2)->get();
+                    $exColor         = array();
+                    $exCategory      = array();
+                    $exAmount        = array();
+                    for($i = 0; $i < count($expenseCategory); $i++)
+                    {
+                        $exColor[]    = '#' . $expenseCategory[$i]->color;
+                        $exCategory[] = $expenseCategory[$i]->name;
+                        $exAmount[]   = $expenseCategory[$i]->expenseCategoryAmount();
+                    }
+
+                    $data['expenseCategoryColor'] = $exColor;
+                    $data['expenseCategory']      = $exCategory;
+                    $data['expenseCatAmount']     = $exAmount;
+
+                    $data['incExpBarChartData']  = \Auth::user()->getincExpBarChartData();
+                    $data['incExpLineChartData'] = \Auth::user()->getIncExpLineChartDate();
+
+                    $data['currentYear']  = date('Y');
+                    $data['currentMonth'] = date('M');
+
+                    $constant['taxes']         = Tax::all()->count();
+                    $constant['category']      = ProductServiceCategory::all()->count();
+                    $constant['units']         = ProductServiceUnit::all()->count();
+                    $constant['bankAccount']   = BankAccount::all()->count();
+                    $data['constant']          = $constant;
+                    $data['bankAccountDetail'] = BankAccount::all();
+                    $data['recentInvoice']     = Invoice::orderBy('id', 'desc')->limit(5)->get();
+                    $data['weeklyInvoice']     = \Auth::user()->weeklyInvoice();
+                    $data['monthlyInvoice']    = \Auth::user()->monthlyInvoice();
+                    $data['recentBill']        = Bill::orderBy('id', 'desc')->limit(5)->get();
+                    $data['weeklyBill']        = \Auth::user()->weeklyBill();
+                    $data['monthlyBill']       = \Auth::user()->monthlyBill();
+                    $data['goals']             = Goal::where('is_display', 1)->get();
+
+
+//                }
+//                else
+//                {
+//                    $data = [];
+//                }
+
+                return view('dashboard.account-dashboard', $data);
+            }
             else
             {
 //                if(\Auth::user()->can('show account dashboard'))
@@ -166,9 +233,83 @@ class DashboardController extends Controller
         $user = Auth::user();
         if(\Auth::user()->can('show project dashboard'))
         {
-            if($user->type == 'admin')
+            if($user->type == 'admin' || $user->type == 'company')
             {
-                return view('admin.dashboard');
+                $home_data = [];
+
+                $user_projects   = Project::all()->pluck('id')->toArray();
+                $project_tasks   = ProjectTask::all();
+                $project_expense = Expense::all();
+                $seven_days      = Utility::getLastSevenDays();
+
+                // Total Projects
+                $complete_project           = Project::where('status', 'LIKE', 'complete')->count();
+                $home_data['total_project'] = [
+                    'total' => count($user_projects),
+                    'percentage' => Utility::getPercentage($complete_project, count($user_projects)),
+                ];
+
+                // Total Tasks
+                $complete_task           = ProjectTask::where('is_complete', '=', 1)->whereRaw("find_in_set('" . $user->id . "',assign_to)")->whereIn('project_id', $user_projects)->count();
+                $home_data['total_task'] = [
+                    'total' => $project_tasks->count(),
+                    'percentage' => Utility::getPercentage($complete_task, $project_tasks->count()),
+                ];
+
+                // Total Expense
+                $total_expense        = 0;
+                $total_project_amount = 0;
+                foreach($user->projects as $pr)
+                {
+                    $total_project_amount += $pr->budget;
+                }
+                foreach($project_expense as $expense)
+                {
+                    $total_expense += $expense->amount;
+                }
+                $home_data['total_expense'] = [
+                    'total' => $project_expense->count(),
+                    'percentage' => Utility::getPercentage($total_expense, $total_project_amount),
+                ];
+
+                // Total Users
+                $home_data['total_user'] = Auth::user()->contacts->count();
+
+                // Tasks Overview Chart & Timesheet Log Chart
+                $task_overview    = [];
+                $timesheet_logged = [];
+                foreach($seven_days as $date => $day)
+                {
+                    // Task
+                    $task_overview[$day] = ProjectTask::where('is_complete', '=', 1)->where('marked_at', 'LIKE', $date)->count();
+
+                    // Timesheet
+                    $time                   = Timesheet::where('date', 'LIKE', $date)->pluck('time')->toArray();
+                    $timesheet_logged[$day] = str_replace(':', '.', Utility::calculateTimesheetHours($time));
+                }
+
+                $home_data['task_overview']    = $task_overview;
+                $home_data['timesheet_logged'] = $timesheet_logged;
+
+                // Project Status
+                $total_project  = count($user_projects);
+                $project_status = [];
+                foreach(Project::$project_status as $k => $v)
+                {
+                    $project_status[$k]['total']      = Project::where('status', 'LIKE', $k)->count();
+                    $project_status[$k]['percentage'] = Utility::getPercentage($project_status[$k]['total'], $total_project);
+                }
+                $home_data['project_status'] = $project_status;
+
+                // Top Due Project
+                $home_data['due_project'] = Project::orderBy('end_date', 'DESC')->limit(5)->get();
+
+                // Top Due Tasks
+                $home_data['due_tasks'] = ProjectTask::where('is_complete', '=', 0)->orderBy('end_date', 'DESC')->limit(5)->get();
+
+                $home_data['last_tasks'] = ProjectTask::orderBy('end_date', 'DESC')->limit(5)->get();
+
+                return view('dashboard.project-dashboard', compact('home_data'));
             }
             else
             {
@@ -262,7 +403,7 @@ class DashboardController extends Controller
             if(\Auth::user()->can('show hrm dashboard'))
             {
                 $user = Auth::user();
-                if($user->type != 'client' && $user->type != 'company')
+                if($user->type != 'client' && $user->type != 'company' && $user->type != 'admin')
                 {
                     $emp = Employee::where('user_id', '=', $user->id)->first();
 
@@ -306,6 +447,55 @@ class DashboardController extends Controller
                     $officeTime['endTime']   = Utility::getValByName('company_end_time');
 
                     return view('dashboard.dashboard', compact('arrEvents', 'announcements', 'employees', 'meetings', 'employeeAttendance', 'officeTime'));
+                }elseif($user->type = 'admin')
+                {
+                    $events    = Event::all();
+                    $arrEvents = [];
+
+                    foreach($events as $event)
+                    {
+                        $arr['id']    = $event['id'];
+                        $arr['title'] = $event['title'];
+                        $arr['start'] = $event['start_date'];
+                        $arr['end']   = $event['end_date'];
+
+                        $arr['backgroundColor'] = $event['color'];
+                        $arr['borderColor']     = "#fff";
+                        $arr['textColor']       = "white";
+                        $arr['url']             = route('event.edit', $event['id']);
+
+                        $arrEvents[] = $arr;
+                    }
+
+
+                    $announcements = Announcement::orderBy('announcements.id', 'desc')->take(5)->get();
+
+
+                    $emp           = User::where('type', '!=', 'client')->get();
+                    $countEmployee = count($emp);
+
+                    $user      = User::where('type', '!=', 'client')->get();
+                    $countUser = count($user);
+
+
+                    $countTrainer    = Trainer::all()->count();
+                    $onGoingTraining = Training::where('status', '=', 1)->count();
+                    $doneTraining    = Training::where('status', '=', 2)->count();
+
+                    $currentDate = date('Y-m-d');
+
+                    $employees   = User::where('type', '=', 'client')->get();
+                    $countClient = count($employees);
+                    $notClockIn  = AttendanceEmployee::where('date', '=', $currentDate)->get()->pluck('employee_id');
+
+                    $notClockIns = Employee::whereNotIn('id', $notClockIn)->get();
+                    $activeJob   = Job::where('status', 'active')->count();
+                    $inActiveJOb = Job::where('status', 'in_active')->count();
+
+
+                    $meetings = Meeting::limit(5)->get();
+
+                    return view('dashboard.dashboard', compact('arrEvents', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
                 }
 
                 else

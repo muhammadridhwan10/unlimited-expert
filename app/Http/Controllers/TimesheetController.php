@@ -23,9 +23,12 @@ class TimesheetController extends Controller
             if(in_array($project_id, $project_ids))
             {
                 $project = Project::where('id', $project_id)->first();
-
-                return view('projects.timesheets.index', compact('project'));
             }
+            else
+            {
+                $project = Project::where('id', $project_id)->first();
+            }
+            return view('projects.timesheets.index', compact('project'));
         }
         else
         {

@@ -12,9 +12,24 @@ class DepartmentController extends Controller
     {
         if(\Auth::user()->can('manage department'))
         {
-            $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type == 'admin')
+            {
+                $departments = Department::all();
 
-            return view('department.index', compact('departments'));
+                return view('department.index', compact('departments'));
+            }
+            elseif(\Auth::user()->type == 'company')
+            {
+                $departments = Department::all();
+
+                return view('department.index', compact('departments'));
+            }
+            else
+            {
+                $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('department.index', compact('departments'));
+            }
         }
         else
         {
@@ -26,7 +41,14 @@ class DepartmentController extends Controller
     {
         if(\Auth::user()->can('create department'))
         {
-            $branch = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $branch = Branch::all()->pluck('name', 'id');
+            }
+            else
+            {
+                $branch = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }
 
             return view('department.create', compact('branch'));
         }
@@ -83,6 +105,12 @@ class DepartmentController extends Controller
 
                 return view('department.edit', compact('department', 'branch'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $branch = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+
+                return view('department.edit', compact('department', 'branch'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission denied.')], 401);
@@ -119,6 +147,27 @@ class DepartmentController extends Controller
 
                 return redirect()->route('department.index')->with('success', __('Department successfully updated.'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'branch_id' => 'required',
+                                       'name' => 'required|max:20',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $department->branch_id = $request->branch_id;
+                $department->name      = $request->name;
+                $department->save();
+
+                return redirect()->route('department.index')->with('success', __('Department successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -135,6 +184,12 @@ class DepartmentController extends Controller
         if(\Auth::user()->can('delete department'))
         {
             if($department->created_by == \Auth::user()->creatorId())
+            {
+                $department->delete();
+
+                return redirect()->route('department.index')->with('success', __('Department successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $department->delete();
 

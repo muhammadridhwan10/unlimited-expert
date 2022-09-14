@@ -31,41 +31,110 @@ class JobApplicationController extends Controller
     public function index(Request $request)
     {
 
+        $user = \Auth::user();
         if(\Auth::user()->can('manage job application'))
         {
-            $stages = JobStage::where('created_by', '=', \Auth::user()->creatorId())->orderBy('order', 'asc')->get();
+            if($user->type = 'admin'){
+                $stages = JobStage::orderBy('order', 'asc')->get();
 
-            $jobs = Job::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
-            $jobs->prepend('All', '');
+                $jobs = Job::all()->pluck('title', 'id');
+                $jobs->prepend('All', '');
+    
+                if(isset($request->start_date) && !empty($request->start_date))
+                {
+                    $filter['start_date'] = $request->start_date;
+                }
+                else
+                {
+                    $filter['start_date'] = date("Y-m-d", strtotime("-1 month"));
+                }
+    
+                if(isset($request->end_date) && !empty($request->end_date))
+                {
+                    $filter['end_date'] = $request->end_date;
+                }
+                else
+                {
+                    $filter['end_date'] = date("Y-m-d H:i:s", strtotime("+1 hours"));
+                }
+    
+                if(isset($request->job) && !empty($request->job))
+                {
+                    $filter['job'] = $request->job;
+                }
+                else
+                {
+                    $filter['job'] = '';
+                }
+    
+            }elseif($user->type = 'company')
+            {
+                $stages = JobStage::orderBy('order', 'asc')->get();
 
-            if(isset($request->start_date) && !empty($request->start_date))
-            {
-                $filter['start_date'] = $request->start_date;
+                $jobs = Job::all()->pluck('title', 'id');
+                $jobs->prepend('All', '');
+    
+                if(isset($request->start_date) && !empty($request->start_date))
+                {
+                    $filter['start_date'] = $request->start_date;
+                }
+                else
+                {
+                    $filter['start_date'] = date("Y-m-d", strtotime("-1 month"));
+                }
+    
+                if(isset($request->end_date) && !empty($request->end_date))
+                {
+                    $filter['end_date'] = $request->end_date;
+                }
+                else
+                {
+                    $filter['end_date'] = date("Y-m-d H:i:s", strtotime("+1 hours"));
+                }
+    
+                if(isset($request->job) && !empty($request->job))
+                {
+                    $filter['job'] = $request->job;
+                }
+                else
+                {
+                    $filter['job'] = '';
+                }
             }
-            else
-            {
-                $filter['start_date'] = date("Y-m-d", strtotime("-1 month"));
-            }
+            else{
+                $stages = JobStage::where('created_by', '=', \Auth::user()->creatorId())->orderBy('order', 'asc')->get();
 
-            if(isset($request->end_date) && !empty($request->end_date))
-            {
-                $filter['end_date'] = $request->end_date;
+                $jobs = Job::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
+                $jobs->prepend('All', '');
+    
+                if(isset($request->start_date) && !empty($request->start_date))
+                {
+                    $filter['start_date'] = $request->start_date;
+                }
+                else
+                {
+                    $filter['start_date'] = date("Y-m-d", strtotime("-1 month"));
+                }
+    
+                if(isset($request->end_date) && !empty($request->end_date))
+                {
+                    $filter['end_date'] = $request->end_date;
+                }
+                else
+                {
+                    $filter['end_date'] = date("Y-m-d H:i:s", strtotime("+1 hours"));
+                }
+    
+                if(isset($request->job) && !empty($request->job))
+                {
+                    $filter['job'] = $request->job;
+                }
+                else
+                {
+                    $filter['job'] = '';
+                }
+    
             }
-            else
-            {
-                $filter['end_date'] = date("Y-m-d H:i:s", strtotime("+1 hours"));
-            }
-
-            if(isset($request->job) && !empty($request->job))
-            {
-                $filter['job'] = $request->job;
-            }
-            else
-            {
-                $filter['job'] = '';
-            }
-
-
             return view('jobApplication.index', compact('stages', 'jobs', 'filter'));
         }
         else
@@ -76,12 +145,24 @@ class JobApplicationController extends Controller
 
     public function create()
     {
-        $jobs = Job::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
-        $jobs->prepend('--', '');
-
-        $questions = CustomQuestion::where('created_by', \Auth::user()->creatorId())->get();
-
-        return view('jobApplication.create', compact('jobs', 'questions'));
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $jobs = Job::all()->pluck('title', 'id');
+            $jobs->prepend('--', '');
+    
+            $questions = CustomQuestion::all();
+    
+            return view('jobApplication.create', compact('jobs', 'questions'));
+        }
+        else
+        {
+            $jobs = Job::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
+            $jobs->prepend('--', '');
+    
+            $questions = CustomQuestion::where('created_by', \Auth::user()->creatorId())->get();
+    
+            return view('jobApplication.create', compact('jobs', 'questions'));
+        }
     }
 
     public function store(Request $request)
@@ -185,8 +266,18 @@ class JobApplicationController extends Controller
             $jobApplication = JobApplication::find($id);
 
             $notes = JobApplicationNote::where('application_id', $id)->get();
-
-            $stages = JobStage::where('created_by', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type = 'admin')
+            {
+                $stages = JobStage::all();
+            }
+            elseif(\Auth::user()->type = 'company')
+            {
+                $stages = JobStage::all();
+            }
+            else
+            {
+                $stages = JobStage::where('created_by', \Auth::user()->creatorId())->get();
+            }
 
             return view('jobApplication.show', compact('jobApplication', 'notes', 'stages'));
         }
@@ -341,10 +432,21 @@ class JobApplicationController extends Controller
 
     public function candidate()
     {
+        $user = \Auth::user();
         if(\Auth::user()->can('manage job onBoard'))
         {
-            $archive_application = JobApplication::where('created_by', \Auth::user()->creatorId())->where('is_archive', 1)->get();
-
+            if($user->type = 'admin')
+            {
+                $archive_application = JobApplication::where('is_archive', 1)->get();
+            }
+            elseif($user->type = 'company')
+            {
+                $archive_application = JobApplication::where('is_archive', 1)->get();
+            }
+            else
+            {
+                $archive_application = JobApplication::where('created_by', \Auth::user()->creatorId())->where('is_archive', 1)->get();
+            }
             return view('jobApplication.candidate', compact('archive_application'));
         }
         else
@@ -358,18 +460,35 @@ class JobApplicationController extends Controller
     public function jobBoardCreate($id)
     {
         $status       = JobOnBoard::$status;
-        $applications = InterviewSchedule::select('interview_schedules.*', 'job_applications.name')->join('job_applications', 'interview_schedules.candidate', '=', 'job_applications.id')->where('interview_schedules.created_by', \Auth::user()->creatorId())->get()->pluck('name', 'candidate');
-        $applications->prepend('-', '');
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $applications = InterviewSchedule::select('interview_schedules.*', 'job_applications.name')->join('job_applications', 'interview_schedules.candidate', '=', 'job_applications.id')->get()->pluck('name', 'candidate');
+            $applications->prepend('-', '');
+        }
+        else
+        {
+            $applications = InterviewSchedule::select('interview_schedules.*', 'job_applications.name')->join('job_applications', 'interview_schedules.candidate', '=', 'job_applications.id')->where('interview_schedules.created_by', \Auth::user()->creatorId())->get()->pluck('name', 'candidate');
+            $applications->prepend('-', '');
+        }
 
         return view('jobApplication.onboardCreate', compact('id', 'status', 'applications'));
     }
 
     public function jobOnBoard()
     {
+        $user = \Auth::user();
         if(\Auth::user()->can('manage job onBoard'))
         {
-            $jobOnBoards = JobOnBoard::where('created_by', \Auth::user()->creatorId())->get();
-
+            if($user->type = 'admin'){
+                $jobOnBoards = JobOnBoard::all();
+            }
+            elseif($user->type = 'company')
+            {
+                $jobOnBoards = JobOnBoard::all();
+            }    
+            else{
+                $jobOnBoards = JobOnBoard::where('created_by', \Auth::user()->creatorId())->get();
+            }
             return view('jobApplication.onboard', compact('jobOnBoards'));
         }
         else
@@ -457,14 +576,28 @@ class JobApplicationController extends Controller
 
     public function jobBoardConvert($id)
     {
-        $jobOnBoard       = JobOnBoard::find($id);
-        $company_settings = Utility::settings();
-        $documents        = Document::where('created_by', \Auth::user()->creatorId())->get();
-        $branches         = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $departments      = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $designations     = Designation::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $employees        = User::where('created_by', \Auth::user()->creatorId())->get();
-        $employeesId      = \Auth::user()->employeeIdFormat($this->employeeNumber());
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $jobOnBoard       = JobOnBoard::find($id);
+            $company_settings = Utility::settings();
+            $documents        = Document::get();
+            $branches         = Branch::get()->pluck('name', 'id');
+            $departments      = Department::get()->pluck('name', 'id');
+            $designations     = Designation::get()->pluck('name', 'id');
+            $employees        = User::get();
+            $employeesId      = \Auth::user()->employeeIdFormat($this->employeeNumber());
+        }
+        else
+        {
+            $jobOnBoard       = JobOnBoard::find($id);
+            $company_settings = Utility::settings();
+            $documents        = Document::where('created_by', \Auth::user()->creatorId())->get();
+            $branches         = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $departments      = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $designations     = Designation::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $employees        = User::where('created_by', \Auth::user()->creatorId())->get();
+            $employeesId      = \Auth::user()->employeeIdFormat($this->employeeNumber());
+        }
 
         return view('jobApplication.convert', compact('jobOnBoard', 'employees', 'employeesId', 'departments', 'designations', 'documents', 'branches', 'company_settings'));
 
@@ -620,7 +753,14 @@ class JobApplicationController extends Controller
 
     function employeeNumber()
     {
-        $latest = Employee::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $latest = Employee::latest()->first();
+        }
+        else
+        {
+            $latest = Employee::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        }
         if(!$latest)
         {
             return 1;

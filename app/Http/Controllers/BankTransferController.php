@@ -15,28 +15,81 @@ class BankTransferController extends Controller
 
         if(\Auth::user()->can('manage bank transfer'))
         {
-            $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
-            $account->prepend('Select Account', '');
-
-            $query = BankTransfer::where('created_by', '=', \Auth::user()->creatorId());
-
-            if(!empty($request->date))
+            if(\Auth::user()->type = 'admin')
             {
-                $date_range = explode('to', $request->date);
-                $query->whereBetween('date', $date_range);
+                $account = BankAccount::all()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+    
+                $query = BankTransfer::all();
+    
+                if(!empty($request->date))
+                {
+                    $date_range = explode('to', $request->date);
+                    $query->whereBetween('date', $date_range);
+                }
+    
+                if(!empty($request->f_account))
+                {
+                    $query->where('from_account', '=', $request->f_account);
+                }
+                if(!empty($request->t_account))
+                {
+                    $query->where('to_account', '=', $request->t_account);
+                }
+                $transfers = $query;
+    
+                return view('bank-transfer.index', compact('transfers', 'account'));
             }
-
-            if(!empty($request->f_account))
+            elseif(\Auth::user()->type = 'company')
             {
-                $query->where('from_account', '=', $request->f_account);
+                $account = BankAccount::all()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+    
+                $query = BankTransfer::all();
+    
+                if(!empty($request->date))
+                {
+                    $date_range = explode('to', $request->date);
+                    $query->whereBetween('date', $date_range);
+                }
+    
+                if(!empty($request->f_account))
+                {
+                    $query->where('from_account', '=', $request->f_account);
+                }
+                if(!empty($request->t_account))
+                {
+                    $query->where('to_account', '=', $request->t_account);
+                }
+                $transfers = $query;
+    
+                return view('bank-transfer.index', compact('transfers', 'account'));
             }
-            if(!empty($request->t_account))
+            else
             {
-                $query->where('to_account', '=', $request->t_account);
+                $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+    
+                $query = BankTransfer::where('created_by', '=', \Auth::user()->creatorId());
+    
+                if(!empty($request->date))
+                {
+                    $date_range = explode('to', $request->date);
+                    $query->whereBetween('date', $date_range);
+                }
+    
+                if(!empty($request->f_account))
+                {
+                    $query->where('from_account', '=', $request->f_account);
+                }
+                if(!empty($request->t_account))
+                {
+                    $query->where('to_account', '=', $request->t_account);
+                }
+                $transfers = $query->get();
+    
+                return view('bank-transfer.index', compact('transfers', 'account'));
             }
-            $transfers = $query->get();
-
-            return view('bank-transfer.index', compact('transfers', 'account'));
         }
         else
         {
@@ -48,7 +101,14 @@ class BankTransferController extends Controller
     {
         if(\Auth::user()->can('create bank transfer'))
         {
-            $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->get()->pluck('name', 'id');
+            }
+            else
+            {
+                $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }
 
             return view('bank-transfer.create', compact('bankAccount'));
         }
@@ -105,7 +165,14 @@ class BankTransferController extends Controller
         if(\Auth::user()->can('edit bank transfer'))
         {
             $transfer = BankTransfer::where('id',$id)->first();
-            $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->get()->pluck('name', 'id');
+            }
+            else
+            {
+                $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }
 
             return view('bank-transfer.edit', compact('bankAccount', 'transfer'));
         }
@@ -166,6 +233,15 @@ class BankTransferController extends Controller
         if(\Auth::user()->can('delete bank transfer'))
         {
             if($transfer->created_by == \Auth::user()->creatorId())
+            {
+                $transfer->delete();
+
+                Utility::bankAccountBalance($transfer->from_account, $transfer->amount, 'credit');
+                Utility::bankAccountBalance($transfer->to_account, $transfer->amount, 'debit');
+
+                return redirect()->route('bank-transfer.index')->with('success', __('Amount transfer successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $transfer->delete();
 

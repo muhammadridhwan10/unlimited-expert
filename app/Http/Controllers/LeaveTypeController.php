@@ -11,9 +11,24 @@ class LeaveTypeController extends Controller
     {
         if(\Auth::user()->can('manage leave type'))
         {
-            $leavetypes = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type == 'company')
+            {
+                $leavetypes = LeaveType::all();
 
-            return view('leavetype.index', compact('leavetypes'));
+                return view('leavetype.index', compact('leavetypes'));
+            }
+            if(\Auth::user()->type == 'admin')
+            {
+                $leavetypes = LeaveType::all();
+
+                return view('leavetype.index', compact('leavetypes'));
+            }
+            else
+            {
+                $leavetypes = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('leavetype.index', compact('leavetypes'));
+            }
         }
         else
         {
@@ -82,6 +97,10 @@ class LeaveTypeController extends Controller
 
                 return view('leavetype.edit', compact('leavetype'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                return view('leavetype.edit', compact('leavetype'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission denied.')], 401);
@@ -119,6 +138,28 @@ class LeaveTypeController extends Controller
 
                 return redirect()->route('leavetype.index')->with('success', __('LeaveType successfully updated.'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                    'title' => 'required',
+                    'days' => 'required',
+                ]
+                );
+
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $leavetype->title = $request->title;
+                $leavetype->days  = $request->days;
+                $leavetype->save();
+
+                return redirect()->route('leavetype.index')->with('success', __('LeaveType successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -135,6 +176,12 @@ class LeaveTypeController extends Controller
         if(\Auth::user()->can('delete leave type'))
         {
             if($leavetype->created_by == \Auth::user()->creatorId())
+            {
+                $leavetype->delete();
+
+                return redirect()->route('leavetype.index')->with('success', __('LeaveType successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $leavetype->delete();
 

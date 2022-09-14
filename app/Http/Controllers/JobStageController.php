@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JobStage;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class JobStageController extends Controller
 {
@@ -11,9 +12,18 @@ class JobStageController extends Controller
     {
         if(\Auth::user()->can('manage job stage'))
         {
-            $stages = JobStage::where('created_by', '=', \Auth::user()->creatorId())->orderBy('order', 'asc')->get();
+            if(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $stages = JobStage::orderBy('order', 'asc')->get();
 
-            return view('jobStage.index', compact('stages'));
+                return view('jobStage.index', compact('stages'));
+            }
+            else
+            {
+                $stages = JobStage::where('created_by', '=', \Auth::user()->creatorId())->orderBy('order', 'asc')->get();
+
+                return view('jobStage.index', compact('stages'));
+            }
         }
         else
         {
@@ -109,6 +119,12 @@ class JobStageController extends Controller
         if(\Auth::user()->can('delete job stage'))
         {
             if($jobStage->created_by == \Auth::user()->creatorId())
+            {
+                $jobStage->delete();
+
+                return redirect()->back()->with('success', __('Job stage successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $jobStage->delete();
 

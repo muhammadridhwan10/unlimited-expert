@@ -605,7 +605,7 @@
                                             <a class="dash-link" href="{{route('form_builder.index')}}">{{__('Form Builder')}}</a>
                                         </li>
                                     @endcan
-                                    @if(\Auth::user()->type=='company' || \Auth::user()->type=='client')
+                                    @if(\Auth::user()->type=='company' || \Auth::user()->type=='admin' || \Auth::user()->type=='client')
                                         <li class="dash-item  {{ (Request::segment(1) == 'contract')?'active':''}}">
                                             <a class="dash-link" href="{{route('contract.index')}}">{{__('Contract')}}</a>
                                         </li>
@@ -785,7 +785,7 @@
 
                         <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'support')?'active':''}}">
                             <a href="{{route('support.index')}}" class="dash-link">
-                                <span class="dash-micon"><i class="ti ti-headphones"></i></span><span class="dash-mtext">{{__('Support System')}}</span>
+                                <span class="dash-micon"><i class="ti ti-headphones"></i></span><span class="dash-mtext">{{__('IT Support')}}</span>
                             </a>
                         </li>
                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'zoom-meeting' || Request::segment(1) == 'zoom-meeting-calender')?'active':''}}">
@@ -798,7 +798,7 @@
                                 <span class="dash-micon"><i class="ti ti-message-circle"></i></span><span class="dash-mtext">{{__('Messenger')}}</span>
                             </a>
                         </li>
-                        @if(\Auth::user()->type =='company')
+                        @if(\Auth::user()->type=='company' || \Auth::user()->type=='admin')
 
                             <li class="dash-item dash-hasmenu {{ Request::segment(1) == 'email_template' || Request::route()->getName() == 'manage.email.language' ? ' active dash-trigger' : 'collapsed' }}">
                                 <a href="{{ route('manage.email.language',[$emailTemplate ->id,\Auth::user()->lang]) }}" class="dash-link">
@@ -900,6 +900,12 @@
                             </a>
                         </li>
                     @endif
+
+                    <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'zoom-meeting' || Request::segment(1) == 'zoom-meeting-calender')?'active':''}}">
+                                <a href="{{route('zoom-meeting.index')}}" class="dash-link">
+                                    <span class="dash-micon"><i class="ti ti-user-check"></i></span><span class="dash-mtext">{{__('Zoom Meeting')}}</span>
+                                </a>
+                        </li>
 
                     <li class="dash-item dash-hasmenu">
                         <a href="{{route('support.index')}}" class="dash-link {{ (Request::segment(1) == 'support')?'active':''}}">

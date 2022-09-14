@@ -17,10 +17,19 @@ class TerminationController extends Controller
     {
         if(\Auth::user()->can('manage termination'))
         {
+
             if(Auth::user()->type == 'employee')
             {
                 $emp          = Employee::where('user_id', '=', \Auth::user()->id)->first();
                 $terminations = Termination::where('created_by', '=', \Auth::user()->creatorId())->where('employee_id', '=', $emp->id)->get();
+            }
+            elseif(Auth::user()->type == 'company')
+            {
+                $terminations = Termination::all();
+            }
+            elseif(Auth::user()->type == 'admin')
+            {
+                $terminations = Termination::all();
             }
             else
             {
@@ -28,6 +37,7 @@ class TerminationController extends Controller
             }
 
             return view('termination.index', compact('terminations'));
+            
         }
         else
         {
@@ -39,9 +49,16 @@ class TerminationController extends Controller
     {
         if(\Auth::user()->can('create termination'))
         {
-            $employees        = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $terminationtypes = TerminationType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $employees        = Employee::all()->pluck('name', 'id');
+                $terminationtypes = TerminationType::all()->pluck('name', 'id');
+            }
+            else
+            {
+                $employees        = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $terminationtypes = TerminationType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }
             return view('termination.create', compact('employees', 'terminationtypes'));
         }
         else
@@ -121,11 +138,16 @@ class TerminationController extends Controller
     {
         if(\Auth::user()->can('edit termination'))
         {
-            $employees        = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $terminationtypes = TerminationType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             if($termination->created_by == \Auth::user()->creatorId())
             {
-
+                $employees        = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $terminationtypes = TerminationType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                return view('termination.edit', compact('termination', 'employees', 'terminationtypes'));
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $employees        = Employee::get()->pluck('name', 'id');
+                $terminationtypes = TerminationType::get()->pluck('name', 'id');
                 return view('termination.edit', compact('termination', 'employees', 'terminationtypes'));
             }
             else
@@ -171,6 +193,34 @@ class TerminationController extends Controller
 
                 return redirect()->route('termination.index')->with('success', __('Termination successfully updated.'));
             }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'employee_id' => 'required',
+                                       'termination_type' => 'required',
+                                       'notice_date' => 'required',
+                                       'termination_date' => 'required',
+                                   ]
+                );
+
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+
+                $termination->employee_id      = $request->employee_id;
+                $termination->termination_type = $request->termination_type;
+                $termination->notice_date      = $request->notice_date;
+                $termination->termination_date = $request->termination_date;
+                $termination->description      = $request->description;
+                $termination->save();
+
+                return redirect()->route('termination.index')->with('success', __('Termination successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -187,6 +237,12 @@ class TerminationController extends Controller
         if(\Auth::user()->can('delete termination'))
         {
             if($termination->created_by == \Auth::user()->creatorId())
+            {
+                $termination->delete();
+
+                return redirect()->route('termination.index')->with('success', __('Termination successfully deleted.'));
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $termination->delete();
 

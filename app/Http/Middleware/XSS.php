@@ -25,7 +25,7 @@ class XSS
         {
             \App::setLocale(\Auth::user()->lang);
 
-            if(\Auth::user()->type == 'company')
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
             {
                 $migrations             = $this->getMigrations();
                 $messengerMigration     = Utility::get_messenger_packages_migration();

@@ -21,6 +21,14 @@ class IndicatorController extends Controller
                 $employee = Employee::where('user_id', $user->id)->first();
                 $indicators = Indicator::where('created_by', '=', $user->creatorId())->where('branch', $employee->branch_id)->where('department', $employee->department_id)->where('designation', $employee->designation_id)->get();
             }
+            elseif($user->type == 'admin')
+            {
+                $indicators = Indicator::all();
+            }
+            elseif($user->type == 'company')
+            {
+                $indicators = Indicator::all();
+            }
             else
             {
                 $indicators = Indicator::where('created_by', '=', $user->creatorId())->get();
@@ -37,11 +45,21 @@ class IndicatorController extends Controller
 
     public function create()
     {
-        $brances     = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
-        $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $departments->prepend('Select Department', '');
-        return view('indicator.create', compact( 'brances', 'departments','performance'));
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $brances        = Branch::get()->pluck('name', 'id');
+            $performance    = PerformanceType::get();
+            $departments    = Department::get()->pluck('name', 'id');
+            $departments->prepend('Select Department', '');
+        }
+        else
+        {
+            $brances        = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $performance    = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            $departments    = Department::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $departments->prepend('Select Department', '');
+        }
+        return view('indicator.create', compact( 'brances', 'departments', 'performance'));
     }
 
 
@@ -71,7 +89,7 @@ class IndicatorController extends Controller
 
             $indicator->rating      = json_encode($request->rating, true);
 
-            if(\Auth::user()->type == 'company')
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
             {
                 $indicator->created_user = \Auth::user()->creatorId();
             }
@@ -105,14 +123,24 @@ class IndicatorController extends Controller
     {
         if(\Auth::user()->can('edit indicator'))
         {
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $performance    = PerformanceType::all();
+            $brances        = Branch::get()->pluck('name', 'id');
+            $departments    = Department::get()->pluck('name', 'id');
+            $departments->prepend('Select Department', '');
 
+            $ratings = json_decode($indicator->rating,true);
+        }
+        else
+        {
             $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
             $brances        = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $departments    = Department::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $departments->prepend('Select Department', '');
 
             $ratings = json_decode($indicator->rating,true);
-
+        }
             return view('indicator.edit', compact( 'brances', 'departments','performance','indicator','ratings'));
         }
         else
@@ -159,6 +187,12 @@ class IndicatorController extends Controller
         if(\Auth::user()->can('delete indicator'))
         {
             if($indicator->created_by == \Auth::user()->creatorId())
+            {
+                $indicator->delete();
+
+                return redirect()->route('indicator.index')->with('success', __('Indicator successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
                 $indicator->delete();
 

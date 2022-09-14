@@ -56,7 +56,7 @@ class MessagesController extends Controller
      */
     public function index($id = null)
     {
-        if(Auth::user()->type != 'admin')
+        if(Auth::user()->type != 'customer')
         {
             // get current route
             $routeName= FacadesRequest::route()->getName();
@@ -344,6 +344,10 @@ class MessagesController extends Controller
         {
             $members = User::where('type', '!=', 'client')->where('created_by', '=', $objUser->creatorId())->get();
         }
+        elseif($objUser->type == 'admin')
+        {
+            $members = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get();
+        }
         else
         {
             $members = User::where('type', '!=', 'client')->where('created_by', '=', $objUser->creatorId())->where('id', '!=', $objUser->id)->orWhere('id', '=', $objUser->creatorId())->get();
@@ -466,8 +470,14 @@ class MessagesController extends Controller
     {
         $getRecords = null;
         $input      = trim(filter_var($request['input'], FILTER_SANITIZE_STRING));
-
-        $records = User::where('created_by', \Auth::user()->creatorId())->where('type', '!=', 'client')->where('name', 'LIKE', "%{$input}%")->get();
+        if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+        {
+            $records = User::where('type', '!=', 'client')->where('name', 'LIKE', "%{$input}%")->get();
+        }
+        else
+        {
+            $records = User::where('created_by', \Auth::user()->creatorId())->where('type', '!=', 'client')->where('name', 'LIKE', "%{$input}%")->get();
+        }
 
         foreach($records as $record)
         {

@@ -17,7 +17,6 @@ class AnnouncementController extends Controller
     {
         if(\Auth::user()->can('manage announcement'))
         {
-
             if(Auth::user()->type == 'employee')
             {
                 $current_employee = Employee::where('user_id', '=', \Auth::user()->id)->first();
@@ -27,6 +26,16 @@ class AnnouncementController extends Controller
                     }
                 )->get();
             }
+            elseif(Auth::user()->type == 'admin')
+            {
+                $current_employee = Employee::where('user_id', '=', \Auth::user()->id)->first();
+                $announcements    = Announcement::get();
+            }
+            elseif(Auth::user()->type == 'company')
+            {
+                $current_employee = Employee::where('user_id', '=', \Auth::user()->id)->first();
+                $announcements    = Announcement::get();
+            }
             else
             {
                 $current_employee = Employee::where('user_id', '=', \Auth::user()->id)->first();
@@ -34,6 +43,7 @@ class AnnouncementController extends Controller
             }
 
             return view('announcement.index', compact('announcements', 'current_employee'));
+            
         }
         else
         {
@@ -45,9 +55,18 @@ class AnnouncementController extends Controller
     {
         if(\Auth::user()->can('create announcement'))
         {
-            $employees   = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $branch      = Branch::where('created_by', '=', Auth::user()->creatorId())->get();
-            $departments = Department::where('created_by', '=', Auth::user()->creatorId())->get();
+            if(\Auth::user()->type = 'admin'  || \Auth::user()->type = 'company')
+            {
+                $employees   = Employee::all()->pluck('name', 'id');
+                $branch      = Branch::all();
+                $departments = Department::all();
+            }
+            else
+            {
+                $employees   = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $branch      = Branch::where('created_by', '=', Auth::user()->creatorId())->get();
+                $departments = Department::where('created_by', '=', Auth::user()->creatorId())->get();
+            }
 
             return view('announcement.create', compact('employees', 'branch', 'departments'));
         }
@@ -152,6 +171,13 @@ class AnnouncementController extends Controller
 
                 return view('announcement.edit', compact('announcement', 'branch', 'departments'));
             }
+            elseif(\Auth::user()->type = 'admin'  || \Auth::user()->type = 'company')
+            {
+                $branch      = Branch::get()->pluck('name', 'id');
+                $departments = Department::get()->pluck('name', 'id');
+
+                return view('announcement.edit', compact('announcement', 'branch', 'departments'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission denied.')], 401);
@@ -170,6 +196,34 @@ class AnnouncementController extends Controller
             if($announcement->created_by == \Auth::user()->creatorId())
             {
 
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'title' => 'required',
+                                       'start_date' => 'required',
+                                       'end_date' => 'required',
+                                       'branch_id' => 'required',
+                                       'department_id' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $announcement->title         = $request->title;
+                $announcement->start_date    = $request->start_date;
+                $announcement->end_date      = $request->end_date;
+                $announcement->branch_id     = $request->branch_id;
+                $announcement->department_id = $request->department_id;
+                $announcement->description   = $request->description;
+                $announcement->save();
+
+                return redirect()->route('announcement.index')->with('success', __('Announcement successfully updated.'));
+            }
+            elseif(\Auth::user()->type = 'admin'  || \Auth::user()->type = 'company')
+            {
                 $validator = \Validator::make(
                     $request->all(), [
                                        'title' => 'required',
@@ -217,6 +271,12 @@ class AnnouncementController extends Controller
 
                 return redirect()->route('announcement.index')->with('success', __('Announcement successfully deleted.'));
             }
+            elseif(\Auth::user()->type = 'admin'  || \Auth::user()->type = 'company')
+            {
+                $announcement->delete();
+
+                return redirect()->route('announcement.index')->with('success', __('Announcement successfully deleted.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -233,7 +293,7 @@ class AnnouncementController extends Controller
 
         if($request->branch_id == 0)
         {
-            $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id')->toArray();
+            $departments = Department::all()->pluck('name', 'id')->toArray();
         }
         else
         {
@@ -248,7 +308,7 @@ class AnnouncementController extends Controller
         // dd(department_id);
         if(!$request->department_id )
         {
-            $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id')->toArray();
+            $employees = Employee::all()->pluck('name', 'id')->toArray();
         }
         else
         {

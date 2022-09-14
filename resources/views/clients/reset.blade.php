@@ -1,6 +1,5 @@
 
 {{Form::model($user,array('route' => array('client.password.update', $user->id), 'method' => 'post')) }}
-<input type="hidden" name="token" value="{{ $request->route('token') }}">
 
 <div class="modal-body">
     <div class="row">

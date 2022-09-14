@@ -233,7 +233,7 @@
                                             <i class="ti ti-corner-up-left text-white"></i>
                                         </a>
                                     </div>
-                                    @if(\Auth::user()->type=='company' || \Auth::user()->id==$support->ticket_created)
+                                    @if(\Auth::user()->type=='company' || \Auth::user()->type=='admin' || \Auth::user()->id==$support->ticket_created)
                                         <div class="action-btn bg-primary ms-2">
                                             <a href="#" data-size="lg" data-url="{{ route('support.edit',$support->id) }}" data-ajax-popup="true" data-title="{{__('Edit Support')}}" class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-original-title="{{__('Edit')}}">
                                                 <i class="ti ti-pencil text-white"></i>

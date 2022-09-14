@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DucumentUpload;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 
@@ -13,9 +14,17 @@ class DucumentUploadController extends Controller
     {
         if(\Auth::user()->can('manage document'))
         {
+            // if(\Auth::user()->type == 'company')
+            // {
+            //     $documents = DucumentUpload::where('created_by', \Auth::user()->creatorId())->get();
+            // }
+            if(\Auth::user()->type == 'admin')
+            {
+                $documents = DucumentUpload::all();
+            }
             if(\Auth::user()->type == 'company')
             {
-                $documents = DucumentUpload::where('created_by', \Auth::user()->creatorId())->get();
+                $documents = DucumentUpload::all();
             }
             else
             {
@@ -41,9 +50,16 @@ class DucumentUploadController extends Controller
     {
         if(\Auth::user()->can('create document'))
         {
-            $roles = Role::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $roles->prepend('All', '0');
-
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $roles = Role::all()->pluck('name', 'id');
+                $roles->prepend('All', '0');
+            }
+            else
+            {
+                $roles = Role::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $roles->prepend('All', '0');
+            }
             return view('documentUpload.create', compact('roles'));
         }
         else
@@ -115,8 +131,16 @@ class DucumentUploadController extends Controller
 
         if(\Auth::user()->can('edit document'))
         {
-            $roles = Role::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $roles->prepend('All', '0');
+            if(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $roles = Role::get()->pluck('name', 'id');
+                $roles->prepend('All', '0');
+            }
+            else
+            {
+                $roles = Role::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $roles->prepend('All', '0');
+            }
 
             $ducumentUpload = DucumentUpload::find($id);
 
@@ -194,6 +218,19 @@ class DucumentUploadController extends Controller
         {
             $document = DucumentUpload::find($id);
             if($document->created_by == \Auth::user()->creatorId())
+            {
+                $document->delete();
+
+                $dir = storage_path('uploads/documentUpload/');
+
+                if(!empty($document->document))
+                {
+                    unlink($dir . $document->document);
+                }
+
+                return redirect()->route('document-upload.index')->with('success', __('Document successfully deleted.'));
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $document->delete();
 

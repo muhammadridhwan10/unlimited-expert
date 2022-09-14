@@ -11,11 +11,26 @@ class TrainerController extends Controller
 
     public function index()
     {
+        $user = \Auth::user();
         if(\Auth::user()->can('manage trainer'))
         {
-            $trainers = Trainer::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if($user->type = 'admin')
+            {
+                $trainers = Trainer::all();
 
-            return view('trainer.index', compact('trainers'));
+                return view('trainer.index', compact('trainers'));
+            }
+            elseif($user->type = 'company')
+            {
+                $trainers = Trainer::all();
+
+                return view('trainer.index', compact('trainers'));
+            }
+            else{
+                $trainers = Trainer::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('trainer.index', compact('trainers'));
+            }
         }
         else
         {
@@ -28,9 +43,18 @@ class TrainerController extends Controller
     {
         if(\Auth::user()->can('create trainer'))
         {
-            $branches = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $branches = Branch::all()->pluck('name', 'id');
 
-            return view('trainer.create', compact('branches'));
+                return view('trainer.create', compact('branches'));
+            }
+            else
+            {
+                $branches = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+
+                return view('trainer.create', compact('branches'));
+            }
         }
         else
         {
@@ -90,7 +114,14 @@ class TrainerController extends Controller
     {
         if(\Auth::user()->can('edit trainer'))
         {
-            $branches = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $branches = Branch::get()->pluck('name', 'id');
+            }
+            else
+            {
+                $branches = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }
 
             return view('trainer.edit', compact('branches', 'trainer'));
         }
@@ -145,6 +176,12 @@ class TrainerController extends Controller
         if(\Auth::user()->can('delete trainer'))
         {
             if($trainer->created_by == \Auth::user()->creatorId())
+            {
+                $trainer->delete();
+
+                return redirect()->route('trainer.index')->with('success', __('Trainer successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
                 $trainer->delete();
 

@@ -5,7 +5,7 @@
     $company_logos=Utility::getValByName('company_logo_light');
     $company_favicon=Utility::getValByName('company_favicon');
     $setting = \App\Models\Utility::colorset();
-    $color = (!empty($setting['color'])) ? $setting['color'] : 'theme-3';
+    $color = (!empty($setting['color'])) ? $setting['color'] : 'theme-4';
     $company_logo = \App\Models\Utility::GetLogo();
     $SITE_RTL= isset($setting['SITE_RTL'])?$setting['SITE_RTL']:'off';
     $mode_setting = \App\Models\Utility::mode_layout();
@@ -17,7 +17,7 @@
 @endphp
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{isset($setting['SITE_RTL']) && $setting['SITE_RTL'] == 'on' ? 'rtl' : '' }}">
 <head>
-    <title>{{(Utility::getValByName('title_text')) ? Utility::getValByName('title_text') : config('app.name', 'ERPGO')}} - @yield('page-title')</title>
+    <title>{{(Utility::getValByName('title_text')) ? Utility::getValByName('title_text') : config('app.name', 'TGS AU-Partners Apps')}} - @yield('page-title')</title>
 
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui"/>
@@ -56,10 +56,10 @@
                 <a class="navbar-brand" href="#">
                     @if($mode_setting['cust_darklayout'] && $mode_setting['cust_darklayout'] == 'on' )
                         <img src="{{ $logo . '/' . (isset($company_logos) && !empty($company_logos) ? $company_logos : 'logo-dark.png') }}"
-                             alt="{{ config('app.name', 'ERPGo-SaaS') }}" class="logo w-50">
+                             alt="{{ config('app.name', 'TGS AU-Partners Apps-SaaS') }}" class="logo w-50">
                     @else
                         <img src="{{ $logo . '/' . (isset($company_logo) && !empty($company_logo) ? $company_logo : 'logo-dark.png') }}"
-                             alt="{{ config('app.name', 'ERPGo-SaaS') }}" class="logo w-50">
+                             alt="{{ config('app.name', 'TGS AU-Partners Apps-SaaS') }}" class="logo w-50">
                     @endif
                 </a>
                 <button
@@ -75,7 +75,7 @@
                 </button>
                 <div class="collapse navbar-collapse" id="navbarTogglerDemo01" style="flex-grow: 0;">
                     <ul class="navbar-nav align-items-center ms-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
+                        <!-- <li class="nav-item">
                             <a class="nav-link active" href="#">Support</a>
                         </li>
                         <li class="nav-item">
@@ -83,7 +83,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="#">Privacy</a>
-                        </li>
+                        </li> -->
                         @yield('auth-topbar')
                     </ul>
 
@@ -120,7 +120,7 @@
                 <div class="row">
                     <div class="col-6">
                         <p class="">
-                            {{(Utility::getValByName('footer_text')) ? Utility::getValByName('footer_text') :  __('Copyright ERPGO') }} {{ date('Y') }}
+                            {{(Utility::getValByName('footer_text')) ? Utility::getValByName('footer_text') :  __('Copyright TGS AU-Partners Apps') }} {{ date('Y') }}
                         </p>
                     </div>
 

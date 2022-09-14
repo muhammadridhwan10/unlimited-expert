@@ -20,6 +20,10 @@ class ContractController extends Controller
             {
                 $contracts = Contract::where('created_by', '=', \Auth::user()->creatorId())->get();
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $contracts = Contract::all();
+            }
             else
             {
 
@@ -39,8 +43,16 @@ class ContractController extends Controller
 
     public function create()
     {
-        $contractTypes = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $clients       = User::where('type', 'client')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+        {
+            $contractTypes = ContractType::get()->pluck('name', 'id');
+            $clients       = User::where('type', 'client')->get()->pluck('name', 'id');
+        }
+        else
+        {
+            $contractTypes = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $clients       = User::where('type', 'client')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        }
 
         return view('contract.create', compact('contractTypes', 'clients'));
     }
@@ -130,8 +142,16 @@ class ContractController extends Controller
 
     public function edit(Contract $contract)
     {
-        $contractTypes = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $clients       = User::where('type', 'client')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        if(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+        {
+            $contractTypes = ContractType::get()->pluck('name', 'id');
+            $clients       = User::where('type', 'client')->get()->pluck('name', 'id');
+        }
+        else
+        {
+            $contractTypes = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $clients       = User::where('type', 'client')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        }
 
         return view('contract.edit', compact('contractTypes', 'clients', 'contract'));
     }
@@ -201,11 +221,15 @@ class ContractController extends Controller
 
     public function grid()
     {
-        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'client')
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin' || \Auth::user()->type == 'client')
         {
-            if(\Auth::user()->type == 'company')
+            // if(\Auth::user()->type == 'company')
+            // {
+            //     $contracts = Contract::where('created_by', '=', \Auth::user()->creatorId())->get();
+            // }
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
-                $contracts = Contract::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $contracts = Contract::all();
             }
             else
             {

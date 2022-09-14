@@ -18,7 +18,7 @@ class EmailTemplateController extends Controller
     public function index()
     {
         $usr = \Auth::user();
-        if($usr->type == 'company')
+        if($usr->type == 'company' || $usr->type == 'admin')
         {
             $EmailTemplates = EmailTemplate::all();
             return view('settings.company', compact('EmailTemplates'));
@@ -195,7 +195,7 @@ class EmailTemplateController extends Controller
     public function manageEmailLang($id, $lang = 'en')
     {
 
-        if(\Auth::user()->type == 'company')
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
             $languages         = Utility::languages();
             $emailTemplate     = EmailTemplate::first();
@@ -210,7 +210,7 @@ class EmailTemplateController extends Controller
                 $currEmailTempLang->lang = $lang;
             }
 
-            if(\Auth::user()->type == 'company')
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
             {
                 $emailTemplate     = EmailTemplate::where('id', '=', $id)->first();
             }
@@ -287,7 +287,7 @@ class EmailTemplateController extends Controller
     {
 //        dd('dgfdf');
         $usr = \Auth::user();
-        if( $usr->type == 'company')
+        if( $usr->type == 'company' || $usr->type == 'admin')
         {
 
             $user_email = UserEmailTemplate::where('id', '=', $id)->where('user_id', '=', $usr->id)->first();

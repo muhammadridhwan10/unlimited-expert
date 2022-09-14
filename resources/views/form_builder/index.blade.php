@@ -52,7 +52,7 @@
                             <tr>
                                 <th>{{__('Name')}}</th>
                                 <th>{{__('Response')}}</th>
-                                @if(\Auth::user()->type=='company')
+                                @if(\Auth::user()->type=='company' ||  \Auth::user()->type=='admin')
                                     <th class="text-end" width="200px">{{__('Action')}}</th>
                                 @endif
                             </tr>
@@ -64,7 +64,7 @@
                                     <td>
                                         {{ $form->response->count() }}
                                     </td>
-                                    @if(\Auth::user()->type=='company')
+                                    @if(\Auth::user()->type=='company' ||  \Auth::user()->type=='admin')
                                         <td class="text-end">
 
 

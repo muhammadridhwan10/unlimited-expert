@@ -12,7 +12,14 @@ class ChartOfAccountTypeController extends Controller
     {
         if(\Auth::user()->can('manage constant chart of account type'))
         {
-            $types = ChartOfAccountType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $types = ChartOfAccountType::all();
+            }
+            else
+            {
+                $types = ChartOfAccountType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            }
 
             return view('chartOfAccountType.index', compact('types'));
         }

@@ -11,9 +11,15 @@ class ContractTypeController extends Controller
 
     public function index()
     {
-        if(\Auth::user()->type == 'company')
+        // if(\Auth::user()->type == 'company')
+        // {
+        //     $types = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+        //     return view('contractType.index', compact('types'));
+        // }
+        if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
         {
-            $types = ContractType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            $types = ContractType::all();
 
             return view('contractType.index', compact('types'));
         }
@@ -31,7 +37,7 @@ class ContractTypeController extends Controller
 
     public function store(Request $request)
     {
-        if(\Auth::user()->type == 'company')
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
             $validator = \Validator::make(
                 $request->all(), [
@@ -73,7 +79,7 @@ class ContractTypeController extends Controller
 
     public function update(Request $request, ContractType $contractType)
     {
-        if(\Auth::user()->type == 'company')
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
             $validator = \Validator::make(
                 $request->all(), [
@@ -102,7 +108,7 @@ class ContractTypeController extends Controller
 
     public function destroy(ContractType $contractType)
     {
-        if(\Auth::user()->type == 'company')
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
             $data = Contract::where('type', $contractType->id)->first();
             if(!empty($data))

@@ -8,6 +8,7 @@ use App\Models\ChartOfAccountType;
 use App\Models\User;
 use App\Models\Utility;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ChartOfAccountController extends Controller
 {
@@ -18,17 +19,48 @@ class ChartOfAccountController extends Controller
 
         if(\Auth::user()->can('manage chart of account'))
         {
-            $types = ChartOfAccountType::where('created_by', '=', \Auth::user()->creatorId())->get();
-
-            $chartAccounts = [];
-            foreach($types as $type)
+            if(Auth::user()->type = 'admin')
             {
-                $accounts = ChartOfAccount::where('type', $type->id)->where('created_by', '=', \Auth::user()->creatorId())->get();
+                $types = ChartOfAccountType::all();
 
-                $chartAccounts[$type->name] = $accounts;
-
+                $chartAccounts = [];
+                foreach($types as $type)
+                {
+                    $accounts = ChartOfAccount::all();
+    
+                    $chartAccounts[$type->name] = $accounts;
+    
+                }
+                return view('chartOfAccount.index', compact('chartAccounts', 'types'));
             }
-            return view('chartOfAccount.index', compact('chartAccounts', 'types'));
+            elseif(Auth::user()->type = 'company')
+            {
+                $types = ChartOfAccountType::all();
+
+                $chartAccounts = [];
+                foreach($types as $type)
+                {
+                    $accounts = ChartOfAccount::all();
+    
+                    $chartAccounts[$type->name] = $accounts;
+    
+                }
+                return view('chartOfAccount.index', compact('chartAccounts', 'types'));
+            }
+            else
+            {
+                $types = ChartOfAccountType::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                $chartAccounts = [];
+                foreach($types as $type)
+                {
+                    $accounts = ChartOfAccount::where('type', $type->id)->where('created_by', '=', \Auth::user()->creatorId())->get();
+    
+                    $chartAccounts[$type->name] = $accounts;
+    
+                }
+                return view('chartOfAccount.index', compact('chartAccounts', 'types'));
+            }
         }
         else
         {
@@ -39,8 +71,16 @@ class ChartOfAccountController extends Controller
 
     public function create()
     {
-        $types = ChartOfAccountType::where('created_by',\Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $types->prepend('--', 0);
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $types = ChartOfAccountType::get()->pluck('name', 'id');
+            $types->prepend('--', 0);
+        }
+        else
+        {
+            $types = ChartOfAccountType::where('created_by',\Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $types->prepend('--', 0);
+        }
 
         return view('chartOfAccount.create', compact('types'));
     }

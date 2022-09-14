@@ -8,7 +8,7 @@
 @endsection
 @push('script-page')
     <script src="{{asset('js/jquery-ui.min.js')}}"></script>
-    @if(\Auth::user()->type=='company')
+    @if(\Auth::user()->type=='company' ||  \Auth::user()->type=='admin')
         <script>
             $(function () {
                 $(".sortable").sortable();

@@ -4,13 +4,26 @@ namespace App\Http\Controllers;
 
 use App\Models\BugStatus;
 use Illuminate\Http\Request;
+use Auth;
 
 class BugStatusController extends Controller
 {
 
     public function index()
     {
-        $bugStatus = BugStatus::where('created_by', '=', \Auth::user()->creatorId())->orderBy('order')->get();
+        $user = Auth::user();
+            if($user->type == 'admin')
+            {
+                $bugStatus = BugStatus::orderBy('order')->get();
+            }
+            elseif($user->type == 'company')
+            {
+                $bugStatus = BugStatus::orderBy('order')->get();
+            }
+            else
+            {
+                $bugStatus = BugStatus::where('created_by', '=', \Auth::user()->creatorId())->orderBy('order')->get();
+            }
         return view('bugstatus.index', compact('bugStatus'));
     }
 
@@ -34,7 +47,15 @@ class BugStatusController extends Controller
 
             return redirect()->route('bugstatus.index')->with('error', $messages->first());
         }
-        $all_status         = BugStatus::where('created_by', \Auth::user()->creatorId())->orderBy('id', 'DESC')->first();
+
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $all_status         = BugStatus::orderBy('id', 'DESC')->first();
+        }
+        else
+        {
+            $all_status         = BugStatus::where('created_by', \Auth::user()->creatorId())->orderBy('id', 'DESC')->first();
+        }
         $status             = new BugStatus();
         $status->title      = $request->title;
         $status->created_by = \Auth::user()->creatorId();
@@ -52,6 +73,10 @@ class BugStatusController extends Controller
         {
             return view('bugstatus.edit', compact('bugStatus'));
         }
+        elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            return view('bugstatus.edit', compact('bugStatus'));
+        }
         else
         {
             return response()->json(['error' => __('Permission denied.')], 401);
@@ -64,6 +89,25 @@ class BugStatusController extends Controller
 
         $bugstatus = BugStatus::findOrfail($id);
         if($bugstatus->created_by == \Auth::user()->creatorId())
+        {
+            $validator = \Validator::make(
+                $request->all(), [
+                                   'title' => 'required|max:20',
+                               ]
+            );
+            if($validator->fails())
+            {
+                $messages = $validator->getMessageBag();
+
+                return redirect()->route('bugstatus.index')->with('error', $messages->first());
+            }
+
+            $bugstatus->title = $request->title;
+            $bugstatus->save();
+
+            return redirect()->route('bugstatus.index')->with('success', __('Bug status successfully updated.'));
+        }
+        elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
         {
             $validator = \Validator::make(
                 $request->all(), [
@@ -100,6 +144,12 @@ class BugStatusController extends Controller
 
             return redirect()->route('bugstatus.index')->with('success', __('Bug status successfully deleted.'));
 
+        }
+        elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $bugstatus->delete();
+
+            return redirect()->route('bugstatus.index')->with('success', __('Bug status successfully deleted.'));
         }
         else
         {

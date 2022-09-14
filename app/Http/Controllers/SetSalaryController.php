@@ -13,6 +13,7 @@ use App\Models\OtherPayment;
 use App\Models\Overtime;
 use App\Models\PayslipType;
 use App\Models\SaturationDeduction;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class SetSalaryController extends Controller
@@ -21,11 +22,16 @@ class SetSalaryController extends Controller
     {
         if(\Auth::user()->can('manage set salary'))
         {
-            $employees = Employee::where(
-                [
-                    'created_by' => \Auth::user()->creatorId(),
-                ]
-            )->get();
+            if(Auth::user()->type == 'admin' || \Auth::user()->type == 'company'){
+                $employees = Employee::all();
+            }else{
+                $employees = Employee::where(
+                    [
+                        'created_by' => \Auth::user()->creatorId(),
+                    ]
+                )->get();
+            }
+            
 
             return view('setsalary.index', compact('employees'));
         }
@@ -40,26 +46,12 @@ class SetSalaryController extends Controller
         if(\Auth::user()->can('edit set salary'))
         {
 
-            $payslip_type      = PayslipType::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $allowance_options = AllowanceOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $loan_options      = LoanOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $deduction_options = DeductionOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            if(\Auth::user()->type == 'employee')
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
-                $currentEmployee      = Employee::where('user_id', '=', \Auth::user()->id)->first();
-                $allowances           = Allowance::where('employee_id', $currentEmployee->id)->get();
-                $commissions          = Commission::where('employee_id', $currentEmployee->id)->get();
-                $loans                = Loan::where('employee_id', $currentEmployee->id)->get();
-                $saturationdeductions = SaturationDeduction::where('employee_id', $currentEmployee->id)->get();
-                $otherpayments        = OtherPayment::where('employee_id', $currentEmployee->id)->get();
-                $overtimes            = Overtime::where('employee_id', $currentEmployee->id)->get();
-                $employee             = Employee::where('user_id', '=', \Auth::user()->id)->first();
-
-                return view('setsalary.employee_salary', compact('employee', 'payslip_type', 'allowance_options', 'commissions', 'loan_options', 'overtimes', 'otherpayments', 'saturationdeductions', 'loans', 'deduction_options', 'allowances'));
-
-            }
-            else
-            {
+                $payslip_type      = PayslipType::get()->pluck('name', 'id');
+                $allowance_options = AllowanceOption::get()->pluck('name', 'id');
+                $loan_options      = LoanOption::get()->pluck('name', 'id');
+                $deduction_options = DeductionOption::get()->pluck('name', 'id');
                 $allowances           = Allowance::where('employee_id', $id)->get();
                 $commissions          = Commission::where('employee_id', $id)->get();
                 $loans                = Loan::where('employee_id', $id)->get();
@@ -70,6 +62,39 @@ class SetSalaryController extends Controller
 
                 return view('setsalary.edit', compact('employee', 'payslip_type', 'allowance_options', 'commissions', 'loan_options', 'overtimes', 'otherpayments', 'saturationdeductions', 'loans', 'deduction_options', 'allowances'));
             }
+            else
+            {
+                $payslip_type      = PayslipType::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $allowance_options = AllowanceOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $loan_options      = LoanOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $deduction_options = DeductionOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                if(\Auth::user()->type == 'employee')
+                {
+                    $currentEmployee      = Employee::where('user_id', '=', \Auth::user()->id)->first();
+                    $allowances           = Allowance::where('employee_id', $currentEmployee->id)->get();
+                    $commissions          = Commission::where('employee_id', $currentEmployee->id)->get();
+                    $loans                = Loan::where('employee_id', $currentEmployee->id)->get();
+                    $saturationdeductions = SaturationDeduction::where('employee_id', $currentEmployee->id)->get();
+                    $otherpayments        = OtherPayment::where('employee_id', $currentEmployee->id)->get();
+                    $overtimes            = Overtime::where('employee_id', $currentEmployee->id)->get();
+                    $employee             = Employee::where('user_id', '=', \Auth::user()->id)->first();
+    
+                    return view('setsalary.employee_salary', compact('employee', 'payslip_type', 'allowance_options', 'commissions', 'loan_options', 'overtimes', 'otherpayments', 'saturationdeductions', 'loans', 'deduction_options', 'allowances'));
+    
+                }
+                else
+                {
+                    $allowances           = Allowance::where('employee_id', $id)->get();
+                    $commissions          = Commission::where('employee_id', $id)->get();
+                    $loans                = Loan::where('employee_id', $id)->get();
+                    $saturationdeductions = SaturationDeduction::where('employee_id', $id)->get();
+                    $otherpayments        = OtherPayment::where('employee_id', $id)->get();
+                    $overtimes            = Overtime::where('employee_id', $id)->get();
+                    $employee             = Employee::find($id);
+    
+                    return view('setsalary.edit', compact('employee', 'payslip_type', 'allowance_options', 'commissions', 'loan_options', 'overtimes', 'otherpayments', 'saturationdeductions', 'loans', 'deduction_options', 'allowances'));
+                }
+            }
         }
         else
         {
@@ -79,73 +104,12 @@ class SetSalaryController extends Controller
 
     public function show($id)
     {
-        $payslip_type      = PayslipType::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $allowance_options = AllowanceOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $loan_options      = LoanOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $deduction_options = DeductionOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        if(\Auth::user()->type == 'employee')
+        if(\Auth::user()->type = 'admin')
         {
-            $currentEmployee      = Employee::where('user_id', '=', \Auth::user()->id)->first();
-            $allowances           = Allowance::where('employee_id', $currentEmployee->id)->get();
-            $commissions          = Commission::where('employee_id', $currentEmployee->id)->get();
-            $loans                = Loan::where('employee_id', $currentEmployee->id)->get();
-            $saturationdeductions = SaturationDeduction::where('employee_id', $currentEmployee->id)->get();
-            $otherpayments        = OtherPayment::where('employee_id', $currentEmployee->id)->get();
-            $overtimes            = Overtime::where('employee_id', $currentEmployee->id)->get();
-            $employee             = Employee::where('user_id', '=', \Auth::user()->id)->first();
-
-            foreach ( $allowances as  $value) {
-                if(  $value->type == 'percentage' )
-                {
-                    $employee          = Employee::find($value->employee_id);
-
-                    $empsal  = $value->amount * $employee->salary / 100;
-                    $value->tota_allow = $empsal;
-                }
-            }
-
-            foreach ( $commissions as  $value) {
-                if(  $value->type == 'percentage' )
-                {
-                    $employee          = Employee::find($value->employee_id);
-                    $empsal  = $value->amount * $employee->salary / 100;
-                    $value->tota_allow = $empsal;
-                }
-            }
-
-            foreach ( $loans as  $value) {
-                if(  $value->type == 'percentage' )
-                {
-                    $employee          = Employee::find($value->employee_id);
-                    $empsal  = $value->amount * $employee->salary / 100;
-                    $value->tota_allow = $empsal;
-                }
-            }
-
-            foreach ( $saturationdeductions as  $value) {
-                if(  $value->type == 'percentage' )
-                {
-                    $employee          = Employee::find($value->employee_id);
-                    $empsal  = $value->amount * $employee->salary / 100;
-                    $value->tota_allow = $empsal;
-                }
-            }
-
-            foreach ( $otherpayments as  $value) {
-                if(  $value->type == 'percentage' )
-                {
-                    $employee          = Employee::find($value->employee_id);
-                    $empsal  = $value->amount * $employee->salary / 100;
-                    $value->tota_allow = $empsal;
-                }
-            }
-
-            return view('setsalary.employee_salary', compact('employee', 'payslip_type', 'allowance_options', 'commissions', 'loan_options', 'overtimes', 'otherpayments', 'saturationdeductions', 'loans', 'deduction_options', 'allowances'));
-
-
-        }
-        else
-        {
+            $payslip_type      = PayslipType::get()->pluck('name', 'id');
+            $allowance_options = AllowanceOption::get()->pluck('name', 'id');
+            $loan_options      = LoanOption::get()->pluck('name', 'id');
+            $deduction_options = DeductionOption::get()->pluck('name', 'id');
             $allowances           = Allowance::where('employee_id', $id)->get();
             $commissions          = Commission::where('employee_id', $id)->get();
             $loans                = Loan::where('employee_id', $id)->get();
@@ -200,8 +164,196 @@ class SetSalaryController extends Controller
             }
 
             return view('setsalary.employee_salary', compact('employee', 'payslip_type', 'allowance_options', 'commissions', 'loan_options', 'overtimes', 'otherpayments', 'saturationdeductions', 'loans', 'deduction_options', 'allowances'));
+    
         }
+        elseif(\Auth::user()->type = 'company')
+        {
+            $payslip_type      = PayslipType::get()->pluck('name', 'id');
+            $allowance_options = AllowanceOption::get()->pluck('name', 'id');
+            $loan_options      = LoanOption::get()->pluck('name', 'id');
+            $deduction_options = DeductionOption::get()->pluck('name', 'id');
+            $allowances           = Allowance::where('employee_id', $id)->get();
+            $commissions          = Commission::where('employee_id', $id)->get();
+            $loans                = Loan::where('employee_id', $id)->get();
+            $saturationdeductions = SaturationDeduction::where('employee_id', $id)->get();
+            $otherpayments        = OtherPayment::where('employee_id', $id)->get();
+            $overtimes            = Overtime::where('employee_id', $id)->get();
+            $employee             = Employee::find($id);
 
+            foreach ( $allowances as  $value) {
+                if(  $value->type == 'percentage' )
+                {
+                    $employee          = Employee::find($value->employee_id);
+                    $empsal  = $value->amount * $employee->salary / 100;
+                    $value->tota_allow = $empsal;
+                }
+            }
+
+            foreach ( $commissions as  $value) {
+                if(  $value->type == 'percentage' )
+                {
+                    $employee          = Employee::find($value->employee_id);
+                    $empsal  = $value->amount * $employee->salary / 100;
+                    $value->tota_allow = $empsal;
+                }
+            }
+
+            foreach ( $loans as  $value) {
+                if(  $value->type == 'percentage' )
+                {
+                    $employee          = Employee::find($value->employee_id);
+                    $empsal  = $value->amount * $employee->salary / 100;
+                    $value->tota_allow = $empsal;
+                }
+            }
+
+            foreach ( $saturationdeductions as  $value) {
+                if(  $value->type == 'percentage' )
+                {
+                    $employee          = Employee::find($value->employee_id);
+                    $empsal  = $value->amount * $employee->salary / 100;
+                    $value->tota_allow = $empsal;
+                }
+            }
+
+            foreach ( $otherpayments as  $value) {
+                if(  $value->type == 'percentage' )
+                {
+                    $employee          = Employee::find($value->employee_id);
+                    $empsal  = $value->amount * $employee->salary / 100;
+                    $value->tota_allow = $empsal;
+                }
+            }
+
+            return view('setsalary.employee_salary', compact('employee', 'payslip_type', 'allowance_options', 'commissions', 'loan_options', 'overtimes', 'otherpayments', 'saturationdeductions', 'loans', 'deduction_options', 'allowances'));
+    
+        }
+        else
+        {
+            $payslip_type      = PayslipType::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $allowance_options = AllowanceOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $loan_options      = LoanOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $deduction_options = DeductionOption::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type == 'employee')
+            {
+                $currentEmployee      = Employee::where('user_id', '=', \Auth::user()->id)->first();
+                $allowances           = Allowance::where('employee_id', $currentEmployee->id)->get();
+                $commissions          = Commission::where('employee_id', $currentEmployee->id)->get();
+                $loans                = Loan::where('employee_id', $currentEmployee->id)->get();
+                $saturationdeductions = SaturationDeduction::where('employee_id', $currentEmployee->id)->get();
+                $otherpayments        = OtherPayment::where('employee_id', $currentEmployee->id)->get();
+                $overtimes            = Overtime::where('employee_id', $currentEmployee->id)->get();
+                $employee             = Employee::where('user_id', '=', \Auth::user()->id)->first();
+    
+                foreach ( $allowances as  $value) {
+                    if(  $value->type == 'percentage' )
+                    {
+                        $employee          = Employee::find($value->employee_id);
+    
+                        $empsal  = $value->amount * $employee->salary / 100;
+                        $value->tota_allow = $empsal;
+                    }
+                }
+    
+                foreach ( $commissions as  $value) {
+                    if(  $value->type == 'percentage' )
+                    {
+                        $employee          = Employee::find($value->employee_id);
+                        $empsal  = $value->amount * $employee->salary / 100;
+                        $value->tota_allow = $empsal;
+                    }
+                }
+    
+                foreach ( $loans as  $value) {
+                    if(  $value->type == 'percentage' )
+                    {
+                        $employee          = Employee::find($value->employee_id);
+                        $empsal  = $value->amount * $employee->salary / 100;
+                        $value->tota_allow = $empsal;
+                    }
+                }
+    
+                foreach ( $saturationdeductions as  $value) {
+                    if(  $value->type == 'percentage' )
+                    {
+                        $employee          = Employee::find($value->employee_id);
+                        $empsal  = $value->amount * $employee->salary / 100;
+                        $value->tota_allow = $empsal;
+                    }
+                }
+    
+                foreach ( $otherpayments as  $value) {
+                    if(  $value->type == 'percentage' )
+                    {
+                        $employee          = Employee::find($value->employee_id);
+                        $empsal  = $value->amount * $employee->salary / 100;
+                        $value->tota_allow = $empsal;
+                    }
+                }
+    
+                return view('setsalary.employee_salary', compact('employee', 'payslip_type', 'allowance_options', 'commissions', 'loan_options', 'overtimes', 'otherpayments', 'saturationdeductions', 'loans', 'deduction_options', 'allowances'));
+    
+    
+            }
+            else
+            {
+                $allowances           = Allowance::where('employee_id', $id)->get();
+                $commissions          = Commission::where('employee_id', $id)->get();
+                $loans                = Loan::where('employee_id', $id)->get();
+                $saturationdeductions = SaturationDeduction::where('employee_id', $id)->get();
+                $otherpayments        = OtherPayment::where('employee_id', $id)->get();
+                $overtimes            = Overtime::where('employee_id', $id)->get();
+                $employee             = Employee::find($id);
+    
+                foreach ( $allowances as  $value) {
+                    if(  $value->type == 'percentage' )
+                    {
+                        $employee          = Employee::find($value->employee_id);
+                        $empsal  = $value->amount * $employee->salary / 100;
+                        $value->tota_allow = $empsal;
+                    }
+                }
+    
+                foreach ( $commissions as  $value) {
+                    if(  $value->type == 'percentage' )
+                    {
+                        $employee          = Employee::find($value->employee_id);
+                        $empsal  = $value->amount * $employee->salary / 100;
+                        $value->tota_allow = $empsal;
+                    }
+                }
+    
+                foreach ( $loans as  $value) {
+                    if(  $value->type == 'percentage' )
+                    {
+                        $employee          = Employee::find($value->employee_id);
+                        $empsal  = $value->amount * $employee->salary / 100;
+                        $value->tota_allow = $empsal;
+                    }
+                }
+    
+                foreach ( $saturationdeductions as  $value) {
+                    if(  $value->type == 'percentage' )
+                    {
+                        $employee          = Employee::find($value->employee_id);
+                        $empsal  = $value->amount * $employee->salary / 100;
+                        $value->tota_allow = $empsal;
+                    }
+                }
+    
+                foreach ( $otherpayments as  $value) {
+                    if(  $value->type == 'percentage' )
+                    {
+                        $employee          = Employee::find($value->employee_id);
+                        $empsal  = $value->amount * $employee->salary / 100;
+                        $value->tota_allow = $empsal;
+                    }
+                }
+    
+                return view('setsalary.employee_salary', compact('employee', 'payslip_type', 'allowance_options', 'commissions', 'loan_options', 'overtimes', 'otherpayments', 'saturationdeductions', 'loans', 'deduction_options', 'allowances'));
+            }
+    
+        }
     }
 
 
@@ -238,8 +390,16 @@ class SetSalaryController extends Controller
     public function employeeBasicSalary($id)
     {
 
-        $payslip_type = PayslipType::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $employee     = Employee::find($id);
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $payslip_type = PayslipType::get()->pluck('name', 'id');
+            $employee     = Employee::find($id);
+        }
+        else
+        {
+            $payslip_type = PayslipType::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $employee     = Employee::find($id);
+        }
 
         return view('setsalary.basic_salary', compact('employee', 'payslip_type'));
     }

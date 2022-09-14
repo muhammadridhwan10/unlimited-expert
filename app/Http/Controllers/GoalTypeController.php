@@ -12,8 +12,21 @@ class GoalTypeController extends Controller
     {
         if(\Auth::user()->can('manage goal type'))
         {
-            $goaltypes = GoalType::where('created_by', '=', \Auth::user()->creatorId())->get();
-            return view('goaltype.index', compact('goaltypes'));
+            if(\Auth::user()->type == 'company')
+            {
+                $goaltypes = GoalType::all();
+                return view('goaltype.index', compact('goaltypes'));
+            }
+            elseif(\Auth::user()->type == 'admin')
+            {
+                $goaltypes = GoalType::all();
+                return view('goaltype.index', compact('goaltypes'));
+            }
+            else
+            {
+                $goaltypes = GoalType::where('created_by', '=', \Auth::user()->creatorId())->get();
+                return view('goaltype.index', compact('goaltypes'));
+            }
         }
         else
         {
@@ -122,6 +135,12 @@ class GoalTypeController extends Controller
         {
             $goalType = GoalType::find($id);
             if($goalType->created_by == \Auth::user()->creatorId())
+            {
+                $goalType->delete();
+
+                return redirect()->route('goaltype.index')->with('success', __('GoalType successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $goalType->delete();
 

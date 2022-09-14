@@ -212,6 +212,9 @@
                                     <img data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset('/storage/uploads/avatar/avatar.png')}}" @endif title="{{ $comment->user->name }}" class="wid-40 rounded-circle ml-3">
                                 </a>
                             </div>
+                            <div class="col-auto">
+                                {{ $user->name }}
+                            </div>
                             <div class="col ml-n2">
                                 <p class="d-block h6 text-sm font-weight-light mb-0 text-break">{{ $comment->comment }}</p>
                                 <small class="d-block">{{$comment->created_at->diffForHumans()}}</small>

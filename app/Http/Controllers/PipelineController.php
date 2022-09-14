@@ -33,9 +33,18 @@ class PipelineController extends Controller
     {
         if(\Auth::user()->can('manage pipeline'))
         {
-            $pipelines = Pipeline::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+            {
+                $pipelines = Pipeline::all();
 
-            return view('pipelines.index')->with('pipelines', $pipelines);
+                return view('pipelines.index')->with('pipelines', $pipelines);
+            }
+            else
+            {
+                $pipelines = Pipeline::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('pipelines.index')->with('pipelines', $pipelines);
+            }
         }
         else
         {
@@ -125,6 +134,10 @@ class PipelineController extends Controller
             {
                 return view('pipelines.edit', compact('pipeline'));
             }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                return view('pipelines.edit', compact('pipeline'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission Denied.')], 401);
@@ -170,6 +183,26 @@ class PipelineController extends Controller
 
                 return redirect()->route('pipelines.index')->with('success', __('Pipeline successfully updated!'));
             }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required|max:20',
+                                   ]
+                );
+
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->route('pipelines.index')->with('error', $messages->first());
+                }
+
+                $pipeline->name = $request->name;
+                $pipeline->save();
+
+                return redirect()->route('pipelines.index')->with('success', __('Pipeline successfully updated!'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission Denied.'));
@@ -193,6 +226,37 @@ class PipelineController extends Controller
         if(\Auth::user()->can('delete pipeline'))
         {
             if($pipeline->created_by == \Auth::user()->creatorId())
+            {
+                if(count($pipeline->stages) == 0)
+                {
+                    foreach($pipeline->stages as $stage)
+                    {
+                        $deals = Deal::where('pipeline_id', '=', $pipeline->id)->where('stage_id', '=', $stage->id)->get();
+                        foreach($deals as $deal)
+                        {
+                            DealDiscussion::where('deal_id', '=', $deal->id)->delete();
+                            DealFile::where('deal_id', '=', $deal->id)->delete();
+                            ClientDeal::where('deal_id', '=', $deal->id)->delete();
+                            UserDeal::where('deal_id', '=', $deal->id)->delete();
+                            DealTask::where('deal_id', '=', $deal->id)->delete();
+                            ActivityLog::where('deal_id', '=', $deal->id)->delete();
+
+                            $deal->delete();
+                        }
+
+                        $stage->delete();
+                    }
+
+                    $pipeline->delete();
+
+                    return redirect()->route('pipelines.index')->with('success', __('Pipeline successfully deleted!'));
+                }
+                else
+                {
+                    return redirect()->route('pipelines.index')->with('error', __('There are some Stages and Deals on Pipeline, please remove it first!'));
+                }
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
                 if(count($pipeline->stages) == 0)
                 {

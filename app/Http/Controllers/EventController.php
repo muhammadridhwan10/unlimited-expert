@@ -19,27 +19,78 @@ class EventController extends Controller
     {
         if(\Auth::user()->can('manage event'))
         {
-            $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $events    = Event::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $transdate = date('Y-m-d', time());
-
-            $today_date = date('m');
-            $current_month_event = Event::select('id','start_date','end_date', 'title', 'created_at','color')->whereRaw('MONTH(start_date)=' . $today_date,'MONTH(end_date)=' . $today_date)->get();
-
-            $arrEvents = [];
-            foreach($events as $event)
+            if(Auth::user()->type == 'admin')
             {
-                $arr['id']        = $event['id'];
-                $arr['title']     = $event['title'];
-                $arr['start']     = $event['start_date'];
-                $arr['end']       = $event['end_date'];
-                $arr['className'] = 'event-primary';
-                $arr['url']       = route('event.edit', $event['id']);
-                $arrEvents[]      = $arr;
+                $employees = Employee::all();
+                $events    = Event::all();
+                $transdate = date('Y-m-d', time());
+    
+                $today_date = date('m');
+                $current_month_event = Event::select('id','start_date','end_date', 'title', 'created_at','color')->whereRaw('MONTH(start_date)=' . $today_date,'MONTH(end_date)=' . $today_date)->get();
+    
+                $arrEvents = [];
+                foreach($events as $event)
+                {
+                    $arr['id']        = $event['id'];
+                    $arr['title']     = $event['title'];
+                    $arr['start']     = $event['start_date'];
+                    $arr['end']       = $event['end_date'];
+                    $arr['className'] = 'event-primary';
+                    $arr['url']       = route('event.edit', $event['id']);
+                    $arrEvents[]      = $arr;
+                }
+                $arrEvents = str_replace('"[', '[', str_replace(']"', ']', json_encode($arrEvents)));
+    
+                return view('event.index', compact('arrEvents', 'employees', 'transdate','events','current_month_event'));
             }
-            $arrEvents = str_replace('"[', '[', str_replace(']"', ']', json_encode($arrEvents)));
-
-            return view('event.index', compact('arrEvents', 'employees', 'transdate','events','current_month_event'));
+            if(\Auth::user()->type == 'company')
+            {
+                $employees = Employee::all();
+                $events    = Event::all();
+                $transdate = date('Y-m-d', time());
+    
+                $today_date = date('m');
+                $current_month_event = Event::select('id','start_date','end_date', 'title', 'created_at','color')->whereRaw('MONTH(start_date)=' . $today_date,'MONTH(end_date)=' . $today_date)->get();
+    
+                $arrEvents = [];
+                foreach($events as $event)
+                {
+                    $arr['id']        = $event['id'];
+                    $arr['title']     = $event['title'];
+                    $arr['start']     = $event['start_date'];
+                    $arr['end']       = $event['end_date'];
+                    $arr['className'] = 'event-primary';
+                    $arr['url']       = route('event.edit', $event['id']);
+                    $arrEvents[]      = $arr;
+                }
+                $arrEvents = str_replace('"[', '[', str_replace(']"', ']', json_encode($arrEvents)));
+    
+                return view('event.index', compact('arrEvents', 'employees', 'transdate','events','current_month_event'));
+            }
+            else
+            {
+                $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $events    = Event::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $transdate = date('Y-m-d', time());
+    
+                $today_date = date('m');
+                $current_month_event = Event::select('id','start_date','end_date', 'title', 'created_at','color')->whereRaw('MONTH(start_date)=' . $today_date,'MONTH(end_date)=' . $today_date)->get();
+    
+                $arrEvents = [];
+                foreach($events as $event)
+                {
+                    $arr['id']        = $event['id'];
+                    $arr['title']     = $event['title'];
+                    $arr['start']     = $event['start_date'];
+                    $arr['end']       = $event['end_date'];
+                    $arr['className'] = 'event-primary';
+                    $arr['url']       = route('event.edit', $event['id']);
+                    $arrEvents[]      = $arr;
+                }
+                $arrEvents = str_replace('"[', '[', str_replace(']"', ']', json_encode($arrEvents)));
+    
+                return view('event.index', compact('arrEvents', 'employees', 'transdate','events','current_month_event'));
+            }
         }
         else
         {
@@ -51,10 +102,18 @@ class EventController extends Controller
     {
         if(\Auth::user()->can('create event'))
         {
-            $employees   = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $branch      = Branch::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get();
-
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $employees   = Employee::all()->pluck('name', 'id');
+                $branch      = Branch::all();
+                $departments = Department::all();
+            }
+            else
+            {
+                $employees   = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $branch      = Branch::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get();
+            }
 
             return view('event.create', compact('employees', 'branch', 'departments'));
         }
@@ -160,6 +219,12 @@ class EventController extends Controller
 
                 return view('event.edit', compact('event', 'employees'));
             }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $employees = Employee::get()->pluck('name', 'id');
+
+                return view('event.edit', compact('event', 'employees'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission denied.')], 401);
@@ -176,6 +241,30 @@ class EventController extends Controller
         if(\Auth::user()->can('edit event'))
         {
             if($event->created_by == \Auth::user()->creatorId())
+            {
+                $validator = \Validator::make($request->all(), [
+                    'title' => 'required',
+                    'start_date' => 'required',
+                    'end_date' => 'required',
+                    'color' => 'required',
+                ]);
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $event->title       = $request->title;
+                $event->start_date  = $request->start_date;
+                $event->end_date    = $request->end_date;
+                $event->color       = $request->color;
+                $event->description = $request->description;
+                $event->save();
+
+                return redirect()->route('event.index')->with('success', __('Event successfully updated.'));
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $validator = \Validator::make($request->all(), [
                     'title' => 'required',
@@ -220,6 +309,12 @@ class EventController extends Controller
 
                 return redirect()->route('event.index')->with('success', __('Event successfully deleted.'));
             }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $event->delete();
+
+                return redirect()->route('event.index')->with('success', __('Event successfully deleted.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -236,7 +331,7 @@ class EventController extends Controller
 
         if($request->branch_id == 0)
         {
-            $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id')->toArray();
+            $departments = Department::all()->pluck('name', 'id')->toArray();
         }
         else
         {
@@ -251,7 +346,7 @@ class EventController extends Controller
 
         if(in_array('0', [$request->department_id]))
         {
-            $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id')->toArray();
+            $employees = Employee::all()->pluck('name', 'id')->toArray();
         }
         else
         {

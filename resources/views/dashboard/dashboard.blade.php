@@ -67,7 +67,7 @@
     <li class="breadcrumb-item">{{__('HRM')}}</li>
 @endsection
 @section('content')
-    @if(\Auth::user()->type != 'client' && \Auth::user()->type != 'company')
+    @if(\Auth::user()->type != 'client' && \Auth::user()->type != 'company' && \Auth::user()->type != 'admin')
         <div class="row">
             <div class="col-sm-12">
                 <div class="row">

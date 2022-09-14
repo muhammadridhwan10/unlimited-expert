@@ -13,34 +13,88 @@ class InterviewScheduleController extends Controller
 
     public function index()
     {
-        $transdate = date('Y-m-d', time());
+        $user = \Auth::user();
+        if($user->type = 'admin'){
+            $transdate = date('Y-m-d', time());
 
-        $schedules   = InterviewSchedule::where('created_by', \Auth::user()->creatorId())->get();
-        $arrSchedule = [];
-
-        foreach($schedules as $schedule)
-        {
-            $arr['id']     = $schedule['id'];
-            $arr['title']  = !empty($schedule->applications) ? !empty($schedule->applications->jobs) ? $schedule->applications->jobs->title : '' : '';
-            $arr['start']  = $schedule['date'];
-            $arr['className'] = 'event-primary';
-            $arr['url']    = route('interview-schedule.show', $schedule['id']);
-            $arrSchedule[] = $arr;
+            $schedules   = InterviewSchedule::all();
+            $arrSchedule = [];
+    
+            foreach($schedules as $schedule)
+            {
+                $arr['id']     = $schedule['id'];
+                $arr['title']  = !empty($schedule->applications) ? !empty($schedule->applications->jobs) ? $schedule->applications->jobs->title : '' : '';
+                $arr['start']  = $schedule['date'];
+                $arr['className'] = 'event-primary';
+                $arr['url']    = route('interview-schedule.show', $schedule['id']);
+                $arrSchedule[] = $arr;
+            }
+            $arrSchedule = str_replace('"[', '[', str_replace(']"', ']', json_encode($arrSchedule)));
+    
+            return view('interviewSchedule.index', compact('arrSchedule', 'schedules','transdate'));
         }
-        $arrSchedule = str_replace('"[', '[', str_replace(']"', ']', json_encode($arrSchedule)));
+        elseif($user->type = 'company'){
+            $transdate = date('Y-m-d', time());
 
-        return view('interviewSchedule.index', compact('arrSchedule', 'schedules','transdate'));
+            $schedules   = InterviewSchedule::all();
+            $arrSchedule = [];
+    
+            foreach($schedules as $schedule)
+            {
+                $arr['id']     = $schedule['id'];
+                $arr['title']  = !empty($schedule->applications) ? !empty($schedule->applications->jobs) ? $schedule->applications->jobs->title : '' : '';
+                $arr['start']  = $schedule['date'];
+                $arr['className'] = 'event-primary';
+                $arr['url']    = route('interview-schedule.show', $schedule['id']);
+                $arrSchedule[] = $arr;
+            }
+            $arrSchedule = str_replace('"[', '[', str_replace(']"', ']', json_encode($arrSchedule)));
+    
+            return view('interviewSchedule.index', compact('arrSchedule', 'schedules','transdate'));
+        }
+        else{
+            $transdate = date('Y-m-d', time());
+
+            $schedules   = InterviewSchedule::where('created_by', \Auth::user()->creatorId())->get();
+            $arrSchedule = [];
+    
+            foreach($schedules as $schedule)
+            {
+                $arr['id']     = $schedule['id'];
+                $arr['title']  = !empty($schedule->applications) ? !empty($schedule->applications->jobs) ? $schedule->applications->jobs->title : '' : '';
+                $arr['start']  = $schedule['date'];
+                $arr['className'] = 'event-primary';
+                $arr['url']    = route('interview-schedule.show', $schedule['id']);
+                $arrSchedule[] = $arr;
+            }
+            $arrSchedule = str_replace('"[', '[', str_replace(']"', ']', json_encode($arrSchedule)));
+    
+            return view('interviewSchedule.index', compact('arrSchedule', 'schedules','transdate'));
+        }
     }
 
     public function create($candidate=0)
     {
-        $employees = User::where('created_by', \Auth::user()->creatorId())->where('type', 'employee')->orWhere('id', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $employees->prepend('--', '');
-
-        $candidates = JobApplication::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $candidates->prepend('--', '');
-
-        return view('interviewSchedule.create', compact('employees', 'candidates','candidate'));
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $employees = User::where('type','!=','client')->get()->pluck('name', 'id');
+            $employees->prepend('--', '');
+    
+            $candidates = JobApplication::get()->pluck('name', 'id');
+            $candidates->prepend('--', '');
+    
+            return view('interviewSchedule.create', compact('employees', 'candidates','candidate'));
+        }
+        else
+        {
+            $employees = User::where('created_by', \Auth::user()->creatorId())->where('type', 'employee')->orWhere('id', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $employees->prepend('--', '');
+    
+            $candidates = JobApplication::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $candidates->prepend('--', '');
+    
+            return view('interviewSchedule.create', compact('employees', 'candidates','candidate'));
+        }
     }
 
     public function store(Request $request)
@@ -83,18 +137,36 @@ class InterviewScheduleController extends Controller
 
     public function show(InterviewSchedule $interviewSchedule)
     {
-        $stages=JobStage::where('created_by',\Auth::user()->creatorId())->get();
+        if(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+        {
+            $stages=JobStage::all();
+        }
+        else
+        {
+            $stages=JobStage::where('created_by',\Auth::user()->creatorId())->get();
+        }
 
         return view('interviewSchedule.show', compact('interviewSchedule','stages'));
     }
 
     public function edit(InterviewSchedule $interviewSchedule)
     {
-        $employees = User::where('created_by', \Auth::user()->creatorId())->where('type', 'employee')->orWhere('id', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $employees->prepend('--', '');
-
-        $candidates = JobApplication::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $candidates->prepend('--', '');
+        if(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+        {
+            $employees = User::where('type', 'employee')->get()->pluck('name', 'id');
+            $employees->prepend('--', '');
+    
+            $candidates = JobApplication::get()->pluck('name', 'id');
+            $candidates->prepend('--', '');
+        }
+        else
+        {
+            $employees = User::where('created_by', \Auth::user()->creatorId())->where('type', 'employee')->orWhere('id', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $employees->prepend('--', '');
+    
+            $candidates = JobApplication::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $candidates->prepend('--', '');
+        }
 
         return view('interviewSchedule.edit', compact('employees', 'candidates', 'interviewSchedule'));
     }

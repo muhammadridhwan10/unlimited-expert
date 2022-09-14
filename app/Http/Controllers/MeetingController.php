@@ -10,6 +10,8 @@ use App\Models\MeetingEmployee;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\MeetingNotification;
 
 class MeetingController extends Controller
 {
@@ -30,7 +32,10 @@ class MeetingController extends Controller
                                             })
                                            ->get();
             }
-            else
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $meetings = Meeting::all();
+            }
             {
                 $meetings = Meeting::where('created_by', '=', \Auth::user()->creatorId())->get();
             }
@@ -50,6 +55,12 @@ class MeetingController extends Controller
             if(Auth::user()->type == 'employee')
             {
                 $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->where('user_id', '!=', \Auth::user()->id)->get()->pluck('name', 'id');
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $branch      = Branch::all();
+                $departments = Department::all();
+                $employees   = Employee::all()->pluck('name', 'id');
             }
             else
             {
@@ -108,18 +119,20 @@ class MeetingController extends Controller
             }
             else
             {
-
-                $departmentEmployee = $request->employee_id;
+                
+                $departmentEmployee = Employee::where('id', $request->employee_id)->get();
             }
             foreach($departmentEmployee as $employee)
             {
                 $meetingEmployee              = new MeetingEmployee();
                 $meetingEmployee->meeting_id  = $meeting->id;
-                $meetingEmployee->employee_id = $employee;
+                $meetingEmployee->employee_id = $employee->id;
                 $meetingEmployee->created_by  = \Auth::user()->creatorId();
                 $meetingEmployee->save();
             }
 
+            //Email Notification
+            Mail::to($employee->email)->send(new MeetingNotification($meeting));
 
             //Slack Notification
             $setting  = Utility::settings(\Auth::user()->creatorId());
@@ -164,6 +177,19 @@ class MeetingController extends Controller
                 else
                 {
                     $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                }
+
+                return view('meeting.edit', compact('meeting', 'employees'));
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                if(Auth::user()->type == 'employee')
+                {
+                    $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->where('user_id', '!=', Auth::user()->id)->get()->pluck('name', 'id');
+                }
+                else
+                {
+                    $employees = Employee::get()->pluck('name', 'id');
                 }
 
                 return view('meeting.edit', compact('meeting', 'employees'));
@@ -229,6 +255,12 @@ class MeetingController extends Controller
 
                 return redirect()->route('meeting.index')->with('success', __('Meeting successfully deleted.'));
             }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $meeting->delete();
+
+                return redirect()->route('meeting.index')->with('success', __('Meeting successfully deleted.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -245,7 +277,7 @@ class MeetingController extends Controller
 
         if($request->branch_id == 0)
         {
-            $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id')->toArray();
+            $departments = Department::all()->pluck('name', 'id')->toArray();
         }
         else
         {
@@ -259,7 +291,7 @@ class MeetingController extends Controller
     {
         if(in_array('0', $request->department_id))
         {
-            $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id')->toArray();
+            $employees = Employee::all()->pluck('name', 'id')->toArray();
         }
         else
         {

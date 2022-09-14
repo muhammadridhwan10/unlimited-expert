@@ -18,9 +18,24 @@ class DebitNoteController extends Controller
     {
         if(\Auth::user()->can('manage debit note'))
         {
-            $bills = Bill::where('created_by', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type = 'admin')
+            {
+                $bills = Bill::all();
 
-            return view('debitNote.index', compact('bills'));
+                return view('debitNote.index', compact('bills'));
+            }
+            elseif(\Auth::user()->type = 'company')
+            {
+                $bills = Bill::all();
+
+                return view('debitNote.index', compact('bills'));
+            }
+            else
+            {
+                $bills = Bill::where('created_by', \Auth::user()->creatorId())->get();
+
+                return view('debitNote.index', compact('bills'));
+            }
         }
         else
         {
@@ -169,7 +184,14 @@ class DebitNoteController extends Controller
     {
         if(\Auth::user()->can('create debit note'))
         {
-            $bills = Bill::where('created_by', \Auth::user()->creatorId())->get()->pluck('bill_id', 'id');
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $bills = Bill::get()->pluck('bill_id', 'id');
+            }
+            else
+            {
+                $bills = Bill::where('created_by', \Auth::user()->creatorId())->get()->pluck('bill_id', 'id');
+            }
 
             return view('debitNote.custom_create', compact('bills'));
         }

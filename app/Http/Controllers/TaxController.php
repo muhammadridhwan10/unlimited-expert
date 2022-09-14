@@ -15,11 +15,27 @@ class TaxController extends Controller
 
     public function index()
     {
+        $user = Auth::user();
         if(\Auth::user()->can('manage constant tax'))
         {
-            $taxes = Tax::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if($user->type = 'admin')
+            {
+                $taxes = Tax::all();
 
-            return view('taxes.index')->with('taxes', $taxes);
+                return view('taxes.index')->with('taxes', $taxes);
+            }
+            elseif($user->type = 'company')
+            {
+                $taxes = Tax::all();
+
+                return view('taxes.index')->with('taxes', $taxes);
+            }
+            else
+            {
+                $taxes = Tax::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('taxes.index')->with('taxes', $taxes);
+            }
         }
         else
         {
@@ -85,6 +101,10 @@ class TaxController extends Controller
             {
                 return view('taxes.edit', compact('tax'));
             }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                return view('taxes.edit', compact('tax'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission denied.')], 401);
@@ -122,6 +142,27 @@ class TaxController extends Controller
 
                 return redirect()->route('taxes.index')->with('success', __('Tax rate successfully updated.'));
             }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required|max:20',
+                                       'rate' => 'required|numeric',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $tax->name = $request->name;
+                $tax->rate = $request->rate;
+                $tax->save();
+
+                return redirect()->route('taxes.index')->with('success', __('Tax rate successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -138,6 +179,21 @@ class TaxController extends Controller
         if(\Auth::user()->can('delete constant tax'))
         {
             if($tax->created_by == \Auth::user()->creatorId())
+            {
+                $proposalData = ProposalProduct::whereRaw("find_in_set('$tax->id',tax)")->first();
+                $billData     = BillProduct::whereRaw("find_in_set('$tax->id',tax)")->first();
+                $invoiceData  = InvoiceProduct::whereRaw("find_in_set('$tax->id',tax)")->first();
+
+                if(!empty($proposalData) || !empty($billData) || !empty($invoiceData))
+                {
+                    return redirect()->back()->with('error', __('this tax is already assign to proposal or bill or invoice so please move or remove this tax related data.'));
+                }
+
+                $tax->delete();
+
+                return redirect()->route('taxes.index')->with('success', __('Tax rate successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
                 $proposalData = ProposalProduct::whereRaw("find_in_set('$tax->id',tax)")->first();
                 $billData     = BillProduct::whereRaw("find_in_set('$tax->id',tax)")->first();

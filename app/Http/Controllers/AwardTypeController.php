@@ -11,9 +11,18 @@ class AwardTypeController extends Controller
     {
         if(\Auth::user()->can('manage award type'))
         {
-            $awardtypes = AwardType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $awardtypes = AwardType::all();
 
-            return view('awardtype.index', compact('awardtypes'));
+                return view('awardtype.index', compact('awardtypes'));
+            }
+            else
+            {
+                $awardtypes = AwardType::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('awardtype.index', compact('awardtypes'));
+            }
         }
         else
         {
@@ -78,6 +87,10 @@ class AwardTypeController extends Controller
 
                 return view('awardtype.edit', compact('awardtype'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                return view('awardtype.edit', compact('awardtype'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission denied.')], 401);
@@ -113,6 +126,26 @@ class AwardTypeController extends Controller
 
                 return redirect()->route('awardtype.index')->with('success', __('AwardType successfully updated.'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+
+                                       'name' => 'required|max:20',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $awardtype->name = $request->name;
+                $awardtype->save();
+
+                return redirect()->route('awardtype.index')->with('success', __('AwardType successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -129,6 +162,12 @@ class AwardTypeController extends Controller
         if(\Auth::user()->can('delete award type'))
         {
             if($awardtype->created_by == \Auth::user()->creatorId())
+            {
+                $awardtype->delete();
+
+                return redirect()->route('awardtype.index')->with('success', __('AwardType successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $awardtype->delete();
 

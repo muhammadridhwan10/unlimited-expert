@@ -18,20 +18,52 @@ class AwardController extends Controller
         $usr = \Auth::user();
         if($usr->can('manage award'))
         {
-            $employees  = Employee::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $awardtypes = AwardType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if($usr->type = 'admin'){
+                $employees  = Employee::all();
+                $awardtypes = AwardType::all();
+    
+                if(Auth::user()->type == 'employee')
+                {
+                    $emp    = Employee::where('user_id', '=', \Auth::user()->id)->first();
+                    $awards = Award::where('employee_id', '=', $emp->id)->get();
+                }
+                else
+                {
+                    $awards = Award::all();
+                }
 
-            if(Auth::user()->type == 'employee')
-            {
-                $emp    = Employee::where('user_id', '=', \Auth::user()->id)->first();
-                $awards = Award::where('employee_id', '=', $emp->id)->get();
             }
-            else
+            elseif($usr->type = 'company')
             {
-                $awards = Award::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $employees  = Employee::all();
+                $awardtypes = AwardType::all();
+    
+                if(Auth::user()->type == 'employee')
+                {
+                    $emp    = Employee::where('user_id', '=', \Auth::user()->id)->first();
+                    $awards = Award::where('employee_id', '=', $emp->id)->get();
+                }
+                else
+                {
+                    $awards = Award::all();
+                }
             }
+            else{
+                $employees  = Employee::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $awardtypes = AwardType::where('created_by', '=', \Auth::user()->creatorId())->get();
+    
+                if(Auth::user()->type == 'employee')
+                {
+                    $emp    = Employee::where('user_id', '=', \Auth::user()->id)->first();
+                    $awards = Award::where('employee_id', '=', $emp->id)->get();
+                }
+                else
+                {
+                    $awards = Award::where('created_by', '=', \Auth::user()->creatorId())->get();
+                }
 
-            return view('award.index', compact('awards', 'employees', 'awardtypes'));
+            }
+            return view('award.index', compact('awards', 'employees', 'awardtypes'));            
         }
         else
         {
@@ -43,10 +75,20 @@ class AwardController extends Controller
     {
         if(\Auth::user()->can('create award'))
         {
-            $employees  = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $awardtypes = AwardType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $employees  = Employee::get()->pluck('name', 'id');
+                $awardtypes = AwardType::get()->pluck('name', 'id');
 
-            return view('award.create', compact('employees', 'awardtypes'));
+                return view('award.create', compact('employees', 'awardtypes'));
+            }
+            else
+            {
+                $employees  = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $awardtypes = AwardType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+
+                return view('award.create', compact('employees', 'awardtypes'));   
+            }
         }
         else
         {
@@ -144,7 +186,12 @@ class AwardController extends Controller
             {
                 $employees  = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $awardtypes = AwardType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-
+                return view('award.edit', compact('award', 'awardtypes', 'employees'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $employees  = Employee::get()->pluck('name', 'id');
+                $awardtypes = AwardType::get()->pluck('name', 'id');
                 return view('award.edit', compact('award', 'awardtypes', 'employees'));
             }
             else
@@ -188,6 +235,32 @@ class AwardController extends Controller
 
                 return redirect()->route('award.index')->with('success', __('Award successfully updated.'));
             }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'employee_id' => 'required',
+                                       'award_type' => 'required',
+                                       'date' => 'required',
+                                       'gift' => 'required',
+                                   ]
+                );
+
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+                $award->employee_id = $request->employee_id;
+                $award->award_type  = $request->award_type;
+                $award->date        = $request->date;
+                $award->gift        = $request->gift;
+                $award->description = $request->description;
+                $award->save();
+
+                return redirect()->route('award.index')->with('success', __('Award successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -204,6 +277,12 @@ class AwardController extends Controller
         if(\Auth::user()->can('delete award'))
         {
             if($award->created_by == \Auth::user()->creatorId())
+            {
+                $award->delete();
+
+                return redirect()->route('award.index')->with('success', __('Award successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
                 $award->delete();
 

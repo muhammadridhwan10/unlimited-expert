@@ -13,7 +13,7 @@
         <a href="{{ route('contract.index') }}" data-bs-toggle="tooltip" title="{{__('List View')}}" class="btn btn-sm btn-primary">
             <i class="ti ti-list"></i>
         </a>
-        @if(\Auth::user()->type == 'company')
+        @if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
             <a href="#" data-size="md" data-url="{{ route('contract.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Contract')}}" class="btn btn-sm btn-primary">
                 <i class="ti ti-plus"></i>
             </a>
@@ -28,7 +28,7 @@
                 <div class="card">
                     <div class="card-header">
                         <h6 class="mb-0">{{ $contract->subject}}</h6>
-                        @if(\Auth::user()->type == 'company')
+                        @if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
                             <div class="card-header-right">
                                 <div class="btn-group card-option">
                                     <button type="button" class="btn dropdown-toggle"

@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>
-        {{ !empty($companySettings['header_text']) ? $companySettings['header_text']->value : config('app.name', 'ERPGO SaaS') }}
+        {{ !empty($companySettings['header_text']) ? $companySettings['header_text']->value : config('app.name', 'TGS AU-Partners Apps SaaS') }}
         - {{ __('Career') }}</title>
 
     <link rel="icon"
@@ -137,7 +137,7 @@
             <div class="row align-items-center justify-content-md-between py-4 mt-4 delimiter-top">
                 <div class="col-md-6">
                     <div class="copyright text-sm font-weight-bold text-center text-md-left">
-                        {{ !empty($companySettings['footer_text']) ? $companySettings['footer_text']->value : 'ERPGo SaaS' }}
+                        {{ !empty($companySettings['footer_text']) ? $companySettings['footer_text']->value : 'TGS AU-Partners Apps SaaS' }}
                     </div>
                 </div>
                 <div class="col-md-6">

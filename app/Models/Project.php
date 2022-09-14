@@ -100,6 +100,27 @@ class Project extends Model
         ];
     }
 
+    public function project_progress_admin()
+    {
+
+        $percentage = 0;
+        $last_task      = TaskStage::orderBy('order', 'DESC')->first();
+        $total_task     = $this->tasks->count();
+        $completed_task = $this->tasks()->where('stage_id', '=', $last_task->id)->where('is_complete', '=', 1)->count();
+
+        if($total_task > 0)
+        {
+            $percentage = intval(($completed_task / $total_task) * 100);
+        }
+
+        $color = Utility::getProgressColor($percentage);
+
+        return [
+            'color' => $color,
+            'percentage' => $percentage . '%',
+        ];
+    }
+
     public function tasks()
     {
         return $this->hasMany('App\Models\ProjectTask', 'project_id', 'id')->orderBy('id', 'desc');

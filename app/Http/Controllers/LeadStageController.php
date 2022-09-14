@@ -28,21 +28,42 @@ class LeadStageController extends Controller
     {
         if(\Auth::user()->can('manage lead stage'))
         {
-            $lead_stages = LeadStage::select('lead_stages.*', 'pipelines.name as pipeline')->join('pipelines', 'pipelines.id', '=', 'lead_stages.pipeline_id')->where('pipelines.created_by', '=', \Auth::user()->ownerId())->where('lead_stages.created_by', '=', \Auth::user()->ownerId())->orderBy('lead_stages.pipeline_id')->orderBy('lead_stages.order')->get();
-            $pipelines   = [];
-
-            foreach($lead_stages as $lead_stage)
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
             {
-                if(!array_key_exists($lead_stage->pipeline_id, $pipelines))
+                $lead_stages = LeadStage::select('lead_stages.*', 'pipelines.name as pipeline')->join('pipelines', 'pipelines.id', '=', 'lead_stages.pipeline_id')->orderBy('lead_stages.pipeline_id')->orderBy('lead_stages.order')->get();
+                $pipelines   = [];
+    
+                foreach($lead_stages as $lead_stage)
                 {
-                    $pipelines[$lead_stage->pipeline_id]                = [];
-                    $pipelines[$lead_stage->pipeline_id]['name']        = $lead_stage['pipeline'];
-                    $pipelines[$lead_stage->pipeline_id]['lead_stages'] = [];
+                    if(!array_key_exists($lead_stage->pipeline_id, $pipelines))
+                    {
+                        $pipelines[$lead_stage->pipeline_id]                = [];
+                        $pipelines[$lead_stage->pipeline_id]['name']        = $lead_stage['pipeline'];
+                        $pipelines[$lead_stage->pipeline_id]['lead_stages'] = [];
+                    }
+                    $pipelines[$lead_stage->pipeline_id]['lead_stages'][] = $lead_stage;
                 }
-                $pipelines[$lead_stage->pipeline_id]['lead_stages'][] = $lead_stage;
+    
+                return view('lead_stages.index')->with('pipelines', $pipelines);
             }
-
-            return view('lead_stages.index')->with('pipelines', $pipelines);
+            else
+            {
+                $lead_stages = LeadStage::select('lead_stages.*', 'pipelines.name as pipeline')->join('pipelines', 'pipelines.id', '=', 'lead_stages.pipeline_id')->where('pipelines.created_by', '=', \Auth::user()->ownerId())->where('lead_stages.created_by', '=', \Auth::user()->ownerId())->orderBy('lead_stages.pipeline_id')->orderBy('lead_stages.order')->get();
+                $pipelines   = [];
+    
+                foreach($lead_stages as $lead_stage)
+                {
+                    if(!array_key_exists($lead_stage->pipeline_id, $pipelines))
+                    {
+                        $pipelines[$lead_stage->pipeline_id]                = [];
+                        $pipelines[$lead_stage->pipeline_id]['name']        = $lead_stage['pipeline'];
+                        $pipelines[$lead_stage->pipeline_id]['lead_stages'] = [];
+                    }
+                    $pipelines[$lead_stage->pipeline_id]['lead_stages'][] = $lead_stage;
+                }
+    
+                return view('lead_stages.index')->with('pipelines', $pipelines);
+            }
         }
         else
         {
@@ -59,8 +80,14 @@ class LeadStageController extends Controller
     {
         if(\Auth::user()->can('create lead stage'))
         {
-            $pipelines = Pipeline::where('created_by', '=', \Auth::user()->ownerId())->get()->pluck('name', 'id');
-
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+            {
+                $pipelines = Pipeline::all()->pluck('name', 'id');
+            }
+            else
+            {
+                $pipelines = Pipeline::where('created_by', '=', \Auth::user()->ownerId())->get()->pluck('name', 'id');
+            }
             return view('lead_stages.create')->with('pipelines', $pipelines);
         }
         else

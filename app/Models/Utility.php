@@ -2115,7 +2115,7 @@ class Utility extends Model
         $settings = [
             "cust_darklayout" => "off",
             "cust_theme_bg" => "off",
-            "color" => 'theme-3'
+            "color" => 'theme-4'
         ];
         foreach($data as $row)
         {

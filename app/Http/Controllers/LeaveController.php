@@ -18,12 +18,22 @@ class LeaveController extends Controller
 
         if(\Auth::user()->can('manage leave'))
         {
-            $leaves = Leave::where('created_by', '=', \Auth::user()->creatorId())->get();
+            $leaves = Leave::all();
             if(\Auth::user()->type == 'employee')
             {
                 $user     = \Auth::user();
                 $employee = Employee::where('user_id', '=', $user->id)->first();
                 $leaves   = Leave::where('employee_id', '=', $employee->id)->get();
+            }
+            elseif(\Auth::user()->type == 'admin')
+            {
+                $employee = Employee::all();
+                $leaves   = Leave::all();
+            }
+            elseif(\Auth::user()->type == 'company')
+            {
+                $employee = Employee::all();
+                $leaves   = Leave::all();
             }
             else
             {
@@ -45,13 +55,21 @@ class LeaveController extends Controller
             if(Auth::user()->type == 'employee')
             {
                 $employees = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
+                $leavetypes      = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $leavetypes_days = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $employees       = Employee::all()->pluck('name', 'id');
+                $leavetypes      = LeaveType::all();
+                $leavetypes_days = LeaveType::all();
             }
             else
             {
                 $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $leavetypes      = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $leavetypes_days = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
             }
-            $leavetypes      = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $leavetypes_days = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
 
             return view('leave.create', compact('employees', 'leavetypes', 'leavetypes_days'));
         }
@@ -129,6 +147,13 @@ class LeaveController extends Controller
 
                 return view('leave.edit', compact('leave', 'employees', 'leavetypes'));
             }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $employees  = Employee::get()->pluck('name', 'id');
+                $leavetypes = LeaveType::get()->pluck('title', 'id');
+
+                return view('leave.edit', compact('leave', 'employees', 'leavetypes'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission denied.')], 401);
@@ -176,6 +201,36 @@ class LeaveController extends Controller
 
                 return redirect()->route('leave.index')->with('success', __('Leave successfully updated.'));
             }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'leave_type_id' => 'required',
+                                       'start_date' => 'required',
+                                       'end_date' => 'required',
+                                       'leave_reason' => 'required',
+                                       'remark' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $leave->employee_id      = $request->employee_id;
+                $leave->leave_type_id    = $request->leave_type_id;
+                $leave->start_date       = $request->start_date;
+                $leave->end_date         = $request->end_date;
+                $leave->total_leave_days = 0;
+                $leave->leave_reason     = $request->leave_reason;
+                $leave->remark           = $request->remark;
+
+                $leave->save();
+
+                return redirect()->route('leave.index')->with('success', __('Leave successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -192,6 +247,12 @@ class LeaveController extends Controller
         if(\Auth::user()->can('delete leave'))
         {
             if($leave->created_by == \Auth::user()->creatorId())
+            {
+                $leave->delete();
+
+                return redirect()->route('leave.index')->with('success', __('Leave successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
                 $leave->delete();
 

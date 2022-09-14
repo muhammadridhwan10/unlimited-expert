@@ -12,9 +12,19 @@ class PerformanceTypeController extends Controller
     {
         if(\Auth::user()->can('manage performance type'))
         {
+            // if(\Auth::user()->type == 'company')
+            // {
+            //     $types = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            //     return view('performanceType.index', compact('types'));
+            // }
             if(\Auth::user()->type == 'company')
             {
-                $types = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $types = PerformanceType::all();
+                return view('performanceType.index', compact('types'));
+            }
+            elseif(\Auth::user()->type == 'admin')
+            {
+                $types = PerformanceType::all();
                 return view('performanceType.index', compact('types'));
             }
             else
@@ -34,7 +44,7 @@ class PerformanceTypeController extends Controller
     {
         if(\Auth::user()->can('create performance type'))
         {
-            if(\Auth::user()->type == 'company')
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -81,7 +91,7 @@ class PerformanceTypeController extends Controller
 
         if(\Auth::user()->can('edit performance type'))
         {
-            if(\Auth::user()->type == 'company')
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -117,7 +127,7 @@ class PerformanceTypeController extends Controller
 
         if(\Auth::user()->can('delete performance type'))
         {
-            if(\Auth::user()->type == 'company')
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
             {
 
                 $performanceType->delete();

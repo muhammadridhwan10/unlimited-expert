@@ -4,7 +4,7 @@
 @endpush
 @php
     $setting = \App\Models\Utility::colorset();
-    $color = (!empty($setting['color'])) ? $setting['color'] : 'theme-3';
+    $color = (!empty($setting['color'])) ? $setting['color'] : 'theme-4';
 
 @endphp
 

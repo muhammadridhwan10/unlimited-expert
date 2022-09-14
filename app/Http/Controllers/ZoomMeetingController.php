@@ -35,6 +35,14 @@ class ZoomMeetingController extends Controller
         {
             $meetings = ZoomMeeting::where('client_id', \Auth::user()->id)->get();
         }
+        elseif(\Auth::user()->type = 'admin')
+        {
+            $meetings = ZoomMeeting::all();
+        }
+        elseif(\Auth::user()->type = 'company')
+        {
+            $meetings = ZoomMeeting::all();
+        }
         else
         {
             $meetings = ZoomMeeting::where('created_by', \Auth::user()->creatorId())->get();
@@ -51,8 +59,16 @@ class ZoomMeetingController extends Controller
      */
     public function create()
     {
-        $projects = Project::where('created_by', \Auth::user()->creatorId())->get()->pluck('project_name', 'id');
-        $users    = User::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $projects = Project::all()->pluck('project_name', 'id');
+            $users    = User::all()->pluck('name', 'id');
+        }
+        else
+        {
+            $projects = Project::where('created_by', \Auth::user()->creatorId())->get()->pluck('project_name', 'id');
+            $users    = User::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        }
 
 
         return view('zoom-meeting.create', compact('projects', 'users'));
@@ -68,7 +84,7 @@ class ZoomMeetingController extends Controller
     public function store(Request $request)
     {
         // dd($request->all());
-        if(\Auth::user()->type == 'company')
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
             $validator = \Validator::make($request->all(), [
                 'title' => 'required',
@@ -218,14 +234,30 @@ class ZoomMeetingController extends Controller
 
     public function statusUpdate()
     {
-        $meetings = ZoomMeeting::where('created_by', \Auth::user()->id)->pluck('meeting_id');
-        foreach($meetings as $meeting)
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
         {
-            $data = $this->get($meeting);
-
-            if(isset($data['data']) && !empty($data['data']))
+            $meetings = ZoomMeeting::all()->pluck('meeting_id');
+            foreach($meetings as $meeting)
             {
-                $meeting = ZoomMeeting::where('meeting_id', $meeting)->update(['status' => $data['data']['status']]);
+                $data = $this->get($meeting);
+    
+                if(isset($data['data']) && !empty($data['data']))
+                {
+                    $meeting = ZoomMeeting::where('meeting_id', $meeting)->update(['status' => $data['data']['status']]);
+                }
+            }
+        }
+        else
+        {
+            $meetings = ZoomMeeting::where('created_by', \Auth::user()->id)->pluck('meeting_id');
+            foreach($meetings as $meeting)
+            {
+                $data = $this->get($meeting);
+    
+                if(isset($data['data']) && !empty($data['data']))
+                {
+                    $meeting = ZoomMeeting::where('meeting_id', $meeting)->update(['status' => $data['data']['status']]);
+                }
             }
         }
 
@@ -237,9 +269,14 @@ class ZoomMeetingController extends Controller
         $transdate = date('Y-m-d', time());
 
 
-        if($user->type == 'company' || $user->type == 'HR' || $user->type == 'accountant' || $user->type == 'user')
+        if($user->type != 'super admin')
         {
             $zoomMeetings = ZoomMeeting::where('created_by', '=', \Auth::user()->creatorId())->get();
+        }
+
+        if($user->type == 'admin' || $user->type == 'company')
+        {
+            $zoomMeetings = ZoomMeeting::all();
         }
 
         $calandar = [];

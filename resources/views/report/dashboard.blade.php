@@ -193,7 +193,7 @@
                     <img src="{{ asset('assets/img/dot-icon.png') }}" alt="" class="dotted-icon"/>
                 </div>
             </div>
-            @if(\Auth::user()->type=='company')
+            @if(\Auth::user()->type=='company' ||  \Auth::user()->type=='admin')
                 <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12">
                     <div class="card card-box">
                         <div class="left-card">

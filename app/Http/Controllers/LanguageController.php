@@ -26,7 +26,7 @@ class LanguageController extends Controller
     public function manageLanguage($currantLang)
     {
 
-        if(\Auth::user()->type == 'company')
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
             $languages = Utility::languages();
 
@@ -58,13 +58,13 @@ class LanguageController extends Controller
         }
         else
         {
-            return redirect()->back();
+            return response()->json(['error' => __('Permission denied.')], 401);
         }
     }
 
     public function storeLanguageData(Request $request, $currantLang)
     {
-        if(\Auth::user()->type=='company')
+        if(\Auth::user()->type=='company' || \Auth::user()->type == 'admin')
         {
             $Filesystem = new Filesystem();
             $dir        = base_path() . '/resources/lang/';
@@ -102,7 +102,7 @@ class LanguageController extends Controller
         }
         else
         {
-            return redirect()->back();
+            return response()->json(['error' => __('Permission denied.')], 401);
         }
 
     }
@@ -133,7 +133,7 @@ class LanguageController extends Controller
     public function storeLanguage(Request $request)
     {
 
-        if(\Auth::user()->type=='company')
+        if(\Auth::user()->type=='company' || \Auth::user()->type == 'admin')
         {
             $Filesystem = new Filesystem();
             $langCode   = strtolower($request->code);
@@ -159,7 +159,7 @@ class LanguageController extends Controller
         }
         else
         {
-            return redirect()->back();
+            return response()->json(['error' => __('Permission denied.')], 401);
         }
 
     }

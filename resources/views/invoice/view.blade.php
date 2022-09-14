@@ -286,7 +286,7 @@
         @endif
     @endcan
 
-    @if(\Auth::user()->type=='company')
+    @if(\Auth::user()->type=='company' ||  \Auth::user()->type=='admin')
         @if($invoice->status!=0)
             <div class="row justify-content-between align-items-center mb-3">
                 <div class="col-md-12 d-flex align-items-center justify-content-between justify-content-md-end">

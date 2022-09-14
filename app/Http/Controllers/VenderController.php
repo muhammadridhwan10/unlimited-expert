@@ -34,9 +34,24 @@ class VenderController extends Controller
     {
         if(\Auth::user()->can('manage vender'))
         {
-            $venders = Vender::where('created_by', \Auth::user()->creatorId())->get();
+                if(\Auth::user()->type = 'admin')
+            {
+                $venders = Vender::all();
 
-            return view('vender.index', compact('venders'));
+                return view('vender.index', compact('venders'));
+            }
+            elseif(\Auth::user()->type = 'company')
+            {
+                $venders = Vender::all();
+
+                return view('vender.index', compact('venders'));
+            }
+            else
+            {
+                $venders = Vender::where('created_by', \Auth::user()->creatorId())->get();
+
+                return view('vender.index', compact('venders'));
+            }
         }
         else
         {
@@ -114,28 +129,28 @@ class VenderController extends Controller
                             CustomField::saveData($vender, $request->customField);
 
 
-                        $role_r = Role::where('name', '=', 'vender')->firstOrFail();
-                        $vender->assignRole($role_r); //Assigning role to user
+                    //     $role_r = Role::where('name', '=', 'vender')->firstOrFail();
+                    //     $vender->assignRole($role_r); //Assigning role to user
 
-                        $vender->type     = 'Vender';
-                        try {
+                    //     $vender->type     = 'Vender';
+                    //     try {
 
-                            Mail::to($vender->email)->send(new UserCreate($vender));
-                        } catch (\Exception $e) {
-                            $smtp_error = __('E-Mail has been not sent due to SMTP configuration');
-                        }
-
-
-                      //Twilio Notification
-                        $setting  = Utility::settings(\Auth::user()->creatorId());
-                        if(isset($setting['twilio_vender_notification']) && $setting['twilio_vender_notification'] ==1)
-                        {
-                            $msg = __("New Vendor created by").' '.\Auth::user()->name.'.';
-                            Utility::send_twilio_msg($request->contact,$msg);
-                        }
+                    //         Mail::to($vender->email)->send(new UserCreate($vender));
+                    //     } catch (\Exception $e) {
+                    //         $smtp_error = __('E-Mail has been not sent due to SMTP configuration');
+                    //     }
 
 
-            return redirect()->route('vender.index')->with('success', __('Vendor successfully created.') . ((isset($smtp_error)) ? '<br> <span class="text-danger">' . $smtp_error . '</span>' : ''));
+                    //   //Twilio Notification
+                    //     $setting  = Utility::settings(\Auth::user()->creatorId());
+                    //     if(isset($setting['twilio_vender_notification']) && $setting['twilio_vender_notification'] ==1)
+                    //     {
+                    //         $msg = __("New Vendor created by").' '.\Auth::user()->name.'.';
+                    //         Utility::send_twilio_msg($request->contact,$msg);
+                    //     }
+
+
+            return redirect()->route('vender.index')->with('success', __('Vendor successfully created.'));
         }
         else
         {
@@ -231,6 +246,12 @@ class VenderController extends Controller
 
                 return redirect()->route('vender.index')->with('success', __('Vendor successfully deleted.'));
             }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $vender->delete();
+
+                return redirect()->route('vender.index')->with('success', __('Vendor successfully deleted.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -244,7 +265,15 @@ class VenderController extends Controller
 
     function venderNumber()
     {
-        $latest = Vender::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $latest = Vender::latest()->first();
+        }
+        else
+        {
+            $latest = Vender::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        }
+
         if(!$latest)
         {
             return 1;
@@ -273,7 +302,15 @@ class VenderController extends Controller
                 'Sales' => 'Sales',
             ];
 
-            $query = Transaction::where('user_id', \Auth::user()->id)->where('created_by', \Auth::user()->creatorId())->where('user_type', 'Vender')->where('type', 'Payment');
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $query = Transaction::where('user_id', \Auth::user()->id)->where('user_type', 'Vender')->where('type', 'Payment');
+            }
+            else
+            {
+                $query = Transaction::where('user_id', \Auth::user()->id)->where('created_by', \Auth::user()->creatorId())->where('user_type', 'Vender')->where('type', 'Payment');
+            }
+
             if(!empty($request->date))
             {
                 $date_range = explode(' - ', $request->date);

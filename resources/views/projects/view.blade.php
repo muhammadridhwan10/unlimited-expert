@@ -173,11 +173,11 @@
                 </a>
             @endcan
         @endif
-        @can('manage bug report')
+        <!-- @can('manage bug report')
             <a href="{{ route('task.bug',$project->id) }}" class="btn btn-sm btn-primary">
                 {{__('Bug Report')}}
             </a>
-        @endcan
+        @endcan -->
         @can('create project task')
             <a href="{{ route('projects.tasks.index',$project->id) }}" class="btn btn-sm btn-primary">
                 {{__('Task')}}
@@ -218,29 +218,34 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-4 col-md-12">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row align-items-center justify-content-between">
-                        <div class="col-auto mb-3 mb-sm-0">
-                            <div class="d-flex align-items-center">
-                                <div class="theme-avtar bg-danger">
-                                    <i class="ti ti-report-money"></i>
-                                </div>
-                                <div class="ms-3">
-                                    <small class="text-muted">{{__('Total')}}</small>
-                                    <h6 class="m-0">{{__('Budget')}}</h6>
+        @if(Auth::user()->type !='staff')
+            <div class="col-lg-4 col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row align-items-center justify-content-between">
+                            <div class="col-auto mb-3 mb-sm-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="theme-avtar bg-danger">
+                                        <i class="ti ti-report-money"></i>
+                                    </div>
+                                    <div class="ms-3">
+                                        <small class="text-muted">{{__('Total')}}</small>
+                                        <h6 class="m-0">{{__('Budget')}}</h6>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-auto text-end">
-                            <h4 class="m-0">{{ \Auth::user()->priceFormat($project->budget)}}</h4>
+                            <div class="col-auto text-end">
+                                <h4 class="m-0">{{ \Auth::user()->priceFormat($project->budget)}}</h4>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        @if(Auth::user()->type !='client')
+        @else
+        <div class="col-lg-4 col-md-12">
+            </div>
+        @endif
+        @if(Auth::user()->type !='client' && Auth::user()->type !='staff')
             <div class="col-lg-4 col-md-6">
                 <div class="card">
                     <div class="card-body">
@@ -266,6 +271,53 @@
         @else
             <div class="col-lg-4 col-md-6"></div>
         @endif
+        @if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+        <div class="col-lg-4 col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="avatar me-3">
+                            <img {{ $project->img_image }} alt="" class="img-user wid-45 rounded-circle">
+                        </div>
+                        <div class="d-block  align-items-center justify-content-between w-100">
+                            <div class="mb-3 mb-sm-0">
+                                <h5 class="mb-1"> {{$project->project_name}}</h5>
+                                <p class="mb-0 text-sm">
+                                <div class="progress-wrapper">
+                                    <span class="progress-percentage"><small class="font-weight-bold">{{__('Completed:')}} : </small>{{ $project->project_progress_admin()['percentage'] }}</span>
+                                    <div class="progress progress-xs mt-2">
+                                        <div class="progress-bar bg-info" role="progressbar" aria-valuenow="{{ $project->project_progress_admin()['percentage'] }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ $project->project_progress_admin()['percentage'] }};"></div>
+                                    </div>
+                                </div>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-10">
+                            <h4 class="mt-3 mb-1"></h4>
+                            <p> {{ $project->description }}</p>
+                        </div>
+                    </div>
+                    <div class="card bg-primary mb-0">
+                        <div class="card-body">
+                            <div class="d-block d-sm-flex align-items-center justify-content-between">
+                                <div class="row align-items-center">
+                                    <span class="text-white text-sm">{{__('Start Date')}}</span>
+                                    <h5 class="text-white text-nowrap">{{ Utility::getDateFormated($project->start_date) }}</h5>
+                                </div>
+                                <div class="row align-items-center">
+                                    <span class="text-white text-sm">{{__('End Date')}}</span>
+                                    <h5 class="text-white text-nowrap">{{ Utility::getDateFormated($project->end_date) }}</h5>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @else
         <div class="col-lg-4 col-md-4">
             <div class="card">
                 <div class="card-body">
@@ -311,6 +363,7 @@
                 </div>
             </div>
         </div>
+        @endif
         <div class="col-lg-4 col-md-4">
             <div class="card">
                 <div class="card-body">

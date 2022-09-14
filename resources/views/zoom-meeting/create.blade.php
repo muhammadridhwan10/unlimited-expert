@@ -9,7 +9,7 @@
         </div>
         <div class="form-group col-md-6">
             {{ Form::label('projects', __('Project'),['class'=>'form-label'])}}
-            {{ Form::select('project_id', $projects, null, ['class' => 'form-control select project_select', 'id' => 'project_select', 'data-toggle' => 'select']) }}
+            {{ Form::select('project_id', $projects, null, ['class' => 'form-control select project_select', 'placeholder' => __('Select Project'), 'id' => 'project_select', 'data-toggle' => 'select']) }}
         </div>
         <div class="form-group col-md-6" id="user_div">
             {{ Form::label('projects', __('Users'),['class'=>'form-label'])}}
@@ -67,7 +67,7 @@
 
                 $.each(data, function (i, item) {
 
-                    $('#user_id').append('<option value="' + item.id + '">' + item.name + '</option>');
+                    $('#user_id').append('<option value="-' + item.id + '">' + item.name + '</option>');
                 });
 
                 var multipleCancelButton = new Choices('#user_id', {

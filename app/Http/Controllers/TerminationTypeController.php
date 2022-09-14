@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TerminationType;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class TerminationTypeController extends Controller
@@ -11,9 +12,24 @@ class TerminationTypeController extends Controller
     {
         if(\Auth::user()->can('manage termination type'))
         {
-            $terminationtypes = TerminationType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(Auth::user()->type == 'admin')
+            {
+                $terminationtypes = TerminationType::all();
 
-            return view('terminationtype.index', compact('terminationtypes'));
+                return view('terminationtype.index', compact('terminationtypes'));
+            }
+            elseif(\Auth::user()->type == 'company')
+            {
+                $terminationtypes = TerminationType::all();
+
+                return view('terminationtype.index', compact('terminationtypes'));
+            }
+            else 
+            {
+                $terminationtypes = TerminationType::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('terminationtype.index', compact('terminationtypes'));
+            }
         }
         else
         {
@@ -77,6 +93,10 @@ class TerminationTypeController extends Controller
 
                 return view('terminationtype.edit', compact('terminationtype'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                return view('terminationtype.edit', compact('terminationtype'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission denied.')], 401);
@@ -106,6 +126,20 @@ class TerminationTypeController extends Controller
 
                 return redirect()->route('terminationtype.index')->with('success', __('TerminationType successfully updated.'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required|max:20',
+
+                                   ]
+                );
+
+                $terminationtype->name = $request->name;
+                $terminationtype->save();
+
+                return redirect()->route('terminationtype.index')->with('success', __('TerminationType successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -122,6 +156,12 @@ class TerminationTypeController extends Controller
         if(\Auth::user()->can('delete termination type'))
         {
             if($terminationtype->created_by == \Auth::user()->creatorId())
+            {
+                $terminationtype->delete();
+
+                return redirect()->route('terminationtype.index')->with('success', __('TerminationType successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $terminationtype->delete();
 

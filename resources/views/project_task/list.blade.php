@@ -42,6 +42,7 @@
                                                                 <a href="#" class="avatar rounded-circle avatar-sm">
                                                                     <img data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset('/storage/uploads/avatar/avatar.png')}}" @endif title="{{ $user->name }}" class="hweb">
                                                                 </a>
+                                                                {{ $user->name }}
                                                             @else
                                                                 @break
                                                             @endif
@@ -51,6 +52,7 @@
                                                         <a href="#" class="avatar rounded-circle avatar-sm">
                                                             <img  data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset('/storage/uploads/avatar/avatar.png')}}" @endif class="hweb">
                                                         </a>
+                                                        {{ $user->name }}
                                                     @endif
                                                 @else
                                                     {{ __('-') }}

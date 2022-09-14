@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CustomField;
 use Illuminate\Http\Request;
+use Auth;
 
 class CustomFieldController extends Controller
 {
@@ -14,11 +15,27 @@ class CustomFieldController extends Controller
 
     public function index()
     {
+        $user = Auth::user();
         if(\Auth::user()->can('manage constant custom field'))
         {
-            $custom_fields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if($user->type = 'admin')
+            {
+                $custom_fields = CustomField::all();
 
-            return view('customFields.index', compact('custom_fields'));
+                return view('customFields.index', compact('custom_fields'));
+            }
+            elseif($user->type = 'company')
+            {
+                $custom_fields = CustomField::all();
+
+                return view('customFields.index', compact('custom_fields'));
+            }
+            else
+            {
+                $custom_fields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('customFields.index', compact('custom_fields'));
+            }
         }
         else
         {
@@ -95,6 +112,13 @@ class CustomFieldController extends Controller
 
                 return view('customFields.edit', compact('customField', 'types', 'modules'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $types   = CustomField::$fieldTypes;
+                $modules = CustomField::$modules;
+
+                return view('customFields.edit', compact('customField', 'types', 'modules'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission Denied.')], 401);
@@ -133,6 +157,26 @@ class CustomFieldController extends Controller
 
                 return redirect()->route('custom-field.index')->with('success', __('Custom Field successfully updated!'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required|max:40',
+                                   ]
+                );
+
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->route('custom-field.index')->with('error', $messages->first());
+                }
+
+                $customField->name = $request->name;
+                $customField->save();
+
+                return redirect()->route('custom-field.index')->with('success', __('Custom Field successfully updated!'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission Denied.'));
@@ -150,6 +194,12 @@ class CustomFieldController extends Controller
         if(\Auth::user()->can('delete constant custom field'))
         {
             if($customField->created_by == \Auth::user()->creatorId())
+            {
+                $customField->delete();
+
+                return redirect()->route('custom-field.index')->with('success', __('Custom Field successfully deleted!'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $customField->delete();
 

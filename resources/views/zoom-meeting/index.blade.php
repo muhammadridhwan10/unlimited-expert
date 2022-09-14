@@ -88,7 +88,7 @@
                                 </td>
 
 
-                                @if(\Auth::user()->type == 'company')
+                                @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
                                         <td>{{$item->client_name}}</td>
                                     @endif
                                     <td>{{$item->start_date}}</td>
@@ -116,7 +116,7 @@
                                             <span class="badge bg-danger p-2 px-3 rounded">{{__("End")}}</span>
                                         @endif
                                     </td>
-                                    @if(\Auth::user()->type == 'company')
+                                    @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
                                         <td class="text-end">
                                         <div class="action-btn bg-danger ms-2">
                                         {!! Form::open(['method' => 'DELETE', 'route' => ['zoom-meeting.destroy', $item->id],'id'=>'delete-form-'.$item->id]) !!}

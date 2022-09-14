@@ -17,13 +17,22 @@ class SupportController extends Controller
 {
     public function index()
     {
-        if(\Auth::user()->type == 'company')
+        // if(\Auth::user()->type == 'company')
+        // {
+        //     $supports = Support::where('created_by', \Auth::user()->creatorId())->get();
+        //     $countTicket      = Support::where('created_by', '=', \Auth::user()->creatorId())->count();
+        //     $countOpenTicket  = Support::where('status', '=', 'open')->where('created_by', '=', \Auth::user()->creatorId())->count();
+        //     $countonholdTicket  = Support::where('status', '=', 'on hold')->where('created_by', '=', \Auth::user()->creatorId())->count();
+        //     $countCloseTicket = Support::where('status', '=', 'close')->where('created_by', '=', \Auth::user()->creatorId())->count();
+        //     return view('support.index', compact('supports','countTicket','countOpenTicket','countonholdTicket','countCloseTicket'));
+        // }
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
-            $supports = Support::where('created_by', \Auth::user()->creatorId())->get();
-            $countTicket      = Support::where('created_by', '=', \Auth::user()->creatorId())->count();
-            $countOpenTicket  = Support::where('status', '=', 'open')->where('created_by', '=', \Auth::user()->creatorId())->count();
-            $countonholdTicket  = Support::where('status', '=', 'on hold')->where('created_by', '=', \Auth::user()->creatorId())->count();
-            $countCloseTicket = Support::where('status', '=', 'close')->where('created_by', '=', \Auth::user()->creatorId())->count();
+            $supports = Support::all();
+            $countTicket      = Support::all()->count();
+            $countOpenTicket  = Support::where('status', '=', 'open')->count();
+            $countonholdTicket  = Support::where('status', '=', 'on hold')->count();
+            $countCloseTicket = Support::where('status', '=', 'close')->count();
             return view('support.index', compact('supports','countTicket','countOpenTicket','countonholdTicket','countCloseTicket'));
         }
         elseif(\Auth::user()->type == 'client')
@@ -58,8 +67,9 @@ class SupportController extends Controller
             __('Critical'),
         ];
         $status = Support::$status;
-        $users = User::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        return view('support.create', compact('priority', 'users','status'));
+        $users  = User::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        $userss = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
+        return view('support.create', compact('priority', 'users', 'userss', 'status'));
     }
 
 
@@ -249,9 +259,15 @@ class SupportController extends Controller
     public function grid()
     {
 
-        if(\Auth::user()->type == 'company')
+        // if(\Auth::user()->type == 'company')
+        // {
+        //     $supports = Support::where('created_by', \Auth::user()->creatorId())->get();
+
+        //     return view('support.grid', compact('supports'));
+        // }
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
-            $supports = Support::where('created_by', \Auth::user()->creatorId())->get();
+            $supports = Support::all();
 
             return view('support.grid', compact('supports'));
         }

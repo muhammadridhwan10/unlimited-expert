@@ -36,6 +36,14 @@ class EmployeeController extends Controller
             {
                 $employees = Employee::where('user_id', '=', Auth::user()->id)->get();
             }
+            elseif(Auth::user()->type == 'admin')
+            {
+                $employees = Employee::all();
+            }
+            elseif(\Auth::user()->type == 'company')
+            {
+                $documents = DucumentUpload::all();
+            }
             else
             {
                 $employees = Employee::where('created_by', \Auth::user()->creatorId())->get();
@@ -53,14 +61,26 @@ class EmployeeController extends Controller
     {
         if(\Auth::user()->can('create employee'))
         {
-            $company_settings = Utility::settings();
-            $documents        = Document::where('created_by', \Auth::user()->creatorId())->get();
-            $branches         = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $departments      = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $designations     = Designation::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $employees        = User::where('created_by', \Auth::user()->creatorId())->get();
-            $employeesId      = \Auth::user()->employeeIdFormat($this->employeeNumber());
-
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $company_settings = Utility::settings();
+                $documents        = Document::get();
+                $branches         = Branch::get()->pluck('name', 'id');
+                $departments      = Department::get()->pluck('name', 'id');
+                $designations     = Designation::get()->pluck('name', 'id');
+                $employees        = User::get();
+                $employeesId      = \Auth::user()->employeeIdFormat($this->employeeNumber());
+            }
+            else
+            {
+                $company_settings = Utility::settings();
+                $documents        = Document::where('created_by', \Auth::user()->creatorId())->get();
+                $branches         = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $departments      = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $designations     = Designation::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $employees        = User::where('created_by', \Auth::user()->creatorId())->get();
+                $employeesId      = \Auth::user()->employeeIdFormat($this->employeeNumber());
+            }
             return view('employee.create', compact('employees', 'employeesId', 'departments', 'designations', 'documents', 'branches', 'company_settings'));
         }
         else
@@ -224,13 +244,24 @@ class EmployeeController extends Controller
         $id = Crypt::decrypt($id);
         if(\Auth::user()->can('edit employee'))
         {
-            $documents    = Document::where('created_by', \Auth::user()->creatorId())->get();
-            $branches     = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $departments  = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $designations = Designation::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $employee     = Employee::find($id);
-            $employeesId  = \Auth::user()->employeeIdFormat(!empty($employee->employee_id) ? $employee->employee_id :'');
-
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $documents    = Document::get();
+                $branches     = Branch::get()->pluck('name', 'id');
+                $departments  = Department::get()->pluck('name', 'id');
+                $designations = Designation::get()->pluck('name', 'id');
+                $employee     = Employee::find($id);
+                $employeesId  = \Auth::user()->employeeIdFormat(!empty($employee->employee_id) ? $employee->employee_id :'');
+            }
+            else
+            {
+                $documents    = Document::where('created_by', \Auth::user()->creatorId())->get();
+                $branches     = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $departments  = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $designations = Designation::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $employee     = Employee::find($id);
+                $employeesId  = \Auth::user()->employeeIdFormat(!empty($employee->employee_id) ? $employee->employee_id :'');
+            }
             return view('employee.edit', compact('employee', 'employeesId', 'branches', 'departments', 'designations', 'documents'));
         }
         else
@@ -484,7 +515,7 @@ class EmployeeController extends Controller
         }
         else
         {
-            $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->where('branch_id', $request->branch_id)->get()->pluck('name', 'id')->toArray();
+            $departments = Department::where('branch_id', $request->branch_id)->get()->pluck('name', 'id')->toArray();
         }
 
         return response()->json($departments);

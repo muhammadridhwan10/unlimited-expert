@@ -52,7 +52,7 @@ trait ZoomMeetingTrait
                 'duration'   => $data['duration'],
                 'password' => $data['password'],
                 'agenda'     => (! empty($data['agenda'])) ? $data['agenda'] : null,
-                'timezone'     => 'Asia/Kolkata',
+                'timezone'     => 'Asia/Jakarta',
                 'settings'   => [
                     'host_video'        => ($data['host_video'] == "1") ? true : false,
                     'participant_video' => ($data['participant_video'] == "1") ? true : false,

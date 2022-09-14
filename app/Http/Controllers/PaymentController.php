@@ -21,43 +21,126 @@ class PaymentController extends Controller
     {
         if(\Auth::user()->can('manage payment'))
         {
-            $vender = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $vender->prepend('Select Vendor', '');
-
-            $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
-            $account->prepend('Select Account', '');
-
-            $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 2)->get()->pluck('name', 'id');
-            $category->prepend('Select Category', '');
-
-
-            $query = Payment::where('created_by', '=', \Auth::user()->creatorId());
-
-            if(!empty($request->date))
+            if(\Auth::user()->type = 'company')
             {
-                $date_range = explode('to', $request->date);
-                $query->whereBetween('date', $date_range);
+                $vender = Vender::all()->pluck('name', 'id');
+                $vender->prepend('Select Vendor', '');
+    
+                $account = BankAccount::all()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+    
+                $category = ProductServiceCategory::where('type', '=', 2)->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+    
+    
+                $query = Payment::all();
+    
+                if(!empty($request->date))
+                {
+                    $date_range = explode('to', $request->date);
+                    $query->whereBetween('date', $date_range);
+                }
+    
+                if(!empty($request->vender))
+                {
+                    $query->where('id', '=', $request->vender);
+                }
+                if(!empty($request->account))
+                {
+                    $query->where('account_id', '=', $request->account);
+                }
+    
+                if(!empty($request->category))
+                {
+                    $query->where('category_id', '=', $request->category);
+                }
+    
+    
+                $payments = $query;
+    
+    
+                return view('payment.index', compact('payments', 'account', 'category', 'vender'));
             }
-
-            if(!empty($request->vender))
+            elseif(\Auth::user()->type = 'company')
             {
-                $query->where('id', '=', $request->vender);
+                $vender = Vender::all()->pluck('name', 'id');
+                $vender->prepend('Select Vendor', '');
+    
+                $account = BankAccount::all()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+    
+                $category = ProductServiceCategory::where('type', '=', 2)->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+    
+    
+                $query = Payment::all();
+    
+                if(!empty($request->date))
+                {
+                    $date_range = explode('to', $request->date);
+                    $query->whereBetween('date', $date_range);
+                }
+    
+                if(!empty($request->vender))
+                {
+                    $query->where('id', '=', $request->vender);
+                }
+                if(!empty($request->account))
+                {
+                    $query->where('account_id', '=', $request->account);
+                }
+    
+                if(!empty($request->category))
+                {
+                    $query->where('category_id', '=', $request->category);
+                }
+    
+    
+                $payments = $query;
+    
+    
+                return view('payment.index', compact('payments', 'account', 'category', 'vender'));
             }
-            if(!empty($request->account))
+            else
             {
-                $query->where('account_id', '=', $request->account);
+                $vender = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $vender->prepend('Select Vendor', '');
+    
+                $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+    
+                $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 2)->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+    
+    
+                $query = Payment::where('created_by', '=', \Auth::user()->creatorId());
+    
+                if(!empty($request->date))
+                {
+                    $date_range = explode('to', $request->date);
+                    $query->whereBetween('date', $date_range);
+                }
+    
+                if(!empty($request->vender))
+                {
+                    $query->where('id', '=', $request->vender);
+                }
+                if(!empty($request->account))
+                {
+                    $query->where('account_id', '=', $request->account);
+                }
+    
+                if(!empty($request->category))
+                {
+                    $query->where('category_id', '=', $request->category);
+                }
+    
+    
+                $payments = $query->get();
+    
+    
+                return view('payment.index', compact('payments', 'account', 'category', 'vender'));
             }
-
-            if(!empty($request->category))
-            {
-                $query->where('category_id', '=', $request->category);
-            }
-
-
-            $payments = $query->get();
-
-
-            return view('payment.index', compact('payments', 'account', 'category', 'vender'));
         }
         else
         {
@@ -70,10 +153,20 @@ class PaymentController extends Controller
     {
         if(\Auth::user()->can('create payment'))
         {
-            $venders = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $venders->prepend('--', 0);
-            $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 2)->get()->pluck('name', 'id');
-            $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $venders = Vender::get()->pluck('name', 'id');
+                $venders->prepend('--', 0);
+                $categories = ProductServiceCategory::where('type', '=', 2)->get()->pluck('name', 'id');
+                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->get()->pluck('name', 'id');
+            }
+            else
+            {
+                $venders = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $venders->prepend('--', 0);
+                $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 2)->get()->pluck('name', 'id');
+                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }
 
             return view('payment.create', compact('venders', 'categories', 'accounts'));
         }
@@ -183,11 +276,22 @@ class PaymentController extends Controller
 
         if(\Auth::user()->can('edit payment'))
         {
-            $venders = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $venders->prepend('--', 0);
-            $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->get()->where('type', '=', 2)->pluck('name', 'id');
-
-            $accounts = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $venders = Vender::get()->pluck('name', 'id');
+                $venders->prepend('--', 0);
+                $categories = ProductServiceCategory::get()->where('type', '=', 2)->pluck('name', 'id');
+    
+                $accounts = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->get()->pluck('name', 'id');
+            }
+            else
+            {
+                $venders = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $venders->prepend('--', 0);
+                $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->get()->where('type', '=', 2)->pluck('name', 'id');
+    
+                $accounts = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }
 
             return view('payment.edit', compact('venders', 'categories', 'accounts', 'payment'));
         }
@@ -271,6 +375,21 @@ class PaymentController extends Controller
         if(\Auth::user()->can('delete payment'))
         {
             if($payment->created_by == \Auth::user()->creatorId())
+            {
+                $payment->delete();
+                $type = 'Payment';
+                $user = 'Vender';
+                Transaction::destroyTransaction($payment->id, $type, $user);
+
+                if($payment->vender_id != 0)
+                {
+                    Utility::userBalance('vendor', $payment->vender_id, $payment->amount, 'credit');
+                }
+                Utility::bankAccountBalance($payment->account_id, $payment->amount, 'credit');
+
+                return redirect()->route('payment.index')->with('success', __('Payment successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
                 $payment->delete();
                 $type = 'Payment';

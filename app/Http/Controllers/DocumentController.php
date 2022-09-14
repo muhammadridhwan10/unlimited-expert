@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Document;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DocumentController extends Controller
 {
@@ -12,9 +13,24 @@ class DocumentController extends Controller
 
         if(\Auth::user()->can('manage document type'))
         {
-            $documents = Document::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(Auth::user()->type == 'admin')
+            {
+                $documents = Document::all();
 
-            return view('document.index', compact('documents'));
+                return view('document.index', compact('documents'));
+            }
+            elseif(\Auth::user()->type == 'company')
+            {
+                $documents = Document::all();
+
+                return view('document.index', compact('documents'));
+            }
+            else
+            {
+                $documents = Document::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('document.index', compact('documents'));
+            }
         }
         else
         {
@@ -78,6 +94,10 @@ class DocumentController extends Controller
 
                 return view('document.edit', compact('document'));
             }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                return view('document.edit', compact('document'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission denied.')], 401);
@@ -115,6 +135,27 @@ class DocumentController extends Controller
 
                 return redirect()->route('document.index')->with('success', __('Document type successfully updated.'));
             }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required|max:20',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+
+                $document->name        = $request->name;
+                $document->is_required = $request->is_required;
+                $document->save();
+
+                return redirect()->route('document.index')->with('success', __('Document type successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -131,6 +172,12 @@ class DocumentController extends Controller
         if(\Auth::user()->can('delete document type'))
         {
             if($document->created_by == \Auth::user()->creatorId())
+            {
+                $document->delete();
+
+                return redirect()->route('document.index')->with('success', __('Document type successfully deleted.'));
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $document->delete();
 

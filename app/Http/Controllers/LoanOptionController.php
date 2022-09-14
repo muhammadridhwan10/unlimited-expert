@@ -11,9 +11,18 @@ class LoanOptionController extends Controller
     {
         if(\Auth::user()->can('manage loan option'))
         {
-            $loanoptions = LoanOption::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+            {
+                $loanoptions = LoanOption::all();
 
-            return view('loanoption.index', compact('loanoptions'));
+                return view('loanoption.index', compact('loanoptions'));
+            }
+            else
+            {
+                $loanoptions = LoanOption::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('loanoption.index', compact('loanoptions'));
+            }
         }
         else
         {
@@ -76,6 +85,10 @@ class LoanOptionController extends Controller
 
                 return view('loanoption.edit', compact('loanoption'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                return view('loanoption.edit', compact('loanoption'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission denied.')], 401);
@@ -92,6 +105,25 @@ class LoanOptionController extends Controller
         if(\Auth::user()->can('edit loan option'))
         {
             if($loanoption->created_by == \Auth::user()->creatorId())
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required|max:20',
+
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+                $loanoption->name = $request->name;
+                $loanoption->save();
+
+                return redirect()->route('loanoption.index')->with('success', __('LoanOption successfully updated.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -127,9 +159,71 @@ class LoanOptionController extends Controller
         {
             if($loanoption->created_by == \Auth::user()->creatorId())
             {
-                $loanoption->delete();
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required|max:20',
 
-                return redirect()->route('loanoption.index')->with('success', __('LoanOption successfully deleted.'));
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+                $loanoption->name = $request->name;
+                $loanoption->save();
+
+                return redirect()->route('loanoption.index')->with('success', __('LoanOption successfully updated.'));$validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required|max:20',
+
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+                $loanoption->name = $request->name;
+                $loanoption->save();
+
+                return redirect()->route('loanoption.index')->with('success', __('LoanOption successfully updated.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required|max:20',
+
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+                $loanoption->name = $request->name;
+                $loanoption->save();
+
+                return redirect()->route('loanoption.index')->with('success', __('LoanOption successfully updated.'));$validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required|max:20',
+
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+                $loanoption->name = $request->name;
+                $loanoption->save();
+
+                return redirect()->route('loanoption.index')->with('success', __('LoanOption successfully updated.'));
             }
             else
             {

@@ -41,30 +41,87 @@ class InvoiceController extends Controller
         if(\Auth::user()->can('manage invoice'))
         {
 
-            $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $customer->prepend('Select Customer', '');
-
-            $status = Invoice::$statues;
-
-            $query = Invoice::where('created_by', '=', \Auth::user()->creatorId());
-
-            if(!empty($request->customer))
+            if(\Auth::user()->type = 'admin')
             {
-                $query->where('customer_id', '=', $request->customer);
+                $customer = Customer::all()->pluck('name', 'id');
+                $customer->prepend('Select Customer', '');
+    
+                $status = Invoice::$statues;
+    
+                $query = Invoice::all();
+    
+                if(!empty($request->customer))
+                {
+                    $query->where('customer_id', '=', $request->customer);
+                }
+                if(!empty($request->issue_date))
+                {
+                    $date_range = explode(' - ', $request->issue_date);
+                    $query->where('issue_date', $date_range);
+                }
+    
+                if(!empty($request->status))
+                {
+                    $query->where('status', '=', $request->status);
+                }
+                $invoices = $query;
+    
+                return view('invoice.index', compact('invoices', 'customer', 'status'));
             }
-            if(!empty($request->issue_date))
+            elseif(\Auth::user()->type = 'company')
             {
-                $date_range = explode(' - ', $request->issue_date);
-                $query->where('issue_date', $date_range);
+                $customer = Customer::all()->pluck('name', 'id');
+                $customer->prepend('Select Customer', '');
+    
+                $status = Invoice::$statues;
+    
+                $query = Invoice::all();
+    
+                if(!empty($request->customer))
+                {
+                    $query->where('customer_id', '=', $request->customer);
+                }
+                if(!empty($request->issue_date))
+                {
+                    $date_range = explode(' - ', $request->issue_date);
+                    $query->where('issue_date', $date_range);
+                }
+    
+                if(!empty($request->status))
+                {
+                    $query->where('status', '=', $request->status);
+                }
+                $invoices = $query;
+    
+                return view('invoice.index', compact('invoices', 'customer', 'status'));
             }
-
-            if(!empty($request->status))
+            else
             {
-                $query->where('status', '=', $request->status);
+                $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $customer->prepend('Select Customer', '');
+    
+                $status = Invoice::$statues;
+    
+                $query = Invoice::where('created_by', '=', \Auth::user()->creatorId());
+    
+                if(!empty($request->customer))
+                {
+                    $query->where('customer_id', '=', $request->customer);
+                }
+                if(!empty($request->issue_date))
+                {
+                    $date_range = explode(' - ', $request->issue_date);
+                    $query->where('issue_date', $date_range);
+                }
+    
+                if(!empty($request->status))
+                {
+                    $query->where('status', '=', $request->status);
+                }
+                $invoices = $query->get();
+    
+                return view('invoice.index', compact('invoices', 'customer', 'status'));
             }
-            $invoices = $query->get();
-
-            return view('invoice.index', compact('invoices', 'customer', 'status'));
         }
         else
         {
@@ -77,15 +134,29 @@ class InvoiceController extends Controller
 
         if(\Auth::user()->can('create invoice'))
         {
-            $customFields   = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
-            $invoice_number = \Auth::user()->invoiceNumberFormat($this->invoiceNumber());
-            $customers      = Customer::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $customers->prepend('Select Customer', '');
-            $category = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 1)->get()->pluck('name', 'id');
-            $category->prepend('Select Category', '');
-            $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $product_services->prepend('--', '');
-
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $customFields   = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
+                $invoice_number = \Auth::user()->invoiceNumberFormat($this->invoiceNumber());
+                $customers      = Customer::get()->pluck('name', 'id');
+                $customers->prepend('Select Customer', '');
+                $category = ProductServiceCategory::where('type', 1)->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+                $product_services = ProductService::get()->pluck('name', 'id');
+                $product_services->prepend('--', '');
+            }
+            else
+            {
+                $customFields   = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
+                $invoice_number = \Auth::user()->invoiceNumberFormat($this->invoiceNumber());
+                $customers      = Customer::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $customers->prepend('Select Customer', '');
+                $category = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 1)->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+                $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $product_services->prepend('--', '');
+            }
+        
             return view('invoice.create', compact('customers', 'invoice_number', 'product_services', 'category', 'customFields', 'customerId'));
         }
         else
@@ -214,14 +285,29 @@ class InvoiceController extends Controller
             $id      = Crypt::decrypt($ids);
             $invoice = Invoice::find($id);
 
-            $invoice_number = \Auth::user()->invoiceNumberFormat($invoice->invoice_id);
-            $customers      = Customer::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $category       = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 1)->get()->pluck('name', 'id');
-            $category->prepend('Select Category', '');
-            $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $invoice_number = \Auth::user()->invoiceNumberFormat($invoice->invoice_id);
+                $customers      = Customer::get()->pluck('name', 'id');
+                $category       = ProductServiceCategory::where('type', 1)->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+                $product_services = ProductService::get()->pluck('name', 'id');
+    
+                $invoice->customField = CustomField::getData($invoice, 'invoice');
+                $customFields         = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
+            }
+            else
+            {
+                $invoice_number = \Auth::user()->invoiceNumberFormat($invoice->invoice_id);
+                $customers      = Customer::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $category       = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 1)->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+                $product_services = ProductService::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+    
+                $invoice->customField = CustomField::getData($invoice, 'invoice');
+                $customFields         = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
+            }
 
-            $invoice->customField = CustomField::getData($invoice, 'invoice');
-            $customFields         = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
 
             return view('invoice.edit', compact('customers', 'product_services', 'invoice', 'invoice_number', 'category', 'customFields'));
         }
@@ -302,6 +388,73 @@ class InvoiceController extends Controller
 
                 return redirect()->route('invoice.index')->with('success', __('Invoice successfully updated.'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'customer_id' => 'required',
+                                       'issue_date' => 'required',
+                                       'due_date' => 'required',
+                                       'category_id' => 'required',
+                                       'items' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->route('invoice.index')->with('error', $messages->first());
+                }
+                $invoice->customer_id    = $request->customer_id;
+                $invoice->issue_date     = $request->issue_date;
+                $invoice->due_date       = $request->due_date;
+                $invoice->ref_number     = $request->ref_number;
+                $invoice->discount_apply = isset($request->discount_apply) ? 1 : 0;
+                $invoice->category_id    = $request->category_id;
+                $invoice->save();
+                CustomField::saveData($invoice, $request->customField);
+                $products = $request->items;
+
+                for($i = 0; $i < count($products); $i++)
+                {
+                    $invoiceProduct = InvoiceProduct::find($products[$i]['id']);
+
+                    //inventory management (Quantity)
+                    Utility::total_quantity('minus',$invoiceProduct->quantity,$invoiceProduct->product_id);
+
+
+                    if($invoiceProduct == null)
+                    {
+                        $invoiceProduct             = new InvoiceProduct();
+                        $invoiceProduct->invoice_id = $invoice->id;
+                    }
+
+                    if(isset($products[$i]['item']))
+                    {
+                        $invoiceProduct->product_id = $products[$i]['item'];
+                    }
+
+                    $invoiceProduct->quantity    = $products[$i]['quantity'];
+                    $invoiceProduct->tax         = $products[$i]['tax'];
+                    $invoiceProduct->discount    = isset($products[$i]['discount']) ? $products[$i]['discount'] : 0;
+                    $invoiceProduct->price       = $products[$i]['price'];
+                    $invoiceProduct->description = $products[$i]['description'];
+                    $invoiceProduct->save();
+
+                    //inventory management (Quantity)
+                    Utility::total_quantity('plus',$products[$i]['quantity'],$invoiceProduct->product_id);
+
+                    //Product Stock Report
+                    $type='invoice';
+                    $type_id = $invoice->id;
+                    StockReport::where('type','=','invoice')->where('type_id' ,'=', $invoice->id)->delete();
+                    $description=$invoiceProduct->quantity.'  '.__(' quantity sold in invoice').' '. \Auth::user()->invoiceNumberFormat($invoice->invoice_id);
+                    Utility::addProductStock( $invoiceProduct->product_id,$invoiceProduct->quantity,$type,$description,$type_id);
+
+                }
+
+                return redirect()->route('invoice.index')->with('success', __('Invoice successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -315,7 +468,14 @@ class InvoiceController extends Controller
 
     function invoiceNumber()
     {
-        $latest = Invoice::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+        {
+            $latest = Invoice::latest()->first();
+        }
+        else
+        {
+            $latest = Invoice::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        }
         if(!$latest)
         {
             return 1;
@@ -331,6 +491,18 @@ class InvoiceController extends Controller
             $id      = Crypt::decrypt($ids);
             $invoice = Invoice::find($id);
             if(!empty($invoice->created_by) == \Auth::user()->creatorId())
+            {
+                $invoicePayment = InvoicePayment::where('invoice_id', $invoice->id)->first();
+
+                $customer             = $invoice->customer;
+                $iteams               = $invoice->items;
+                $user                 = \Auth::user();
+                $invoice->customField = CustomField::getData($invoice, 'invoice');
+                $customFields         = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
+
+                return view('invoice.view', compact('invoice', 'customer', 'iteams', 'invoicePayment', 'customFields', 'user'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $invoicePayment = InvoicePayment::where('invoice_id', $invoice->id)->first();
 
@@ -359,6 +531,23 @@ class InvoiceController extends Controller
         if(\Auth::user()->can('delete invoice'))
         {
             if($invoice->created_by == \Auth::user()->creatorId())
+            {
+                foreach($invoice->payments as $invoices)
+                {
+                    Utility::bankAccountBalance($invoices->account_id, $invoices->amount, 'debit');
+                    $invoices->delete();
+                }
+                $invoice->delete();
+                if($invoice->customer_id != 0)
+                {
+                    Utility::userBalance('customer', $invoice->customer_id, $invoice->getTotal(), 'debit');
+                }
+
+                InvoiceProduct::where('invoice_id', '=', $invoice->id)->delete();
+
+                return redirect()->route('invoice.index')->with('success', __('Invoice successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 foreach($invoice->payments as $invoices)
                 {
@@ -408,7 +597,14 @@ class InvoiceController extends Controller
 
             $status = Invoice::$statues;
 
-            $query = Invoice::where('customer_id', '=', \Auth::user()->id)->where('status', '!=', '0')->where('created_by', \Auth::user()->creatorId());
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $query = Invoice::where('customer_id', '=', \Auth::user()->id)->where('status', '!=', '0');
+            }
+            else
+            {
+                $query = Invoice::where('customer_id', '=', \Auth::user()->id)->where('status', '!=', '0')->where('created_by', \Auth::user()->creatorId());
+            }
 
             if(!empty($request->issue_date))
             {
@@ -443,6 +639,10 @@ class InvoiceController extends Controller
                 return view('invoice.view', compact('invoice', 'customer', 'iteams', 'user'));
             }
             elseif($user->type == 'company')
+            {
+                return view('invoice.customer_invoice', compact('invoice', 'customer', 'iteams', 'user'));
+            }
+            elseif($user->type == 'admin')
             {
                 return view('invoice.customer_invoice', compact('invoice', 'customer', 'iteams', 'user'));
             }
@@ -502,16 +702,18 @@ class InvoiceController extends Controller
 
             $invoiceId    = Crypt::encrypt($invoice->id);
             $invoice->url = route('invoice.pdf', $invoiceId);
+            $customerArr = [
 
-            try
-            {
-                Mail::to($customer->email)->send(new InvoiceSend($invoice));
+                'customer_name'=> $customer->name,
+                'customer_email' => $customer->email,
+                'invoice_name' => $customer->name,
+                'invoice_number' => $invoice->invoice,
+                'invoice_url' => $invoice->url,
 
-            }
-            catch(\Exception $e)
-            {
-                $smtp_error = __('E-Mail has been not sent due to SMTP configuration');
-            }
+            ];
+
+            $resp = Utility::sendEmailTemplate('customer_invoice_send', [$customer->id => $customer->email], $customerArr);
+
 
             return redirect()->back()->with('success', __('Invoice successfully sent.') . ((isset($smtp_error)) ? '<br> <span class="text-danger">' . $smtp_error . '</span>' : ''));
         }
@@ -526,10 +728,18 @@ class InvoiceController extends Controller
         if(\Auth::user()->can('create payment invoice'))
         {
             $invoice = Invoice::where('id', $invoice_id)->first();
-
-            $customers  = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $customers  = Customer::get()->pluck('name', 'id');
+                $categories = ProductServiceCategory::get()->pluck('name', 'id');
+                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->get()->pluck('name', 'id');
+            }
+            else
+            {
+                $customers  = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }
 
             return view('invoice.payment', compact('customers', 'categories', 'accounts', 'invoice'));
         }

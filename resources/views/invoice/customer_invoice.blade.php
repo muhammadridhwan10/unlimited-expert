@@ -2,7 +2,7 @@
     $logo=asset(Storage::url('uploads/logo/'));
     $company_favicon=Utility::companyData($invoice->created_by,'company_favicon');
      $setting = \App\Models\Utility::colorset();
-    $color = (!empty($setting['color'])) ? $setting['color'] : 'theme-3';
+    $color = (!empty($setting['color'])) ? $setting['color'] : 'theme-4';
     $company_setting=\App\Models\Utility::settingsById($invoice->created_by);
 @endphp
     <!DOCTYPE html>
@@ -11,7 +11,7 @@
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-    <title>{{(Utility::companyData($invoice->created_by,'title_text')) ? Utility::companyData($invoice->created_by,'title_text') : config('app.name', 'ERPGO')}} - {{__('Invoice')}}</title>
+    <title>{{(Utility::companyData($invoice->created_by,'title_text')) ? Utility::companyData($invoice->created_by,'title_text') : config('app.name', 'TGS AU-Partners Apps')}} - {{__('Invoice')}}</title>
     <link rel="icon" href="{{$logo.'/'.(isset($company_favicon) && !empty($company_favicon)?$company_favicon:'favicon.png')}}" type="image" sizes="16x16">
 
     <link rel="stylesheet" href="{{ asset('assets/css/plugins/main.css') }}">

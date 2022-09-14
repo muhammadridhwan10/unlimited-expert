@@ -215,7 +215,7 @@ File: style.css
 
 .doc-img.themes-color > a[data-value="theme-4"],
   .theme-color.themes-color > a[data-value="theme-4"] {
-    background: linear-gradient(141.55deg, rgba(104, 94, 229, 0) 3.46%, #685ee5 99.86%), #584ed2;
+    background: linear-gradient(141.55deg, rgba(104, 94, 229, 0) 3.46%, #e39f39 99.86%), #f26622;
 }
 
 .doc-img > a {

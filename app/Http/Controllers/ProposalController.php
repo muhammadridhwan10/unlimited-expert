@@ -39,30 +39,87 @@ class ProposalController extends Controller
         if(\Auth::user()->can('manage proposal'))
         {
 
-            $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $customer->prepend('All', '');
-
-            $status = Proposal::$statues;
-
-            $query = Proposal::where('created_by', '=', \Auth::user()->creatorId());
-
-            if(!empty($request->customer))
+            if(\Auth::user()->type = 'admin')
             {
-                $query->where('id', '=', $request->customer);
-            }
-            if(!empty($request->issue_date))
-            {
-                $date_range = explode('to', $request->issue_date);
-                $query->whereBetween('issue_date', $date_range);
-            }
+                $customer = Customer::all()->pluck('name', 'id');
+                $customer->prepend('All', '');
 
-            if(!empty($request->status))
-            {
-                $query->where('status', '=', $request->status);
-            }
-            $proposals = $query->get();
+                $status = Proposal::$statues;
 
-            return view('proposal.index', compact('proposals', 'customer', 'status'));
+                $query = Proposal::all();
+
+                if(!empty($request->customer))
+                {
+                    $query->where('id', '=', $request->customer);
+                }
+                if(!empty($request->issue_date))
+                {
+                    $date_range = explode('to', $request->issue_date);
+                    $query->whereBetween('issue_date', $date_range);
+                }
+
+                if(!empty($request->status))
+                {
+                    $query->where('status', '=', $request->status);
+                }
+                $proposals = $query;
+
+                return view('proposal.index', compact('proposals', 'customer', 'status'));
+            }
+            elseif(\Auth::user()->type = 'company')
+            {
+                $customer = Customer::all()->pluck('name', 'id');
+                $customer->prepend('All', '');
+
+                $status = Proposal::$statues;
+
+                $query = Proposal::all();
+
+                if(!empty($request->customer))
+                {
+                    $query->where('id', '=', $request->customer);
+                }
+                if(!empty($request->issue_date))
+                {
+                    $date_range = explode('to', $request->issue_date);
+                    $query->whereBetween('issue_date', $date_range);
+                }
+
+                if(!empty($request->status))
+                {
+                    $query->where('status', '=', $request->status);
+                }
+                $proposals = $query;
+
+                return view('proposal.index', compact('proposals', 'customer', 'status'));
+            }
+            else
+            {
+                $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $customer->prepend('All', '');
+
+                $status = Proposal::$statues;
+
+                $query = Proposal::where('created_by', '=', \Auth::user()->creatorId());
+
+                if(!empty($request->customer))
+                {
+                    $query->where('id', '=', $request->customer);
+                }
+                if(!empty($request->issue_date))
+                {
+                    $date_range = explode('to', $request->issue_date);
+                    $query->whereBetween('issue_date', $date_range);
+                }
+
+                if(!empty($request->status))
+                {
+                    $query->where('status', '=', $request->status);
+                }
+                $proposals = $query->get();
+
+                return view('proposal.index', compact('proposals', 'customer', 'status'));
+            }
         }
         else
         {
@@ -265,6 +322,55 @@ class ProposalController extends Controller
 
                 return redirect()->route('proposal.index', $proposal->id)->with('success', __('Proposal successfully updated.'));
 
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'customer_id' => 'required',
+                                       'issue_date' => 'required',
+                                       'category_id' => 'required',
+                                       'items' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->route('proposal.index')->with('error', $messages->first());
+                }
+                $proposal->customer_id    = $request->customer_id;
+                $proposal->issue_date     = $request->issue_date;
+                $proposal->category_id    = $request->category_id;
+                $proposal->discount_apply = isset($request->discount_apply) ? 1 : 0;
+                $proposal->save();
+                CustomField::saveData($proposal, $request->customField);
+                $products = $request->items;
+
+                for($i = 0; $i < count($products); $i++)
+                {
+                    $proposalProduct = ProposalProduct::find($products[$i]['id']);
+                    if($proposalProduct == null)
+                    {
+                        $proposalProduct              = new ProposalProduct();
+                        $proposalProduct->proposal_id = $proposal->id;
+
+                    }
+
+                    if(isset($products[$i]['item']))
+                    {
+                        $proposalProduct->product_id = $products[$i]['item'];
+                    }
+
+                    $proposalProduct->quantity    = $products[$i]['quantity'];
+                    $proposalProduct->tax         = $products[$i]['tax'];
+                    $proposalProduct->discount    = isset($products[$i]['discount']) ? $products[$i]['discount'] : 0;
+                    $proposalProduct->price       = $products[$i]['price'];
+                    $proposalProduct->description = $products[$i]['description'];
+                    $proposalProduct->save();
+                }
+
+                return redirect()->route('proposal.index', $proposal->id)->with('success', __('Proposal successfully updated.'));
             }
             else
             {

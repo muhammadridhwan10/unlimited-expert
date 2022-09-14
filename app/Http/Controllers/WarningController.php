@@ -21,6 +21,14 @@ class WarningController extends Controller
                 $emp      = Employee::where('user_id', '=', \Auth::user()->id)->first();
                 $warnings = Warning::where('warning_by', '=', $emp->id)->get();
             }
+            elseif(Auth::user()->type == 'admin')
+            {
+                $warnings = Warning::all();
+            }
+            elseif(Auth::user()->type == 'company')
+            {
+                $warnings = Warning::all();
+            }
             else
             {
                 $warnings = Warning::where('created_by', '=', \Auth::user()->creatorId())->get();
@@ -43,6 +51,11 @@ class WarningController extends Controller
                 $user             = \Auth::user();
                 $current_employee = Employee::where('user_id', $user->id)->get()->pluck('name', 'id');
                 $employees        = Employee::where('user_id', '!=', $user->id)->get()->pluck('name', 'id');
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $current_employee = Employee::all()->pluck('name', 'id');
+                $employees        = Employee::all()->pluck('name', 'id');
             }
             else
             {
@@ -146,6 +159,12 @@ class WarningController extends Controller
                 $current_employee = Employee::where('user_id', $user->id)->get()->pluck('name', 'id');
                 $employees        = Employee::where('user_id', '!=', $user->id)->get()->pluck('name', 'id');
             }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $user             = \Auth::user();
+                $current_employee = Employee::where('user_id', $user->id)->get()->pluck('name', 'id');
+                $employees        = Employee::get()->pluck('name', 'id');
+            }
             else
             {
                 $user             = \Auth::user();
@@ -153,6 +172,10 @@ class WarningController extends Controller
                 $employees        = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             }
             if($warning->created_by == \Auth::user()->creatorId())
+            {
+                return view('warning.edit', compact('warning', 'employees', 'current_employee'));
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 return view('warning.edit', compact('warning', 'employees', 'current_employee'));
             }
@@ -215,6 +238,50 @@ class WarningController extends Controller
 
                 return redirect()->route('warning.index')->with('success', __('Warning successfully updated.'));
             }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                if(\Auth::user()->type != 'employee')
+                {
+                    $validator = \Validator::make(
+                        $request->all(), [
+                                           'warning_by' => 'required',
+                                       ]
+                    );
+                }
+
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'warning_to' => 'required',
+                                       'subject' => 'required',
+                                       'warning_date' => 'required',
+                                   ]
+                );
+
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                if(\Auth::user()->type == 'employee')
+                {
+                    $emp                 = Employee::where('user_id', '=', \Auth::user()->id)->first();
+                    $warning->warning_by = $emp->id;
+                }
+                else
+                {
+                    $warning->warning_by = $request->warning_by;
+                }
+
+                $warning->warning_to   = $request->warning_to;
+                $warning->subject      = $request->subject;
+                $warning->warning_date = $request->warning_date;
+                $warning->description  = $request->description;
+                $warning->save();
+
+                return redirect()->route('warning.index')->with('success', __('Warning successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -231,6 +298,12 @@ class WarningController extends Controller
         if(\Auth::user()->can('delete warning'))
         {
             if($warning->created_by == \Auth::user()->creatorId())
+            {
+                $warning->delete();
+
+                return redirect()->route('warning.index')->with('success', __('Warning successfully deleted.'));
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $warning->delete();
 

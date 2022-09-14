@@ -18,9 +18,24 @@ class BankAccountController extends Controller
     {
         if(\Auth::user()->can('create bank account'))
         {
+            if(\Auth::user()->type = 'admin')
+        {
+            $accounts = BankAccount::all();
+
+            return view('bankAccount.index', compact('accounts'));
+        }
+        elseif(\Auth::user()->type = 'company')
+        {
+            $accounts = BankAccount::all();
+
+            return view('bankAccount.index', compact('accounts'));
+        }
+        else
+        {
             $accounts = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get();
 
             return view('bankAccount.index', compact('accounts'));
+        }
         }
         else
         {
@@ -89,6 +104,13 @@ class BankAccountController extends Controller
         if(\Auth::user()->can('edit bank account'))
         {
             if($bankAccount->created_by == \Auth::user()->creatorId())
+            {
+                $bankAccount->customField = CustomField::getData($bankAccount, 'account');
+                $customFields             = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'account')->get();
+
+                return view('bankAccount.edit', compact('bankAccount', 'customFields'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $bankAccount->customField = CustomField::getData($bankAccount, 'account');
                 $customFields             = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'account')->get();
@@ -171,6 +193,25 @@ class BankAccountController extends Controller
                     return redirect()->route('bank-account.index')->with('success', __('Account successfully deleted.'));
                 }
 
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $revenue        = Revenue::where('account_id', $bankAccount->id)->first();
+                $invoicePayment = InvoicePayment::where('account_id', $bankAccount->id)->first();
+                $transaction    = Transaction::where('account', $bankAccount->id)->first();
+                $payment        = Payment::where('account_id', $bankAccount->id)->first();
+                $billPayment    = BillPayment::first();
+
+                if(!empty($revenue) && !empty($invoicePayment) && !empty($transaction) && !empty($payment) && !empty($billPayment))
+                {
+                    return redirect()->route('bank-account.index')->with('error', __('Please delete related record of this account.'));
+                }
+                else
+                {
+                    $bankAccount->delete();
+
+                    return redirect()->route('bank-account.index')->with('success', __('Account successfully deleted.'));
+                }
             }
             else
             {

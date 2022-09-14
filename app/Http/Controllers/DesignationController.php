@@ -13,9 +13,24 @@ class DesignationController extends Controller
 
         if(\Auth::user()->can('manage designation'))
         {
-            $designations = Designation::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type == 'admin')
+            {
+                $designations = Designation::all();
 
-            return view('designation.index', compact('designations'));
+                return view('designation.index', compact('designations'));
+            }
+            elseif(\Auth::user()->type == 'company')
+            {
+                $designations = Designation::all();
+
+                return view('designation.index', compact('designations'));
+            }
+            else
+            {
+                $designations = Designation::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('designation.index', compact('designations'));
+            }
         }
         else
         {
@@ -27,9 +42,16 @@ class DesignationController extends Controller
     {
         if(\Auth::user()->can('create designation'))
         {
-            $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $departments = $departments->pluck('name', 'id');
-
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $departments = Department::all();
+                $departments = $departments->pluck('name', 'id');
+            }
+            else
+            {
+                $departments = Department::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $departments = $departments->pluck('name', 'id');
+            }
             return view('designation.create', compact('departments'));
         }
         else
@@ -89,6 +111,13 @@ class DesignationController extends Controller
 
                 return view('designation.edit', compact('designation', 'departments'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $departments = Department::where('id', $designation->department_id)->first();
+                $departments = $departments->pluck('name', 'id');
+
+                return view('designation.edit', compact('designation', 'departments'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission denied.')], 401);
@@ -124,6 +153,26 @@ class DesignationController extends Controller
 
                 return redirect()->route('designation.index')->with('success', __('Designation  successfully updated.'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'department_id' => 'required',
+                                       'name' => 'required|max:20',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+                $designation->name          = $request->name;
+                $designation->department_id = $request->department_id;
+                $designation->save();
+
+                return redirect()->route('designation.index')->with('success', __('Designation  successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -140,6 +189,12 @@ class DesignationController extends Controller
         if(\Auth::user()->can('delete designation'))
         {
             if($designation->created_by == \Auth::user()->creatorId())
+            {
+                $designation->delete();
+
+                return redirect()->route('designation.index')->with('success', __('Designation successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $designation->delete();
 

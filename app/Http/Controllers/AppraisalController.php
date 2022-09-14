@@ -22,6 +22,10 @@ class AppraisalController extends Controller
                 $employee   = Employee::where('user_id', $user->id)->first();
                 $appraisals = Appraisal::where('created_by', '=', \Auth::user()->creatorId())->where('branch', $employee->branch_id)->where('employee', $employee->id)->get();
             }
+            elseif($user->type == 'admin' || $user->type == 'company')
+            {
+                $appraisals = Appraisal::all();
+            }
             else
             {
                 $appraisals = Appraisal::where('created_by', '=', \Auth::user()->creatorId())->get();
@@ -43,11 +47,21 @@ class AppraisalController extends Controller
 //            $technicals      = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'technical')->get();
 //            $organizationals = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'organizational')->get();
 //            $behaviourals = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'behavioural')->get();
-            $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $brances = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $brances->prepend('Select Branch', '');
-
-            return view('appraisal.create', compact( 'brances', 'performance'));
+            
+            $user = \Auth::user();
+            if($user->type == 'admin')
+            {
+                $performance    = PerformanceType::get();
+                $brances = Branch::get()->pluck('name', 'id');
+                $brances->prepend('Select Branch', '');
+            }
+            else
+            {
+                $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $brances = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $brances->prepend('Select Branch', '');
+            }
+            return view('appraisal.create', compact('brances', 'performance'));
         }
         else
         {
@@ -90,7 +104,14 @@ class AppraisalController extends Controller
     public function show(Appraisal $appraisal)
     {
         $ratings = json_decode($appraisal->rating, true);
-        $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $performance     = PerformanceType::all();
+        }
+        else
+        {
+            $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
+        }
 //        $technicals      = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'technical')->get();
 //        $organizationals = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'organizational')->get();
 //        $behaviourals = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'behavioural')->get();
@@ -104,14 +125,26 @@ class AppraisalController extends Controller
     {
         if(\Auth::user()->can('edit appraisal'))
         {
-//            $technicals      = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'technical')->get();
-//            $organizationals = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'organizational')->get();
-//            $behaviourals = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'behavioural')->get();
-            $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $brances = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $brances->prepend('Select Branch', '');
-            $ratings = json_decode($appraisal->rating,true);
-
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                // $technicals      = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'technical')->get();
+                // $organizationals = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'organizational')->get();
+                // $behaviourals = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'behavioural')->get();
+                $performance     = PerformanceType::all();
+                $brances = Branch::get()->pluck('name', 'id');
+                $brances->prepend('Select Branch', '');
+                $ratings = json_decode($appraisal->rating,true);
+            }
+            else
+            {
+                // $technicals      = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'technical')->get();
+                // $organizationals = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'organizational')->get();
+                // $behaviourals = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'behavioural')->get();
+                $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $brances = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $brances->prepend('Select Branch', '');
+                $ratings = json_decode($appraisal->rating,true);
+            }
 
             return view('appraisal.edit', compact( 'brances', 'appraisal', 'performance','ratings'));
         }
@@ -154,6 +187,12 @@ class AppraisalController extends Controller
         if(\Auth::user()->can('delete appraisal'))
         {
             if($appraisal->created_by == \Auth::user()->creatorId())
+            {
+                $appraisal->delete();
+
+                return redirect()->route('appraisal.index')->with('success', __('Appraisal successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
                 $appraisal->delete();
 

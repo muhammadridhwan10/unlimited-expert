@@ -68,7 +68,14 @@ class PermissionController extends Controller
     public function edit(Permission $permission)
     {
 
-        $roles = Role::where('created_by', '=', \Auth::user()->creatorId())->get();
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $roles = Role::all();
+        }
+        else
+        {
+            $roles = Role::where('created_by', '=', \Auth::user()->creatorId())->get();
+        }
 
         return view('permission.edit', compact('roles', 'permission'));
 

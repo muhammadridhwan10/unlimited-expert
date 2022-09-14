@@ -11,9 +11,18 @@ class DeductionOptionController extends Controller
     {
         if(\Auth::user()->can('manage deduction option'))
         {
-            $deductionoptions = DeductionOption::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $deductionoptions = DeductionOption::all();
 
-            return view('deductionoption.index', compact('deductionoptions'));
+                return view('deductionoption.index', compact('deductionoptions'));
+            }
+            else
+            {
+                $deductionoptions = DeductionOption::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('deductionoption.index', compact('deductionoptions'));
+            }
         }
         else
         {
@@ -78,6 +87,10 @@ class DeductionOptionController extends Controller
 
                 return view('deductionoption.edit', compact('deductionoption'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                return view('deductionoption.edit', compact('deductionoption'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission denied.')], 401);
@@ -113,6 +126,26 @@ class DeductionOptionController extends Controller
 
                 return redirect()->route('deductionoption.index')->with('success', __('DeductionOption successfully updated.'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required',
+
+                                   ]
+                );
+
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+                $deductionoption->name = $request->name;
+                $deductionoption->save();
+
+                return redirect()->route('deductionoption.index')->with('success', __('DeductionOption successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -129,6 +162,12 @@ class DeductionOptionController extends Controller
         if(\Auth::user()->can('delete deduction option'))
         {
             if($deductionoption->created_by == \Auth::user()->creatorId())
+            {
+                $deductionoption->delete();
+
+                return redirect()->route('deductionoption.index')->with('success', __('DeductionOption successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $deductionoption->delete();
 

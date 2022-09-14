@@ -12,9 +12,18 @@ class BranchController extends Controller
     {
         if(\Auth::user()->can('manage branch'))
         {
-            $branches = Branch::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $branches = Branch::all();
 
-            return view('branch.index', compact('branches'));
+                return view('branch.index', compact('branches'));
+            }
+            else
+            {
+                $branches = Branch::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('branch.index', compact('branches'));
+            }
         }
         else
         {
@@ -75,7 +84,10 @@ class BranchController extends Controller
         {
             if($branch->created_by == \Auth::user()->creatorId())
             {
-
+                return view('branch.edit', compact('branch'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
                 return view('branch.edit', compact('branch'));
             }
             else
@@ -112,6 +124,25 @@ class BranchController extends Controller
 
                 return redirect()->route('branch.index')->with('success', __('Branch successfully updated.'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $branch->name = $request->name;
+                $branch->save();
+
+                return redirect()->route('branch.index')->with('success', __('Branch successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -128,6 +159,12 @@ class BranchController extends Controller
         if(\Auth::user()->can('delete branch'))
         {
             if($branch->created_by == \Auth::user()->creatorId())
+            {
+                $branch->delete();
+
+                return redirect()->route('branch.index')->with('success', __('Branch successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $branch->delete();
 

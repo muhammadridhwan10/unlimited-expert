@@ -36,50 +36,87 @@ class DealController extends Controller
     {
         $usr      = \Auth::user();
         $pipeline = Pipeline::where('created_by', '=', $usr->ownerId())->where('id', '=', $usr->default_pipeline)->first();
+        $pipelines = Pipeline::all();
 
         if($usr->can('manage deal'))
         {
-            if($usr->default_pipeline)
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
-                $pipeline = Pipeline::where('created_by', '=', $usr->ownerId())->where('id', '=', $usr->default_pipeline)->first();
-                if(!$pipeline)
+                $pipeline = Pipeline::first();
+
+                $pipelines = Pipeline::all()->pluck('name', 'id');
+    
+                if($usr->type == 'client')
+                {
+                    $id_deals = $usr->clientDeals->pluck('id');
+                }
+                else
+                {
+                    $id_deals = $usr->deals->pluck('id');
+                }
+    
+                $deals       = Deal::whereIn('id', $id_deals)->where('pipeline_id', '=', $pipeline->id)->get();
+                $curr_month  = Deal::whereIn('id', $id_deals)->where('pipeline_id', '=', $pipeline->id)->whereMonth('created_at', '=', date('m'))->get();
+                $curr_week   = Deal::whereIn('id', $id_deals)->where('pipeline_id', '=', $pipeline->id)->whereBetween(
+                    'created_at', [
+                                    \Carbon\Carbon::now()->startOfWeek(),
+                                    \Carbon\Carbon::now()->endOfWeek(),
+                                ]
+                )->get();
+                $last_30days = Deal::whereIn('id', $id_deals)->where('pipeline_id', '=', $pipeline->id)->whereDate('created_at', '>', \Carbon\Carbon::now()->subDays(30))->get();
+                // Deal Summary
+                $cnt_deal                = [];
+                $cnt_deal['total']       = Deal::getDealSummary($deals);
+                $cnt_deal['this_month']  = Deal::getDealSummary($curr_month);
+                $cnt_deal['this_week']   = Deal::getDealSummary($curr_week);
+                $cnt_deal['last_30days'] = Deal::getDealSummary($last_30days);
+    
+                return view('deals.index', compact('pipelines', 'pipeline', 'cnt_deal'));
+            }
+            else
+            {
+                if($usr->default_pipeline)
+                {
+                    $pipeline = Pipeline::where('created_by', '=', $usr->ownerId())->where('id', '=', $usr->default_pipeline)->first();
+                    if(!$pipeline)
+                    {
+                        $pipeline = Pipeline::where('created_by', '=', $usr->ownerId())->first();
+                    }
+                }
+                else
                 {
                     $pipeline = Pipeline::where('created_by', '=', $usr->ownerId())->first();
                 }
+    
+                $pipelines = Pipeline::where('created_by', '=', $usr->ownerId())->get()->pluck('name', 'id');
+    
+                if($usr->type == 'client')
+                {
+                    $id_deals = $usr->clientDeals->pluck('id');
+                }
+                else
+                {
+                    $id_deals = $usr->deals->pluck('id');
+                }
+    
+                $deals       = Deal::whereIn('id', $id_deals)->where('pipeline_id', '=', $pipeline->id)->get();
+                $curr_month  = Deal::whereIn('id', $id_deals)->where('pipeline_id', '=', $pipeline->id)->whereMonth('created_at', '=', date('m'))->get();
+                $curr_week   = Deal::whereIn('id', $id_deals)->where('pipeline_id', '=', $pipeline->id)->whereBetween(
+                    'created_at', [
+                                    \Carbon\Carbon::now()->startOfWeek(),
+                                    \Carbon\Carbon::now()->endOfWeek(),
+                                ]
+                )->get();
+                $last_30days = Deal::whereIn('id', $id_deals)->where('pipeline_id', '=', $pipeline->id)->whereDate('created_at', '>', \Carbon\Carbon::now()->subDays(30))->get();
+                // Deal Summary
+                $cnt_deal                = [];
+                $cnt_deal['total']       = Deal::getDealSummary($deals);
+                $cnt_deal['this_month']  = Deal::getDealSummary($curr_month);
+                $cnt_deal['this_week']   = Deal::getDealSummary($curr_week);
+                $cnt_deal['last_30days'] = Deal::getDealSummary($last_30days);
+    
+                return view('deals.index', compact('pipelines', 'pipeline', 'cnt_deal'));
             }
-            else
-            {
-                $pipeline = Pipeline::where('created_by', '=', $usr->ownerId())->first();
-            }
-
-            $pipelines = Pipeline::where('created_by', '=', $usr->ownerId())->get()->pluck('name', 'id');
-
-            if($usr->type == 'client')
-            {
-                $id_deals = $usr->clientDeals->pluck('id');
-            }
-            else
-            {
-                $id_deals = $usr->deals->pluck('id');
-            }
-
-            $deals       = Deal::whereIn('id', $id_deals)->where('pipeline_id', '=', $pipeline->id)->get();
-            $curr_month  = Deal::whereIn('id', $id_deals)->where('pipeline_id', '=', $pipeline->id)->whereMonth('created_at', '=', date('m'))->get();
-            $curr_week   = Deal::whereIn('id', $id_deals)->where('pipeline_id', '=', $pipeline->id)->whereBetween(
-                'created_at', [
-                                \Carbon\Carbon::now()->startOfWeek(),
-                                \Carbon\Carbon::now()->endOfWeek(),
-                            ]
-            )->get();
-            $last_30days = Deal::whereIn('id', $id_deals)->where('pipeline_id', '=', $pipeline->id)->whereDate('created_at', '>', \Carbon\Carbon::now()->subDays(30))->get();
-            // Deal Summary
-            $cnt_deal                = [];
-            $cnt_deal['total']       = Deal::getDealSummary($deals);
-            $cnt_deal['this_month']  = Deal::getDealSummary($curr_month);
-            $cnt_deal['this_week']   = Deal::getDealSummary($curr_week);
-            $cnt_deal['last_30days'] = Deal::getDealSummary($last_30days);
-
-            return view('deals.index', compact('pipelines', 'pipeline', 'cnt_deal'));
         }
         else
         {
@@ -576,6 +613,21 @@ class DealController extends Controller
             if($deal->created_by == \Auth::user()->ownerId())
             {
                 $labels   = Label::where('pipeline_id', '=', $deal->pipeline_id)->where('created_by', \Auth::user()->creatorId())->get();
+                $selected = $deal->labels();
+                if($selected)
+                {
+                    $selected = $selected->pluck('name', 'id')->toArray();
+                }
+                else
+                {
+                    $selected = [];
+                }
+
+                return view('deals.labels', compact('deal', 'labels', 'selected'));
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $labels   = Label::where('pipeline_id', '=', $deal->pipeline_id)->get();
                 $selected = $deal->labels();
                 if($selected)
                 {

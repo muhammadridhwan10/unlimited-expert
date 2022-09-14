@@ -10,11 +10,24 @@ class TrainingTypeController extends Controller
 
     public function index()
     {
+        $user = \Auth::user();
         if(\Auth::user()->can('manage training type'))
         {
-            $trainingtypes = TrainingType::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if($user->type = 'admin'){
+                $trainingtypes = TrainingType::all();
 
-            return view('trainingtype.index', compact('trainingtypes'));
+                return view('trainingtype.index', compact('trainingtypes'));
+            }
+            elseif($user->type = 'company'){
+                $trainingtypes = TrainingType::all();
+
+                return view('trainingtype.index', compact('trainingtypes'));
+            }
+            else{
+                $trainingtypes = TrainingType::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('trainingtype.index', compact('trainingtypes'));
+            }
         }
         else
         {
@@ -84,6 +97,10 @@ class TrainingTypeController extends Controller
 
                 return view('trainingtype.edit', compact('trainingType'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                return view('trainingtype.edit', compact('trainingType'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -102,6 +119,20 @@ class TrainingTypeController extends Controller
         {
             $trainingType = TrainingType::find($id);
             if($trainingType->created_by == \Auth::user()->creatorId())
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required',
+
+                                   ]
+                );
+
+                $trainingType->name = $request->name;
+                $trainingType->save();
+
+                return redirect()->route('trainingtype.index')->with('success', __('TrainingType successfully updated.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -134,6 +165,12 @@ class TrainingTypeController extends Controller
 
             $trainingType = TrainingType::find($id);
             if($trainingType->created_by == \Auth::user()->creatorId())
+            {
+                $trainingType->delete();
+
+                return redirect()->route('trainingtype.index')->with('success', __('TrainingType successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $trainingType->delete();
 

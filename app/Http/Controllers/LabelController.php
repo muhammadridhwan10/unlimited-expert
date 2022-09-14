@@ -27,22 +27,44 @@ class LabelController extends Controller
     {
         if(\Auth::user()->can('manage label'))
         {
-            $labels   = Label::select('labels.*', 'pipelines.name as pipeline')->join('pipelines', 'pipelines.id', '=', 'labels.pipeline_id')->where('pipelines.created_by', '=', \Auth::user()->ownerId())->where('labels.created_by', '=', \Auth::user()->ownerId())->orderBy('labels.pipeline_id')->get();
-            $label = Label::where('created_by',\Auth::user()->ownerId())->get();
-            $pipelines = [];
-
-            foreach($labels as $label)
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
-                if(!array_key_exists($label->pipeline_id, $pipelines))
+                $labels   = Label::select('labels.*', 'pipelines.name as pipeline')->join('pipelines', 'pipelines.id', '=', 'labels.pipeline_id')->orderBy('labels.pipeline_id')->get();
+                $label = Label::all();
+                $pipelines = [];
+    
+                foreach($labels as $label)
                 {
-                    $pipelines[$label->pipeline_id]           = [];
-                    $pipelines[$label->pipeline_id]['name']   = $label['pipeline'];
-                    $pipelines[$label->pipeline_id]['labels'] = [];
+                    if(!array_key_exists($label->pipeline_id, $pipelines))
+                    {
+                        $pipelines[$label->pipeline_id]           = [];
+                        $pipelines[$label->pipeline_id]['name']   = $label['pipeline'];
+                        $pipelines[$label->pipeline_id]['labels'] = [];
+                    }
+                    $pipelines[$label->pipeline_id]['labels'][] = $label;
                 }
-                $pipelines[$label->pipeline_id]['labels'][] = $label;
+    
+                return view('labels.index')->with('pipelines', $pipelines);
             }
-
-            return view('labels.index')->with('pipelines', $pipelines);
+            else
+            {
+                $labels   = Label::select('labels.*', 'pipelines.name as pipeline')->join('pipelines', 'pipelines.id', '=', 'labels.pipeline_id')->where('pipelines.created_by', '=', \Auth::user()->ownerId())->where('labels.created_by', '=', \Auth::user()->ownerId())->orderBy('labels.pipeline_id')->get();
+                $label = Label::where('created_by',\Auth::user()->ownerId())->get();
+                $pipelines = [];
+    
+                foreach($labels as $label)
+                {
+                    if(!array_key_exists($label->pipeline_id, $pipelines))
+                    {
+                        $pipelines[$label->pipeline_id]           = [];
+                        $pipelines[$label->pipeline_id]['name']   = $label['pipeline'];
+                        $pipelines[$label->pipeline_id]['labels'] = [];
+                    }
+                    $pipelines[$label->pipeline_id]['labels'][] = $label;
+                }
+    
+                return view('labels.index')->with('pipelines', $pipelines);
+            }
         }
         else
         {
@@ -59,7 +81,14 @@ class LabelController extends Controller
     {
         if(\Auth::user()->can('create label'))
         {
-            $pipelines = Pipeline::where('created_by', '=', \Auth::user()->ownerId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+            {
+                $pipelines = Pipeline::all()->pluck('name', 'id');
+            }
+            else
+            {
+                $pipelines = Pipeline::where('created_by', '=', \Auth::user()->ownerId())->get()->pluck('name', 'id');
+            }
             $colors = Label::$colors;
 
             return view('labels.create')->with('pipelines', $pipelines)->with('colors', $colors);

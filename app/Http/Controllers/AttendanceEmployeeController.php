@@ -19,112 +19,328 @@ class AttendanceEmployeeController extends Controller
 
         if(\Auth::user()->can('manage attendance'))
         {
-
-            $branch = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $branch->prepend('Select Branch', '');
-
-            $department = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $department->prepend('Select Department', '');
-
-            if(\Auth::user()->type != 'client' && \Auth::user()->type != 'company')
-            {
-                $emp = !empty(\Auth::user()->employee) ? \Auth::user()->employee->id : 0;
-
-                $attendanceEmployee = AttendanceEmployee::where('employee_id', $emp);
-                if($request->type == 'monthly' && !empty($request->month))
+            if(\Auth::user()->type = 'admin'){
+                $branch = Branch::all()->pluck('name', 'id');
+                $branch->prepend('Select Branch', '');
+    
+                $department = Department::all()->pluck('name', 'id');
+                $department->prepend('Select Department', '');
+    
+                if(\Auth::user()->type != 'client' && \Auth::user()->type != 'admin' && \Auth::user()->type != 'company')
                 {
-                    $month = date('m', strtotime($request->month));
-                    $year  = date('Y', strtotime($request->month));
-
-                    $start_date = date($year . '-' . $month . '-01');
-                    $end_date   = date($year . '-' . $month . '-t');
-
-                    $attendanceEmployee->whereBetween(
-                        'date', [
-                                  $start_date,
-                                  $end_date,
-                              ]
-                    );
-                }
-                elseif($request->type == 'daily' && !empty($request->date))
-                {
-                    $attendanceEmployee->where('date', $request->date);
-                }
-                else
-                {
-                    $month      = date('m');
-                    $year       = date('Y');
-                    $start_date = date($year . '-' . $month . '-01');
-                    $end_date   = date($year . '-' . $month . '-t');
-
-                    $attendanceEmployee->whereBetween(
-                        'date', [
-                                  $start_date,
-                                  $end_date,
-                              ]
-                    );
-                }
-                $attendanceEmployee = $attendanceEmployee->get();
-
-            }
-            else
-            {
-                $employee = Employee::select('id')->where('created_by', \Auth::user()->creatorId());
-
-                if(!empty($request->branch))
-                {
-                    $employee->where('branch_id', $request->branch);
-                }
-
-                if(!empty($request->department))
-                {
-                    $employee->where('department_id', $request->department);
-                }
-
-                $employee = $employee->get()->pluck('id');
-
-                $attendanceEmployee = AttendanceEmployee::whereIn('employee_id', $employee);
-
-                if($request->type == 'monthly' && !empty($request->month))
-                {
-                    $month = date('m', strtotime($request->month));
-                    $year  = date('Y', strtotime($request->month));
-
-                    $start_date = date($year . '-' . $month . '-01');
-                    $end_date   = date($year . '-' . $month . '-t');
-
-                    $attendanceEmployee->whereBetween(
-                        'date', [
-                                  $start_date,
-                                  $end_date,
-                              ]
-                    );
-                }
-                elseif($request->type == 'daily' && !empty($request->date))
-                {
-                    $attendanceEmployee->where('date', $request->date);
+                    $emp = !empty(\Auth::user()->employee) ? \Auth::user()->employee->id : 0;
+    
+                    $attendanceEmployee = AttendanceEmployee::where('employee_id', $emp);
+                    if($request->type == 'monthly' && !empty($request->month))
+                    {
+                        $month = date('m', strtotime($request->month));
+                        $year  = date('Y', strtotime($request->month));
+    
+                        $start_date = date($year . '-' . $month . '-01');
+                        $end_date   = date($year . '-' . $month . '-t');
+    
+                        $attendanceEmployee->whereBetween(
+                            'date', [
+                                      $start_date,
+                                      $end_date,
+                                  ]
+                        );
+                    }
+                    elseif($request->type == 'daily' && !empty($request->date))
+                    {
+                        $attendanceEmployee->where('date', $request->date);
+                    }
+                    else
+                    {
+                        $month      = date('m');
+                        $year       = date('Y');
+                        $start_date = date($year . '-' . $month . '-01');
+                        $end_date   = date($year . '-' . $month . '-t');
+    
+                        $attendanceEmployee->whereBetween(
+                            'date', [
+                                      $start_date,
+                                      $end_date,
+                                  ]
+                        );
+                    }
+                    $attendanceEmployee = $attendanceEmployee->get();
+    
                 }
                 else
                 {
-                    $month      = date('m');
-                    $year       = date('Y');
-                    $start_date = date($year . '-' . $month . '-01');
-                    $end_date   = date($year . '-' . $month . '-t');
-
-                    $attendanceEmployee->whereBetween(
-                        'date', [
-                                  $start_date,
-                                  $end_date,
-                              ]
-                    );
+                    $employee = Employee::all();
+    
+                    if(!empty($request->branch))
+                    {
+                        $employee->where('branch_id', $request->branch);
+                    }
+    
+                    if(!empty($request->department))
+                    {
+                        $employee->where('department_id', $request->department);
+                    }
+    
+                    $employee = $employee->pluck('id');
+    
+                    $attendanceEmployee = AttendanceEmployee::whereIn('employee_id', $employee);
+    
+                    if($request->type == 'monthly' && !empty($request->month))
+                    {
+                        $month = date('m', strtotime($request->month));
+                        $year  = date('Y', strtotime($request->month));
+    
+                        $start_date = date($year . '-' . $month . '-01');
+                        $end_date   = date($year . '-' . $month . '-t');
+    
+                        $attendanceEmployee->whereBetween(
+                            'date', [
+                                      $start_date,
+                                      $end_date,
+                                  ]
+                        );
+                    }
+                    elseif($request->type == 'daily' && !empty($request->date))
+                    {
+                        $attendanceEmployee->where('date', $request->date);
+                    }
+                    else
+                    {
+                        $month      = date('m');
+                        $year       = date('Y');
+                        $start_date = date($year . '-' . $month . '-01');
+                        $end_date   = date($year . '-' . $month . '-t');
+    
+                        $attendanceEmployee->whereBetween(
+                            'date', [
+                                      $start_date,
+                                      $end_date,
+                                  ]
+                        );
+                    }
+    
+    
+                    $attendanceEmployee = $attendanceEmployee->get();
+    
                 }
-
-
-                $attendanceEmployee = $attendanceEmployee->get();
-
+    
+                return view('attendance.index', compact('attendanceEmployee', 'branch', 'department'));
             }
-
-            return view('attendance.index', compact('attendanceEmployee', 'branch', 'department'));
+            elseif(\Auth::user()->type = 'company')
+            {
+                $branch = Branch::all()->pluck('name', 'id');
+                $branch->prepend('Select Branch', '');
+    
+                $department = Department::all()->pluck('name', 'id');
+                $department->prepend('Select Department', '');
+    
+                if(\Auth::user()->type != 'client' && \Auth::user()->type != 'admin' && \Auth::user()->type != 'company')
+                {
+                    $emp = !empty(\Auth::user()->employee) ? \Auth::user()->employee->id : 0;
+    
+                    $attendanceEmployee = AttendanceEmployee::where('employee_id', $emp);
+                    if($request->type == 'monthly' && !empty($request->month))
+                    {
+                        $month = date('m', strtotime($request->month));
+                        $year  = date('Y', strtotime($request->month));
+    
+                        $start_date = date($year . '-' . $month . '-01');
+                        $end_date   = date($year . '-' . $month . '-t');
+    
+                        $attendanceEmployee->whereBetween(
+                            'date', [
+                                      $start_date,
+                                      $end_date,
+                                  ]
+                        );
+                    }
+                    elseif($request->type == 'daily' && !empty($request->date))
+                    {
+                        $attendanceEmployee->where('date', $request->date);
+                    }
+                    else
+                    {
+                        $month      = date('m');
+                        $year       = date('Y');
+                        $start_date = date($year . '-' . $month . '-01');
+                        $end_date   = date($year . '-' . $month . '-t');
+    
+                        $attendanceEmployee->whereBetween(
+                            'date', [
+                                      $start_date,
+                                      $end_date,
+                                  ]
+                        );
+                    }
+                    $attendanceEmployee = $attendanceEmployee->get();
+    
+                }
+                else
+                {
+                    $employee = Employee::all();
+    
+                    if(!empty($request->branch))
+                    {
+                        $employee->where('branch_id', $request->branch);
+                    }
+    
+                    if(!empty($request->department))
+                    {
+                        $employee->where('department_id', $request->department);
+                    }
+    
+                    $employee = $employee->pluck('id');
+    
+                    $attendanceEmployee = AttendanceEmployee::whereIn('employee_id', $employee);
+    
+                    if($request->type == 'monthly' && !empty($request->month))
+                    {
+                        $month = date('m', strtotime($request->month));
+                        $year  = date('Y', strtotime($request->month));
+    
+                        $start_date = date($year . '-' . $month . '-01');
+                        $end_date   = date($year . '-' . $month . '-t');
+    
+                        $attendanceEmployee->whereBetween(
+                            'date', [
+                                      $start_date,
+                                      $end_date,
+                                  ]
+                        );
+                    }
+                    elseif($request->type == 'daily' && !empty($request->date))
+                    {
+                        $attendanceEmployee->where('date', $request->date);
+                    }
+                    else
+                    {
+                        $month      = date('m');
+                        $year       = date('Y');
+                        $start_date = date($year . '-' . $month . '-01');
+                        $end_date   = date($year . '-' . $month . '-t');
+    
+                        $attendanceEmployee->whereBetween(
+                            'date', [
+                                      $start_date,
+                                      $end_date,
+                                  ]
+                        );
+                    }
+    
+    
+                    $attendanceEmployee = $attendanceEmployee->get();
+    
+                }
+    
+                return view('attendance.index', compact('attendanceEmployee', 'branch', 'department'));
+            }
+            else{
+                $branch = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $branch->prepend('Select Branch', '');
+    
+                $department = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $department->prepend('Select Department', '');
+    
+                if(\Auth::user()->type != 'client' && \Auth::user()->type != 'company')
+                {
+                    $emp = !empty(\Auth::user()->employee) ? \Auth::user()->employee->id : 0;
+    
+                    $attendanceEmployee = AttendanceEmployee::where('employee_id', $emp);
+                    if($request->type == 'monthly' && !empty($request->month))
+                    {
+                        $month = date('m', strtotime($request->month));
+                        $year  = date('Y', strtotime($request->month));
+    
+                        $start_date = date($year . '-' . $month . '-01');
+                        $end_date   = date($year . '-' . $month . '-t');
+    
+                        $attendanceEmployee->whereBetween(
+                            'date', [
+                                      $start_date,
+                                      $end_date,
+                                  ]
+                        );
+                    }
+                    elseif($request->type == 'daily' && !empty($request->date))
+                    {
+                        $attendanceEmployee->where('date', $request->date);
+                    }
+                    else
+                    {
+                        $month      = date('m');
+                        $year       = date('Y');
+                        $start_date = date($year . '-' . $month . '-01');
+                        $end_date   = date($year . '-' . $month . '-t');
+    
+                        $attendanceEmployee->whereBetween(
+                            'date', [
+                                      $start_date,
+                                      $end_date,
+                                  ]
+                        );
+                    }
+                    $attendanceEmployee = $attendanceEmployee->get();
+    
+                }
+                else
+                {
+                    $employee = Employee::select('id')->where('created_by', \Auth::user()->creatorId());
+    
+                    if(!empty($request->branch))
+                    {
+                        $employee->where('branch_id', $request->branch);
+                    }
+    
+                    if(!empty($request->department))
+                    {
+                        $employee->where('department_id', $request->department);
+                    }
+    
+                    $employee = $employee->get()->pluck('id');
+    
+                    $attendanceEmployee = AttendanceEmployee::whereIn('employee_id', $employee);
+    
+                    if($request->type == 'monthly' && !empty($request->month))
+                    {
+                        $month = date('m', strtotime($request->month));
+                        $year  = date('Y', strtotime($request->month));
+    
+                        $start_date = date($year . '-' . $month . '-01');
+                        $end_date   = date($year . '-' . $month . '-t');
+    
+                        $attendanceEmployee->whereBetween(
+                            'date', [
+                                      $start_date,
+                                      $end_date,
+                                  ]
+                        );
+                    }
+                    elseif($request->type == 'daily' && !empty($request->date))
+                    {
+                        $attendanceEmployee->where('date', $request->date);
+                    }
+                    else
+                    {
+                        $month      = date('m');
+                        $year       = date('Y');
+                        $start_date = date($year . '-' . $month . '-01');
+                        $end_date   = date($year . '-' . $month . '-t');
+    
+                        $attendanceEmployee->whereBetween(
+                            'date', [
+                                      $start_date,
+                                      $end_date,
+                                  ]
+                        );
+                    }
+    
+    
+                    $attendanceEmployee = $attendanceEmployee->get();
+    
+                }
+    
+                return view('attendance.index', compact('attendanceEmployee', 'branch', 'department'));
+            }
         }
         else
         {
@@ -233,9 +449,16 @@ class AttendanceEmployeeController extends Controller
     {
         if(\Auth::user()->can('edit attendance'))
         {
-            $attendanceEmployee = AttendanceEmployee::where('id', $id)->first();
-            $employees          = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $attendanceEmployee = AttendanceEmployee::where('id', $id)->first();
+                $employees          = Employee::get()->pluck('name', 'id');
+            }
+            else
+            {
+                $attendanceEmployee = AttendanceEmployee::where('id', $id)->first();
+                $employees          = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }
             return view('attendance.edit', compact('attendanceEmployee', 'employees'));
         }
         else
@@ -452,24 +675,67 @@ class AttendanceEmployeeController extends Controller
         if(\Auth::user()->can('create attendance'))
         {
 
-            $branch = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $branch->prepend('Select Branch', '');
-
-            $department = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $department->prepend('Select Department', '');
-
-            $employees = [];
-            if(!empty($request->branch) && !empty($request->department))
-            {
-                $employees = Employee::where('created_by', \Auth::user()->creatorId())->where('branch_id', $request->branch)->where('department_id', $request->department)->get();
-
-
-            }else{
-                $employees = Employee::where('created_by', \Auth::user()->creatorId())->where('branch_id', 1)->where('department_id',1)->get();
+            if(\Auth::user()->type = 'admin'){
+                $branch = Branch::all()->pluck('name', 'id');
+                $branch->prepend('Select Branch', '');
+    
+                $department = Department::all()->pluck('name', 'id');
+                $department->prepend('Select Department', '');
+    
+                $employees = [];
+                if(!empty($request->branch) && !empty($request->department))
+                {
+                    $employees = Employee::where('branch_id', $request->branch)->where('department_id', $request->department)->get();
+    
+    
+                }else{
+                    $employees = Employee::all();
+                }
+    
+    
+                return view('attendance.bulk', compact('employees', 'branch', 'department'));
             }
-
-
-            return view('attendance.bulk', compact('employees', 'branch', 'department'));
+            elseif(\Auth::user()->type = 'company')
+            {
+                $branch = Branch::all()->pluck('name', 'id');
+                $branch->prepend('Select Branch', '');
+    
+                $department = Department::all()->pluck('name', 'id');
+                $department->prepend('Select Department', '');
+    
+                $employees = [];
+                if(!empty($request->branch) && !empty($request->department))
+                {
+                    $employees = Employee::where('branch_id', $request->branch)->where('department_id', $request->department)->get();
+    
+    
+                }else{
+                    $employees = Employee::all();
+                }
+    
+    
+                return view('attendance.bulk', compact('employees', 'branch', 'department'));
+            }
+            else{
+                $branch = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $branch->prepend('Select Branch', '');
+    
+                $department = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $department->prepend('Select Department', '');
+    
+                $employees = [];
+                if(!empty($request->branch) && !empty($request->department))
+                {
+                    $employees = Employee::where('created_by', \Auth::user()->creatorId())->where('branch_id', $request->branch)->where('department_id', $request->department)->get();
+    
+    
+                }else{
+                    $employees = Employee::where('created_by', \Auth::user()->creatorId())->where('branch_id', 1)->where('department_id',1)->get();
+                }
+    
+    
+                return view('attendance.bulk', compact('employees', 'branch', 'department'));
+            }
         }
         else
         {

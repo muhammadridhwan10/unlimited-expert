@@ -10,7 +10,7 @@ class LandingPageSectionController extends Controller
 
     public function index()
     {
-        if(\Auth::user()->type == 'company')
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
             $get_section = LandingPageSection::orderBy('section_order', 'ASC')->get();
 
@@ -23,7 +23,7 @@ class LandingPageSectionController extends Controller
     public function setConetent(Request $request)
     {
 
-        if(\Auth::user()->type == 'company')
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
             $id                = $request->id;
             $section_type      = $request->section_type;
@@ -576,7 +576,7 @@ class LandingPageSectionController extends Controller
 
     public function setOrder(Request $request)
     {
-        if(\Auth::user()->type == 'company')
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
             $element_array = $request->element_array;
             $order         = 1;
@@ -599,7 +599,7 @@ class LandingPageSectionController extends Controller
 
     public function copySection(Request $request)
     {
-        if(\Auth::user()->type == 'company')
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
             $id = $request->id;
 

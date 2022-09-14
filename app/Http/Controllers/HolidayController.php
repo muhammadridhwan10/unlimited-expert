@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Holiday;
 use App\Models\Utility;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class HolidayController extends Controller
 {
@@ -14,19 +15,54 @@ class HolidayController extends Controller
         if(\Auth::user()->can('manage holiday'))
         {
 
-            $holidays = Holiday::where('created_by', '=', \Auth::user()->creatorId());
-
-            if(!empty($request->start_date))
+            if(Auth::user()->type == 'admin')
             {
-                $holidays->where('date', '>=', $request->start_date);
-            }
-            if(!empty($request->end_date))
-            {
-                $holidays->where('date', '<=', $request->end_date);
-            }
-            $holidays = $holidays->get();
+                $holidays = Holiday::all();
 
-            return view('holiday.index', compact('holidays'));
+                if(!empty($request->start_date))
+                {
+                    $holidays->where('date', '>=', $request->start_date);
+                }
+                if(!empty($request->end_date))
+                {
+                    $holidays->where('date', '<=', $request->end_date);
+                }
+                $holidays = $holidays;
+    
+                return view('holiday.index', compact('holidays'));
+            }
+            if(\Auth::user()->type == 'company')
+            {
+                $holidays = Holiday::all();
+
+                if(!empty($request->start_date))
+                {
+                    $holidays->where('date', '>=', $request->start_date);
+                }
+                if(!empty($request->end_date))
+                {
+                    $holidays->where('date', '<=', $request->end_date);
+                }
+                $holidays = $holidays;
+    
+                return view('holiday.index', compact('holidays'));
+            }
+            else
+            {
+                $holidays = Holiday::where('created_by', '=', \Auth::user()->creatorId());
+
+                if(!empty($request->start_date))
+                {
+                    $holidays->where('date', '>=', $request->start_date);
+                }
+                if(!empty($request->end_date))
+                {
+                    $holidays->where('date', '<=', $request->end_date);
+                }
+                $holidays = $holidays->get();
+    
+                return view('holiday.index', compact('holidays'));
+            }
         }
         else
         {
@@ -185,7 +221,14 @@ class HolidayController extends Controller
         {
             $transdate = date('Y-m-d', time());
 
-            $holidays = Holiday::where('created_by', '=', \Auth::user()->creatorId());
+            if(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $holidays = Holiday::all();
+            }
+            else
+            {
+                $holidays = Holiday::where('created_by', '=', \Auth::user()->creatorId());
+            }
 
             if(!empty($request->start_date))
             {

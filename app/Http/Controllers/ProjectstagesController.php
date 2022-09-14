@@ -13,7 +13,14 @@ class ProjectstagesController extends Controller
     {
         if(\Auth::user()->can('manage project stage'))
         {
-            $projectstages = Projectstages::where('created_by', '=', \Auth::user()->creatorId())->orderBy('order')->get();
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $projectstages = Projectstages::orderBy('order')->get();
+            }
+            else
+            {
+                $projectstages = Projectstages::where('created_by', '=', \Auth::user()->creatorId())->orderBy('order')->get();
+            }
 
             return view('projectstages.index', compact('projectstages'));
         }
@@ -39,27 +46,54 @@ class ProjectstagesController extends Controller
     {
         if(\Auth::user()->can('create project stage'))
         {
-            $validator = \Validator::make(
-                $request->all(), [
-                                   'name' => 'required|max:20',
-                               ]
-            );
-            if($validator->fails())
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
-                $messages = $validator->getMessageBag();
-
-                return redirect()->route('projectstages.index')->with('error', $messages->first());
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required|max:20',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+    
+                    return redirect()->route('projectstages.index')->with('error', $messages->first());
+                }
+                $all_stage         = Projectstages::orderBy('id', 'DESC')->first();
+                $stage             = new Projectstages();
+                $stage->name       = $request->name;
+                $stage->color      = '#' . $request->color;
+                $stage->created_by = \Auth::user()->creatorId();
+                $stage->order      = (!empty($all_stage) ? ($all_stage->order + 1) : 0);
+    
+                $stage->save();
+    
+                return redirect()->route('projectstages.index')->with('success', __('Project stage successfully created.'));
             }
-            $all_stage         = Projectstages::where('created_by', \Auth::user()->creatorId())->orderBy('id', 'DESC')->first();
-            $stage             = new Projectstages();
-            $stage->name       = $request->name;
-            $stage->color      = '#' . $request->color;
-            $stage->created_by = \Auth::user()->creatorId();
-            $stage->order      = (!empty($all_stage) ? ($all_stage->order + 1) : 0);
-
-            $stage->save();
-
-            return redirect()->route('projectstages.index')->with('success', __('Project stage successfully created.'));
+            else
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required|max:20',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+    
+                    return redirect()->route('projectstages.index')->with('error', $messages->first());
+                }
+                $all_stage         = Projectstages::where('created_by', \Auth::user()->creatorId())->orderBy('id', 'DESC')->first();
+                $stage             = new Projectstages();
+                $stage->name       = $request->name;
+                $stage->color      = '#' . $request->color;
+                $stage->created_by = \Auth::user()->creatorId();
+                $stage->order      = (!empty($all_stage) ? ($all_stage->order + 1) : 0);
+    
+                $stage->save();
+    
+                return redirect()->route('projectstages.index')->with('success', __('Project stage successfully created.'));
+            }
         }
         else
         {
@@ -73,6 +107,10 @@ class ProjectstagesController extends Controller
         {
             $leadstages = Projectstages::findOrfail($id);
             if($leadstages->created_by == \Auth::user()->creatorId())
+            {
+                return view('projectstages.edit', compact('leadstages'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
                 return view('projectstages.edit', compact('leadstages'));
             }
@@ -113,6 +151,27 @@ class ProjectstagesController extends Controller
 
                 return redirect()->route('projectstages.index')->with('success', __('Project stage successfully updated.'));
             }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required|max:20',
+                                   ]
+                );
+
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->route('projectstages.index')->with('error', $messages->first());
+                }
+
+                $leadstages->name  = $request->name;
+                $leadstages->color = '#' . $request->color;
+                $leadstages->save();
+
+                return redirect()->route('projectstages.index')->with('success', __('Project stage successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -132,6 +191,20 @@ class ProjectstagesController extends Controller
         {
             $projectstages = Projectstages::findOrfail($id);
             if($projectstages->created_by == \Auth::user()->creatorId())
+            {
+                $checkStage = Task::where('stage', '=', $projectstages->id)->get()->toArray();
+                if(empty($checkStage))
+                {
+                    $projectstages->delete();
+
+                    return redirect()->route('projectstages.index')->with('success', __('Project stage successfully deleted.'));
+                }
+                else
+                {
+                    return redirect()->route('projectstages.index')->with('error', __('Project task already assign this stage , so please remove or move task to other project stage.'));
+                }
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
                 $checkStage = Task::where('stage', '=', $projectstages->id)->get()->toArray();
                 if(empty($checkStage))

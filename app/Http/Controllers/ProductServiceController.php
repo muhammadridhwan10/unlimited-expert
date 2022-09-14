@@ -23,20 +23,57 @@ class ProductServiceController extends Controller
 
         if(\Auth::user()->can('manage product & service'))
         {
-            $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 0)->get()->pluck('name', 'id');
-            $category->prepend('Select Category', '');
-
-            if(!empty($request->category))
+            if(\Auth::user()->type = 'admin')
             {
-
-                $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('category_id', $request->category)->get();
+                $category = ProductServiceCategory::where('type', '=', 0)->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+    
+                if(!empty($request->category))
+                {
+    
+                    $productServices = ProductService::where('category_id', $request->category)->get();
+                }
+                else
+                {
+                    $productServices = ProductService::all();
+                }
+    
+                return view('productservice.index', compact('productServices', 'category'));
+            }
+            elseif(\Auth::user()->type = 'company')
+            {
+                $category = ProductServiceCategory::where('type', '=', 0)->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+    
+                if(!empty($request->category))
+                {
+    
+                    $productServices = ProductService::where('category_id', $request->category)->get();
+                }
+                else
+                {
+                    $productServices = ProductService::all();
+                }
+    
+                return view('productservice.index', compact('productServices', 'category'));
             }
             else
             {
-                $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 0)->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+    
+                if(!empty($request->category))
+                {
+    
+                    $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->where('category_id', $request->category)->get();
+                }
+                else
+                {
+                    $productServices = ProductService::where('created_by', '=', \Auth::user()->creatorId())->get();
+                }
+    
+                return view('productservice.index', compact('productServices', 'category'));
             }
-
-            return view('productservice.index', compact('productServices', 'category'));
         }
         else
         {
@@ -49,10 +86,20 @@ class ProductServiceController extends Controller
     {
         if(\Auth::user()->can('create product & service'))
         {
-            $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'product')->get();
-            $category     = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 0)->get()->pluck('name', 'id');
-            $unit         = ProductServiceUnit::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $tax          = Tax::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $customFields = CustomField::where('module', '=', 'product')->get();
+                $category     = ProductServiceCategory::where('type', '=', 0)->get()->pluck('name', 'id');
+                $unit         = ProductServiceUnit::all()->pluck('name', 'id');
+                $tax          = Tax::all()->pluck('name', 'id');
+            }
+            else
+            {
+                $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'product')->get();
+                $category     = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 0)->get()->pluck('name', 'id');
+                $unit         = ProductServiceUnit::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $tax          = Tax::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }
 
             return view('productservice.create', compact('category', 'unit', 'tax', 'customFields'));
         }
@@ -130,6 +177,18 @@ class ProductServiceController extends Controller
 
                 return view('productservice.edit', compact('category', 'unit', 'tax', 'productService', 'customFields'));
             }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $category = ProductServiceCategory::where('type', '=', 0)->get()->pluck('name', 'id');
+                $unit     = ProductServiceUnit::get()->pluck('name', 'id');
+                $tax      = Tax::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+
+                $productService->customField = CustomField::getData($productService, 'product');
+                $customFields                = CustomField::where('module', '=', 'product')->get();
+                $productService->tax_id      = explode(',', $productService->tax_id);
+
+                return view('productservice.edit', compact('category', 'unit', 'tax', 'productService', 'customFields'));
+            }
             else
             {
                 return response()->json(['error' => __('Permission denied.')], 401);
@@ -186,6 +245,43 @@ class ProductServiceController extends Controller
 
                 return redirect()->route('productservice.index')->with('success', __('Product successfully updated.'));
             }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $rules = [
+                    'name' => 'required',
+                    'sku' => 'required', Rule::unique('product_services')->ignore($productService->id),
+                    'sale_price' => 'required|numeric',
+                    'purchase_price' => 'required|numeric',
+                    'category_id' => 'required',
+                    'unit_id' => 'required',
+                    'type' => 'required',
+                ];
+
+                $validator = \Validator::make($request->all(), $rules);
+
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->route('productservice.index')->with('error', $messages->first());
+                }
+
+                $productService->name           = $request->name;
+                $productService->description    = $request->description;
+                $productService->sku            = $request->sku;
+                $productService->sale_price     = $request->sale_price;
+                $productService->purchase_price = $request->purchase_price;
+                $productService->tax_id         = !empty($request->tax_id) ? implode(',', $request->tax_id) : '';
+                $productService->unit_id        = $request->unit_id;
+                $productService->quantity        = $request->quantity;
+                $productService->type           = $request->type;
+                $productService->category_id    = $request->category_id;
+                $productService->created_by     = \Auth::user()->creatorId();
+                $productService->save();
+                CustomField::saveData($productService, $request->customField);
+
+                return redirect()->route('productservice.index')->with('success', __('Product successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -204,6 +300,12 @@ class ProductServiceController extends Controller
         {
             $productService = ProductService::find($id);
             if($productService->created_by == \Auth::user()->creatorId())
+            {
+                $productService->delete();
+
+                return redirect()->route('productservice.index')->with('success', __('Product successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
                 $productService->delete();
 

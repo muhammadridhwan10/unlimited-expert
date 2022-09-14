@@ -10,11 +10,19 @@ class CustomQuestionController extends Controller
 
     public function index()
     {
+        $user = \Auth::user();
         if(\Auth::user()->can('manage custom question'))
         {
-            $questions = CustomQuestion::where('created_by', \Auth::user()->creatorId())->get();
+            if($user->type = 'admin'){
+                $questions = CustomQuestion::all();
 
-            return view('customQuestion.index', compact('questions'));
+                return view('customQuestion.index', compact('questions'));
+            }
+            else{
+                $questions = CustomQuestion::where('created_by', \Auth::user()->creatorId())->get();
+
+                return view('customQuestion.index', compact('questions'));
+            }
         }
         else
         {

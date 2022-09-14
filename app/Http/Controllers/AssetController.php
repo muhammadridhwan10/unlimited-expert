@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Asset;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AssetController extends Controller
 {
@@ -11,9 +12,18 @@ class AssetController extends Controller
     {
         if(\Auth::user()->can('manage assets'))
         {
-            $assets = Asset::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $assets = Asset::all();
 
-            return view('assets.index', compact('assets'));
+                return view('assets.index', compact('assets'));
+            }
+            else
+            {
+                $assets = Asset::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('assets.index', compact('assets'));
+            }
         }
         else
         {
@@ -125,6 +135,32 @@ class AssetController extends Controller
 
                 return redirect()->route('account-assets.index')->with('success', __('Assets successfully updated.'));
             }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required',
+                                       'purchase_date' => 'required',
+                                       'supported_date' => 'required',
+                                       'amount' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $asset->name           = $request->name;
+                $asset->purchase_date  = $request->purchase_date;
+                $asset->supported_date = $request->supported_date;
+                $asset->amount         = $request->amount;
+                $asset->description    = $request->description;
+                $asset->save();
+
+                return redirect()->route('account-assets.index')->with('success', __('Assets successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -143,6 +179,12 @@ class AssetController extends Controller
         {
             $asset = Asset::find($id);
             if($asset->created_by == \Auth::user()->creatorId())
+            {
+                $asset->delete();
+
+                return redirect()->route('account-assets.index')->with('success', __('Assets successfully deleted.'));
+            }
+            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $asset->delete();
 

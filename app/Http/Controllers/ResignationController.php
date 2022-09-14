@@ -17,17 +17,25 @@ class ResignationController extends Controller
     {
         if(\Auth::user()->can('manage resignation'))
         {
-            if(Auth::user()->type == 'employee')
-            {
-                $emp          = Employee::where('user_id', '=', \Auth::user()->id)->first();
-                $resignations = Resignation::where('created_by', '=', \Auth::user()->creatorId())->where('employee_id', '=', $emp->id)->get();
-            }
-            else
-            {
-                $resignations = Resignation::where('created_by', '=', \Auth::user()->creatorId())->get();
-            }
-
-            return view('resignation.index', compact('resignations'));
+                if(Auth::user()->type == 'employee')
+                {
+                    $emp          = Employee::where('user_id', '=', \Auth::user()->id)->first();
+                    $resignations = Resignation::where('created_by', '=', \Auth::user()->creatorId())->where('employee_id', '=', $emp->id)->get();
+                }
+                elseif(Auth::user()->type == 'admin')
+                {
+                    $resignations = Resignation::all();
+                }
+                elseif(\Auth::user()->type == 'company')
+                {
+                    $resignations = Resignation::all();
+                }
+                else
+                {
+                    $resignations = Resignation::where('created_by', '=', \Auth::user()->creatorId())->where('employee_id', '=', $emp->id)->get();
+                }
+    
+                return view('resignation.index', compact('resignations'));
         }
         else
         {
@@ -39,9 +47,18 @@ class ResignationController extends Controller
     {
         if(\Auth::user()->can('create resignation'))
         {
-            $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $employees = Employee::all()->pluck('name', 'id');
 
-            return view('resignation.create', compact('employees'));
+                return view('resignation.create', compact('employees'));
+            }
+            else
+            {
+                $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+
+                return view('resignation.create', compact('employees'));
+            }
         }
         else
         {
@@ -158,10 +175,14 @@ class ResignationController extends Controller
     {
         if(\Auth::user()->can('edit resignation'))
         {
-            $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             if($resignation->created_by == \Auth::user()->creatorId())
             {
-
+                $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                return view('resignation.edit', compact('resignation', 'employees'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $employees = Employee::get()->pluck('name', 'id');
                 return view('resignation.edit', compact('resignation', 'employees'));
             }
             else
@@ -210,6 +231,37 @@ class ResignationController extends Controller
 
                 return redirect()->route('resignation.index')->with('success', __('Resignation successfully updated.'));
             }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+
+                                       'notice_date' => 'required',
+                                       'resignation_date' => 'required',
+                                   ]
+                );
+
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                if(\Auth::user()->type != 'employee')
+                {
+                    $resignation->employee_id = $request->employee_id;
+                }
+
+
+                $resignation->notice_date      = $request->notice_date;
+                $resignation->resignation_date = $request->resignation_date;
+                $resignation->description      = $request->description;
+
+                $resignation->save();
+
+                return redirect()->route('resignation.index')->with('success', __('Resignation successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -226,6 +278,12 @@ class ResignationController extends Controller
         if(\Auth::user()->can('delete resignation'))
         {
             if($resignation->created_by == \Auth::user()->creatorId())
+            {
+                $resignation->delete();
+
+                return redirect()->route('resignation.index')->with('success', __('Resignation successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
             {
                 $resignation->delete();
 

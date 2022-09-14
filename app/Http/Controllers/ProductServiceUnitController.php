@@ -4,17 +4,34 @@ namespace App\Http\Controllers;
 
 use App\Models\ProductService;
 use App\Models\ProductServiceUnit;
+use Auth;
 use Illuminate\Http\Request;
 
 class ProductServiceUnitController extends Controller
 {
     public function index()
     {
+        $user = Auth::user();
         if(\Auth::user()->can('manage constant unit'))
         {
-            $units = ProductServiceUnit::where('created_by', '=', \Auth::user()->creatorId())->get();
+            if($user->type = 'admin')
+            {
+                $units = ProductServiceUnit::all();
 
-            return view('productServiceUnit.index', compact('units'));
+                return view('productServiceUnit.index', compact('units'));
+            }
+            elseif($user->type = 'company')
+            {
+                $units = ProductServiceUnit::all();
+
+                return view('productServiceUnit.index', compact('units'));
+            }
+            else
+            {
+                $units = ProductServiceUnit::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+                return view('productServiceUnit.index', compact('units'));
+            }
         }
         else
         {
@@ -104,6 +121,25 @@ class ProductServiceUnitController extends Controller
 
                 return redirect()->route('product-unit.index')->with('success', __('Unit successfully updated.'));
             }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required|max:20',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $unit->name = $request->name;
+                $unit->save();
+
+                return redirect()->route('product-unit.index')->with('success', __('Unit successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -121,6 +157,17 @@ class ProductServiceUnitController extends Controller
         {
             $unit = ProductServiceUnit::find($id);
             if($unit->created_by == \Auth::user()->creatorId())
+            {
+                $units = ProductService::where('unit_id', $unit->id)->first();
+                if(!empty($units))
+                {
+                    return redirect()->back()->with('error', __('this unit is already assign so please move or remove this unit related data.'));
+                }
+                $unit->delete();
+
+                return redirect()->route('product-unit.index')->with('success', __('Unit successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $units = ProductService::where('unit_id', $unit->id)->first();
                 if(!empty($units))

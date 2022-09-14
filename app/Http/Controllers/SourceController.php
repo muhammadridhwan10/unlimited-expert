@@ -26,9 +26,18 @@ class SourceController extends Controller
     {
         if(\Auth::user()->can('manage source'))
         {
-            $sources = Source::where('created_by', '=', \Auth::user()->ownerId())->get();
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+            {
+                $sources = Source::all();
 
-            return view('sources.index')->with('sources', $sources);
+                return view('sources.index')->with('sources', $sources);
+            }
+            else
+            {
+                $sources = Source::where('created_by', '=', \Auth::user()->ownerId())->get();
+
+                return view('sources.index')->with('sources', $sources);
+            }
         }
         else
         {

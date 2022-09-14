@@ -19,13 +19,34 @@ class JobController extends Controller
     {
         if(\Auth::user()->can('manage job'))
         {
+            if(\Auth::user()->type = 'admin')
+        {
+            $jobs = Job::all();
+
+            $data['total']     = Job::all()->count();
+            $data['active']    = Job::where('status', 'active')->count();
+            $data['in_active'] = Job::where('status', 'in_active')->count();
+
+        }elseif(\Auth::user()->type = 'company')
+        {
+            $jobs = Job::all();
+
+            $data['total']     = Job::all()->count();
+            $data['active']    = Job::where('status', 'active')->count();
+            $data['in_active'] = Job::where('status', 'in_active')->count();
+        }
+        else
+        {
             $jobs = Job::where('created_by', '=', \Auth::user()->creatorId())->get();
 
             $data['total']     = Job::where('created_by', '=', \Auth::user()->creatorId())->count();
             $data['active']    = Job::where('status', 'active')->where('created_by', '=', \Auth::user()->creatorId())->count();
             $data['in_active'] = Job::where('status', 'in_active')->where('created_by', '=', \Auth::user()->creatorId())->count();
 
-            return view('job.index', compact('jobs', 'data'));
+        }
+
+        return view('job.index', compact('jobs', 'data'));
+
         }
         else
         {
@@ -36,15 +57,43 @@ class JobController extends Controller
     public function create()
     {
 
-        $categories = JobCategory::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
-        $categories->prepend('--', '');
-
-        $branches = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $branches->prepend('All', 0);
-
-        $status = Job::$status;
-
-        $customQuestion = CustomQuestion::where('created_by', \Auth::user()->creatorId())->get();
+        if(\Auth::user()->type = 'admin')
+        {
+            $categories = JobCategory::all()->pluck('title', 'id');
+            $categories->prepend('--', '');
+    
+            $branches = Branch::all()->pluck('name', 'id');
+            $branches->prepend('All', 0);
+    
+            $status = Job::$status;
+    
+            $customQuestion = CustomQuestion::all();
+    
+        }elseif(\Auth::user()->type = 'company')
+        {
+            $categories = JobCategory::all()->pluck('title', 'id');
+            $categories->prepend('--', '');
+    
+            $branches = Branch::all()->pluck('name', 'id');
+            $branches->prepend('All', 0);
+    
+            $status = Job::$status;
+    
+            $customQuestion = CustomQuestion::all();
+        }
+        else
+        {
+            $categories = JobCategory::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
+            $categories->prepend('--', '');
+    
+            $branches = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $branches->prepend('All', 0);
+    
+            $status = Job::$status;
+    
+            $customQuestion = CustomQuestion::where('created_by', \Auth::user()->creatorId())->get();
+    
+        }
 
         return view('job.create', compact('categories', 'status', 'branches', 'customQuestion'));
     }
@@ -115,19 +164,38 @@ class JobController extends Controller
     public function edit(Job $job)
     {
 
-        $categories = JobCategory::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
-        $categories->prepend('--', '');
-
-        $branches = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $branches->prepend('All', 0);
-
-        $status = Job::$status;
-
-        $job->applicant       = explode(',', $job->applicant);
-        $job->visibility      = explode(',', $job->visibility);
-        $job->custom_question = explode(',', $job->custom_question);
-
-        $customQuestion = CustomQuestion::where('created_by', \Auth::user()->creatorId())->get();
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $categories = JobCategory::get()->pluck('title', 'id');
+            $categories->prepend('--', '');
+    
+            $branches = Branch::get()->pluck('name', 'id');
+            $branches->prepend('All', 0);
+    
+            $status = Job::$status;
+    
+            $job->applicant       = explode(',', $job->applicant);
+            $job->visibility      = explode(',', $job->visibility);
+            $job->custom_question = explode(',', $job->custom_question);
+    
+            $customQuestion = CustomQuestion::get();
+        }
+        else
+        {
+            $categories = JobCategory::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
+            $categories->prepend('--', '');
+    
+            $branches = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $branches->prepend('All', 0);
+    
+            $status = Job::$status;
+    
+            $job->applicant       = explode(',', $job->applicant);
+            $job->visibility      = explode(',', $job->visibility);
+            $job->custom_question = explode(',', $job->custom_question);
+    
+            $customQuestion = CustomQuestion::where('created_by', \Auth::user()->creatorId())->get();
+        }
 
         return view('job.edit', compact('categories', 'status', 'branches', 'job', 'customQuestion'));
     }

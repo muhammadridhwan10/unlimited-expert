@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mail\EmailTest;
-use App\Models\Mail\testMail;
+use App\Mail\testMail;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -102,7 +102,7 @@ class SystemController extends Controller
                 }
                 if(!isset($request->color))
                 {
-                    $color = $request->has('color') ? $request-> color : 'theme-3';
+                    $color = $request->has('color') ? $request-> color : 'theme-4';
                     $post['color'] = $color;
                 }
                 if(!isset($request->cust_theme_bg))
@@ -409,7 +409,7 @@ class SystemController extends Controller
                 }
                 if(!isset($request->color))
                 {
-                    $color = $request->has('color') ? $request-> color : 'theme-3';
+                    $color = $request->has('color') ? $request-> color : 'theme-4';
                     $post['color'] = $color;
                 }
                 if(!isset($request->cust_theme_bg))
@@ -948,7 +948,7 @@ class SystemController extends Controller
 
     public function savePusherSettings(Request $request)
     {
-        if(\Auth::user()->type == 'company')
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
             $request->validate(
                 [

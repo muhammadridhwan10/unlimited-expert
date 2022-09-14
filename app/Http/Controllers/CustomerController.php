@@ -34,9 +34,24 @@ class CustomerController extends Controller
     {
         if(\Auth::user()->can('manage customer'))
         {
+            if(\Auth::user()->type = 'admin')
+        {
+            $customers = Customer::all();
+
+            return view('customer.index', compact('customers'));
+        }
+        elseif(\Auth::user()->type = 'company')
+        {
+            $customers = Customer::all();
+
+            return view('customer.index', compact('customers'));
+        }
+        else
+        {
             $customers = Customer::where('created_by', \Auth::user()->creatorId())->get();
 
             return view('customer.index', compact('customers'));
+        }
         }
         else
         {
@@ -220,6 +235,12 @@ class CustomerController extends Controller
 
                 return redirect()->route('customer.index')->with('success', __('Customer successfully deleted.'));
             }
+            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            {
+                $customer->delete();
+
+                return redirect()->route('customer.index')->with('success', __('Customer successfully deleted.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -233,7 +254,14 @@ class CustomerController extends Controller
 
     function customerNumber()
     {
-        $latest = Customer::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        {
+            $latest = Customer::latest()->first();
+        }
+        else
+        {
+            $latest = Customer::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+        }
         if(!$latest)
         {
             return 1;

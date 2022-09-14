@@ -1,7 +1,7 @@
 {{Form::open(array('url'=>'resignation','method'=>'post'))}}
 <div class="modal-body">
     <div class="row">
-        @if(\Auth::user()->type!='employee')
+        @if(\Auth::user()->type ='admin' || \Auth::user()->type ='company')
             <div class="form-group col-lg-12">
                 {{ Form::label('employee_id', __('Employee'),['class'=>'form-label'])}}
                 {{ Form::select('employee_id', $employees,null, array('class' => 'form-control select','required'=>'required')) }}

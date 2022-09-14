@@ -2938,54 +2938,14 @@ class UsersTableSeeder extends Seeder
             ['name' => 'delete coupon'],
         ];
 
-
-
-        // custome
-        $customerRole       = Role::create(
+        $adminRole = Role::create(
             [
-                'name' => 'customer',
-                'created_by' => 0,
-            ]
-        );
-        $customerPermission = [
-            ['name' => 'manage customer payment'],
-            ['name' => 'manage customer transaction'],
-            ['name' => 'manage customer invoice'],
-            ['name' => 'show invoice'],
-            ['name' => 'show proposal'],
-            ['name' => 'manage customer proposal'],
-            ['name' => 'show customer'],
-        ];
-        $customerRole->givePermissionTo($customerPermission);
-
-        // vender
-        $venderRole       = Role::create(
-            [
-                'name' => 'vender',
-                'created_by' => 0,
-            ]
-        );
-        $venderPermission = [
-            ['name' => 'vender manage bill'],
-            ['name' => 'manage vender bill'],
-            ['name' => 'manage vender payment'],
-            ['name' => 'manage vender transaction'],
-            ['name' => 'show vender'],
-            ['name' => 'show bill'],
-        ];
-
-        $venderRole->givePermissionTo($venderPermission);
-
-        // company
-
-        $companyRole = Role::create(
-            [
-                'name' => 'company',
+                'name' => 'admin',
                 'created_by' => 0,
             ]
         );
 
-        $companyPermissions = [
+        $adminPermissions = [
             ['name' => 'show hrm dashboard'],
             ['name' => 'show project dashboard'],
             ['name' => 'show account dashboard'],
@@ -3452,14 +3412,14 @@ class UsersTableSeeder extends Seeder
             ['name' => 'delete contract'],
         ];
 
-        $companyRole->givePermissionTo($companyPermissions);
+        $adminRole->givePermissionTo($adminPermissions);
 
-        $company = User::create(
+        $admin = User::create(
             [
-                'name' => 'company',
-                'email' => 'company@example.com',
-                'password' => Hash::make('1234'),
-                'type' => 'company',
+                'name' => 'admin',
+                'email' => 'admin@gmail.com',
+                'password' => Hash::make('admintgsau123'),
+                'type' => 'admin',
                 'default_pipeline' => 1,
                 'plan' => 1,
                 'lang' => 'en',
@@ -3467,17 +3427,72 @@ class UsersTableSeeder extends Seeder
                 'created_by' => 1,
             ]
         );
-        $company->assignRole($companyRole);
+        $admin->assignRole($adminRole);
 
-        // accountant
-        $accountantRole       = Role::create(
+
+
+        // // custome
+        // $customerRole       = Role::create(
+        //     [
+        //         'name' => 'customer',
+        //         'created_by' => 0,
+        //     ]
+        // );
+        // $customerPermission = [
+        //     ['name' => 'manage customer payment'],
+        //     ['name' => 'manage customer transaction'],
+        //     ['name' => 'manage customer invoice'],
+        //     ['name' => 'show invoice'],
+        //     ['name' => 'show proposal'],
+        //     ['name' => 'manage customer proposal'],
+        //     ['name' => 'show customer'],
+        // ];
+        // $customerRole->givePermissionTo($customerPermission);
+
+        // vender
+        // $venderRole       = Role::create(
+        //     [
+        //         'name' => 'vender',
+        //         'created_by' => 0,
+        //     ]
+        // );
+        // $venderPermission = [
+        //     ['name' => 'vender manage bill'],
+        //     ['name' => 'manage vender bill'],
+        //     ['name' => 'manage vender payment'],
+        //     ['name' => 'manage vender transaction'],
+        //     ['name' => 'show vender'],
+        //     ['name' => 'show bill'],
+        // ];
+
+        // $venderRole->givePermissionTo($venderPermission);
+
+        // company
+
+        $companyRole = Role::create(
             [
-                'name' => 'accountant',
-                'created_by' => $company->id,
+                'name' => 'company',
+                'created_by' => 1,
             ]
         );
-        $accountantPermission = [
+
+        $companyPermissions = [
+            ['name' => 'show hrm dashboard'],
+            ['name' => 'show project dashboard'],
             ['name' => 'show account dashboard'],
+            ['name' => 'manage user'],
+            ['name' => 'create user'],
+            ['name' => 'edit user'],
+            ['name' => 'delete user'],
+            ['name' => 'manage role'],
+            ['name' => 'create role'],
+            ['name' => 'edit role'],
+            ['name' => 'delete role'],
+            ['name' => 'manage permission'],
+            ['name' => 'create permission'],
+            ['name' => 'edit permission'],
+            ['name' => 'delete permission'],
+            ['name' => 'manage business settings'],
             ['name' => 'manage expense'],
             ['name' => 'create expense'],
             ['name' => 'edit expense'],
@@ -3487,7 +3502,6 @@ class UsersTableSeeder extends Seeder
             ['name' => 'edit invoice'],
             ['name' => 'delete invoice'],
             ['name' => 'show invoice'],
-            ['name' => 'convert invoice'],
             ['name' => 'manage product & service'],
             ['name' => 'create product & service'],
             ['name' => 'delete product & service'],
@@ -3552,6 +3566,7 @@ class UsersTableSeeder extends Seeder
             ['name' => 'tax report'],
             ['name' => 'loss & profit report'],
             ['name' => 'manage transaction'],
+            ['name' => 'manage order'],
             ['name' => 'manage credit note'],
             ['name' => 'create credit note'],
             ['name' => 'edit credit note'],
@@ -3560,13 +3575,16 @@ class UsersTableSeeder extends Seeder
             ['name' => 'create debit note'],
             ['name' => 'edit debit note'],
             ['name' => 'delete debit note'],
+            ['name' => 'duplicate invoice'],
+            ['name' => 'convert invoice'],
+            ['name' => 'duplicate bill'],
             ['name' => 'manage proposal'],
             ['name' => 'create proposal'],
             ['name' => 'edit proposal'],
             ['name' => 'delete proposal'],
             ['name' => 'duplicate proposal'],
-            ['name' => 'send proposal'],
             ['name' => 'show proposal'],
+            ['name' => 'send proposal'],
             ['name' => 'delete proposal product'],
             ['name' => 'manage goal'],
             ['name' => 'create goal'],
@@ -3593,44 +3611,516 @@ class UsersTableSeeder extends Seeder
             ['name' => 'balance sheet report'],
             ['name' => 'ledger report'],
             ['name' => 'trial balance report'],
+            ['name' => 'manage client'],
+            ['name' => 'create client'],
+            ['name' => 'edit client'],
+            ['name' => 'delete client'],
+            ['name' => 'manage lead'],
+            ['name' => 'create lead'],
+            ['name' => 'view lead'],
+            ['name' => 'edit lead'],
+            ['name' => 'delete lead'],
+            ['name' => 'move lead'],
+            ['name' => 'create lead call'],
+            ['name' => 'edit lead call'],
+            ['name' => 'delete lead call'],
+            ['name' => 'create lead email'],
+            ['name' => 'manage pipeline'],
+            ['name' => 'create pipeline'],
+            ['name' => 'edit pipeline'],
+            ['name' => 'delete pipeline'],
+            ['name' => 'manage lead stage'],
+            ['name' => 'create lead stage'],
+            ['name' => 'edit lead stage'],
+            ['name' => 'delete lead stage'],
+            ['name' => 'convert lead to deal'],
+            ['name' => 'manage source'],
+            ['name' => 'create source'],
+            ['name' => 'edit source'],
+            ['name' => 'delete source'],
+            ['name' => 'manage label'],
+            ['name' => 'create label'],
+            ['name' => 'edit label'],
+            ['name' => 'delete label'],
+            ['name' => 'manage deal'],
+            ['name' => 'create deal'],
+            ['name' => 'view task'],
+            ['name' => 'create task'],
+            ['name' => 'edit task'],
+            ['name' => 'delete task'],
+            ['name' => 'edit deal'],
+            ['name' => 'view deal'],
+            ['name' => 'delete deal'],
+            ['name' => 'move deal'],
+            ['name' => 'create deal call'],
+            ['name' => 'edit deal call'],
+            ['name' => 'delete deal call'],
+            ['name' => 'create deal email'],
+            ['name' => 'manage stage'],
+            ['name' => 'create stage'],
+            ['name' => 'edit stage'],
+            ['name' => 'delete stage'],
+            ['name' => 'manage employee'],
+            ['name' => 'create employee'],
+            ['name' => 'view employee'],
+            ['name' => 'edit employee'],
+            ['name' => 'delete employee'],
+            ['name' => 'manage employee profile'],
+            ['name' => 'show employee profile'],
+            ['name' => 'manage department'],
+            ['name' => 'create department'],
+            ['name' => 'view department'],
+            ['name' => 'edit department'],
+            ['name' => 'delete department'],
+            ['name' => 'manage designation'],
+            ['name' => 'create designation'],
+            ['name' => 'view designation'],
+            ['name' => 'edit designation'],
+            ['name' => 'delete designation'],
+            ['name' => 'manage branch'],
+            ['name' => 'create branch'],
+            ['name' => 'edit branch'],
+            ['name' => 'delete branch'],
+            ['name' => 'manage document type'],
+            ['name' => 'create document type'],
+            ['name' => 'edit document type'],
+            ['name' => 'delete document type'],
+            ['name' => 'manage document'],
+            ['name' => 'create document'],
+            ['name' => 'edit document'],
+            ['name' => 'manage payslip type'],
+            ['name' => 'create payslip type'],
+            ['name' => 'edit payslip type'],
+            ['name' => 'delete payslip type'],
+            ['name' => 'create allowance'],
+            ['name' => 'edit allowance'],
+            ['name' => 'delete allowance'],
+            ['name' => 'create commission'],
+            ['name' => 'edit commission'],
+            ['name' => 'delete commission'],
+            ['name' => 'manage allowance option'],
+            ['name' => 'create allowance option'],
+            ['name' => 'edit allowance option'],
+            ['name' => 'delete allowance option'],
+            ['name' => 'manage loan option'],
+            ['name' => 'create loan option'],
+            ['name' => 'edit loan option'],
+            ['name' => 'delete loan option'],
+            ['name' => 'manage deduction option'],
+            ['name' => 'create deduction option'],
+            ['name' => 'edit deduction option'],
+            ['name' => 'delete deduction option'],
+            ['name' => 'create loan'],
+            ['name' => 'edit loan'],
+            ['name' => 'delete loan'],
+            ['name' => 'create saturation deduction'],
+            ['name' => 'edit saturation deduction'],
+            ['name' => 'delete saturation deduction'],
+            ['name' => 'create other payment'],
+            ['name' => 'edit other payment'],
+            ['name' => 'delete other payment'],
+            ['name' => 'create overtime'],
+            ['name' => 'edit overtime'],
+            ['name' => 'delete overtime'],
+            ['name' => 'manage set salary'],
+            ['name' => 'edit set salary'],
+            ['name' => 'manage pay slip'],
+            ['name' => 'create set salary'],
+            ['name' => 'create pay slip'],
+            ['name' => 'manage company policy'],
+            ['name' => 'create company policy'],
+            ['name' => 'edit company policy'],
+            ['name' => 'delete document'],
+            ['name' => 'manage appraisal'],
+            ['name' => 'create appraisal'],
+            ['name' => 'edit appraisal'],
+            ['name' => 'show appraisal'],
+            ['name' => 'delete appraisal'],
+            ['name' => 'manage goal tracking'],
+            ['name' => 'create goal tracking'],
+            ['name' => 'edit goal tracking'],
+            ['name' => 'delete goal tracking'],
+            ['name' => 'manage goal type'],
+            ['name' => 'create goal type'],
+            ['name' => 'edit goal type'],
+            ['name' => 'delete goal type'],
+            ['name' => 'manage indicator'],
+            ['name' => 'create indicator'],
+            ['name' => 'edit indicator'],
+            ['name' => 'show indicator'],
+            ['name' => 'delete indicator'],
+            ['name' => 'manage event'],
+            ['name' => 'create event'],
+            ['name' => 'edit event'],
+            ['name' => 'delete event'],
+            ['name' => 'manage meeting'],
+            ['name' => 'create meeting'],
+            ['name' => 'edit meeting'],
+            ['name' => 'delete meeting'],
+            ['name' => 'manage training'],
+            ['name' => 'create training'],
+            ['name' => 'edit training'],
+            ['name' => 'delete training'],
+            ['name' => 'show training'],
+            ['name' => 'manage trainer'],
+            ['name' => 'create trainer'],
+            ['name' => 'edit trainer'],
+            ['name' => 'delete trainer'],
+            ['name' => 'manage training type'],
+            ['name' => 'create training type'],
+            ['name' => 'edit training type'],
+            ['name' => 'delete training type'],
+            ['name' => 'manage award'],
+            ['name' => 'create award'],
+            ['name' => 'edit award'],
+            ['name' => 'delete award'],
+            ['name' => 'manage award type'],
+            ['name' => 'create award type'],
+            ['name' => 'edit award type'],
+            ['name' => 'delete award type'],
+            ['name' => 'manage resignation'],
+            ['name' => 'create resignation'],
+            ['name' => 'edit resignation'],
+            ['name' => 'delete resignation'],
+            ['name' => 'manage travel'],
+            ['name' => 'create travel'],
+            ['name' => 'edit travel'],
+            ['name' => 'delete travel'],
+            ['name' => 'manage promotion'],
+            ['name' => 'create promotion'],
+            ['name' => 'edit promotion'],
+            ['name' => 'delete promotion'],
+            ['name' => 'manage complaint'],
+            ['name' => 'create complaint'],
+            ['name' => 'edit complaint'],
+            ['name' => 'delete complaint'],
+            ['name' => 'manage warning'],
+            ['name' => 'create warning'],
+            ['name' => 'edit warning'],
+            ['name' => 'delete warning'],
+            ['name' => 'manage termination'],
+            ['name' => 'create termination'],
+            ['name' => 'edit termination'],
+            ['name' => 'delete termination'],
+            ['name' => 'manage termination type'],
+            ['name' => 'create termination type'],
+            ['name' => 'edit termination type'],
+            ['name' => 'delete termination type'],
+            ['name' => 'manage job application'],
+            ['name' => 'create job application'],
+            ['name' => 'show job application'],
+            ['name' => 'delete job application'],
+            ['name' => 'move job application'],
+            ['name' => 'add job application skill'],
+            ['name' => 'add job application note'],
+            ['name' => 'delete job application note'],
+            ['name' => 'manage job onBoard'],
+            ['name' => 'manage job category'],
+            ['name' => 'create job category'],
+            ['name' => 'edit job category'],
+            ['name' => 'delete job category'],
+            ['name' => 'manage job'],
+            ['name' => 'create job'],
+            ['name' => 'edit job'],
+            ['name' => 'show job'],
+            ['name' => 'delete job'],
+            ['name' => 'manage job stage'],
+            ['name' => 'create job stage'],
+            ['name' => 'edit job stage'],
+            ['name' => 'delete job stage'],
+            ['name' => 'Manage Competencies'],
+            ['name' => 'Create Competencies'],
+            ['name' => 'Edit Competencies'],
+            ['name' => 'Delete Competencies'],
+            ['name' => 'manage custom question'],
+            ['name' => 'create custom question'],
+            ['name' => 'edit custom question'],
+            ['name' => 'delete custom question'],
+            ['name' => 'create interview schedule'],
+            ['name' => 'edit interview schedule'],
+            ['name' => 'delete interview schedule'],
+            ['name' => 'show interview schedule'],
+            ['name' => 'create estimation'],
+            ['name' => 'view estimation'],
+            ['name' => 'edit estimation'],
+            ['name' => 'delete estimation'],
+            ['name' => 'edit holiday'],
+            ['name' => 'create holiday'],
+            ['name' => 'delete holiday'],
+            ['name' => 'manage holiday'],
+            ['name' => 'create overtime'],
+            ['name' => 'edit overtime'],
+            ['name' => 'delete overtime'],
+            ['name' => 'show career'],
+            ['name' => 'manage transfer'],
+            ['name' => 'create transfer'],
+            ['name' => 'edit transfer'],
+            ['name' => 'delete transfer'],
+            ['name' => 'manage announcement'],
+            ['name' => 'create announcement'],
+            ['name' => 'edit announcement'],
+            ['name' => 'delete announcement'],
+            ['name' => 'manage leave'],
+            ['name' => 'create leave'],
+            ['name' => 'edit leave'],
+            ['name' => 'delete leave'],
+            ['name' => 'manage leave type'],
+            ['name' => 'create leave type'],
+            ['name' => 'edit leave type'],
+            ['name' => 'delete leave type'],
+            ['name' => 'manage attendance'],
+            ['name' => 'create attendance'],
+            ['name' => 'edit attendance'],
+            ['name' => 'delete attendance'],
+            ['name' => 'manage report'],
+            ['name' => 'manage project'],
+            ['name' => 'create project'],
+            ['name' => 'view project'],
+            ['name' => 'edit project'],
+            ['name' => 'delete project'],
+            ['name' => 'create milestone'],
+            ['name' => 'edit milestone'],
+            ['name' => 'delete milestone'],
+            ['name' => 'view milestone'],
+            ['name' => 'view grant chart'],
+            ['name' => 'manage project stage'],
+            ['name' => 'create project stage'],
+            ['name' => 'edit project stage'],
+            ['name' => 'delete project stage'],
+            ['name' => 'view timesheet'],
+            ['name' => 'view expense'],
+            ['name' => 'manage project task'],
+            ['name' => 'create project task'],
+            ['name' => 'edit project task'],
+            ['name' => 'view project task'],
+            ['name' => 'delete project task'],
+            ['name' => 'view activity'],
+            ['name' => 'view CRM activity'],
+            ['name' => 'manage project task stage'],
+            ['name' => 'create project task stage'],
+            ['name' => 'edit project task stage'],
+            ['name' => 'delete project task stage'],
+            ['name' => 'manage timesheet'],
+            ['name' => 'create timesheet'],
+            ['name' => 'edit timesheet'],
+            ['name' => 'delete timesheet'],
+            ['name' => 'manage bug report'],
+            ['name' => 'create bug report'],
+            ['name' => 'edit bug report'],
+            ['name' => 'delete bug report'],
+            ['name' => 'move bug report'],
+            ['name' => 'manage bug status'],
+            ['name' => 'create bug status'],
+            ['name' => 'edit bug status'],
+            ['name' => 'delete bug status'],
             ['name' => 'manage print settings'],
+            ['name' => 'manage company plan'],
+            ['name' => 'buy plan'],
+            ['name' => 'copy invoice'],
+            ['name' => 'manage plan'],
+            ['name' => 'manage form builder'],
+            ['name' => 'create form builder'],
+            ['name' => 'edit form builder'],
+            ['name' => 'delete form builder'],
+            ['name' => 'manage performance type'],
+            ['name' => 'create performance type'],
+            ['name' => 'edit performance type'],
+            ['name' => 'delete performance type'],
+            ['name' => 'manage form field'],
+            ['name' => 'create form field'],
+            ['name' => 'edit form field'],
+            ['name' => 'delete form field'],
+            ['name' => 'view form response'],
             ['name' => 'manage budget plan'],
             ['name' => 'create budget plan'],
             ['name' => 'edit budget plan'],
             ['name' => 'delete budget plan'],
             ['name' => 'view budget plan'],
+            ['name' => 'manage contract'],
+            ['name' => 'create contract'],
+            ['name' => 'edit contract'],
+            ['name' => 'delete contract'],
         ];
 
+        $companyRole->givePermissionTo($companyPermissions);
 
-        $accountantRole->givePermissionTo($accountantPermission);
-
-        $accountant = User::create(
+        $company = User::create(
             [
-                'name' => 'accountant',
-                'email' => 'accountant@example.com',
-                'password' => Hash::make('1234'),
-                'type' => 'accountant',
+                'name' => 'Au-Partners',
+                'email' => 'admin@au-partners.com',
+                'password' => Hash::make('tgsau123'),
+                'type' => 'company',
                 'default_pipeline' => 1,
+                'plan' => 1,
                 'lang' => 'en',
                 'avatar' => '',
-                'created_by' => $company->id,
+                'created_by' => 1,
             ]
         );
-        $accountant->assignRole($accountantRole);
+        $company->assignRole($companyRole);
 
-        \App\Models\BankAccount::create(
-            [
-                'holder_name' => 'cash',
-                'bank_name' => '',
-                'account_number' => '-',
-                'opening_balance' => '0.00',
-                'contact_number' => '-',
-                'bank_address' => '-',
-                'created_by' => $company->id,
-            ]
-        );
+        // // accountant
+        // $accountantRole       = Role::create(
+        //     [
+        //         'name' => 'accountant',
+        //         'created_by' => $company->id,
+        //     ]
+        // );
+        // $accountantPermission = [
+        //     ['name' => 'show account dashboard'],
+        //     ['name' => 'manage expense'],
+        //     ['name' => 'create expense'],
+        //     ['name' => 'edit expense'],
+        //     ['name' => 'delete expense'],
+        //     ['name' => 'manage invoice'],
+        //     ['name' => 'create invoice'],
+        //     ['name' => 'edit invoice'],
+        //     ['name' => 'delete invoice'],
+        //     ['name' => 'show invoice'],
+        //     ['name' => 'convert invoice'],
+        //     ['name' => 'manage product & service'],
+        //     ['name' => 'create product & service'],
+        //     ['name' => 'delete product & service'],
+        //     ['name' => 'edit product & service'],
+        //     ['name' => 'manage constant tax'],
+        //     ['name' => 'create constant tax'],
+        //     ['name' => 'edit constant tax'],
+        //     ['name' => 'delete constant tax'],
+        //     ['name' => 'manage constant category'],
+        //     ['name' => 'create constant category'],
+        //     ['name' => 'edit constant category'],
+        //     ['name' => 'delete constant category'],
+        //     ['name' => 'manage constant unit'],
+        //     ['name' => 'create constant unit'],
+        //     ['name' => 'edit constant unit'],
+        //     ['name' => 'delete constant unit'],
+        //     ['name' => 'manage customer'],
+        //     ['name' => 'create customer'],
+        //     ['name' => 'edit customer'],
+        //     ['name' => 'delete customer'],
+        //     ['name' => 'show customer'],
+        //     ['name' => 'manage vender'],
+        //     ['name' => 'create vender'],
+        //     ['name' => 'edit vender'],
+        //     ['name' => 'delete vender'],
+        //     ['name' => 'show vender'],
+        //     ['name' => 'manage bank account'],
+        //     ['name' => 'create bank account'],
+        //     ['name' => 'edit bank account'],
+        //     ['name' => 'delete bank account'],
+        //     ['name' => 'manage bank transfer'],
+        //     ['name' => 'create bank transfer'],
+        //     ['name' => 'edit bank transfer'],
+        //     ['name' => 'delete bank transfer'],
+        //     ['name' => 'manage revenue'],
+        //     ['name' => 'create revenue'],
+        //     ['name' => 'edit revenue'],
+        //     ['name' => 'delete revenue'],
+        //     ['name' => 'manage bill'],
+        //     ['name' => 'create bill'],
+        //     ['name' => 'edit bill'],
+        //     ['name' => 'delete bill'],
+        //     ['name' => 'show bill'],
+        //     ['name' => 'manage payment'],
+        //     ['name' => 'create payment'],
+        //     ['name' => 'edit payment'],
+        //     ['name' => 'delete payment'],
+        //     ['name' => 'delete invoice product'],
+        //     ['name' => 'delete bill product'],
+        //     ['name' => 'send invoice'],
+        //     ['name' => 'create payment invoice'],
+        //     ['name' => 'delete payment invoice'],
+        //     ['name' => 'send bill'],
+        //     ['name' => 'create payment bill'],
+        //     ['name' => 'delete payment bill'],
+        //     ['name' => 'income report'],
+        //     ['name' => 'expense report'],
+        //     ['name' => 'income vs expense report'],
+        //     ['name' => 'invoice report'],
+        //     ['name' => 'bill report'],
+        //     ['name' => 'stock report'],
+        //     ['name' => 'tax report'],
+        //     ['name' => 'loss & profit report'],
+        //     ['name' => 'manage transaction'],
+        //     ['name' => 'manage credit note'],
+        //     ['name' => 'create credit note'],
+        //     ['name' => 'edit credit note'],
+        //     ['name' => 'delete credit note'],
+        //     ['name' => 'manage debit note'],
+        //     ['name' => 'create debit note'],
+        //     ['name' => 'edit debit note'],
+        //     ['name' => 'delete debit note'],
+        //     ['name' => 'manage proposal'],
+        //     ['name' => 'create proposal'],
+        //     ['name' => 'edit proposal'],
+        //     ['name' => 'delete proposal'],
+        //     ['name' => 'duplicate proposal'],
+        //     ['name' => 'send proposal'],
+        //     ['name' => 'show proposal'],
+        //     ['name' => 'delete proposal product'],
+        //     ['name' => 'manage goal'],
+        //     ['name' => 'create goal'],
+        //     ['name' => 'edit goal'],
+        //     ['name' => 'delete goal'],
+        //     ['name' => 'manage assets'],
+        //     ['name' => 'create assets'],
+        //     ['name' => 'edit assets'],
+        //     ['name' => 'delete assets'],
+        //     ['name' => 'statement report'],
+        //     ['name' => 'manage constant custom field'],
+        //     ['name' => 'create constant custom field'],
+        //     ['name' => 'edit constant custom field'],
+        //     ['name' => 'delete constant custom field'],
+        //     ['name' => 'manage chart of account'],
+        //     ['name' => 'create chart of account'],
+        //     ['name' => 'edit chart of account'],
+        //     ['name' => 'delete chart of account'],
+        //     ['name' => 'manage journal entry'],
+        //     ['name' => 'create journal entry'],
+        //     ['name' => 'edit journal entry'],
+        //     ['name' => 'delete journal entry'],
+        //     ['name' => 'show journal entry'],
+        //     ['name' => 'balance sheet report'],
+        //     ['name' => 'ledger report'],
+        //     ['name' => 'trial balance report'],
+        //     ['name' => 'manage print settings'],
+        //     ['name' => 'manage budget plan'],
+        //     ['name' => 'create budget plan'],
+        //     ['name' => 'edit budget plan'],
+        //     ['name' => 'delete budget plan'],
+        //     ['name' => 'view budget plan'],
+        // ];
 
-        // accountant
+
+        // $accountantRole->givePermissionTo($accountantPermission);
+
+        // $accountant = User::create(
+        //     [
+        //         'name' => 'accountant',
+        //         'email' => 'accountant@example.com',
+        //         'password' => Hash::make('1234'),
+        //         'type' => 'accountant',
+        //         'default_pipeline' => 1,
+        //         'lang' => 'en',
+        //         'avatar' => '',
+        //         'created_by' => $company->id,
+        //     ]
+        // );
+        // $accountant->assignRole($accountantRole);
+
+        // \App\Models\BankAccount::create(
+        //     [
+        //         'holder_name' => 'cash',
+        //         'bank_name' => '',
+        //         'account_number' => '-',
+        //         'opening_balance' => '0.00',
+        //         'contact_number' => '-',
+        //         'bank_address' => '-',
+        //         'created_by' => $company->id,
+        //     ]
+        // );
+
+        // // accountant
         $clientRole       = Role::create(
             [
                 'name' => 'client',
@@ -3672,29 +4162,31 @@ class UsersTableSeeder extends Seeder
 
         $clientRole->givePermissionTo($clientPermission);
 
-        $client = User::create(
-            [
-                'name' => 'client',
-                'email' => 'client@example.com',
-                'password' => Hash::make('1234'),
-                'type' => 'client',
-                'default_pipeline' => 1,
-                'lang' => 'en',
-                'avatar' => '',
-                'created_by' => $company->id,
-            ]
-        );
-        $client->assignRole($clientRole);
+        // $client = User::create(
+        //     [
+        //         'name' => 'client',
+        //         'email' => 'client@example.com',
+        //         'password' => Hash::make('1234'),
+        //         'type' => 'client',
+        //         'default_pipeline' => 1,
+        //         'lang' => 'en',
+        //         'avatar' => '',
+        //         'created_by' => $company->id,
+        //     ]
+        // );
+        // $client->assignRole($clientRole);
 
-        Utility::employeeDetails($accountant->id, $company->id);
+        // Utility::employeeDetails($accountant->id, $company->id);
         // Utility::employeeDetails($client->id,$company->id);
-        Utility::chartOfAccountTypeData($company->id);
-        Utility::chartOfAccountData($company);
-        Utility::pipeline_lead_deal_Stage($company->id);
-        Utility::project_task_stages($company->id);
-        Utility::labels($company->id);
-        Utility::sources($company->id);
-        Utility::jobStage($company->id);
+        Utility::chartOfAccountTypeData($admin->id);
+        Utility::chartOfAccountData($admin);
+        Utility::pipeline_lead_deal_Stage($admin->id);
+        Utility::project_task_stages($admin->id);
+        Utility::labels($admin->id);
+        Utility::sources($admin->id);
+        Utility::jobStage($admin->id);
+        $admin->defaultEmail();
+        $admin::userDefaultData();
         $company->defaultEmail();
         $company::userDefaultData();
     }

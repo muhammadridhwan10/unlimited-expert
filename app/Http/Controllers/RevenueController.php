@@ -20,45 +20,132 @@ class RevenueController extends Controller
     {
         if(\Auth::user()->can('manage revenue'))
         {
-            $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $customer->prepend('Select Customer', '');
-
-            $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
-            $account->prepend('Select Account', '');
-
-            $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 1)->get()->pluck('name', 'id');
-            $category->prepend('Select Category', '');
-
-
-            $query = Revenue::where('created_by', '=', \Auth::user()->creatorId());
-
-            if(!empty($request->date))
+            if(\Auth::user()->type = 'admin')
             {
-                $date_range = explode('to', $request->date);
-                $query->whereBetween('date', $date_range);
+                $customer = Customer::all()->pluck('name', 'id');
+                $customer->prepend('Select Customer', '');
+    
+                $account = BankAccount::all()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+    
+                $category = ProductServiceCategory::where('type', '=', 1)->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+    
+    
+                $query = Revenue::all();
+    
+                if(!empty($request->date))
+                {
+                    $date_range = explode('to', $request->date);
+                    $query->whereBetween('date', $date_range);
+                }
+    
+                if(!empty($request->customer))
+                {
+                    $query->where('id', '=', $request->customer);
+                }
+                if(!empty($request->account))
+                {
+                    $query->where('account_id', '=', $request->account);
+                }
+    
+                if(!empty($request->category))
+                {
+                    $query->where('category_id', '=', $request->category);
+                }
+    
+                if(!empty($request->payment))
+                {
+                    $query->where('payment_method', '=', $request->payment);
+                }
+                $revenues = $query;
+    
+                return view('revenue.index', compact('revenues', 'customer', 'account', 'category'));
             }
-
-            if(!empty($request->customer))
+            elseif(\Auth::user()->type = 'company')
             {
-                $query->where('id', '=', $request->customer);
+                $customer = Customer::all()->pluck('name', 'id');
+                $customer->prepend('Select Customer', '');
+    
+                $account = BankAccount::all()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+    
+                $category = ProductServiceCategory::where('type', '=', 1)->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+    
+    
+                $query = Revenue::all();
+    
+                if(!empty($request->date))
+                {
+                    $date_range = explode('to', $request->date);
+                    $query->whereBetween('date', $date_range);
+                }
+    
+                if(!empty($request->customer))
+                {
+                    $query->where('id', '=', $request->customer);
+                }
+                if(!empty($request->account))
+                {
+                    $query->where('account_id', '=', $request->account);
+                }
+    
+                if(!empty($request->category))
+                {
+                    $query->where('category_id', '=', $request->category);
+                }
+    
+                if(!empty($request->payment))
+                {
+                    $query->where('payment_method', '=', $request->payment);
+                }
+                $revenues = $query;
+    
+                return view('revenue.index', compact('revenues', 'customer', 'account', 'category'));
             }
-            if(!empty($request->account))
+            else
             {
-                $query->where('account_id', '=', $request->account);
+                $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $customer->prepend('Select Customer', '');
+    
+                $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
+                $account->prepend('Select Account', '');
+    
+                $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 1)->get()->pluck('name', 'id');
+                $category->prepend('Select Category', '');
+    
+    
+                $query = Revenue::where('created_by', '=', \Auth::user()->creatorId());
+    
+                if(!empty($request->date))
+                {
+                    $date_range = explode('to', $request->date);
+                    $query->whereBetween('date', $date_range);
+                }
+    
+                if(!empty($request->customer))
+                {
+                    $query->where('id', '=', $request->customer);
+                }
+                if(!empty($request->account))
+                {
+                    $query->where('account_id', '=', $request->account);
+                }
+    
+                if(!empty($request->category))
+                {
+                    $query->where('category_id', '=', $request->category);
+                }
+    
+                if(!empty($request->payment))
+                {
+                    $query->where('payment_method', '=', $request->payment);
+                }
+                $revenues = $query->get();
+    
+                return view('revenue.index', compact('revenues', 'customer', 'account', 'category'));
             }
-
-            if(!empty($request->category))
-            {
-                $query->where('category_id', '=', $request->category);
-            }
-
-            if(!empty($request->payment))
-            {
-                $query->where('payment_method', '=', $request->payment);
-            }
-            $revenues = $query->get();
-
-            return view('revenue.index', compact('revenues', 'customer', 'account', 'category'));
         }
         else
         {
@@ -72,10 +159,20 @@ class RevenueController extends Controller
 
         if(\Auth::user()->can('create revenue'))
         {
-            $customers = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $customers->prepend('--', 0);
-            $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 1)->get()->pluck('name', 'id');
-            $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $customers = Customer::get()->pluck('name', 'id');
+                $customers->prepend('--', 0);
+                $categories = ProductServiceCategory::where('type', '=', 1)->get()->pluck('name', 'id');
+                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }
+            else
+            {
+                $customers = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $customers->prepend('--', 0);
+                $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 1)->get()->pluck('name', 'id');
+                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }
 
             return view('revenue.create', compact('customers', 'categories', 'accounts'));
         }
@@ -194,10 +291,20 @@ class RevenueController extends Controller
     {
         if(\Auth::user()->can('edit revenue'))
         {
-            $customers = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $customers->prepend('--', 0);
-            $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 1)->get()->pluck('name', 'id');
-            $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $customers = Customer::get()->pluck('name', 'id');
+                $customers->prepend('--', 0);
+                $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 1)->get()->pluck('name', 'id');
+                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->get()->pluck('name', 'id');
+            }
+            else
+            {
+                $customers = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $customers->prepend('--', 0);
+                $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 1)->get()->pluck('name', 'id');
+                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            }
 
             return view('revenue.edit', compact('customers', 'categories', 'accounts', 'revenue'));
         }
@@ -282,6 +389,22 @@ class RevenueController extends Controller
         if(\Auth::user()->can('delete revenue'))
         {
             if($revenue->created_by == \Auth::user()->creatorId())
+            {
+                $revenue->delete();
+                $type = 'Revenue';
+                $user = 'Customer';
+                Transaction::destroyTransaction($revenue->id, $type, $user);
+
+                if($revenue->customer_id != 0)
+                {
+                    Utility::userBalance('customer', $revenue->customer_id, $revenue->amount, 'debit');
+                }
+
+                Utility::bankAccountBalance($revenue->account_id, $revenue->amount, 'debit');
+
+                return redirect()->route('revenue.index')->with('success', __('Revenue successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $revenue->delete();
                 $type = 'Revenue';

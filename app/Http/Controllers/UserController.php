@@ -30,13 +30,23 @@ class UserController extends Controller
         $user = \Auth::user();
         if(\Auth::user()->can('manage user'))
         {
-            $users = User::where('created_by', '=', $user->creatorId())->where('type', '!=', 'client')->get();
-
-            return view('user.index')->with('users', $users);
+            if(\Auth::user()->type = 'admin')
+            {
+                $users = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get();
+            }
+            elseif(\Auth::user()->type = 'company')
+            {
+                $users = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get();
+            }
+            else
+            {
+                $users = User::where('created_by', '=', $user->creatorId())->where('type', '!=', 'client')->get();
+            }
+            return view('user.index', compact('users'));
         }
         else
         {
-            return redirect()->back();
+            return response()->json(['error' => __('Permission denied.')], 401);
         }
 
     }
@@ -44,16 +54,24 @@ class UserController extends Controller
     public function create()
     {
 
-        $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'user')->get();
-        $user  = \Auth::user();
-        $roles = Role::where('created_by', '=', $user->creatorId())->where('name','!=','client')->get()->pluck('name', 'id');
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+        {
+            $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'user')->get();
+            $roles = Role::where('name','!=','client')->where('name','!=','super admin')->get()->pluck('name', 'id');
+        }
+        else
+        {
+            $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'user')->get();
+            $user  = \Auth::user();
+            $roles = Role::where('created_by', '=', $user->creatorId())->where('name','!=','client')->get()->pluck('name', 'id');
+        }
         if(\Auth::user()->can('create user'))
         {
             return view('user.create', compact('roles', 'customFields'));
         }
         else
         {
-            return redirect()->back();
+            return response()->json(['error' => __('Permission denied.')], 401);
         }
     }
 
@@ -105,15 +123,26 @@ class UserController extends Controller
         }
         else
         {
-            return redirect()->back();
+            return response()->json(['error' => __('Permission denied.')], 401);
         }
 
     }
 
     public function edit($id)
     {
-        $user  = \Auth::user();
-        $roles = Role::where('created_by', '=', $user->creatorId())->where('name','!=','client')->get()->pluck('name', 'id');
+        if(Auth::user()->type == 'admin')
+        {
+            $roles = Role::where('name','!=','client')->where('name','!=','super admin')->get()->pluck('name', 'id');
+        }
+        elseif(Auth::user()->type == 'company')
+        {
+            $roles = Role::where('name','!=','client')->where('name','!=','super admin')->get()->pluck('name', 'id');
+        }
+        else
+        {
+            $user  = \Auth::user();
+            $roles = Role::where('created_by', '=', $user->creatorId())->where('name','!=','client')->get()->pluck('name', 'id');
+        }
         if(\Auth::user()->can('edit user'))
         {
             $user              = User::findOrFail($id);
@@ -124,7 +153,7 @@ class UserController extends Controller
         }
         else
         {
-            return redirect()->back();
+            return response()->json(['error' => __('Permission denied.')], 401);
         }
 
     }
@@ -135,7 +164,7 @@ class UserController extends Controller
 
         if(\Auth::user()->can('edit user'))
         {
-            if(\Auth::user()->type == 'company')
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
             {
                 $user = User::findOrFail($id);
                 $validator = \Validator::make(
@@ -192,7 +221,7 @@ class UserController extends Controller
         }
         else
         {
-            return redirect()->back();
+            return response()->json(['error' => __('Permission denied.')], 401);
         }
     }
 
@@ -206,7 +235,7 @@ class UserController extends Controller
             $user = User::find($id);
             if($user)
             {
-                if(\Auth::user()->type == 'company')
+                if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
                 {
                     if($user->delete_status == 0)
                     {
@@ -218,7 +247,7 @@ class UserController extends Controller
                     }
                     $user->save();
                 }
-                if(\Auth::user()->type == 'company')
+                if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
                 {
                     $employee = Employee::where(['user_id' => $user->id])->delete();
                     if($employee){
@@ -242,7 +271,7 @@ class UserController extends Controller
         }
         else
         {
-            return redirect()->back();
+            return response()->json(['error' => __('Permission denied.')], 401);
         }
     }
 
