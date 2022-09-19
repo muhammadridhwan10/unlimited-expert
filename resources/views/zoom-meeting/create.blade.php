@@ -7,13 +7,13 @@
             {{ Form::label('title', __('Topic') ,['class'=>'form-label'])}}
             {{ Form::text('title', null, ['class' => 'form-control', 'placeholder' => __('Enter Meeting Title'), 'required' => 'required']) }}
         </div>
-        <div class="form-group col-md-6">
+        <div class="form-group col-md-12">
             {{ Form::label('projects', __('Project'),['class'=>'form-label'])}}
             {{ Form::select('project_id', $projects, null, ['class' => 'form-control select project_select', 'placeholder' => __('Select Project'), 'id' => 'project_select', 'data-toggle' => 'select']) }}
         </div>
-        <div class="form-group col-md-6" id="user_div">
+        <div class="form-group col-md-12" id="user_div">
             {{ Form::label('projects', __('Users'),['class'=>'form-label'])}}
-            <select class="form-control select employee_select" id="user_id" name="user_id[]" >
+            <select class="form-control select" id="user_id" name="user_id[]" placeholder="Select Users" >
                 <option value="">{{__('Select User')}}</option>
 
 
@@ -62,12 +62,14 @@
             url: `{{ url('zoom-meeting/projects/select')}}/${bid}`,
             type: 'GET',
             success: function (data) {
-                $("#user_id").html('');
-                $('#user_id').append('<select class="form-control" id="user_id" name="user_id[]"  multiple></select>');
+                $("#user_div").html('');
+                $('#user_div').append('<select class="form-control" id="user_id" name="user_id[]"  multiple></select>');
+
+                $('#user_id').append('<option value="">{{__('Select User')}}</option>');
 
                 $.each(data, function (i, item) {
 
-                    $('#user_id').append('<option value="-' + item.id + '">' + item.name + '</option>');
+                    $('#user_id').append('<option value="' + item.id + '">' + item.name + '</option>');
                 });
 
                 var multipleCancelButton = new Choices('#user_id', {

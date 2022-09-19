@@ -12,6 +12,8 @@ use App\Models\Utility;
 use App\Traits\ZoomMeetingTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ZoomNotification;
 
 class ZoomMeetingController extends Controller
 {
@@ -122,8 +124,8 @@ class ZoomMeetingController extends Controller
                 $zoommeeting->title      = $request->title;
                 $zoommeeting->meeting_id = $meeting_id;
                 $zoommeeting->project_id = $request->project_id;
-                $zoommeeting->user_id    = implode(',', $request->user_id);
-                $zoommeeting->start_date = date('y:m:d H:i:s', strtotime($request->start_date));
+                $zoommeeting->user_id    = json_encode($request->user_id);
+                $zoommeeting->start_date = date('y:m:d', strtotime($request->start_date));
                 $zoommeeting->duration   = $request->duration;
                 $zoommeeting->start_url  = $start_url;
                 $zoommeeting->client_id  = isset($request->client_id) ? $client->client_id : 0;
@@ -131,6 +133,13 @@ class ZoomMeetingController extends Controller
                 $zoommeeting->status     = $status;
                 $zoommeeting->created_by = \Auth::user()->creatorId();
                 $zoommeeting->save();
+
+                $zoom = ZoomMeeting::with('user')->orderBy('id', 'DESC'); 
+                $id = json_decode($zoommeeting->user_id);
+                $data = User::whereIn('id', $id)->pluck('email');
+
+                //Email Notification
+                Mail::to($data)->send(new ZoomNotification($zoommeeting));
 
 
                 return redirect()->route('zoom-meeting.index')->with('success', __('Zoom Meeting successfully created.'));

@@ -142,7 +142,7 @@
 
 
                     $('#employee_id').append('<option value="">{{__('Select Employee')}}</option>');
-                    $('#employee_id').append('<option value="0"> {{__('All Employee')}} </option>');
+                    // $('#employee_id').append('<option value="0"> {{__('All Employee')}} </option>');
 
                     $.each(data, function (key, value) {
                         $('#employee_id').append('<option value="' + key + '">' + value + '</option>');

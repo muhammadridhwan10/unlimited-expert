@@ -1,5 +1,5 @@
 <div style="background-color:#f6f6f6;font-family:sans-serif;font-size:14px;line-height:1.4;margin:0;padding:0">
-    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Halo! Masukkan kode berikut untuk melakukan verifikasi akun Anda. Kode verifikasi bersifat rahasia. Harap tidak memberitahukannya ke siapa pun termasuk pihak yang mengatasnamakan Tranzferin.</span>
+    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Halo! Kami mengundang anda untuk hadir meeting internal.</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse:separate;background-color:#f6f6f6;width:100%" width="100%" bgcolor="#f6f6f6">
         <tbody>
             <tr>

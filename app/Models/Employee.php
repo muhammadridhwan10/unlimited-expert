@@ -32,6 +32,12 @@ class Employee extends Model
         'created_by',
     ];
 
+    public function meeting()
+    {
+        return $this->belongsTo(Meeting::class, 'id', 'employee_id');
+    }
+
+
     public function documents()
     {
         return $this->hasMany('App\Models\EmployeeDocument', 'employee_id', 'employee_id')->get();

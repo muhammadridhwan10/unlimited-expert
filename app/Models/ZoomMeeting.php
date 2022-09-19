@@ -37,6 +37,12 @@ class ZoomMeeting extends Model
         }
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, "user_id", "id");
+    }
+
+
     public function projectName()
     {
         return $this->hasOne('App\Models\Project', 'id', 'project_id');

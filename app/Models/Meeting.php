@@ -16,4 +16,11 @@ class Meeting extends Model
         'note',
         'created_by',
     ];
+
+    public function employee()
+    {
+        return $this->hasMany(Employee::class, 'employee_id', 'id');
+    }
+    
+
 }

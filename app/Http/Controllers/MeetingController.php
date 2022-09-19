@@ -36,6 +36,7 @@ class MeetingController extends Controller
             {
                 $meetings = Meeting::all();
             }
+            else
             {
                 $meetings = Meeting::where('created_by', '=', \Auth::user()->creatorId())->get();
             }
@@ -125,14 +126,19 @@ class MeetingController extends Controller
             foreach($departmentEmployee as $employee)
             {
                 $meetingEmployee              = new MeetingEmployee();
-                $meetingEmployee->meeting_id  = $meeting->id;
+                $meetingEmployee->meeting_id  = $meeting->id; 
                 $meetingEmployee->employee_id = $employee->id;
                 $meetingEmployee->created_by  = \Auth::user()->creatorId();
                 $meetingEmployee->save();
             }
 
+            // $zoom = Meeting::orderBy('id', 'DESC')->get();
+            $zoom = Meeting::with('employee')->orderBy('id', 'DESC')->get();
+            $id = json_decode($meeting->employee_id);
+            $data = Employee::whereIn('id', $id)->pluck('email');
+
             //Email Notification
-            Mail::to($employee->email)->send(new MeetingNotification($meeting));
+            Mail::to($data)->send(new MeetingNotification($meeting));
 
             //Slack Notification
             $setting  = Utility::settings(\Auth::user()->creatorId());
