@@ -145,7 +145,16 @@ class JobApplicationController extends Controller
 
     public function create()
     {
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $jobs = Job::all()->pluck('title', 'id');
+            $jobs->prepend('--', '');
+    
+            $questions = CustomQuestion::all();
+    
+            return view('jobApplication.create', compact('jobs', 'questions'));
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $jobs = Job::all()->pluck('title', 'id');
             $jobs->prepend('--', '');
@@ -460,7 +469,12 @@ class JobApplicationController extends Controller
     public function jobBoardCreate($id)
     {
         $status       = JobOnBoard::$status;
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $applications = InterviewSchedule::select('interview_schedules.*', 'job_applications.name')->join('job_applications', 'interview_schedules.candidate', '=', 'job_applications.id')->get()->pluck('name', 'candidate');
+            $applications->prepend('-', '');
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $applications = InterviewSchedule::select('interview_schedules.*', 'job_applications.name')->join('job_applications', 'interview_schedules.candidate', '=', 'job_applications.id')->get()->pluck('name', 'candidate');
             $applications->prepend('-', '');
@@ -576,7 +590,18 @@ class JobApplicationController extends Controller
 
     public function jobBoardConvert($id)
     {
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $jobOnBoard       = JobOnBoard::find($id);
+            $company_settings = Utility::settings();
+            $documents        = Document::get();
+            $branches         = Branch::get()->pluck('name', 'id');
+            $departments      = Department::get()->pluck('name', 'id');
+            $designations     = Designation::get()->pluck('name', 'id');
+            $employees        = User::get();
+            $employeesId      = \Auth::user()->employeeIdFormat($this->employeeNumber());
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $jobOnBoard       = JobOnBoard::find($id);
             $company_settings = Utility::settings();
@@ -753,7 +778,11 @@ class JobApplicationController extends Controller
 
     function employeeNumber()
     {
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $latest = Employee::latest()->first();
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $latest = Employee::latest()->first();
         }

@@ -25,7 +25,12 @@ class BudgetController extends Controller
     {
         if(\Auth::user()->can('manage budget plan'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $budgets = Budget::all();
+                $periods = Budget::$period;
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $budgets = Budget::all();
                 $periods = Budget::$period;
@@ -77,7 +82,12 @@ class BudgetController extends Controller
 
             $data['yearList'] = $this->yearList();
 
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $incomeproduct  = ProductServiceCategory::where('type', '=', 1)->get();
+                $expenseproduct = ProductServiceCategory::where('type', '=', 2)->get();
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $incomeproduct  = ProductServiceCategory::where('type', '=', 1)->get();
                 $expenseproduct = ProductServiceCategory::where('type', '=', 2)->get();
@@ -927,7 +937,12 @@ class BudgetController extends Controller
             $data['yearList'] = $this->yearList();
 
 
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $incomeproduct  = ProductServiceCategory::where('type', '=', 1)->get();
+                $expenseproduct = ProductServiceCategory::where('type', '=', 2)->get();
+            }
+            elseif(Auth::user()->type = 'company')
             {
                 $incomeproduct  = ProductServiceCategory::where('type', '=', 1)->get();
                 $expenseproduct = ProductServiceCategory::where('type', '=', 2)->get();
@@ -987,7 +1002,31 @@ class BudgetController extends Controller
 
                 return redirect()->route('budget.index')->with('success', __('Budget Plan successfully updated.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $validator = \Validator::make($request->all(), [
+                    'name' => 'required',
+                    'period' => 'required',
+
+                ]);
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $budget->name         = $request->name;
+                $budget->from         = $request->year;
+                $budget->period       = $request->period;
+                $budget->income_data  = json_encode($request->income);
+                $budget->expense_data = json_encode($request->expense);
+                $budget->save();
+
+
+                return redirect()->route('budget.index')->with('success', __('Budget Plan successfully updated.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $validator = \Validator::make($request->all(), [
                     'name' => 'required',
@@ -1041,7 +1080,12 @@ class BudgetController extends Controller
                 $budget->delete();
                 return redirect()->route('budget.index')->with('success', __('Budget Plan successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $budget->delete();
+                return redirect()->route('budget.index')->with('success', __('Budget Plan successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $budget->delete();
                 return redirect()->route('budget.index')->with('success', __('Budget Plan successfully deleted.'));

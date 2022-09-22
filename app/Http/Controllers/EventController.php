@@ -102,7 +102,13 @@ class EventController extends Controller
     {
         if(\Auth::user()->can('create event'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $employees   = Employee::all()->pluck('name', 'id');
+                $branch      = Branch::all();
+                $departments = Department::all();
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $employees   = Employee::all()->pluck('name', 'id');
                 $branch      = Branch::all();

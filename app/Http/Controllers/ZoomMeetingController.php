@@ -61,7 +61,12 @@ class ZoomMeetingController extends Controller
      */
     public function create()
     {
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $projects = Project::all()->pluck('project_name', 'id');
+            $users    = User::all()->pluck('name', 'id');
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $projects = Project::all()->pluck('project_name', 'id');
             $users    = User::all()->pluck('name', 'id');
@@ -243,7 +248,20 @@ class ZoomMeetingController extends Controller
 
     public function statusUpdate()
     {
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $meetings = ZoomMeeting::all()->pluck('meeting_id');
+            foreach($meetings as $meeting)
+            {
+                $data = $this->get($meeting);
+    
+                if(isset($data['data']) && !empty($data['data']))
+                {
+                    $meeting = ZoomMeeting::where('meeting_id', $meeting)->update(['status' => $data['data']['status']]);
+                }
+            }
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $meetings = ZoomMeeting::all()->pluck('meeting_id');
             foreach($meetings as $meeting)

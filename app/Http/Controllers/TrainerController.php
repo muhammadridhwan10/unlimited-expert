@@ -43,7 +43,13 @@ class TrainerController extends Controller
     {
         if(\Auth::user()->can('create trainer'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $branches = Branch::all()->pluck('name', 'id');
+
+                return view('trainer.create', compact('branches'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $branches = Branch::all()->pluck('name', 'id');
 
@@ -114,7 +120,11 @@ class TrainerController extends Controller
     {
         if(\Auth::user()->can('edit trainer'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $branches = Branch::get()->pluck('name', 'id');
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $branches = Branch::get()->pluck('name', 'id');
             }
@@ -181,7 +191,13 @@ class TrainerController extends Controller
 
                 return redirect()->route('trainer.index')->with('success', __('Trainer successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $trainer->delete();
+
+                return redirect()->route('trainer.index')->with('success', __('Trainer successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $trainer->delete();
 

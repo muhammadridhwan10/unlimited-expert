@@ -38,7 +38,12 @@ class CompanyPolicyController extends Controller
     {
         if(\Auth::user()->can('create company policy'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $branch = Branch::all()->pluck('name', 'id');
+                $branch->prepend('Select Branch','');
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $branch = Branch::all()->pluck('name', 'id');
                 $branch->prepend('Select Branch','');

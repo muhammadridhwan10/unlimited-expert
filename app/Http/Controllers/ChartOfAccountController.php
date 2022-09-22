@@ -71,7 +71,12 @@ class ChartOfAccountController extends Controller
 
     public function create()
     {
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $types = ChartOfAccountType::get()->pluck('name', 'id');
+            $types->prepend('--', 0);
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $types = ChartOfAccountType::get()->pluck('name', 'id');
             $types->prepend('--', 0);

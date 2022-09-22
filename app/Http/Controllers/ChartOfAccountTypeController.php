@@ -12,7 +12,11 @@ class ChartOfAccountTypeController extends Controller
     {
         if(\Auth::user()->can('manage constant chart of account type'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $types = ChartOfAccountType::all();
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $types = ChartOfAccountType::all();
             }

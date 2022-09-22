@@ -68,7 +68,11 @@ class PermissionController extends Controller
     public function edit(Permission $permission)
     {
 
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $roles = Role::all();
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $roles = Role::all();
         }

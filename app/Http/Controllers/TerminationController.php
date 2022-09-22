@@ -49,7 +49,12 @@ class TerminationController extends Controller
     {
         if(\Auth::user()->can('create termination'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $employees        = Employee::all()->pluck('name', 'id');
+                $terminationtypes = TerminationType::all()->pluck('name', 'id');
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $employees        = Employee::all()->pluck('name', 'id');
                 $terminationtypes = TerminationType::all()->pluck('name', 'id');

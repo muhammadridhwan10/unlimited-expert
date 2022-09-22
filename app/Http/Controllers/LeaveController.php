@@ -147,7 +147,14 @@ class LeaveController extends Controller
 
                 return view('leave.edit', compact('leave', 'employees', 'leavetypes'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $employees  = Employee::get()->pluck('name', 'id');
+                $leavetypes = LeaveType::get()->pluck('title', 'id');
+
+                return view('leave.edit', compact('leave', 'employees', 'leavetypes'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $employees  = Employee::get()->pluck('name', 'id');
                 $leavetypes = LeaveType::get()->pluck('title', 'id');
@@ -201,7 +208,37 @@ class LeaveController extends Controller
 
                 return redirect()->route('leave.index')->with('success', __('Leave successfully updated.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'leave_type_id' => 'required',
+                                       'start_date' => 'required',
+                                       'end_date' => 'required',
+                                       'leave_reason' => 'required',
+                                       'remark' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $leave->employee_id      = $request->employee_id;
+                $leave->leave_type_id    = $request->leave_type_id;
+                $leave->start_date       = $request->start_date;
+                $leave->end_date         = $request->end_date;
+                $leave->total_leave_days = 0;
+                $leave->leave_reason     = $request->leave_reason;
+                $leave->remark           = $request->remark;
+
+                $leave->save();
+
+                return redirect()->route('leave.index')->with('success', __('Leave successfully updated.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -252,7 +289,13 @@ class LeaveController extends Controller
 
                 return redirect()->route('leave.index')->with('success', __('Leave successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $leave->delete();
+
+                return redirect()->route('leave.index')->with('success', __('Leave successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $leave->delete();
 

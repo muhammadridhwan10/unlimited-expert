@@ -66,7 +66,13 @@ class OtherPaymentController extends Controller
 
                 return view('otherpayment.edit', compact('otherpayment','otherpaytypes'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $otherpaytypes=OtherPayment::$otherPaymenttype;
+
+                return view('otherpayment.edit', compact('otherpayment','otherpaytypes'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $otherpaytypes=OtherPayment::$otherPaymenttype;
 
@@ -110,7 +116,30 @@ class OtherPaymentController extends Controller
 
                 return redirect()->back()->with('success', __('OtherPayment successfully updated.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+
+                                       'title' => 'required',
+                                       'amount' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $otherpayment->title  = $request->title;
+                $otherpayment->type  = $request->type;
+                $otherpayment->amount = $request->amount;
+                $otherpayment->save();
+
+                return redirect()->back()->with('success', __('OtherPayment successfully updated.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -154,7 +183,13 @@ class OtherPaymentController extends Controller
 
                 return redirect()->back()->with('success', __('OtherPayment successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $otherpayment->delete();
+
+                return redirect()->back()->with('success', __('OtherPayment successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $otherpayment->delete();
 

@@ -46,7 +46,23 @@ class SetSalaryController extends Controller
         if(\Auth::user()->can('edit set salary'))
         {
 
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $payslip_type      = PayslipType::get()->pluck('name', 'id');
+                $allowance_options = AllowanceOption::get()->pluck('name', 'id');
+                $loan_options      = LoanOption::get()->pluck('name', 'id');
+                $deduction_options = DeductionOption::get()->pluck('name', 'id');
+                $allowances           = Allowance::where('employee_id', $id)->get();
+                $commissions          = Commission::where('employee_id', $id)->get();
+                $loans                = Loan::where('employee_id', $id)->get();
+                $saturationdeductions = SaturationDeduction::where('employee_id', $id)->get();
+                $otherpayments        = OtherPayment::where('employee_id', $id)->get();
+                $overtimes            = Overtime::where('employee_id', $id)->get();
+                $employee             = Employee::find($id);
+
+                return view('setsalary.edit', compact('employee', 'payslip_type', 'allowance_options', 'commissions', 'loan_options', 'overtimes', 'otherpayments', 'saturationdeductions', 'loans', 'deduction_options', 'allowances'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $payslip_type      = PayslipType::get()->pluck('name', 'id');
                 $allowance_options = AllowanceOption::get()->pluck('name', 'id');
@@ -390,7 +406,12 @@ class SetSalaryController extends Controller
     public function employeeBasicSalary($id)
     {
 
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $payslip_type = PayslipType::get()->pluck('name', 'id');
+            $employee     = Employee::find($id);
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $payslip_type = PayslipType::get()->pluck('name', 'id');
             $employee     = Employee::find($id);

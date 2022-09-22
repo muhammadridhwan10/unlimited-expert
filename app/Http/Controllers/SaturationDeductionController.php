@@ -11,7 +11,13 @@ class SaturationDeductionController extends Controller
 {
     public function saturationdeductionCreate($id)
     {
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $employee          = Employee::find($id);
+            $deduction_options = DeductionOption::get()->pluck('name', 'id');
+            $saturationdeduc = SaturationDeduction::$saturationDeductiontype;
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $employee          = Employee::find($id);
             $deduction_options = DeductionOption::get()->pluck('name', 'id');
@@ -74,7 +80,12 @@ class SaturationDeductionController extends Controller
         {
             if($saturationdeduction->created_by == \Auth::user()->creatorId())
             {
-                if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+                if(\Auth::user()->type = 'admin')
+                {
+                    $deduction_options = DeductionOption::get()->pluck('name', 'id');
+                    $saturationdeduc = SaturationDeduction::$saturationDeductiontype;
+                }
+                elseif(\Auth::user()->type = 'company')
                 {
                     $deduction_options = DeductionOption::get()->pluck('name', 'id');
                     $saturationdeduc = SaturationDeduction::$saturationDeductiontype;
@@ -127,7 +138,32 @@ class SaturationDeductionController extends Controller
 
                 return redirect()->back()->with('success', __('SaturationDeduction successfully updated.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+
+                                       'deduction_option' => 'required',
+                                       'title' => 'required',
+                                       'amount' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $saturationdeduction->deduction_option = $request->deduction_option;
+                $saturationdeduction->title            = $request->title;
+                $saturationdeduction->type            = $request->type;
+                $saturationdeduction->amount           = $request->amount;
+                $saturationdeduction->save();
+
+                return redirect()->back()->with('success', __('SaturationDeduction successfully updated.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -173,7 +209,13 @@ class SaturationDeductionController extends Controller
 
                 return redirect()->back()->with('success', __('SaturationDeduction successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $saturationdeduction->delete();
+
+                return redirect()->back()->with('success', __('SaturationDeduction successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $saturationdeduction->delete();
 

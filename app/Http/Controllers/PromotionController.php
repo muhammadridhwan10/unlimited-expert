@@ -47,7 +47,14 @@ class PromotionController extends Controller
     {
         if(\Auth::user()->can('create promotion'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $designations = Designation::all()->pluck('name', 'id');
+                $employees    = Employee::all()->pluck('name', 'id');
+    
+                return view('promotion.create', compact('employees', 'designations'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $designations = Designation::all()->pluck('name', 'id');
                 $employees    = Employee::all()->pluck('name', 'id');
@@ -141,7 +148,13 @@ class PromotionController extends Controller
                 $employees    = Employee::where('created_by', Auth::user()->creatorId())->get()->pluck('name', 'id');
                 return view('promotion.edit', compact('promotion', 'employees', 'designations'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $designations = Designation::get()->pluck('name', 'id');
+                $employees    = Employee::get()->pluck('name', 'id');
+                return view('promotion.edit', compact('promotion', 'employees', 'designations'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $designations = Designation::get()->pluck('name', 'id');
                 $employees    = Employee::get()->pluck('name', 'id');
@@ -189,7 +202,34 @@ class PromotionController extends Controller
 
                 return redirect()->route('promotion.index')->with('success', __('Promotion successfully updated.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'employee_id' => 'required',
+                                       'designation_id' => 'required',
+                                       'promotion_title' => 'required',
+                                       'promotion_date' => 'required',
+                                   ]
+                );
+
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $promotion->employee_id     = $request->employee_id;
+                $promotion->designation_id  = $request->designation_id;
+                $promotion->promotion_title = $request->promotion_title;
+                $promotion->promotion_date  = $request->promotion_date;
+                $promotion->description     = $request->description;
+                $promotion->save();
+
+                return redirect()->route('promotion.index')->with('success', __('Promotion successfully updated.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -237,7 +277,13 @@ class PromotionController extends Controller
 
                 return redirect()->route('promotion.index')->with('success', __('Promotion successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $promotion->delete();
+
+                return redirect()->route('promotion.index')->with('success', __('Promotion successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $promotion->delete();
 

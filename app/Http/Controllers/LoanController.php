@@ -11,7 +11,13 @@ class LoanController extends Controller
 {
     public function loanCreate($id)
     {
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $employee = Employee::find($id);
+            $loan_options      = LoanOption::get()->pluck('name', 'id');
+            $loan =loan::$Loantypes;
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $employee = Employee::find($id);
             $loan_options      = LoanOption::get()->pluck('name', 'id');
@@ -82,7 +88,12 @@ class LoanController extends Controller
         {
             if($loan->created_by == \Auth::user()->creatorId())
             {
-                if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+                if(\Auth::user()->type = 'admin')
+                {
+                    $loan_options = LoanOption::get()->pluck('name', 'id');
+                    $loans =loan::$Loantypes;
+                }
+                elseif(\Auth::user()->type = 'company')
                 {
                     $loan_options = LoanOption::get()->pluck('name', 'id');
                     $loans =loan::$Loantypes;
@@ -139,7 +150,37 @@ class LoanController extends Controller
 
                 return redirect()->back()->with('success', __('Loan successfully updated.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+
+                                       'loan_option' => 'required',
+                                       'title' => 'required',
+                                       'amount' => 'required',
+                                       'start_date' => 'required',
+                                       'end_date' => 'required',
+                                       'reason' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+                $loan->loan_option = $request->loan_option;
+                $loan->title       = $request->title;
+                $loan->type        = $request->type;
+                $loan->amount      = $request->amount;
+                $loan->start_date  = $request->start_date;
+                $loan->end_date    = $request->end_date;
+                $loan->reason      = $request->reason;
+                $loan->save();
+
+                return redirect()->back()->with('success', __('Loan successfully updated.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -190,7 +231,13 @@ class LoanController extends Controller
 
                 return redirect()->back()->with('success', __('Loan successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $loan->delete();
+
+                return redirect()->back()->with('success', __('Loan successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $loan->delete();
 

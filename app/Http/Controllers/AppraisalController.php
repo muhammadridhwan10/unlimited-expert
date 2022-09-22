@@ -104,7 +104,11 @@ class AppraisalController extends Controller
     public function show(Appraisal $appraisal)
     {
         $ratings = json_decode($appraisal->rating, true);
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $performance     = PerformanceType::all();
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $performance     = PerformanceType::all();
         }
@@ -125,7 +129,17 @@ class AppraisalController extends Controller
     {
         if(\Auth::user()->can('edit appraisal'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                // $technicals      = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'technical')->get();
+                // $organizationals = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'organizational')->get();
+                // $behaviourals = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'behavioural')->get();
+                $performance     = PerformanceType::all();
+                $brances = Branch::get()->pluck('name', 'id');
+                $brances->prepend('Select Branch', '');
+                $ratings = json_decode($appraisal->rating,true);
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 // $technicals      = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'technical')->get();
                 // $organizationals = Competencies::where('created_by', \Auth::user()->creatorId())->where('type', 'organizational')->get();
@@ -192,7 +206,13 @@ class AppraisalController extends Controller
 
                 return redirect()->route('appraisal.index')->with('success', __('Appraisal successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $appraisal->delete();
+
+                return redirect()->route('appraisal.index')->with('success', __('Appraisal successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $appraisal->delete();
 

@@ -447,7 +447,11 @@ class ProjectController extends Controller
 
         $user_project = $project->users->pluck('id')->toArray();
 
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $user_contact = User::where('type','!=','client')->whereNOTIn('id', $user_project)->pluck('id')->toArray();
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $user_contact = User::where('type','!=','client')->whereNOTIn('id', $user_project)->pluck('id')->toArray();
         }
@@ -833,7 +837,11 @@ class ProjectController extends Controller
         {
 
             $priority     = Bug::$priority;
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $status       = BugStatus::get()->pluck('title', 'id');
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $status       = BugStatus::get()->pluck('title', 'id');
             }
@@ -865,7 +873,11 @@ class ProjectController extends Controller
 
     function bugNumber()
     {
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $latest = Bug::latest()->first();
+        }
+        if(\Auth::user()->type = 'company')
         {
             $latest = Bug::latest()->first();
         }
@@ -949,7 +961,11 @@ class ProjectController extends Controller
         {
             $bug          = Bug::find($bug_id);
             $priority     = Bug::$priority;
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $status       = BugStatus::get()->pluck('title', 'id');
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $status       = BugStatus::get()->pluck('title', 'id');
             }

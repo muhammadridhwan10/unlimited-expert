@@ -46,7 +46,13 @@ class TravelController extends Controller
     {
         if(\Auth::user()->can('create travel'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $employees = Employee::all()->pluck('name', 'id');
+
+                return view('travel.create', compact('employees'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $employees = Employee::all()->pluck('name', 'id');
 
@@ -138,7 +144,12 @@ class TravelController extends Controller
                 $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 return view('travel.edit', compact('travel', 'employees'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $employees = Employee::get()->pluck('name', 'id');
+                return view('travel.edit', compact('travel', 'employees'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $employees = Employee::get()->pluck('name', 'id');
                 return view('travel.edit', compact('travel', 'employees'));
@@ -187,7 +198,35 @@ class TravelController extends Controller
 
                 return redirect()->route('travel.index')->with('success', __('Travel successfully updated.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'employee_id' => 'required',
+                                       'start_date' => 'required',
+                                       'end_date' => 'required',
+                                       'purpose_of_visit' => 'required',
+                                       'place_of_visit' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $travel->employee_id      = $request->employee_id;
+                $travel->start_date       = $request->start_date;
+                $travel->end_date         = $request->end_date;
+                $travel->purpose_of_visit = $request->purpose_of_visit;
+                $travel->place_of_visit   = $request->place_of_visit;
+                $travel->description      = $request->description;
+                $travel->save();
+
+                return redirect()->route('travel.index')->with('success', __('Travel successfully updated.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -236,7 +275,13 @@ class TravelController extends Controller
 
                 return redirect()->route('travel.index')->with('success', __('Travel successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $travel->delete();
+
+                return redirect()->route('travel.index')->with('success', __('Travel successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $travel->delete();
 

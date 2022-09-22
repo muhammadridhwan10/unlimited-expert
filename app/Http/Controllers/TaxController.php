@@ -101,7 +101,11 @@ class TaxController extends Controller
             {
                 return view('taxes.edit', compact('tax'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                return view('taxes.edit', compact('tax'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 return view('taxes.edit', compact('tax'));
             }
@@ -142,7 +146,28 @@ class TaxController extends Controller
 
                 return redirect()->route('taxes.index')->with('success', __('Tax rate successfully updated.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required|max:20',
+                                       'rate' => 'required|numeric',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $tax->name = $request->name;
+                $tax->rate = $request->rate;
+                $tax->save();
+
+                return redirect()->route('taxes.index')->with('success', __('Tax rate successfully updated.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -193,7 +218,22 @@ class TaxController extends Controller
 
                 return redirect()->route('taxes.index')->with('success', __('Tax rate successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $proposalData = ProposalProduct::whereRaw("find_in_set('$tax->id',tax)")->first();
+                $billData     = BillProduct::whereRaw("find_in_set('$tax->id',tax)")->first();
+                $invoiceData  = InvoiceProduct::whereRaw("find_in_set('$tax->id',tax)")->first();
+
+                if(!empty($proposalData) || !empty($billData) || !empty($invoiceData))
+                {
+                    return redirect()->back()->with('error', __('this tax is already assign to proposal or bill or invoice so please move or remove this tax related data.'));
+                }
+
+                $tax->delete();
+
+                return redirect()->route('taxes.index')->with('success', __('Tax rate successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $proposalData = ProposalProduct::whereRaw("find_in_set('$tax->id',tax)")->first();
                 $billData     = BillProduct::whereRaw("find_in_set('$tax->id',tax)")->first();

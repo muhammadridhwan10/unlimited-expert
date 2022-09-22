@@ -164,7 +164,23 @@ class JobController extends Controller
     public function edit(Job $job)
     {
 
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $categories = JobCategory::get()->pluck('title', 'id');
+            $categories->prepend('--', '');
+    
+            $branches = Branch::get()->pluck('name', 'id');
+            $branches->prepend('All', 0);
+    
+            $status = Job::$status;
+    
+            $job->applicant       = explode(',', $job->applicant);
+            $job->visibility      = explode(',', $job->visibility);
+            $job->custom_question = explode(',', $job->custom_question);
+    
+            $customQuestion = CustomQuestion::get();
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $categories = JobCategory::get()->pluck('title', 'id');
             $categories->prepend('--', '');

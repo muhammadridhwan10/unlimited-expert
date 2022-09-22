@@ -323,7 +323,56 @@ class ProposalController extends Controller
                 return redirect()->route('proposal.index', $proposal->id)->with('success', __('Proposal successfully updated.'));
 
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'customer_id' => 'required',
+                                       'issue_date' => 'required',
+                                       'category_id' => 'required',
+                                       'items' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->route('proposal.index')->with('error', $messages->first());
+                }
+                $proposal->customer_id    = $request->customer_id;
+                $proposal->issue_date     = $request->issue_date;
+                $proposal->category_id    = $request->category_id;
+                $proposal->discount_apply = isset($request->discount_apply) ? 1 : 0;
+                $proposal->save();
+                CustomField::saveData($proposal, $request->customField);
+                $products = $request->items;
+
+                for($i = 0; $i < count($products); $i++)
+                {
+                    $proposalProduct = ProposalProduct::find($products[$i]['id']);
+                    if($proposalProduct == null)
+                    {
+                        $proposalProduct              = new ProposalProduct();
+                        $proposalProduct->proposal_id = $proposal->id;
+
+                    }
+
+                    if(isset($products[$i]['item']))
+                    {
+                        $proposalProduct->product_id = $products[$i]['item'];
+                    }
+
+                    $proposalProduct->quantity    = $products[$i]['quantity'];
+                    $proposalProduct->tax         = $products[$i]['tax'];
+                    $proposalProduct->discount    = isset($products[$i]['discount']) ? $products[$i]['discount'] : 0;
+                    $proposalProduct->price       = $products[$i]['price'];
+                    $proposalProduct->description = $products[$i]['description'];
+                    $proposalProduct->save();
+                }
+
+                return redirect()->route('proposal.index', $proposal->id)->with('success', __('Proposal successfully updated.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $validator = \Validator::make(
                     $request->all(), [

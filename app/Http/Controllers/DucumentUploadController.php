@@ -50,7 +50,12 @@ class DucumentUploadController extends Controller
     {
         if(\Auth::user()->can('create document'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $roles = Role::all()->pluck('name', 'id');
+                $roles->prepend('All', '0');
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $roles = Role::all()->pluck('name', 'id');
                 $roles->prepend('All', '0');

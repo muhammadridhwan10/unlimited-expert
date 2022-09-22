@@ -91,7 +91,11 @@ class CompetenciesController extends Controller
     public function edit($id)
     {
         $competencies = Competencies::find($id);
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $performance     = PerformanceType::get()->pluck('name', 'id');
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $performance     = PerformanceType::get()->pluck('name', 'id');
         }

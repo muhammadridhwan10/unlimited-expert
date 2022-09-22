@@ -47,7 +47,13 @@ class ResignationController extends Controller
     {
         if(\Auth::user()->can('create resignation'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $employees = Employee::all()->pluck('name', 'id');
+
+                return view('resignation.create', compact('employees'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $employees = Employee::all()->pluck('name', 'id');
 
@@ -180,7 +186,12 @@ class ResignationController extends Controller
                 $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 return view('resignation.edit', compact('resignation', 'employees'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $employees = Employee::get()->pluck('name', 'id');
+                return view('resignation.edit', compact('resignation', 'employees'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $employees = Employee::get()->pluck('name', 'id');
                 return view('resignation.edit', compact('resignation', 'employees'));
@@ -231,7 +242,38 @@ class ResignationController extends Controller
 
                 return redirect()->route('resignation.index')->with('success', __('Resignation successfully updated.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+
+                                       'notice_date' => 'required',
+                                       'resignation_date' => 'required',
+                                   ]
+                );
+
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                if(\Auth::user()->type != 'employee')
+                {
+                    $resignation->employee_id = $request->employee_id;
+                }
+
+
+                $resignation->notice_date      = $request->notice_date;
+                $resignation->resignation_date = $request->resignation_date;
+                $resignation->description      = $request->description;
+
+                $resignation->save();
+
+                return redirect()->route('resignation.index')->with('success', __('Resignation successfully updated.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -283,7 +325,13 @@ class ResignationController extends Controller
 
                 return redirect()->route('resignation.index')->with('success', __('Resignation successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $resignation->delete();
+
+                return redirect()->route('resignation.index')->with('success', __('Resignation successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $resignation->delete();
 

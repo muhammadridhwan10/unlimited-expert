@@ -101,7 +101,11 @@ class BankTransferController extends Controller
     {
         if(\Auth::user()->can('create bank transfer'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->get()->pluck('name', 'id');
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->get()->pluck('name', 'id');
             }
@@ -165,7 +169,11 @@ class BankTransferController extends Controller
         if(\Auth::user()->can('edit bank transfer'))
         {
             $transfer = BankTransfer::where('id',$id)->first();
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->get()->pluck('name', 'id');
+            }
+            if(\Auth::user()->type = 'company')
             {
                 $bankAccount = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->get()->pluck('name', 'id');
             }

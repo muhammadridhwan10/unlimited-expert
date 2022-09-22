@@ -67,7 +67,11 @@ class CommissionController extends Controller
 
                 return view('commission.edit', compact('commission','commissions'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                return view('commission.edit', compact('commission','commissions'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 return view('commission.edit', compact('commission','commissions'));
             }
@@ -109,7 +113,30 @@ class CommissionController extends Controller
 
                 return redirect()->back()->with('success', __('Commission successfully updated.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+
+                                       'title' => 'required',
+                                       'amount' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $commission->title  = $request->title;
+                $commission->type  = $request->type;
+                $commission->amount = $request->amount;
+                $commission->save();
+
+                return redirect()->back()->with('success', __('Commission successfully updated.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -155,7 +182,13 @@ class CommissionController extends Controller
 
                 return redirect()->back()->with('success', __('Commission successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $commission->delete();
+
+                return redirect()->back()->with('success', __('Commission successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $commission->delete();
 

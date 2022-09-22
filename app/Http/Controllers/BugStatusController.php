@@ -48,7 +48,11 @@ class BugStatusController extends Controller
             return redirect()->route('bugstatus.index')->with('error', $messages->first());
         }
 
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $all_status         = BugStatus::orderBy('id', 'DESC')->first();
+        }
+        elseif( \Auth::user()->type = 'company')
         {
             $all_status         = BugStatus::orderBy('id', 'DESC')->first();
         }
@@ -73,7 +77,11 @@ class BugStatusController extends Controller
         {
             return view('bugstatus.edit', compact('bugStatus'));
         }
-        elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        elseif(\Auth::user()->type = 'admin')
+        {
+            return view('bugstatus.edit', compact('bugStatus'));
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             return view('bugstatus.edit', compact('bugStatus'));
         }
@@ -107,7 +115,26 @@ class BugStatusController extends Controller
 
             return redirect()->route('bugstatus.index')->with('success', __('Bug status successfully updated.'));
         }
-        elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        elseif(\Auth::user()->type = 'admin')
+        {
+            $validator = \Validator::make(
+                $request->all(), [
+                                   'title' => 'required|max:20',
+                               ]
+            );
+            if($validator->fails())
+            {
+                $messages = $validator->getMessageBag();
+
+                return redirect()->route('bugstatus.index')->with('error', $messages->first());
+            }
+
+            $bugstatus->title = $request->title;
+            $bugstatus->save();
+
+            return redirect()->route('bugstatus.index')->with('success', __('Bug status successfully updated.'));
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $validator = \Validator::make(
                 $request->all(), [
@@ -145,7 +172,13 @@ class BugStatusController extends Controller
             return redirect()->route('bugstatus.index')->with('success', __('Bug status successfully deleted.'));
 
         }
-        elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        elseif(\Auth::user()->type = 'admin')
+        {
+            $bugstatus->delete();
+
+            return redirect()->route('bugstatus.index')->with('success', __('Bug status successfully deleted.'));
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $bugstatus->delete();
 

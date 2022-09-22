@@ -450,7 +450,12 @@ class AttendanceEmployeeController extends Controller
     {
         if(\Auth::user()->can('edit attendance'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $attendanceEmployee = AttendanceEmployee::where('id', $id)->first();
+                $employees          = Employee::get()->pluck('name', 'id');
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $attendanceEmployee = AttendanceEmployee::where('id', $id)->first();
                 $employees          = Employee::get()->pluck('name', 'id');
@@ -493,6 +498,14 @@ class AttendanceEmployeeController extends Controller
         }
 
         $clientIP = geoip()->getLocation($ip);
+        if($clientIP->city != "Matraman Dalam")
+            {
+                $city = "Anda berada diluar kantor";
+            }
+            else
+            {
+                $city = "Matraman Dalam";
+            }
         $employeeId      = !empty(\Auth::user()->employee) ? \Auth::user()->employee->id : 0;
         $todayAttendance = AttendanceEmployee::where('employee_id', '=', $employeeId)->where('date', date('Y-m-d'))->first();
         //        dd($todayAttendance);
@@ -534,7 +547,7 @@ class AttendanceEmployeeController extends Controller
                 $attendanceEmployee['early_leaving'] = $earlyLeaving;
                 $attendanceEmployee['overtime']      = $overtime;
                 $attendanceEmployee['ip']            = $clientIP->ip;
-                $attendanceEmployee['location']      = $clientIP->city;
+                $attendanceEmployee['location']      = $city;
 
                 if(!empty($request->date)) {
                     $attendanceEmployee['date']       =  $request->date;
@@ -584,7 +597,7 @@ class AttendanceEmployeeController extends Controller
                 $attendanceEmployee->clock_in      = $request->clock_in;
                 $attendanceEmployee->clock_out     = $request->clock_out;
                 $attendanceEmployee->ip            = $clientIP->ip;
-                $attendanceEmployee->location      = $clientIP->city;
+                $attendanceEmployee->location      = $city;
                 $attendanceEmployee->late          = $late;
                 $attendanceEmployee->early_leaving = $earlyLeaving;
                 $attendanceEmployee->overtime      = $overtime;
@@ -674,6 +687,15 @@ class AttendanceEmployeeController extends Controller
 
             $clientIP = geoip()->getLocation($ip);
 
+            if($clientIP->city != "Matraman Dalam")
+            {
+                $city = "Anda berada diluar kantor";
+            }
+            else
+            {
+                $city = "Matraman Dalam";
+            }
+
             if(empty($checkDb))
             {
                 $employeeAttendance                = new AttendanceEmployee();
@@ -683,7 +705,7 @@ class AttendanceEmployeeController extends Controller
                 $employeeAttendance->clock_in      = $time;
                 $employeeAttendance->clock_out     = '00:00:00';
                 $employeeAttendance->ip            = $clientIP->ip;
-                $employeeAttendance->location      = $clientIP->city;
+                $employeeAttendance->location      = $city;
                 $employeeAttendance->late          = $late;
                 $employeeAttendance->early_leaving = '00:00:00';
                 $employeeAttendance->overtime      = '00:00:00';
@@ -705,7 +727,7 @@ class AttendanceEmployeeController extends Controller
                 $employeeAttendance->clock_in      = $time;
                 $employeeAttendance->clock_out     = '00:00:00';
                 $employeeAttendance->ip            = $clientIP->ip;
-                $employeeAttendance->location      = $clientIP->city;
+                $employeeAttendance->location      = $city;
                 $employeeAttendance->late          = $late;
                 $employeeAttendance->early_leaving = '00:00:00';
                 $employeeAttendance->overtime      = '00:00:00';

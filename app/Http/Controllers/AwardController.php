@@ -75,7 +75,14 @@ class AwardController extends Controller
     {
         if(\Auth::user()->can('create award'))
         {
-                if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $employees  = Employee::get()->pluck('name', 'id');
+                $awardtypes = AwardType::get()->pluck('name', 'id');
+
+                return view('award.create', compact('employees', 'awardtypes'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $employees  = Employee::get()->pluck('name', 'id');
                 $awardtypes = AwardType::get()->pluck('name', 'id');
@@ -188,7 +195,13 @@ class AwardController extends Controller
                 $awardtypes = AwardType::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 return view('award.edit', compact('award', 'awardtypes', 'employees'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $employees  = Employee::get()->pluck('name', 'id');
+                $awardtypes = AwardType::get()->pluck('name', 'id');
+                return view('award.edit', compact('award', 'awardtypes', 'employees'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $employees  = Employee::get()->pluck('name', 'id');
                 $awardtypes = AwardType::get()->pluck('name', 'id');
@@ -235,7 +248,33 @@ class AwardController extends Controller
 
                 return redirect()->route('award.index')->with('success', __('Award successfully updated.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'employee_id' => 'required',
+                                       'award_type' => 'required',
+                                       'date' => 'required',
+                                       'gift' => 'required',
+                                   ]
+                );
+
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+                $award->employee_id = $request->employee_id;
+                $award->award_type  = $request->award_type;
+                $award->date        = $request->date;
+                $award->gift        = $request->gift;
+                $award->description = $request->description;
+                $award->save();
+
+                return redirect()->route('award.index')->with('success', __('Award successfully updated.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -282,7 +321,13 @@ class AwardController extends Controller
 
                 return redirect()->route('award.index')->with('success', __('Award successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $award->delete();
+
+                return redirect()->route('award.index')->with('success', __('Award successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $award->delete();
 

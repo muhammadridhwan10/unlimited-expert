@@ -153,7 +153,14 @@ class PaymentController extends Controller
     {
         if(\Auth::user()->can('create payment'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $venders = Vender::get()->pluck('name', 'id');
+                $venders->prepend('--', 0);
+                $categories = ProductServiceCategory::where('type', '=', 2)->get()->pluck('name', 'id');
+                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->get()->pluck('name', 'id');
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $venders = Vender::get()->pluck('name', 'id');
                 $venders->prepend('--', 0);
@@ -276,7 +283,15 @@ class PaymentController extends Controller
 
         if(\Auth::user()->can('edit payment'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $venders = Vender::get()->pluck('name', 'id');
+                $venders->prepend('--', 0);
+                $categories = ProductServiceCategory::get()->where('type', '=', 2)->pluck('name', 'id');
+    
+                $accounts = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->get()->pluck('name', 'id');
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $venders = Vender::get()->pluck('name', 'id');
                 $venders->prepend('--', 0);
@@ -389,7 +404,22 @@ class PaymentController extends Controller
 
                 return redirect()->route('payment.index')->with('success', __('Payment successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $payment->delete();
+                $type = 'Payment';
+                $user = 'Vender';
+                Transaction::destroyTransaction($payment->id, $type, $user);
+
+                if($payment->vender_id != 0)
+                {
+                    Utility::userBalance('vendor', $payment->vender_id, $payment->amount, 'credit');
+                }
+                Utility::bankAccountBalance($payment->account_id, $payment->amount, 'credit');
+
+                return redirect()->route('payment.index')->with('success', __('Payment successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $payment->delete();
                 $type = 'Payment';

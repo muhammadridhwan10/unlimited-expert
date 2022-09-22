@@ -184,7 +184,11 @@ class DebitNoteController extends Controller
     {
         if(\Auth::user()->can('create debit note'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $bills = Bill::get()->pluck('bill_id', 'id');
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $bills = Bill::get()->pluck('bill_id', 'id');
             }

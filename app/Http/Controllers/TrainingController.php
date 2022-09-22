@@ -49,7 +49,17 @@ class TrainingController extends Controller
     {
         if(\Auth::user()->can('create training'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $branches      = Branch::all()->pluck('name', 'id');
+                $trainingTypes = TrainingType::all()->pluck('name', 'id');
+                $trainers      = Trainer::all()->pluck('firstname', 'id');
+                $employees     = Employee::all()->pluck('name', 'id');
+                $options       = Training::$options;
+    
+                return view('training.create', compact('branches', 'trainingTypes', 'trainers', 'employees', 'options'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $branches      = Branch::all()->pluck('name', 'id');
                 $trainingTypes = TrainingType::all()->pluck('name', 'id');
@@ -136,7 +146,15 @@ class TrainingController extends Controller
     {
         if(\Auth::user()->can('create training'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $branches      = Branch::get()->pluck('name', 'id');
+                $trainingTypes = TrainingType::get()->pluck('name', 'id');
+                $trainers      = Trainer::get()->pluck('firstname', 'id');
+                $employees     = Employee::get()->pluck('name', 'id');
+                $options       = Training::$options;
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $branches      = Branch::get()->pluck('name', 'id');
                 $trainingTypes = TrainingType::get()->pluck('name', 'id');
@@ -214,7 +232,13 @@ class TrainingController extends Controller
 
                 return redirect()->route('training.index')->with('success', __('Training successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $training->delete();
+
+                return redirect()->route('training.index')->with('success', __('Training successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $training->delete();
 

@@ -146,7 +146,35 @@ class GoalController extends Controller
 
                 return redirect()->route('goal.index')->with('success', __('Goal successfully updated.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'name' => 'required',
+                                       'type' => 'required',
+                                       'from' => 'required',
+                                       'to' => 'required',
+                                       'amount' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $goal->name       = $request->name;
+                $goal->type       = $request->type;
+                $goal->from       = $request->from;
+                $goal->to         = $request->to;
+                $goal->amount     = $request->amount;
+                $goal->is_display = isset($request->is_display) ? 1 : 0;
+                $goal->save();
+
+                return redirect()->route('goal.index')->with('success', __('Goal successfully updated.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -196,7 +224,13 @@ class GoalController extends Controller
 
                 return redirect()->route('goal.index')->with('success', __('Goal successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $goal->delete();
+
+                return redirect()->route('goal.index')->with('success', __('Goal successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $goal->delete();
 

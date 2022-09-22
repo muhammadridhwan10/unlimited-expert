@@ -235,7 +235,13 @@ class CustomerController extends Controller
 
                 return redirect()->route('customer.index')->with('success', __('Customer successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $customer->delete();
+
+                return redirect()->route('customer.index')->with('success', __('Customer successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $customer->delete();
 
@@ -254,7 +260,11 @@ class CustomerController extends Controller
 
     function customerNumber()
     {
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $latest = Customer::latest()->first();
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $latest = Customer::latest()->first();
         }

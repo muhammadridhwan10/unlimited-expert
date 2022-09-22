@@ -42,7 +42,7 @@ class EmployeeController extends Controller
             }
             elseif(\Auth::user()->type == 'company')
             {
-                $documents = DucumentUpload::all();
+                $employees = Employee::all();
             }
             else
             {
@@ -61,7 +61,17 @@ class EmployeeController extends Controller
     {
         if(\Auth::user()->can('create employee'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $company_settings = Utility::settings();
+                $documents        = Document::get();
+                $branches         = Branch::get()->pluck('name', 'id');
+                $departments      = Department::get()->pluck('name', 'id');
+                $designations     = Designation::get()->pluck('name', 'id');
+                $employees        = User::get();
+                $employeesId      = \Auth::user()->employeeIdFormat($this->employeeNumber());
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $company_settings = Utility::settings();
                 $documents        = Document::get();
@@ -244,7 +254,16 @@ class EmployeeController extends Controller
         $id = Crypt::decrypt($id);
         if(\Auth::user()->can('edit employee'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $documents    = Document::get();
+                $branches     = Branch::get()->pluck('name', 'id');
+                $departments  = Department::get()->pluck('name', 'id');
+                $designations = Designation::get()->pluck('name', 'id');
+                $employee     = Employee::find($id);
+                $employeesId  = \Auth::user()->employeeIdFormat(!empty($employee->employee_id) ? $employee->employee_id :'');
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $documents    = Document::get();
                 $branches     = Branch::get()->pluck('name', 'id');

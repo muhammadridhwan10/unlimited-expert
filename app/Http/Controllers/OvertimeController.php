@@ -66,7 +66,11 @@ class OvertimeController extends Controller
             {
                 return view('overtime.edit', compact('overtime'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                return view('overtime.edit', compact('overtime'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 return view('overtime.edit', compact('overtime'));
             }
@@ -111,7 +115,32 @@ class OvertimeController extends Controller
 
                 return redirect()->back()->with('success', __('Overtime successfully updated.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'title' => 'required',
+                                       'number_of_days' => 'required',
+                                       'hours' => 'required',
+                                       'rate' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $overtime->title          = $request->title;
+                $overtime->number_of_days = $request->number_of_days;
+                $overtime->hours          = $request->hours;
+                $overtime->rate           = $request->rate;
+                $overtime->save();
+
+                return redirect()->back()->with('success', __('Overtime successfully updated.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -157,7 +186,13 @@ class OvertimeController extends Controller
 
                 return redirect()->back()->with('success', __('Overtime successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $overtime->delete();
+
+                return redirect()->back()->with('success', __('Overtime successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $overtime->delete();
 

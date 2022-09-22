@@ -246,7 +246,13 @@ class VenderController extends Controller
 
                 return redirect()->route('vender.index')->with('success', __('Vendor successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $vender->delete();
+
+                return redirect()->route('vender.index')->with('success', __('Vendor successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $vender->delete();
 
@@ -265,7 +271,11 @@ class VenderController extends Controller
 
     function venderNumber()
     {
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $latest = Vender::latest()->first();
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $latest = Vender::latest()->first();
         }
@@ -302,7 +312,11 @@ class VenderController extends Controller
                 'Sales' => 'Sales',
             ];
 
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $query = Transaction::where('user_id', \Auth::user()->id)->where('user_type', 'Vender')->where('type', 'Payment');
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $query = Transaction::where('user_id', \Auth::user()->id)->where('user_type', 'Vender')->where('type', 'Payment');
             }

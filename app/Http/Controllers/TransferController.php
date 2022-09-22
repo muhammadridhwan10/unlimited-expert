@@ -49,7 +49,15 @@ class TransferController extends Controller
     {
         if(\Auth::user()->can('create transfer'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $departments = Department::all()->pluck('name', 'id');
+                $branches    = Branch::all()->pluck('name', 'id');
+                $employees   = Employee::all()->pluck('name', 'id');
+    
+                return view('transfer.create', compact('employees', 'departments', 'branches'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $departments = Department::all()->pluck('name', 'id');
                 $branches    = Branch::all()->pluck('name', 'id');
@@ -152,7 +160,14 @@ class TransferController extends Controller
                 $employees   = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 return view('transfer.edit', compact('transfer', 'employees', 'departments', 'branches'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $departments = Department::get()->pluck('name', 'id');
+                $branches    = Branch::get()->pluck('name', 'id');
+                $employees   = Employee::get()->pluck('name', 'id');
+                return view('transfer.edit', compact('transfer', 'employees', 'departments', 'branches'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $departments = Department::get()->pluck('name', 'id');
                 $branches    = Branch::get()->pluck('name', 'id');
@@ -200,7 +215,33 @@ class TransferController extends Controller
 
                 return redirect()->route('transfer.index')->with('success', __('Transfer successfully updated.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $validator = \Validator::make(
+                    $request->all(), [
+                                       'employee_id' => 'required',
+                                       'branch_id' => 'required',
+                                       'department_id' => 'required',
+                                       'transfer_date' => 'required',
+                                   ]
+                );
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $transfer->employee_id   = $request->employee_id;
+                $transfer->branch_id     = $request->branch_id;
+                $transfer->department_id = $request->department_id;
+                $transfer->transfer_date = $request->transfer_date;
+                $transfer->description   = $request->description;
+                $transfer->save();
+
+                return redirect()->route('transfer.index')->with('success', __('Transfer successfully updated.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $validator = \Validator::make(
                     $request->all(), [
@@ -247,7 +288,13 @@ class TransferController extends Controller
 
                 return redirect()->route('transfer.index')->with('success', __('Transfer successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $transfer->delete();
+
+                return redirect()->route('transfer.index')->with('success', __('Transfer successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $transfer->delete();
 

@@ -45,7 +45,14 @@ class IndicatorController extends Controller
 
     public function create()
     {
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $brances        = Branch::get()->pluck('name', 'id');
+            $performance    = PerformanceType::get();
+            $departments    = Department::get()->pluck('name', 'id');
+            $departments->prepend('Select Department', '');
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $brances        = Branch::get()->pluck('name', 'id');
             $performance    = PerformanceType::get();
@@ -123,7 +130,16 @@ class IndicatorController extends Controller
     {
         if(\Auth::user()->can('edit indicator'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+        {
+            $performance    = PerformanceType::all();
+            $brances        = Branch::get()->pluck('name', 'id');
+            $departments    = Department::get()->pluck('name', 'id');
+            $departments->prepend('Select Department', '');
+
+            $ratings = json_decode($indicator->rating,true);
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $performance    = PerformanceType::all();
             $brances        = Branch::get()->pluck('name', 'id');
@@ -192,7 +208,13 @@ class IndicatorController extends Controller
 
                 return redirect()->route('indicator.index')->with('success', __('Indicator successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $indicator->delete();
+
+                return redirect()->route('indicator.index')->with('success', __('Indicator successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $indicator->delete();
 

@@ -17,7 +17,16 @@ class ActivityController extends Controller
     {
         if(\Auth::user()->can('view CRM activity'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $notes = Note::orderBy('id','desc')->get();
+                $tasks = Task::orderBy('id','desc')->get();
+                $emails = Email::orderBy('id','desc')->get();
+                $log_activities = LogActivity::orderBy('id','desc')->get();
+                $schedules = Schedule::orderBy('id','desc')->get();
+                $results=$results1=$results2=$results3=$results4=[];
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $notes = Note::orderBy('id','desc')->get();
                 $tasks = Task::orderBy('id','desc')->get();

@@ -75,7 +75,17 @@ class InterviewScheduleController extends Controller
 
     public function create($candidate=0)
     {
-        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+        if(\Auth::user()->type = 'admin')
+        {
+            $employees = User::where('type','!=','client')->get()->pluck('name', 'id');
+            $employees->prepend('--', '');
+    
+            $candidates = JobApplication::get()->pluck('name', 'id');
+            $candidates->prepend('--', '');
+    
+            return view('interviewSchedule.create', compact('employees', 'candidates','candidate'));
+        }
+        elseif(\Auth::user()->type = 'company')
         {
             $employees = User::where('type','!=','client')->get()->pluck('name', 'id');
             $employees->prepend('--', '');

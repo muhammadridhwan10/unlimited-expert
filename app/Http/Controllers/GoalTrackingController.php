@@ -47,7 +47,15 @@ class GoalTrackingController extends Controller
     {
         if(\Auth::user()->can('create goal tracking'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $brances = Branch::get()->pluck('name', 'id');
+                $brances->prepend('Select Branch', '');
+                $goalTypes = GoalType::get()->pluck('name', 'id');
+                $goalTypes->prepend('Select Goal Type', '');
+                $status = GoalTracking::$status;
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $brances = Branch::get()->pluck('name', 'id');
                 $brances->prepend('Select Branch', '');
@@ -125,7 +133,18 @@ class GoalTrackingController extends Controller
 
         if(\Auth::user()->can('edit goal tracking'))
         {
-            if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            if(\Auth::user()->type = 'admin')
+            {
+                $goalTracking = GoalTracking::find($id);
+                $brances      = Branch::get()->pluck('name', 'id');
+                $brances->prepend('Select Branch', '');
+                $goalTypes = GoalType::get()->pluck('name', 'id');
+                $goalTypes->prepend('Select Goal Type', '');
+                $status = GoalTracking::$status;
+    
+                $ratings = json_decode($goalTracking->rating,true);
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $goalTracking = GoalTracking::find($id);
                 $brances      = Branch::get()->pluck('name', 'id');
@@ -213,7 +232,13 @@ class GoalTrackingController extends Controller
 
                 return redirect()->route('goaltracking.index')->with('success', __('GoalTracking successfully deleted.'));
             }
-            elseif(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
+            elseif(\Auth::user()->type = 'admin')
+            {
+                $goalTracking->delete();
+
+                return redirect()->route('goaltracking.index')->with('success', __('GoalTracking successfully deleted.'));
+            }
+            elseif(\Auth::user()->type = 'company')
             {
                 $goalTracking->delete();
 
