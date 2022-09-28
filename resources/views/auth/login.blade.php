@@ -15,6 +15,9 @@
 @endsection
 
 @section('auth-topbar')
+    <li class="nav-item">
+        <a class="nav-link" target="_blank" href="https://aup-docs.au-partners.com/">Documentation</a>
+    </li>
     <li class="nav-item ">
         <select class="btn btn-primary my-1 me-2 " onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);" id="language">
             @foreach(Utility::languages() as $language)
