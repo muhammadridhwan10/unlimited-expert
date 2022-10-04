@@ -656,7 +656,7 @@
 
                     @if(\Auth::user()->show_project() == 1)
                         @if( Gate::check('manage project'))
-                            <li class="dash-item dash-hasmenu {{ ( Request::segment(1) == 'project' || Request::segment(1) == 'bugs-report' || Request::segment(1) == 'bugstatus' || Request::segment(1) == 'project-task-stages' || Request::segment(1) == 'calendar' || Request::segment(1) == 'timesheet-list' || Request::segment(1) == 'taskboard' || Request::segment(1) == 'timesheet-list' || Request::segment(1) == 'taskboard' || Request::segment(1) == 'project' || Request::segment(1) == 'projects')
+                            <li class="dash-item dash-hasmenu {{ ( Request::segment(1) == 'project' || Request::segment(1) == 'bugs-report' || Request::segment(1) == 'bugstatus' || Request::segment(1) == 'project-task-stages' || Request::segment(1) == 'tasktemplate' || Request::segment(1) == 'calendar' || Request::segment(1) == 'timesheet-list' || Request::segment(1) == 'taskboard' || Request::segment(1) == 'timesheet-list' || Request::segment(1) == 'taskboard' || Request::segment(1) == 'project' || Request::segment(1) == 'projects')
                             ? 'active dash-trigger' : ''}}">
                                 <a href="#!" class="dash-link"
                                 ><span class="dash-micon"><i class="ti ti-share"></i></span
@@ -694,8 +694,8 @@
                                             <a class="dash-link" href="{{ route('time.tracker') }}">{{__('Tracker')}}</a>
                                         </li>
                                     @endif
-                                    @if(Gate::check('manage project task stage') || Gate::check('manage bug status'))
-                                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'bugstatus' || Request::segment(1) == 'project-task-stages') ? 'active dash-trigger' : ''}}">
+                                    @if(Gate::check('manage project task stage') || Gate::check('manage bug status') || Gate::check('manage project task template'))
+                                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'bugstatus' || Request::segment(1) == 'project-task-stages' || Request::segment(1) == 'tasktemplate') ? 'active dash-trigger' : ''}}">
                                             <a class="dash-link" href="#">{{__('Project System Setup')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                             <ul class="dash-submenu">
                                                 @can('manage project task stage')
@@ -706,6 +706,11 @@
                                                 @can('manage bug status')
                                                     <li class="dash-item {{ (Request::route()->getName() == 'bugstatus.index') ? 'active' : '' }}">
                                                         <a class="dash-link" href="{{route('bugstatus.index')}}">{{__('Bug Status')}}</a>
+                                                    </li>
+                                                @endcan
+                                                @can('manage project task template')
+                                                    <li class="dash-item {{ (Request::route()->getName() == 'tasktemplate.index') ? 'active' : '' }}">
+                                                        <a class="dash-link" href="{{route('tasktemplate.index')}}">{{__('Project Task Template')}}</a>
                                                     </li>
                                                 @endcan
                                             </ul>

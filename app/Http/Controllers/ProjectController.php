@@ -11,6 +11,8 @@ use App\Models\BugStatus;
 use App\Models\BugFile;
 use App\Models\BugComment;
 use App\Models\Milestone;
+use App\Models\ProjectTaskTemplate;
+use App\Models\ProductServiceCategory;
 use Carbon\Carbon;
 use App\Models\ActivityLog;
 use App\Models\ProjectTask;
@@ -51,24 +53,31 @@ class ProjectController extends Controller
             {
                 $users   = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
+                $tasktemplate = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
                 $clients->prepend('Select Client', '');
                 $users->prepend('Select User', '');
+                $tasktemplate->prepend('Select Task Template', '');
             }
             elseif(\Auth::user()->type == 'admin')
             {
                 $users   = User::where('type', '!=', 'client')->get()->pluck('name', 'id');
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
+                $tasktemplate = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
                 $clients->prepend('Select Client', '');
                 $users->prepend('Select User', '');
+                $tasktemplate->prepend('Select Task Template', '');
+                
             }
             else
             {
                 $users   = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
                 $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
+                $tasktemplate = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('category_id', 'id');
                 $clients->prepend('Select Client', '');
                 $users->prepend('Select User', '');
+                $tasktemplate->prepend('Select Task Template', '');
             }
-            return view('projects.create', compact('clients','users'));
+            return view('projects.create', compact('clients','users','tasktemplate'));
         }
         else
         {
@@ -108,6 +117,7 @@ class ProjectController extends Controller
                 $project->project_image      = 'projects/'.$imageName;
             }
             $project->client_id = $request->client;
+            $project->template_task_id = $request->template_task_id;
             $project->budget = !empty($request->budget) ? $request->budget : 0;
             $project->description = $request->description;
             $project->status = $request->status;
@@ -122,15 +132,42 @@ class ProjectController extends Controller
                 ]
             );
 
-            if($request->user){
-              foreach($request->user as $key => $value) {
-                ProjectUser::create(
-                    [
-                        'project_id' => $project->id,
-                        'user_id' => $value,
-                    ]
-                );
-              }
+            // if($request->user){
+            //   foreach($request->user as $key => $value) {
+            //     ProjectUser::create(
+            //         [
+            //             'project_id' => $project->id,
+            //             'user_id' => $value,
+            //         ]
+            //     );
+            //   }
+            // }
+            
+            $template = Project::with('details')->get();
+            foreach ($template as $templates) 
+            {
+                $details = $templates->details;
+            }
+            
+
+            $category = $request->items;
+            $category_id = $request->category_id;
+
+
+            for($i = 0; $i < count($details); $i++)
+            {
+                // dd($details);
+                $tasks                 = new ProjectTask();
+                $tasks->project_id     = $project->id;
+                $tasks->assign_to      = \Auth::user()->creatorId();
+                $tasks->stage_id       =  $details[$i]['stage_id'];
+                $tasks->name           = $details[$i]['name'];
+                $tasks->start_date     = $project->start_date;
+                $tasks->end_date       = $project->end_date;
+                $tasks->estimated_hrs  = $details[$i]['estimated_hrs'];
+                $tasks->description    = $details[$i]['description'];
+                $tasks->created_by     = \Auth::user()->creatorId();
+                $tasks->save();
             }
 
 

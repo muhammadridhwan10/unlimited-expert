@@ -22,6 +22,7 @@ class CreateProjectsTable extends Migration
                 $table->string('project_image')->nullable();
                 $table->integer('budget')->nullable();
                 $table->integer('client_id');
+                $table->integer('template_task_id')->nullable();
                 $table->text('description')->nullable();
                 $table->string('status');
                 $table->text('tags')->nullable();

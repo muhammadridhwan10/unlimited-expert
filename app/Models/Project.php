@@ -23,6 +23,7 @@ class Project extends Model
         'budget',
         'estimated_hrs',
         'project_stage_id',
+        'template_task_id',
         'description',
         'status',
         'tags',
@@ -42,6 +43,10 @@ class Project extends Model
         'complete' => 'success',
         'canceled' => 'danger',
     ];
+
+    public function details(){
+        return $this->hasMany('App\Models\ProjectTaskTemplate', 'category_id', 'template_task_id');
+    }
 
     public function milestones()
     {

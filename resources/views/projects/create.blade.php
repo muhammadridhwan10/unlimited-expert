@@ -44,6 +44,12 @@
         </div>
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
+                {{ Form::label('template_task_id', __('Task Template'),['class'=>'form-label']) }}<span class="text-danger"></span>
+                {!! Form::select('template_task_id', $tasktemplate, null,array('class' => 'form-control')) !!}
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-6">
+            <div class="form-group">
                 {{ Form::label('budget', __('Budget'), ['class' => 'form-label']) }}
                 {{ Form::number('budget', null, ['class' => 'form-control']) }}
             </div>

@@ -11,7 +11,6 @@ use App\Models\User;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Torann\GeoIP\Facades\GeoIP;
 
 class AttendanceEmployeeController extends Controller
 {
@@ -476,36 +475,36 @@ class AttendanceEmployeeController extends Controller
     public function update(Request $request, $id)
     {
         //        dd($request->all());
-        if (isset($_SERVER["HTTP_CF_CONNECTING_IP"])) {
-            $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
-            $_SERVER['HTTP_CLIENT_IP'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
-        }
-        $client  = @$_SERVER['HTTP_CLIENT_IP'];
-        $forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
-        $remote  = $_SERVER['REMOTE_ADDR'];
+        // if (isset($_SERVER["HTTP_CF_CONNECTING_IP"])) {
+        //     $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
+        //     $_SERVER['HTTP_CLIENT_IP'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
+        // }
+        // $client  = @$_SERVER['HTTP_CLIENT_IP'];
+        // $forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
+        // $remote  = $_SERVER['REMOTE_ADDR'];
     
-        if(filter_var($client, FILTER_VALIDATE_IP))
-        {
-            $ip = $client;
-        }
-        elseif(filter_var($forward, FILTER_VALIDATE_IP))
-        {
-            $ip = $forward;
-        }
-        else
-        {
-            $ip = $remote;
-        }
+        // if(filter_var($client, FILTER_VALIDATE_IP))
+        // {
+        //     $ip = $client;
+        // }
+        // elseif(filter_var($forward, FILTER_VALIDATE_IP))
+        // {
+        //     $ip = $forward;
+        // }
+        // else
+        // {
+        //     $ip = $remote;
+        // }
 
-        $clientIP = geoip()->getLocation($ip);
-        if($clientIP->city != "Matraman Dalam")
-            {
-                $city = "Anda berada diluar kantor";
-            }
-            else
-            {
-                $city = "Matraman Dalam";
-            }
+        // $clientIP = geoip()->getLocation($ip);
+        // if($clientIP->city != "Matraman Dalam")
+        //     {
+        //         $city = "Anda berada diluar kantor";
+        //     }
+        //     else
+        //     {
+        //         $city = "Matraman Dalam";
+        //     }
         $employeeId      = !empty(\Auth::user()->employee) ? \Auth::user()->employee->id : 0;
         $todayAttendance = AttendanceEmployee::where('employee_id', '=', $employeeId)->where('date', date('Y-m-d'))->first();
         //        dd($todayAttendance);
@@ -546,8 +545,8 @@ class AttendanceEmployeeController extends Controller
                 $attendanceEmployee['clock_out']     = $time;
                 $attendanceEmployee['early_leaving'] = $earlyLeaving;
                 $attendanceEmployee['overtime']      = $overtime;
-                $attendanceEmployee['ip']            = $clientIP->ip;
-                $attendanceEmployee['location']      = $city;
+                // $attendanceEmployee['ip']            = $clientIP->ip;
+                // $attendanceEmployee['location']      = $city;
 
                 if(!empty($request->date)) {
                     $attendanceEmployee['date']       =  $request->date;
@@ -596,8 +595,8 @@ class AttendanceEmployeeController extends Controller
                 $attendanceEmployee->date          = $request->date;
                 $attendanceEmployee->clock_in      = $request->clock_in;
                 $attendanceEmployee->clock_out     = $request->clock_out;
-                $attendanceEmployee->ip            = $clientIP->ip;
-                $attendanceEmployee->location      = $city;
+                // $attendanceEmployee->ip            = $clientIP->ip;
+                // $attendanceEmployee->location      = $city;
                 $attendanceEmployee->late          = $late;
                 $attendanceEmployee->early_leaving = $earlyLeaving;
                 $attendanceEmployee->overtime      = $overtime;
@@ -664,37 +663,37 @@ class AttendanceEmployeeController extends Controller
             $checkDb = AttendanceEmployee::where('employee_id', '=', \Auth::user()->id)->get()->toArray();
             // $clientIP = geoip()->getLocation($_SERVER['REMOTE_ADDR']);
 
-            if (isset($_SERVER["HTTP_CF_CONNECTING_IP"])) {
-                $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
-                $_SERVER['HTTP_CLIENT_IP'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
-            }
-            $client  = @$_SERVER['HTTP_CLIENT_IP'];
-            $forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
-            $remote  = $_SERVER['REMOTE_ADDR'];
+            // if (isset($_SERVER["HTTP_CF_CONNECTING_IP"])) {
+            //     $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
+            //     $_SERVER['HTTP_CLIENT_IP'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
+            // }
+            // $client  = @$_SERVER['HTTP_CLIENT_IP'];
+            // $forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
+            // $remote  = $_SERVER['REMOTE_ADDR'];
         
-            if(filter_var($client, FILTER_VALIDATE_IP))
-            {
-                $ip = $client;
-            }
-            elseif(filter_var($forward, FILTER_VALIDATE_IP))
-            {
-                $ip = $forward;
-            }
-            else
-            {
-                $ip = $remote;
-            }
+            // if(filter_var($client, FILTER_VALIDATE_IP))
+            // {
+            //     $ip = $client;
+            // }
+            // elseif(filter_var($forward, FILTER_VALIDATE_IP))
+            // {
+            //     $ip = $forward;
+            // }
+            // else
+            // {
+            //     $ip = $remote;
+            // }
 
-            $clientIP = geoip()->getLocation($ip);
+            // $clientIP = geoip()->getLocation($ip);
 
-            if($clientIP->city != "Matraman Dalam")
-            {
-                $city = "Anda berada diluar kantor";
-            }
-            else
-            {
-                $city = "Matraman Dalam";
-            }
+            // if($clientIP->city != "Matraman Dalam")
+            // {
+            //     $city = "Anda berada diluar kantor";
+            // }
+            // else
+            // {
+            //     $city = "Matraman Dalam";
+            // }
 
             if(empty($checkDb))
             {
@@ -704,8 +703,8 @@ class AttendanceEmployeeController extends Controller
                 $employeeAttendance->status        = 'Present';
                 $employeeAttendance->clock_in      = $time;
                 $employeeAttendance->clock_out     = '00:00:00';
-                $employeeAttendance->ip            = $clientIP->ip;
-                $employeeAttendance->location      = $city;
+                // $employeeAttendance->ip            = $clientIP->ip;
+                // $employeeAttendance->location      = $city;
                 $employeeAttendance->late          = $late;
                 $employeeAttendance->early_leaving = '00:00:00';
                 $employeeAttendance->overtime      = '00:00:00';
@@ -726,8 +725,8 @@ class AttendanceEmployeeController extends Controller
                 $employeeAttendance->status        = 'Present';
                 $employeeAttendance->clock_in      = $time;
                 $employeeAttendance->clock_out     = '00:00:00';
-                $employeeAttendance->ip            = $clientIP->ip;
-                $employeeAttendance->location      = $city;
+                // $employeeAttendance->ip            = $clientIP->ip;
+                // $employeeAttendance->location      = $city;
                 $employeeAttendance->late          = $late;
                 $employeeAttendance->early_leaving = '00:00:00';
                 $employeeAttendance->overtime      = '00:00:00';

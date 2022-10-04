@@ -473,7 +473,7 @@
                 </div>
                 <div class="tab-pane fade" id="project" role="tabpanel" aria-labelledby="pills-contact-tab">
                     @php
-                        $modules=['project dashboard','project','milestone','grant chart','project stage','timesheet','expense','project task','activity','CRM activity','project task stage','bug report','bug status'];
+                        $modules=['project dashboard','project','milestone','grant chart','project stage','timesheet','expense','project task','activity','CRM activity','project task stage', 'project task template','bug report','bug status'];
                     @endphp
                     <div class="col-md-12">
                         <div class="form-group">

@@ -2735,6 +2735,13 @@ Route::resource('project-task-stages', 'TaskStageController')->middleware(
         'XSS',
     ]
 );
+Route::resource('tasktemplate', 'TaskTemplateController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('tasktemplate/create', 'TaskTemplateController@create')->name('tasktemplate.create');
 Route::post(
     '/project-task-stages/order', [
     'as' => 'project-task-stages.order',
