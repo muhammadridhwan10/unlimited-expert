@@ -132,16 +132,16 @@ class ProjectController extends Controller
                 ]
             );
 
-            // if($request->user){
-            //   foreach($request->user as $key => $value) {
-            //     ProjectUser::create(
-            //         [
-            //             'project_id' => $project->id,
-            //             'user_id' => $value,
-            //         ]
-            //     );
-            //   }
-            // }
+            if($request->user){
+              foreach($request->user as $key => $value) {
+                ProjectUser::create(
+                    [
+                        'project_id' => $project->id,
+                        'user_id' => $value,
+                    ]
+                );
+              }
+            }
             
             $template = Project::with('details')->get();
             foreach ($template as $templates) 
