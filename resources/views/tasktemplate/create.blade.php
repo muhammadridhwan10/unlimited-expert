@@ -1,12 +1,12 @@
 @extends('layouts.admin')
 @section('page-title')
-    {{__('Invoice Create')}}
+    {{__('Project Task Template Create')}}
 @endsection
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item"><a href="{{route('invoice.index')}}">{{__('Invoice')}}</a></li>
-    <li class="breadcrumb-item">{{__('Invoice Create')}}</li>
+    <li class="breadcrumb-item"><a href="{{route('tasktemplate.index')}}">{{__('Project Task Template')}}</a></li>
+    <li class="breadcrumb-item">{{__('Project Task Template Create')}}</li>
 @endsection
 @push('script-page')
     <script src="{{asset('js/jquery-ui.min.js')}}"></script>
@@ -390,7 +390,7 @@
             </div>
         </div>
         <div class="modal-footer">
-            <input type="button" value="{{__('Cancel')}}" onclick="location.href = '{{route("invoice.index")}}';" class="btn btn-light">
+            <input type="button" value="{{__('Cancel')}}" onclick="location.href = '{{route("tasktemplate.index")}}';" class="btn btn-light">
             <input type="submit" value="{{__('Create')}}" class="btn  btn-primary">
         </div>
         {{ Form::close() }}
