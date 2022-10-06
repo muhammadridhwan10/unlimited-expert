@@ -67,9 +67,15 @@ class SupportController extends Controller
             __('Critical'),
         ];
         $status = Support::$status;
-        $users  = User::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-        $userss = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
-        return view('support.create', compact('priority', 'users', 'userss', 'status'));
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+        {
+            $users  = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
+        }
+        else
+        {
+            $users  = User::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        }
+        return view('support.create', compact('priority', 'users', 'status'));
     }
 
 
@@ -173,7 +179,15 @@ class SupportController extends Controller
             __('Critical'),
         ];
         $status = Support::$status;
-        $users = User::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+        {
+            $users = User::get()->pluck('name', 'id');
+        }
+        else
+        {
+            $users = User::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        }
+        
 
         return view('support.edit', compact('priority', 'users', 'support','status'));
     }
