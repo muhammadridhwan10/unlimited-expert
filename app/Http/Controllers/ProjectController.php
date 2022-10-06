@@ -168,6 +168,16 @@ class ProjectController extends Controller
                 $tasks->description    = $details[$i]['description'];
                 $tasks->created_by     = \Auth::user()->creatorId();
                 $tasks->save();
+
+                ActivityLog::create(
+                    [
+                        'user_id' => \Auth::user()->id,
+                        'project_id' => $project->id,
+                        'task_id' => $tasks->id,
+                        'log_type' => 'Create Task',
+                        'remark' => json_encode(['title' => $tasks->name]),
+                    ]
+                );
             }
 
 

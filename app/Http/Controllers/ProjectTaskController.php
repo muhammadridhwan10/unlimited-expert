@@ -12,6 +12,7 @@ use App\Models\TaskStage;
 use App\Models\ActivityLog;
 use App\Models\ProjectTask;
 use App\Models\TaskComment;
+use App\Models\TaskLink;
 use App\Models\TaskChecklist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -513,6 +514,16 @@ class ProjectTaskController extends Controller
                                 ]
             );
 
+            ActivityLog::create(
+                [
+                    'user_id' => $user->id,
+                    'project_id' => $projectID,
+                    'task_id' => $taskID,
+                    'log_type' => 'Create Checklist',
+                    'remark' => json_encode(['title' => $request->name]),
+                ]
+            );
+
             return $checkList->toJson();
         }
         else
@@ -537,6 +548,16 @@ class ProjectTaskController extends Controller
             }
             $checkList->save();
 
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $projectID,
+                    'task_id' => $checkList->task_id,
+                    'log_type' => 'Update Checklist',
+                    'remark' => json_encode(['title' => $checkList->name]),
+                ]
+            );
+
             return $checkList->toJson();
         }
         else
@@ -551,6 +572,103 @@ class ProjectTaskController extends Controller
         {
             $checkList = TaskChecklist::find($checklistID);
             $checkList->delete();
+
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $projectID,
+                    'task_id' => $checkList->task_id,
+                    'log_type' => 'Delete Checklist',
+                    'remark' => json_encode(['title' => $checkList->name]),
+                ]
+            );
+
+            return "true";
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function linkStore(Request $request, $projectID, $taskID)
+    {
+
+        if(\Auth::user()->can('view project task'))
+        {
+            $post               = [];
+            $post['task_id']    = $taskID;
+            $post['user_id']    = \Auth::user()->id;
+            $post['link']       = $request->link;
+            $post['created_by'] = \Auth::user()->creatorId();
+            $post['user_type']  = \Auth::user()->type;
+
+            $link = TaskLink::create($post);
+            $user    = $link->user;
+            $user_detail    = $link->userdetail;
+
+            $link->deleteUrl = route(
+                'link.destroy', [
+                                     $projectID,
+                                     $taskID,
+                                     $link->id,
+                                 ]
+            );
+
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $projectID,
+                    'task_id' => $taskID,
+                    'log_type' => 'Create Link',
+                    'remark' => json_encode(['title' => $link->link]),
+                ]
+            );
+
+            // //Slack Notification
+            // $setting  = Utility::settings(\Auth::user()->creatorId());
+            // $comments = ProjectTask::find($taskID);
+            // if(isset($setting['taskcomment_notification']) && $setting['taskcomment_notification'] ==1){
+            //     $msg = __("New Comment added in").' '.$comments->name.'.';
+            //     Utility::send_slack_msg($msg);
+            // }
+
+            // //Telegram Notification
+            // $setting  = Utility::settings(\Auth::user()->creatorId());
+            // $comments = ProjectTask::find($taskID);
+            // if(isset($setting['telegram_taskcomment_notification']) && $setting['telegram_taskcomment_notification'] ==1){
+            //     $msg = __("New Comment added in").' '.$comments->name.'.';
+            //     Utility::send_telegram_msg($msg);
+            // }
+
+            $link->current_time= $link->created_at->diffForHumans();
+            $link->default_img= asset(\Storage::url("uploads/avatar/avatar.png"));
+            return $link->toJson();
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function linkDestroy(Request $request, $projectID, $taskID, $linkID)
+    {
+
+        if(\Auth::user()->can('view project task'))
+        {
+            $link = TaskLink::find($linkID);
+            $link->delete();
+
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $projectID,
+                    'task_id' => $taskID,
+                    'log_type' => 'Delete Link',
+                    'remark' => json_encode(['title' => $link->link]),
+                ]
+            );
+
 
             return "true";
         }
@@ -588,6 +706,16 @@ class ProjectTaskController extends Controller
                                     ]
             );
 
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $projectID,
+                    'task_id' => $taskID,
+                    'log_type' => 'Create Attachment',
+                    'remark' => json_encode(['title' => $request->file->getClientOriginalName()]),
+                ]
+            );
+
             return $TaskFile->toJson();
         }
         else
@@ -608,6 +736,16 @@ class ProjectTaskController extends Controller
             }
             $commentFile->delete();
 
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $projectID,
+                    'task_id' => $taskID,
+                    'log_type' => 'Delete Attachment',
+                    'remark' => json_encode(['title' => $commentFile->name]),
+                ]
+            );
+
             return "true";
         }
         else
@@ -623,6 +761,17 @@ class ProjectTaskController extends Controller
         {
             $comment = TaskComment::find($commentID);
             $comment->delete();
+
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $projectID,
+                    'task_id' => $taskID,
+                    'log_type' => 'Delete Comment',
+                    'remark' => json_encode(['title' => $comment->comment]),
+                ]
+            );
+
 
             return "true";
         }
@@ -654,6 +803,16 @@ class ProjectTaskController extends Controller
                                      $taskID,
                                      $comment->id,
                                  ]
+            );
+
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $projectID,
+                    'task_id' => $taskID,
+                    'log_type' => 'Create Comment',
+                    'remark' => json_encode(['title' => $comment->comment]),
+                ]
             );
 
             //Slack Notification

@@ -30,8 +30,8 @@ class Utility extends Model
         }
         $data     = $data->get();
         $settings = [
-            "site_currency" => "USD",
-            "site_currency_symbol" => "$",
+            "site_currency" => "Rupiah",
+            "site_currency_symbol" => "Rp",
             "site_currency_symbol_position" => "pre",
             "site_date_format" => "M j, Y",
             "site_time_format" => "g:i A",
@@ -140,8 +140,8 @@ class Utility extends Model
 
 
         $settings = [
-            "site_currency" => "USD",
-            "site_currency_symbol" => "$",
+            "site_currency" => "Rupiah",
+            "site_currency_symbol" => "Rp",
             "site_currency_symbol_position" => "pre",
             "site_date_format" => "M j, Y",
             "site_time_format" => "g:i A",

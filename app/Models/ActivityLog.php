@@ -73,6 +73,34 @@ class ActivityLog extends Model
             {
                 return $user_name . ' ' . __('Create new Task') . " <b>" . $remark['title'] . "</b>";
             }
+            elseif($this->log_type == 'Create Checklist')
+            {
+                return $user_name . ' ' . __('Create new Checklist') . " <b>" . $remark['title'] . "</b>";
+            }
+            elseif($this->log_type == 'Update Checklist')
+            {
+                return $user_name . ' ' . __('Update Checklist') . " <b>" . $remark['title'] . "</b>";
+            }
+            elseif($this->log_type == 'Create Attachment')
+            {
+                return $user_name . ' ' . __('Create new Attachment') . " <b>" . $remark['title'] . "</b>";
+            }
+            elseif($this->log_type == 'Delete Attachment')
+            {
+                return $user_name . ' ' . __('Delete Attachment') . " <b>" . $remark['title'] . "</b>";
+            }
+            elseif($this->log_type == 'Create Link')
+            {
+                return $user_name . ' ' . __('Create Link') . " <b>" . $remark['title'] . "</b>";
+            }
+            elseif($this->log_type == 'Delete Link')
+            {
+                return $user_name . ' ' . __('Delete Link') . " <b>" . $remark['title'] . "</b>";
+            }
+            elseif($this->log_type == 'Create Comment')
+            {
+                return $user_name . ' ' . __('Create new Comment') . " <b>" . $remark['title'] . "</b>";
+            }
             elseif($this->log_type == 'Add Product')
             {
                 return $user_name . ' ' . __('Add new Products') . " <b>" . $remark['title'] . "</b>";

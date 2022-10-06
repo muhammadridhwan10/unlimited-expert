@@ -152,6 +152,49 @@
                 });
             });
 
+            /*For Task Link*/
+            $(document).on('click', '#link_submit', function () {
+                var link = $("#form-link input[name=link]").val();
+                if (link != '') {
+                    $.ajax({
+                        url: $("#form-link").data('action'),
+                        data: {link: link, "_token": "{{ csrf_token() }}"},
+                        type: 'POST',
+                        success: function (data) {
+                            data = JSON.parse(data);
+                            console.log('form-link', data);
+                            load_task($('.task-id').attr('id'));
+                            show_toastr('{{__('success')}}', '{{ __("Link Added Successfully!")}}');
+                            var html = '<div class="card border shadow-none checklist-member">' +
+                                '                    <div class="px-3 py-2 row align-items-center">' +
+                                '                        <div class="col">' +
+                                '                            <div class="form-check form-check-inline">' +
+                                '                                <input type="checkbox" class="form-check-input" id="check-item-' + data.id + '" value="' + data.id + '" data-url="' + data.updateUrl + '">' +
+                                '                                <label class="form-check-label h6 text-sm" for="check-item-' + data.id + '">' + data.link + '</label>' +
+                                '                            </div>' +
+                                '                        </div>' +
+                                '                        <div class="col-auto"> <div class="action-btn bg-danger ms-2">' +
+                                '                            <a href="#" class="mx-3 btn btn-sm  align-items-center delete-link" role="button" data-url="' + data.deleteUrl + '">' +
+                                '                                <i class="ti ti-trash text-white"></i>' +
+                                '                            </a>' +
+                                '                        </div></div>' +
+                                '                    </div>' +
+                                '                </div>'
+
+                            $("#link").append(html);
+                            $("#form-link input[name=link]").val('');
+                            $("#form-link").collapse('toggle');
+                        },
+                        error: function (data) {
+                            data = data.responseJSON;
+                            show_toastr('error', data.message);
+                        }
+                    });
+                } else {
+                    show_toastr('error', '{{ __("Please write link!")}}');
+                }
+            });
+
             /*For Task Checklist*/
             $(document).on('click', '#checklist_submit', function () {
                 var name = $("#form-checklist input[name=name]").val();

@@ -2646,10 +2646,22 @@ Route::post(
     'uses' => 'ProjectTaskController@commentStore',
 ]
 );
+Route::post(
+    '/projects/{id}/link/{tid}', [
+    'as' => 'link.store',
+    'uses' => 'ProjectTaskController@linkStore',
+]
+);
 Route::delete(
     '/projects/{id}/comment/{tid}/{cid}', [
     'as' => 'comment.destroy',
     'uses' => 'ProjectTaskController@commentDestroy',
+]
+);
+Route::delete(
+    '/projects/{id}/link/{cid}', [
+    'as' => 'link.destroy',
+    'uses' => 'ProjectTaskController@linkDestroy',
 ]
 );
 Route::post(

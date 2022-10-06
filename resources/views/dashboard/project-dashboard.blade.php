@@ -241,7 +241,7 @@
                                                      class="wid-40 rounded-circle me-3" alt="avatar image">
                                                 <div>
                                                     <h6 class="mb-0">{{ $due_project->project_name }}</h6>
-                                                    <p class="mb-0"><span class="text-success">{{ \Auth::user()->priceFormat($due_project->budget) }}</p>
+                                                    <!-- <p class="mb-0"><span class="text-success">{{ \Auth::user()->priceFormat($due_project->budget) }}</p> -->
 
                                                 </div>
                                             </div>

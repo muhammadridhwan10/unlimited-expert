@@ -94,6 +94,11 @@ class ProjectTask extends Model
         return $this->hasMany('App\Models\TaskChecklist', 'task_id', 'id')->orderBy('id', 'DESC');
     }
 
+    public function link()
+    {
+        return $this->hasMany('App\Models\Tasklink', 'task_id', 'id')->orderBy('id', 'DESC');
+    }
+
     public function taskFiles()
     {
         return $this->hasMany('App\Models\TaskFile', 'task_id', 'id')->orderBy('id', 'DESC');
