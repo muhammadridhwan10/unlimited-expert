@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Mail\EmailTest;
-use App\Mail\testMail;
+use App\Mail\TestMail;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -700,7 +700,7 @@ class SystemController extends Controller
 
         try
         {
-            Mail::to($request->email)->send(new testMail());
+            Mail::to($request->email)->send(new TestMail());
         }
         catch(\Exception $e)
         {
