@@ -218,7 +218,7 @@
                 </div>
             </div>
         </div>
-        @if(Auth::user()->type !='staff' || Auth::user()->type !='senior staff')
+        @if(Auth::user()->type !='staff' && Auth::user()->type !='senior staff')
             <div class="col-lg-4 col-md-12">
                 <div class="card">
                     <div class="card-body">
@@ -245,7 +245,7 @@
         <div class="col-lg-4 col-md-12">
             </div>
         @endif
-        @if(Auth::user()->type !='client' || Auth::user()->type !='staff' || Auth::user()->type !='senior staff')
+        @if(Auth::user()->type !='client' && Auth::user()->type !='staff' && Auth::user()->type !='senior staff')
             <div class="col-lg-4 col-md-6">
                 <div class="card">
                     <div class="card-body">
