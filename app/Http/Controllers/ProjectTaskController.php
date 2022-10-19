@@ -7,6 +7,8 @@ use App\Models\Task;
 use App\Models\Utility;
 use App\Models\TaskFile;
 use App\Models\Bug;
+use App\Models\User;
+use App\Models\ProjectUser;
 use App\Models\BugStatus;
 use App\Models\TaskStage;
 use App\Models\ActivityLog;
@@ -17,6 +19,8 @@ use App\Models\TaskChecklist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\CommentNotification;
 
 class ProjectTaskController extends Controller
 {
@@ -823,6 +827,17 @@ class ProjectTaskController extends Controller
                 Utility::send_slack_msg($msg);
             }
 
+             //Email Notification
+            $users = ProjectUser::where('project_id', $projectID)->whereNotIn('user_id',[\Auth::user()->id])->get();
+            $response = array();
+            foreach($users as $data)
+            {
+                $response[] = array("email"=> $data->user->email);
+                foreach ($response as $recipient) {
+                    Mail::to($recipient)->send(new CommentNotification($comment));
+                }
+            }
+
             //Telegram Notification
             $setting  = Utility::settings(\Auth::user()->creatorId());
             $comments = ProjectTask::find($taskID);
@@ -839,7 +854,7 @@ class ProjectTaskController extends Controller
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
     }
-
+    
     public function updateTaskPriorityColor(Request $request)
     {
         if(\Auth::user()->can('view project task'))

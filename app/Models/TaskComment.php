@@ -19,6 +19,16 @@ class TaskComment extends Model
         return $this->hasOne('App\Models\User', 'id', 'created_by');
     }
 
+    public function userss()
+    {
+        return $this->belongsTo(User::class, "user_id", "id");
+    }
+
+    public function task()
+    {
+        return $this->belongsTo(ProjectTask::class, 'task_id', 'id');
+    }
+
 
 
 }

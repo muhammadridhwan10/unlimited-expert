@@ -13,6 +13,8 @@ use App\Models\BugComment;
 use App\Models\Milestone;
 use App\Models\ProjectTaskTemplate;
 use App\Models\ProductServiceCategory;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ProjectNotification;
 use Carbon\Carbon;
 use App\Models\ActivityLog;
 use App\Models\ProjectTask;
@@ -140,8 +142,14 @@ class ProjectController extends Controller
                         'user_id' => $value,
                     ]
                 );
+                $data = User::where('id', $value)->pluck('email');
+                Mail::to($data)->send(new ProjectNotification($project));
               }
             }
+
+            // $projectUser = ProjectUser::with('user')->orderBy('id', 'DESC'); 
+            // $id = $zoommeeting->user_id;
+            // $data = User::whereIn('id', $id)->pluck('email');
             
             $template = Project::with('details')->get();
             foreach ($template as $templates) 
