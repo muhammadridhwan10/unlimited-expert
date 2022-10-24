@@ -8,6 +8,7 @@ class TaskChecklist extends Model
 {
     protected $fillable = [
         'name',
+        'link',
         'task_id',
         'user_type',
         'created_by',

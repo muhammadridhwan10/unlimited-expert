@@ -498,6 +498,7 @@ class ProjectTaskController extends Controller
 
             $post               = [];
             $post['name']       = $request->name;
+            $post['link']       = $request->link;
             $post['task_id']    = $taskID;
             $post['user_type']  = 'User';
             $post['created_by'] = \Auth::user()->id;

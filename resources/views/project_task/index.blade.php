@@ -92,6 +92,7 @@
                 var curr = $(this);
 
                 var comment = $.trim($("#form-comment textarea[name='comment']").val());
+                var tagword = /@(\w+)(?!.*@\w)/;
                 if (comment != '') {
                     $.ajax({
                         url: $("#form-comment").data('action'),
@@ -198,10 +199,11 @@
             /*For Task Checklist*/
             $(document).on('click', '#checklist_submit', function () {
                 var name = $("#form-checklist input[name=name]").val();
+                var link = $("#form-checklist input[name=link]").val();
                 if (name != '') {
                     $.ajax({
                         url: $("#form-checklist").data('action'),
-                        data: {name: name, "_token": "{{ csrf_token() }}"},
+                        data: {link: link, name: name, "_token": "{{ csrf_token() }}"},
                         type: 'POST',
                         success: function (data) {
                             data = JSON.parse(data);
@@ -222,10 +224,10 @@
                                 '                            </a>' +
                                 '                        </div></div>' +
                                 '                    </div>' +
-                                '                </div>'
 
                             $("#checklist").append(html);
                             $("#form-checklist input[name=name]").val('');
+                            $("#form-checklist input[name=link]").val('');
                             $("#form-checklist").collapse('toggle');
                         },
                         error: function (data) {
@@ -429,6 +431,34 @@
             });
         }
 
+        // var INITIAL_WAIT = 3000;
+        // var INTERVAL_WAIT = 10000;
+        // var ONE_SECOND = 1000;
+
+        // var events = ["mouseup", "keydown", "scroll"];
+        // // var clickCount = 0;
+        // // var linkClickCount = 0;
+
+        // document.addEventListener("DOMContentLoaded", function () {
+        //     var linkClickCount = 0
+        //     events.forEach(function (e) {
+        //         document.addEventListener(e, function () {
+        //             endTime = Date.now() + INTERVAL_WAIT;
+        //             if (e === "mouseup") {
+        //                 if (event.target.nodeName === 'A') {
+        //                     linkClickCount++;
+        //                     // document.getElementById("tasklinks").innerHTML = linkClickCount;
+        //                     // console.log(linkClickCount);
+        //                 }
+        //             }
+        //         });
+        //     });
+        // });
+
+
+        // function formatTime(ms) {
+        //     return Math.floor(ms / 1000);
+        // }
     </script>
 
 @endpush

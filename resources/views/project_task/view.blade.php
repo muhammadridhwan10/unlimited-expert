@@ -68,7 +68,10 @@
                             <div class="col-10">
                                 <input type="text" name="name" required class="form-control" placeholder="{{__('Checklist Name')}}"/>
                             </div>
-                            <div class="col-2 card-meta d-inline-flex align-items-center">
+                            <div class="col-10">
+                                <input type="url" name="link" required class="form-control" placeholder="{{__('https://example.com')}}"/>
+                            </div>
+                            <div class="col-2 card-meta d-inline-flex align-items-center pb-5">
                                 <button class="btn btn-sm btn-primary" type="button" id="checklist_submit" data-bs-toggle="tooltip" title="{{__('Create')}}">
                                     <i class="ti ti-check"></i>
                                 </button>
@@ -83,7 +86,7 @@
                             <div class="col">
                                 <div class="form-check form-check-inline">
                                     <input type="checkbox" class="form-check-input" id="check-item-{{ $checklist->id }}" @if($checklist->status) checked @endif data-url="{{route('checklist.update',[$task->project_id,$checklist->id])}}">
-                                    <label class="form-check-label h6 text-sm" for="check-item-{{ $checklist->id }}">{{ $checklist->name }}</label>
+                                    <label class="form-check-label h6 text-sm" for="check-item-{{ $checklist->id }}"><a href="{{ $checklist->link }}" target="_blank"> {{ $checklist->name }}</a></label> 
                                 </div>
                             </div>
                             <div class="col-auto">
@@ -96,6 +99,15 @@
                             </div>
                         </div>
                     </div>
+                    <!-- <div class="card border shadow-none checklist-member">
+                        <div class="px-3 py-2 row align-items-center">
+                            <div class="col">
+                                <div class="form-check form-check-inline">
+                                    <label class="form-check-label h6 text-sm" for="check-item-{{ $checklist->id }}">{{ $checklist->link }}</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
                 @endforeach
             </div>
         </div>
@@ -137,7 +149,7 @@
                             <div class="col">
                                 <div class="form-check form-check-inline">
                                     <label class="form-check-label h6 text-sm" for="check-item-{{ $link->id }}">
-                                    <a href="{{ $link->link }}">{{ $link->link }}</a>
+                                    <a id="tasklinks" href="{{ $link->link }}">{{ $link->link }}</a>
 
                                     </label>
                                 </div>
@@ -294,16 +306,14 @@
                     <img data-original-title="{{(!empty(\Auth::user()) ? \Auth::user()->name:'')}}" @if(\Auth::user()->avatar) src="{{asset('/storage/uploads/avatar/'.\Auth::user()->avatar)}}" @else src="{{asset('/storage/uploads/avatar/avatar.png')}}" @endif title="{{ Auth::user()->name }}" class="wid-40 rounded-circle ml-3">
                 </div>
                 <div class="form-group mb-0 form-send w-100">
-                    <form method="post" class="card-comment-box" id="form-comment" data-action="{{route('comment.store',[$task->project_id,$task->id])}}">
+                    <form method="post" class="card-comment-box" id="form-comment" data-action="{{route('comment.store',[$task->project_id,$task->id])}}" onkey="javascript:load_data(this.value)">
                         <textarea rows="1" class="form-control" name="comment" data-toggle="autosize" placeholder="{{__('Add a comment...')}}"></textarea>
-
                     </form>
                 </div>
 
                 <button id="comment_submit" class="btn btn-send"><i class="f-16 text-primary ti ti-brand-telegram"></i></button>
 
             </div>
-
         </div>
     </div>
 </div>
@@ -332,5 +342,51 @@
                 }
             });
         });
+        
+
+        // function load_data(query)
+        // {
+        //     if(query.length > 2)
+        //     {
+        //         var form_data = new FormData();
+
+        //         form_data.append('query', query);
+
+        //         var ajax_request = new XMLHttpRequest();
+
+        //         ajax_request.open('POST', );
+
+        //         ajax_request.send(form_data);
+
+        //         ajax_request.onreadystatechange = function()
+        //         {
+        //             if(ajax_request.readyState == 4 && ajax_request.status == 200)
+        //             {
+        //                 var response = JSON.parse(ajax_request.responseText);
+
+        //                 var html = '<div class ="list-group">';
+
+        //                 if(response.length > 0)
+        //                 {
+        //                     for(var count = 0; count < response.length; count++)
+        //                     {
+        //                         html += '<a href="#" class="list-group-item list-group-item-action">'+response[count].users+'</a>';
+        //                     }
+        //                 }
+        //                 else
+        //                 {
+        //                     html += '<a href="#" class="list-group-item list-group-item-action disabled"> No Data Found</a>'
+        //                 }
+
+        //                 html += '</div>'
+        //                 document.getElementById('search_result').innerHTML = html;
+        //             }
+        //         }
+        //     }
+        //     else
+        //     {
+        //         document.getElementById('textarea').innerHTML = '';
+        //     }
+        // }
     </script>
 @endpush
