@@ -372,7 +372,7 @@ class ProjectTaskController extends Controller
         {
             ProjectTask::deleteTask([$task_id]);
 
-            echo json_encode(['task_id' => $task_id]);
+            return redirect()->back()->with('success', __('Task successfully deleted!'));
         }
         else
         {
