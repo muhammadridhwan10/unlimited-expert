@@ -211,19 +211,20 @@
                             load_task($('.task-id').attr('id'));
                             show_toastr('{{__('success')}}', '{{ __("Checklist Added Successfully!")}}');
                             var html = '<div class="card border shadow-none checklist-member">' +
-                                '                    <div class="px-3 py-2 row align-items-center">' +
-                                '                        <div class="col">' +
-                                '                            <div class="form-check form-check-inline">' +
-                                '                                <input type="checkbox" class="form-check-input" id="check-item-' + data.id + '" value="' + data.id + '" data-url="' + data.updateUrl + '">' +
-                                '                                <label class="form-check-label h6 text-sm" for="check-item-' + data.id + '">' + data.name + '</label>' +
-                                '                            </div>' +
-                                '                        </div>' +
-                                '                        <div class="col-auto"> <div class="action-btn bg-danger ms-2">' +
-                                '                            <a href="#" class="mx-3 btn btn-sm  align-items-center delete-checklist" role="button" data-url="' + data.deleteUrl + '">' +
-                                '                                <i class="ti ti-trash text-white"></i>' +
-                                '                            </a>' +
-                                '                        </div></div>' +
-                                '                    </div>' +
+                            '                    <div class="px-3 py-2 row align-items-center">' +
+                            '                        <div class="col">' +
+                            '                            <div class="form-check form-check-inline">' +
+                            '                                <input type="checkbox" class="form-check-input" id="check-item-' + data.id + '" value="' + data.id + '" data-url="' + data.updateUrl + '">' +
+                            '                                <label class="form-check-label h6 text-sm" for="check-item-' + data.id + '"><a href="' + data.link + '" target="_blank">' + data.name + '</a></label>' +
+                            '                            </div>' +
+                            '                        </div>' +
+                            '                        <div class="col-auto"> <div class="action-btn bg-danger ms-2">' +
+                            '                            <a href="#" class="mx-3 btn btn-sm  align-items-center delete-link" role="button" data-url="' + data.deleteUrl + '">' +
+                            '                                <i class="ti ti-trash text-white"></i>' +
+                            '                            </a>' +
+                            '                        </div></div>' +
+                            '                    </div>' +
+                            '                </div>'
 
                             $("#checklist").append(html);
                             $("#form-checklist input[name=name]").val('');
