@@ -118,7 +118,7 @@
 
                             $("#comments").prepend(html);
                             $("#form-comment textarea[name='comment']").val('');
-                            load_task(curr.closest('.task-id').attr('id'));
+                            // load_task(curr.closest('.task-id').attr('id'));
                             show_toastr('{{__('success')}}', '{{ __("Comment Added Successfully!")}}');
                         },
                         error: function (data) {
@@ -138,7 +138,7 @@
                     dataType: 'JSON',
                     data: {"_token": "{{ csrf_token() }}"},
                     success: function (data) {
-                        load_task(btn.closest('.task-id').attr('id'));
+                        // load_task(btn.closest('.task-id').attr('id'));
                         show_toastr('{{__('success')}}', '{{ __("Comment Deleted Successfully!")}}');
                         btn.closest('.list-group-item').remove();
                     },
@@ -164,7 +164,7 @@
                         success: function (data) {
                             data = JSON.parse(data);
                             console.log('form-link', data);
-                            load_task($('.task-id').attr('id'));
+                            // load_task($('.task-id').attr('id'));
                             show_toastr('{{__('success')}}', '{{ __("Link Added Successfully!")}}');
                             var html = '<div class="card border shadow-none checklist-member">' +
                                 '                    <div class="px-3 py-2 row align-items-center">' +
@@ -208,7 +208,7 @@
                         success: function (data) {
                             data = JSON.parse(data);
                             console.log('form-checklist', data);
-                            load_task($('.task-id').attr('id'));
+                            // load_task($('.task-id').attr('id'));
                             show_toastr('{{__('success')}}', '{{ __("Checklist Added Successfully!")}}');
                             var html = '<div class="card border shadow-none checklist-member">' +
                             '                    <div class="px-3 py-2 row align-items-center">' +
@@ -247,7 +247,7 @@
                     dataType: 'JSON',
                     data: {"_token": "{{ csrf_token() }}"},
                     success: function (data) {
-                        load_task($('.task-id').attr('id'));
+                        // load_task($('.task-id').attr('id'));
                         show_toastr('{{__('Success')}}', '{{ __("Checklist Updated Successfully!")}}', 'success');
                     },
                     error: function (data) {
@@ -268,7 +268,7 @@
                     dataType: 'JSON',
                     data: {"_token": "{{ csrf_token() }}"},
                     success: function (data) {
-                        load_task($('.task-id').attr('id'));
+                        // load_task($('.task-id').attr('id'));
                         show_toastr('{{__('success')}}', '{{ __("Checklist Deleted Successfully!")}}');
                         btn.closest('.checklist-member').remove();
                     },
@@ -301,7 +301,7 @@
                             $('#task_attachment').val('');
                             $('.attachment_text').html('{{__('Choose a file…')}}');
                             data = JSON.parse(data);
-                            load_task(data.task_id);
+                            // load_task(data.task_id);
                             show_toastr('{{__('success')}}', '{{ __("File Added Successfully!")}}');
 
                             var delLink = '';
@@ -356,7 +356,7 @@
                     dataType: 'JSON',
                     data: {"_token": "{{ csrf_token() }}"},
                     success: function (data) {
-                        load_task(btn.closest('.task-id').attr('id'));
+                        // load_task(btn.closest('.task-id').attr('id'));
                         show_toastr('{{__('success')}}', '{{ __("File Deleted Successfully!")}}');
                         btn.closest('.task-file').remove();
                     },
