@@ -35,6 +35,8 @@ Route::get('/register', function () {
 
 
 Route::get('/login/{lang?}', 'Auth\AuthenticatedSessionController@showLoginForm')->name('login');
+Route::get('/download_win', 'Auth\AuthenticatedSessionController@download_win')->name('filewin.download');
+Route::get('/download_mac', 'Auth\AuthenticatedSessionController@download_mac')->name('filemac.download');
 
 // Route::get('/password/resets/{lang?}', 'Auth\AuthenticatedSessionController@showLinkRequestForm')->name('change.langPass');
 // Route::get('/password/resets/{lang?}', 'Auth\LoginController@showLinkRequestForm')->name('change.langPass');

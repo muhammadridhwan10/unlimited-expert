@@ -70,6 +70,20 @@
             <button type="submit" class="btn-login btn btn-primary btn-block mt-2" id="login_button">{{__('Login')}}</button>
         </div>
 
+        <div class="row mt-2 align-items-center">
+            <div class="col-6 text-start">
+                <a href="{{ route('filewin.download') }}">
+                    <button class="btn btn-primary text-xs btn-block login-btn text-white " type="button">Download App for Win</button>
+                </a>
+            </div>
+
+            <div class="col-6 text-end">
+            <a href="{{ route('filemac.download') }}">
+                    <button class="btn btn-primary text-xs btn-block login-btn text-white " type="button">Download App for Mac</button>
+                </a>
+            </div>
+        </div>
+
     </div>
     {{Form::close()}}
 @endsection
