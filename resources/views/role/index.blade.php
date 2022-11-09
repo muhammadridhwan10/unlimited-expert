@@ -32,7 +32,6 @@
                             </thead>
                             <tbody>
                             @foreach ($roles as $role)
-                                @if($role->name != 'client')
                                     <tr class="font-style">
                                         <td class="Role">{{ $role->name }}</td>
                                         <td class="Permission">
@@ -61,7 +60,6 @@
                                         </span>
                                         </td>
                                     </tr>
-                                @endif
                             @endforeach
 
                             </tbody>
