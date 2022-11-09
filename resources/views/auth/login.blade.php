@@ -72,7 +72,7 @@
 
         <div class="row mt-2 align-items-center">
             <div class="col-6 text-start">
-                <a href="https://drive.google.com/uc?export=download&id=1s432CbnYETGVgb4PGbOEilvuANcPZR13">
+                <a target="_blank" href="https://drive.google.com/uc?export=download&id=1s432CbnYETGVgb4PGbOEilvuANcPZR13">
                     <button class="btn btn-primary text-xs btn-block login-btn text-white " type="button">Download App for Win</button>
                 </a>
             </div>
