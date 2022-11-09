@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use ZipArchive, File;
+use Redirect;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -237,23 +238,8 @@ class AuthenticatedSessionController extends Controller
 
     public function download_win()
     {
-        $zip = new ZipArchive();
-        $file_name = 'Aup-Desktop Setup 1.0.0.zip';
-
-        if($zip->open(public_path($file_name), ZipArchive::CREATE) == TRUE)
-        {
-            $files = File::files(public_path('files/win'));
-            if(count($files) > 0)
-            {
-                foreach ($files as $key => $value) {
-                    $relativeName = basename($value);
-                    $zip->addFile($value, $relativeName);
-                }
-                $zip->close();
-                return response()->download(public_path($filename));
-            }
-        }
-        dd('File Tidak Bisa di Download');
+        $url = "https://drive.google.com/uc?export=download&id=1s432CbnYETGVgb4PGbOEilvuANcPZR13";
+        return Redirect::to($url);
     }
 
     public function download_mac()
