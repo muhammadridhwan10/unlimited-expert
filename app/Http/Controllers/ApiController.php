@@ -53,6 +53,7 @@ class ApiController extends Controller
 
     public function getProjects(Request $request){
         $user = auth()->user();
+        $status = ["in_progress", "on_hold"];
 
         if($user->isUser())
         {
@@ -62,8 +63,9 @@ class ApiController extends Controller
                     'project_name',
                     'id',
                     'client_id',
+                    'status',
                 ]
-            )->whereIn('id', $assign_pro_ids)->get()->toArray();
+            )->where('status', $status)->whereIn('id', $assign_pro_ids)->get()->toArray();
 
         }
         else
@@ -74,8 +76,9 @@ class ApiController extends Controller
                     'project_name',
                     'id',
                     'client_id',
+                    'status',
                 ]
-            )->where('created_by', $user->id)->get()->toArray();
+            )->where('status', $status)->where('created_by', $user->id)->get()->toArray();
 
         }
         return $this->success([
