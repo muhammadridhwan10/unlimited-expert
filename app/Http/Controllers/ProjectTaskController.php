@@ -828,7 +828,7 @@ class ProjectTaskController extends Controller
                 Utility::send_slack_msg($msg);
             }
 
-             //Email Notification
+                //Email Notification
             $users = ProjectUser::where('project_id', $projectID)->whereNotIn('user_id',[\Auth::user()->id])->get();
             $response = array();
             foreach($users as $data)
@@ -837,6 +837,14 @@ class ProjectTaskController extends Controller
                 foreach ($response as $recipient) {
                     Mail::to($recipient)->send(new CommentNotification($comment));
                 }
+            }
+
+                //Email Notification Client
+            $client = Project::where('id', $projectID)->where('client_id',!\Auth::user()->id)->get();
+            foreach($client as $data)
+            {
+                $email = $data->user->email;
+                Mail::to($email)->send(new CommentNotification($comment));
             }
 
             //Telegram Notification

@@ -53,6 +53,11 @@ class Project extends Model
         return $this->hasMany('App\Models\Milestone', 'project_id', 'id');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, "client_id", "id");
+    }
+
     protected $appends = ['img_image'];
 
     // Make new attribute for directly get image
