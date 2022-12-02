@@ -293,6 +293,7 @@ class UserController extends Controller
             $request, [
                         'name' => 'required|max:120',
                         'email' => 'required|email|unique:users,email,' . $userDetail['id'],
+                        'profile' => 'image|mimes:jpeg,png,jpg|max:2048',
                     ]
         );
         if($request->hasFile('profile'))

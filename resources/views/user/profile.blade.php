@@ -65,7 +65,7 @@
                                     <div class="choose-files">
                                         <label for="avatar">
                                             <div class=" bg-primary profile_update"> <i class="ti ti-upload px-1"></i>{{__('Choose file here')}}</div>
-                                            <input type="file" class="form-control file" name="profile" id="avatar" data-filename="profile_update">
+                                            <input type="file" class="form-control file" accept=".png, .jpg, .jpeg" name="profile" id="avatar" data-filename="profile_update">
                                         </label>
                                     </div>
                                     <span class="text-xs text-muted">{{ __('Please upload a valid image file. Size of image should not be more than 2MB.')}}</span>
