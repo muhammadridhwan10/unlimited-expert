@@ -112,7 +112,7 @@
                                     <div class="choose-file form-group">
                                         <label for="document[{{ $document->id }}]">
                                             <div>{{__('Choose File')}}</div>
-                                            <input class="form-control  @error('document') is-invalid @enderror border-0" @if($document->is_required == 1) required @endif name="document[{{ $document->id}}]" type="file" id="document[{{ $document->id }}]" data-filename="{{ $document->id.'_filename'}}">
+                                            <input class="form-control  @error('document') is-invalid @enderror border-0" @if($document->is_required == 1) required @endif name="document[{{ $document->id}}]" type="file" accept=".jpeg, .png, .jpg, .pdf" id="document[{{ $document->id }}]" data-filename="{{ $document->id.'_filename'}}">
                                         </label>
                                         <p class="{{ $document->id.'_filename'}}"></p>
                                     </div>

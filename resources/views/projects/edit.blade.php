@@ -78,7 +78,7 @@
         <div class="col-sm-12 col-md-12">
             {{ Form::label('project_image', __('Project Image'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
             <div class="form-file mb-3">
-                <input type="file" class="form-control" name="project_image" >
+                <input type="file" accept=".png, .jpg, .jpeg" class="form-control" name="project_image" >
             </div>
             <img {{$project->img_image}} class="avatar avatar-xl" alt="">
         </div>

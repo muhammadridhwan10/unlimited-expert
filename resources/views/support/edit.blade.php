@@ -28,7 +28,7 @@
         <div class="form-group col-md-6">
             {{Form::label('attachment',__('Attachment'),['class'=>'form-label'])}}
             <label for="document" class="form-label">
-                <input type="file" class="form-control" name="attachment" id="attachment" data-filename="attachment_create">
+                <input type="file" accept=".png, .jpeg, .jpg" class="form-control" name="attachment" id="attachment" data-filename="attachment_create">
             </label>
             @if($support->attachment)
                 <img id="image" class="mt-2" src="{{asset(Storage::url('uploads/supports')).'/'.$support->attachment}}" style="width:25%;"/>

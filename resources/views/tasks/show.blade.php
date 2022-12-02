@@ -119,7 +119,7 @@
                     <div class="card border-0 shadow-none mb-0">
                         <div class="px-3 py-2 row align-items-center">
                             <div class="col-10">
-                                <input type="file" name="task_attachment" id="task_attachment" required class="custom-input-file"/>
+                                <input type="file" accept=".pdf, .png, .jpg, .jpeg, .xls, .xlsx, .csv" name="task_attachment" id="task_attachment" required class="custom-input-file"/>
                                 <label for="task_attachment">
                                     <i class="fa fa-upload"></i>
                                     <span class="attachment_text">{{__('Choose a file…')}}</span>

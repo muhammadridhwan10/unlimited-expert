@@ -52,7 +52,7 @@
             <div class="choose-file form-group">
                 <label for="profile" class="form-label">
                     <div>{{__('Choose file here')}}</div>
-                    <input type="file" class="form-control" name="profile" id="profile" data-filename="profile_create">
+                    <input type="file"  accept=".png, .jpg, .jpeg" class="form-control" name="profile" id="profile" data-filename="profile_create">
                 </label>
                 <p class="profile_create"></p>
             </div>
@@ -62,7 +62,7 @@
             <div class="choose-file form-group">
                 <label for="resume" class="form-label">
                     <div>{{__('Choose file here')}}</div>
-                    <input type="file" class="form-control" name="resume" id="resume" data-filename="resume_create">
+                    <input type="file" accept=".png, .jpg, .jpeg, .pdf" class="form-control" name="resume" id="resume" data-filename="resume_create">
                 </label>
                 <p class="resume_create"></p>
             </div>

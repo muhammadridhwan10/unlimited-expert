@@ -194,6 +194,7 @@ class RevenueController extends Controller
                                    'amount' => 'required',
                                    'account_id' => 'required',
                                    'category_id' => 'required',
+                                   'add_receipt' => 'mimes:pdf,png,jpg,jpeg|max:20480'
                                ]
             );
             if($validator->fails())
@@ -326,6 +327,7 @@ class RevenueController extends Controller
                                    'amount' => 'required',
                                    'account_id' => 'required',
                                    'category_id' => 'required',
+                                   'add_receipt' => 'mimes:pdf,png,jpg,jpeg|max:20480'
                                ]
             );
             if($validator->fails())

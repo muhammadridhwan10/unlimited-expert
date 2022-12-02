@@ -31,7 +31,7 @@
             {{ Form::label('add_receipt', __('Payment Receipt'), ['class' => 'form-label']) }}
             <div class="choose-file form-group">
                 <label for="file" class="form-label">
-                    <input type="file" name="add_receipt" id="image" class="form-control" accept="image/*, .txt, .rar, .zip" >
+                    <input type="file" name="add_receipt" id="image" class="form-control" accept=".pdf" >
                 </label>
                 <p class="upload_file"></p>
             </div>

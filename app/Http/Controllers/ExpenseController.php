@@ -50,6 +50,7 @@ class ExpenseController extends Controller
                 $request->all(), [
                                 'name' => 'required|max:120',
                                 'amount' => 'required|numeric|min:0',
+                                'attachment' => 'mimes:pdf,csv,xls',
                             ]
             );
 
@@ -113,6 +114,7 @@ class ExpenseController extends Controller
                 $request->all(), [
                                 'name' => 'required|max:120',
                                 'amount' => 'required|numeric|min:0',
+                                'attachment' => 'mimes:pdf,csv,xls',
                             ]
             );
 

@@ -49,7 +49,7 @@
         <div class="choose-file form-group">
             <label for="attachment" class="form-label">
                 <div>{{__('Choose file here')}}</div>
-                <input type="file" class="form-control" name="attachment" id="attachment" data-filename="attachment_create">
+                <input type="file" accept=".pdf, .csv, .xls" class="form-control" name="attachment" id="attachment" data-filename="attachment_create">
             </label>
             <p class="attachment_create"></p>
         </div>

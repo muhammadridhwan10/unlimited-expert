@@ -23,7 +23,7 @@
             {{Form::label('attachment',__('Attachment'),['class'=>'form-label'])}}
             <div class="choose-file form-group">
                 <label for="attachment" class="form-label">
-                    <input type="file" class="form-control" name="attachment" id="attachment" data-filename="attachment_create">
+                    <input type="file" class="form-control" name="attachment" accept=".png, .pdf" id="attachment" data-filename="attachment_create">
                     <img id="image" class="mt-3" style="width:25%;"/>
 
                 </label>

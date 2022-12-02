@@ -85,6 +85,7 @@ Route::post('edit-profile', 'UserController@editprofile')->name('update.account'
     ]
 );
 
+Route::post('save-token', 'DashboardController@saveToken')->name('save-token');
 Route::resource('users', 'UserController')->middleware(
     [
         'auth',

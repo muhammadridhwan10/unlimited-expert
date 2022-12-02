@@ -396,6 +396,16 @@ class DashboardController extends Controller
         }
     }
 
+    public function saveToken(Request $request)
+    {
+        $authuser = Auth::user();
+
+        $authuser->device_token = $request->token;
+
+        $authuser->save();
+        return response()->json(['token saved successfully.']);
+    }
+
     public function hrm_dashboard_index()
     {
         if(Auth::check())

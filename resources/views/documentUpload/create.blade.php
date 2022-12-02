@@ -26,7 +26,7 @@
             {{Form::label('document',__('Document'),['class'=>'form-label'])}}
             <div class="choose-file form-group">
                 <label for="document" class="form-label">
-                    <input type="file" class="form-control" name="document" id="document" data-filename="document_create" required>
+                    <input type="file" class="form-control" accept=".jpeg, .png, .jpg, .pdf" name="document" id="document" data-filename="document_create" required>
                     <img id="image" class="mt-3" style="width:25%;"/>
                 </label>
             </div>

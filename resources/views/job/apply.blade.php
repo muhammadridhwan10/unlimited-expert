@@ -133,7 +133,7 @@
                                     <div class="form-group col-md-6 ">
                                         {{Form::label('profile',__('Profile'),['class'=>'col-form-label'])}}
                                         {{--                                                <label for="profile" class="form-label">--}}
-                                        <input type="file" class="form-control" name="profile" id="profile" data-filename="profile_create" onchange="document.getElementById('blah').src = window.URL.createObjectURL(this.files[0])">
+                                        <input type="file" class="form-control" accept=".png, .jpg, .jpeg" name="profile" id="profile" data-filename="profile_create" onchange="document.getElementById('blah').src = window.URL.createObjectURL(this.files[0])">
                                         {{--                                                </label>--}}
                                         <img id="blah" src="" class="mt-3" width="25%"/>
                                         <p class="profile_create"></p>
@@ -145,7 +145,7 @@
                                         {{Form::label('resume',__('CV / Resume'),['class'=>'col-form-label'])}}
 
                                         {{--                                                <label for="resume" class="form-label">--}}
-                                        <input type="file" class="form-control" name="resume" id="resume" data-filename="resume_create" onchange="document.getElementById('blah1').src = window.URL.createObjectURL(this.files[0])" required>
+                                        <input type="file" accept=".png, .jpg, .jpeg, .pdf" class="form-control" name="resume" id="resume" data-filename="resume_create" onchange="document.getElementById('blah1').src = window.URL.createObjectURL(this.files[0])" required>
                                         {{--                                                </label>--}}
                                         <img id="blah1" class="mt-3" src="" width="25%"/>
                                         <p class="resume_create"></p>

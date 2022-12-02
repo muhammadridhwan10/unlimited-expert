@@ -495,7 +495,7 @@ class ProductServiceController extends Controller
     public function import(Request $request)
     {
         $rules = [
-            'file' => 'required',
+            'file' => 'required|mimes:csv|max:20480',
         ];
 
         $validator = \Validator::make($request->all(), $rules);

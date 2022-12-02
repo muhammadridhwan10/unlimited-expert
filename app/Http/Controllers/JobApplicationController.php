@@ -185,8 +185,8 @@ class JobApplicationController extends Controller
                                    'name' => 'required',
                                    'email' => 'required',
                                    'phone' => 'required',
-                                   'profile' => 'mimes:jpeg,png,jpg,gif,svg|max:20480',
-                                   'resume' => 'mimes:jpeg,png,jpg,gif,svg,pdf,doc,zip|max:20480',
+                                   'profile' => 'mimes:jpeg,png,jpg|max:20480',
+                                   'resume' => 'mimes:jpeg,png,jpg,pdf,|max:20480',
                                ]
             );
 
@@ -641,7 +641,7 @@ class JobApplicationController extends Controller
                                'password' => 'required',
                                'department_id' => 'required',
                                'designation_id' => 'required',
-                               'document.*' => 'mimes:jpeg,png,jpg,gif,svg,pdf,doc,zip|max:20480',
+                               'document.*' => 'mimes:jpeg,png,jpg,pdf|max:20480',
                            ]
         );
         if($validator->fails())

@@ -83,7 +83,7 @@
                                             <div class="choose-file">
                                                 <label for="avatar">
                                                     <div>{{__('Choose file here')}}</div>
-                                                    <input type="file" class="form-control" id="avatar" name="profile" data-filename="profiles">
+                                                    <input type="file" accept=".png, .jpeg, .jpg" class="form-control" id="avatar" name="profile" data-filename="profiles">
                                                 </label>
                                                 <p class="profiles"></p>
                                             </div>

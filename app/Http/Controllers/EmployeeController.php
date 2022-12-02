@@ -114,7 +114,7 @@ class EmployeeController extends Controller
                                    'password' => 'required',
                                    'department_id' => 'required',
                                    'designation_id' => 'required',
-                                   'document.*' => 'mimes:jpeg,png,jpg,gif,svg,pdf,doc,zip|max:20480',
+                                   'document.*' => 'mimes:jpeg,png,jpg,pdf,|max:20480',
                                ]
             );
             if($validator->fails())

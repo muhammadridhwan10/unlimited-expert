@@ -372,6 +372,7 @@ class CustomerController extends Controller
                         'name' => 'required|max:120',
                         'contact' => 'required',
                         'email' => 'required|email|unique:users,email,' . $userDetail['id'],
+                        'profile' => 'image|mimes:jpeg,png,jpg|max:2048'
                     ]
         );
 

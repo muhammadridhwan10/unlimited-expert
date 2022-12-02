@@ -86,6 +86,7 @@ class SupportController extends Controller
             $request->all(), [
                                'subject' => 'required',
                                'priority' => 'required',
+                               'attachment' => 'mimes:png,jpg,jpeg|max:20480'
                            ]
         );
 
@@ -200,6 +201,7 @@ class SupportController extends Controller
             $request->all(), [
                                'subject' => 'required',
                                'priority' => 'required',
+                               'attachment' => 'mimes:png,jpg,jpeg|max:20480'
                            ]
         );
 

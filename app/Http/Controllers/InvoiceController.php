@@ -760,6 +760,7 @@ class InvoiceController extends Controller
                                    'date' => 'required',
                                    'amount' => 'required',
                                    'account_id' => 'required',
+                                   'add_receipt' => 'mimes:jpeg,png,jpg,pdf,|max:20480'
                                ]
             );
             if($validator->fails())

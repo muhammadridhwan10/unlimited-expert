@@ -689,7 +689,7 @@ class ProjectTaskController extends Controller
         if(\Auth::user()->can('view project task'))
         {
             $request->validate(
-                ['file' => 'required|mimes:jpeg,jpg,png,gif,svg,pdf,txt,doc,docx,zip,rar|max:20480']
+                ['file' => 'required|mimes:pdf,xls,csv,xlsx|max:20480']
             );
             $fileName = $taskID . time() . "_" . $request->file->getClientOriginalName();
             $request->file->storeAs('tasks', $fileName);

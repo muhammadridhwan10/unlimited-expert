@@ -362,8 +362,8 @@ class JobController extends Controller
                                'name' => 'required',
                                'email' => 'required',
                                'phone' => 'required',
-                               'profile' => 'mimes:jpeg,png,jpg,gif,svg|max:20480',
-                               'resume' => 'mimes:jpeg,png,jpg,gif,svg,pdf,doc,zip|max:20480',
+                               'profile' => 'mimes:jpeg,png,jpg|max:20480',
+                               'resume' => 'mimes:jpeg,png,jpg,pdf|max:20480',
                            ]
         );
 

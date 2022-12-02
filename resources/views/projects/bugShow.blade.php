@@ -81,7 +81,7 @@
                             <div class="choose-file form-group">
                                 <label for="file" class="form-label">
                                     <div>{{__('Choose file here')}}</div>
-                                    <input type="file" class="form-control" name="file" id="file" data-filename="file_update">
+                                    <input type="file" accept=".png, .jpg, .jpeg" class="form-control" name="file" id="file" data-filename="file_update">
                                 </label>
                                 <p class="file_update"></p>
                             </div>

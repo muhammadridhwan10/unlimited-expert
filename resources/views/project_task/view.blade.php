@@ -188,7 +188,7 @@
                         <div class="px-3 py-2 row align-items-center">
                             @csrf
                             <div class="col-10">
-                                <input type="file" name="task_attachment" id="task_attachment" required class="form-control"/>
+                                <input type="file" accept=".pdf, .xls, .csv, .xlsx" name="task_attachment" id="task_attachment" required class="form-control"/>
                             </div>
                             <div class="col-2 card-meta d-inline-flex align-items-center">
                                 <button class="btn btn-sm btn-primary" type="button" id="file_attachment_submit" data-action="{{ route('comment.store.file',[$task->project_id,$task->id]) }}" data-bs-toggle="tooltip" title="{{__('Create')}}">

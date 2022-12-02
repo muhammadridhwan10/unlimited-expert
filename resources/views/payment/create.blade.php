@@ -32,7 +32,7 @@
 
         <div class="form-group col-md-6">
             {{Form::label('add_receipt',__('Payment Receipt'),['class' => 'col-form-label'])}}
-            {{Form::file('add_receipt',array('class'=>'form-control','required'=>'required', 'id'=>'files'))}}
+            {{Form::file('add_receipt',array('class'=>'form-control','required'=>'required', 'id'=>'files', 'accept' => '.pdf'))}}
             <img id="image" class="mt-2" style="width:25%;"/>
         </div>
 

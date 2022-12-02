@@ -194,11 +194,12 @@ class PaymentController extends Controller
 
             $validator = \Validator::make(
                 $request->all(), [
-                                   'date' => 'required',
-                                   'amount' => 'required',
-                                   'account_id' => 'required',
-                                   'category_id' => 'required',
-                               ]
+                                'date' => 'required',
+                                'amount' => 'required',
+                                'account_id' => 'required',
+                                'category_id' => 'required',
+                                'add_receipt' => 'mimes: pdf',
+                            ]
             );
             if($validator->fails())
             {
@@ -329,6 +330,7 @@ class PaymentController extends Controller
                                    'account_id' => 'required',
                                    'vender_id' => 'required',
                                    'category_id' => 'required',
+                                   'add_receipt' => 'mimes: pdf',
                                ]
             );
             if($validator->fails())

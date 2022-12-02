@@ -200,7 +200,7 @@
                                                         <div class=" bg-primary dark_logo_update"> <i
                                                                 class="ti ti-upload px-1"></i>{{ __('Choose file here') }}
                                                         </div>
-                                                        <input type="file" name="company_logo_dark" id="company_logo_dark" class="form-control file" data-filename="dark_logo_update">
+                                                        <input type="file" accept=".png, .jpeg, .jpg" name="company_logo_dark" id="company_logo_dark" class="form-control file" data-filename="dark_logo_update">
                                                     </label>
                                                 </div>
                                                 @error('company_logo_dark')
@@ -230,7 +230,7 @@
                                                         <div class=" bg-primary light_logo_update"> <i
                                                                 class="ti ti-upload px-1"></i>{{ __('Choose file here') }}
                                                         </div>
-                                                        <input type="file" class="form-control file" name="company_logo_light" id="company_logo_light"
+                                                        <input type="file" accept=".png, .jpeg, .jpg" class="form-control file" name="company_logo_light" id="company_logo_light"
                                                                data-filename="light_logo_update">
                                                     </label>
                                                 </div>
@@ -261,7 +261,7 @@
                                                         <div class="bg-primary company_favicon_update"> <i
                                                                 class="ti ti-upload px-1"></i>{{ __('Choose file here') }}
                                                         </div>
-                                                        <input type="file" class="form-control file"  id="company_favicon" name="company_favicon"
+                                                        <input type="file" accept=".png, .jpeg, .jpg" class="form-control file"  id="company_favicon" name="company_favicon"
                                                                data-filename="company_favicon_update">
                                                     </label>
                                                 </div>

@@ -35,6 +35,7 @@ class User extends Authenticatable
         'requested_plan',
         'last_login_at',
         'created_by',
+        'device_token',
     ];
 
     protected $hidden = [

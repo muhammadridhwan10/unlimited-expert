@@ -35,7 +35,7 @@ class ActivityLog extends Model
 
             if($this->log_type == 'Invite User')
             {
-                return $user_name . ' ' . __('has invited') . ' <b>' . $remark['title'] . '</b>';
+                return $user_name . ' ' . __('has invited') . ' <b>' . $remark['title'][0] . '</b>';
             }
             elseif($this->log_type == 'User Assigned to the Task')
             {
@@ -205,6 +205,10 @@ class ActivityLog extends Model
             elseif($type == 'Create Task')
             {
                 $icon = 'list';
+            }
+            else if($type == 'Create Comment')
+            {
+                $icon = 'message-circle';
             }
         }
 

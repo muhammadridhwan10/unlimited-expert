@@ -11,7 +11,7 @@
             {{Form::label('file',__('Select CSV File'),['class'=>'form-label'])}}
             <div class="choose-file form-group">
                 <label for="file" class="form-label">
-                    <input type="file" class="form-control" name="file" id="file" data-filename="upload_file" required>
+                    <input type="file" accept=".csv" class="form-control" name="file" id="file" data-filename="upload_file" required>
                 </label>
                 <p class="upload_file"></p>
             </div>

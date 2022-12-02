@@ -82,7 +82,7 @@ class DucumentUploadController extends Controller
             $validator = \Validator::make(
                 $request->all(), [
                                    'name' => 'required',
-                                   'document' => 'mimes:jpeg,png,jpg,svg,pdf,doc,zip|max:20480',
+                                   'document' => 'mimes:jpeg,png,jpg,pdf|max:20480',
                                ]
             );
             if($validator->fails())

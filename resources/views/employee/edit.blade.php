@@ -155,7 +155,7 @@
                                         <input type="hidden" name="emp_doc_id[{{ $document->id}}]" id="" value="{{$document->id}}">
                                         <div class="choose-file form-group">
                                             <label for="document[{{ $document->id }}]">
-                                                <input class="form-control @if(!empty($employeedoc[$document->id])) float-left @endif @error('document') is-invalid @enderror border-0" @if($document->is_required == 1 && empty($employeedoc[$document->id]) ) required @endif name="document[{{ $document->id}}]"  onchange="document.getElementById('{{'blah'.$key}}').src = window.URL.createObjectURL(this.files[0])" type="file"  data-filename="{{ $document->id.'_filename'}}">
+                                                <input class="form-control @if(!empty($employeedoc[$document->id])) float-left @endif @error('document') is-invalid @enderror border-0" @if($document->is_required == 1 && empty($employeedoc[$document->id]) ) required @endif name="document[{{ $document->id}}]"  onchange="document.getElementById('{{'blah'.$key}}').src = window.URL.createObjectURL(this.files[0])" type="file" accept=".jpeg, .png, .jpg, .pdf"  data-filename="{{ $document->id.'_filename'}}">
                                             </label>
                                             <p class="{{ $document->id.'_filename'}}"></p>
                                             <img id="{{'blah'.$key}}" src=""  width="25%" />

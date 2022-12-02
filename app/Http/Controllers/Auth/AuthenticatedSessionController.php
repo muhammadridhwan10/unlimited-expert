@@ -257,7 +257,7 @@ class AuthenticatedSessionController extends Controller
                     $zip->addFile($value, $relativeName);
                 }
                 $zip->close();
-                return response()->download(public_path($filename));
+                return response()->download(public_path($file_name));
             }
         }
         dd('File Tidak Bisa di Download');

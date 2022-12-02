@@ -289,13 +289,22 @@ class UserController extends Controller
 
         $userDetail = \Auth::user();
         $user       = User::findOrFail($userDetail['id']);
-        $this->validate(
-            $request, [
+
+        $validator = \Validator::make(
+            $request->all(), [
                         'name' => 'required|max:120',
                         'email' => 'required|email|unique:users,email,' . $userDetail['id'],
                         'profile' => 'image|mimes:jpeg,png,jpg|max:2048',
-                    ]
+                        ]
         );
+
+        if($validator->fails())
+        {
+            $messages = $validator->getMessageBag();
+
+            return redirect()->back()->with('error', $messages->first());
+        }
+
         if($request->hasFile('profile'))
         {
             $filenameWithExt = $request->file('profile')->getClientOriginalName();
