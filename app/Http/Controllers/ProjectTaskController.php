@@ -496,13 +496,14 @@ class ProjectTaskController extends Controller
                 ['name' => 'required']
             );
 
-            $post               = [];
-            $post['name']       = $request->name;
-            $post['link']       = $request->link;
-            $post['task_id']    = $taskID;
-            $post['user_type']  = 'User';
-            $post['created_by'] = \Auth::user()->id;
-            $post['status']     = 0;
+            $post                       = [];
+            $post['name']               = $request->name;
+            $post['link']               = $request->link;
+            $post['description']        = $request->description;
+            $post['task_id']            = $taskID;
+            $post['user_type']          = 'User';
+            $post['created_by']         = \Auth::user()->id;
+            $post['status']             = 0;
 
             $checkList            = TaskChecklist::create($post);
             $user                 = $checkList->user;
@@ -1147,28 +1148,31 @@ class ProjectTaskController extends Controller
             // if(\Auth::user()->type == 'company'){
             //   $tasks = ProjectTask::whereIn('project_id', $user_projects);
             // }
-            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin'){
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+            {
                 $tasks = ProjectTask::whereIn('project_id', $user_projects);
             }
-            elseif(\Auth::user()->type != 'company'){
-              if(\Auth::user()->type == 'client'){
-                $tasks = ProjectTask::whereIn('project_id', $user_projects);
-              }
-              else{
-                $tasks = ProjectTask::whereIn('project_id', $user_projects)->whereRaw("find_in_set('" . \Auth::user()->id . "',assign_to)");
-              }
+            elseif(\Auth::user()->type != 'company')
+            {
+                if(\Auth::user()->type == 'client'){
+                    $tasks = ProjectTask::whereIn('project_id', $user_projects);
+                }
+                else{
+                    $tasks = ProjectTask::whereIn('project_id', $user_projects)->whereRaw("find_in_set('" . \Auth::user()->id . "',assign_to)");
+                }
             }
-            if(\Auth::user()->type  == 'client'){
-              if($task_by == 'all')
-              {
-                  $tasks->where('created_by',\Auth::user()->creatorId());
-              }
+            if(\Auth::user()->type  == 'client')
+            {
+                if($task_by == 'all')
+                {
+                    $tasks->where('created_by',\Auth::user()->creatorId());
+                }
             }
             else{
-              if($task_by == 'my')
-              {
-                  $tasks->whereRaw("find_in_set('" . $usr->id . "',assign_to)");
-              }
+                if($task_by == 'my')
+                {
+                    $tasks->whereRaw("find_in_set('" . $usr->id . "',assign_to)");
+                }
             }
             $tasks    = $tasks->get();
             $arrTasks = [];
@@ -1180,6 +1184,7 @@ class ProjectTaskController extends Controller
                 {
                     $arTasks['id']    = $task->id;
                     $arTasks['title'] = $task->name;
+                    $arTasks['project'] = $task->project->project_name;
 
                     if(!empty($task->start_date) && $task->start_date != '0000-00-00')
                     {

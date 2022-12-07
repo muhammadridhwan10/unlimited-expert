@@ -41,6 +41,7 @@
                                                 <i class="ti ti-calendar-event"></i>
                                             </div>
                                             <div class="ms-3 fc-event-title-container">
+                                                <h6 class="m-0 text-sm fc-event-title text-black">{{$task['project']}}</h6>
                                                 <h6 class="m-0 text-sm fc-event-title text-primary">{{$task['title']}}</h6>
                                                 <small class="text-muted">{{$task['start']}}  to {{$task['end']}}</small>
                                             </div>

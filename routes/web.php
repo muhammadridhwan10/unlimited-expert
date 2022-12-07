@@ -93,6 +93,13 @@ Route::resource('users', 'UserController')->middleware(
         'revalidate',
     ]
 );
+Route::resource('team', 'TeamController')->middleware(
+    [
+        'auth',
+        'XSS',
+        'revalidate',
+    ]
+);
 Route::post('change-password', 'UserController@updatePassword')->name('update.password');
 Route::any('user-reset-password/{id}', 'UserController@userPassword')->name('users.reset');
 Route::post('user-reset-password/{id}', 'UserController@userPasswordReset')->name('user.password.update');
@@ -2385,10 +2392,35 @@ Route::get(
         'XSS',
     ]
 );
+
+Route::get(
+    'invite-project-client/{id}', [
+    'as' => 'invite.project.client.view',
+    'uses' => 'ProjectController@inviteClientView',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
 Route::post(
     'invite-project-user-member', [
     'as' => 'invite.project.user.member',
     'uses' => 'ProjectController@inviteProjectUserMember',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post(
+    'invite-project-client-member', [
+    'as' => 'invite.project.client.member',
+    'uses' => 'ProjectController@inviteProjectClientMember',
 ]
 )->middleware(
     [
@@ -2408,6 +2440,18 @@ Route::delete(
         'XSS',
     ]
 );
+
+// Route::delete(
+//     'projects/{id}/users/{uid}', [
+//                                  'as' => 'projects.client.destroy',
+//                                  'uses' => 'ProjectController@destroyProjectClient',
+//                              ]
+// )->middleware(
+//     [
+//         'auth',
+//         'XSS',
+//     ]
+// );
 
 
 
@@ -2457,6 +2501,18 @@ Route::get(
     'projects-users', [
     'as' => 'project.user',
     'uses' => 'ProjectController@loadUser',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::get(
+    'projects-client', [
+    'as' => 'project.client',
+    'uses' => 'ProjectController@loadClient',
 ]
 )->middleware(
     [

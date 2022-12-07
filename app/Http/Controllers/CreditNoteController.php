@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CreditNote;
 use App\Models\Invoice;
 use App\Models\Utility;
+use Auth;
 use Illuminate\Http\Request;
 
 class CreditNoteController extends Controller
@@ -16,7 +17,7 @@ class CreditNoteController extends Controller
 
     public function index()
     {
-        if(\Auth::user()->can('manage credit note'))
+        if(\Auth::user()->can('manage credit note')) 
         {
             if(\Auth::user()->type = 'admin')
             {

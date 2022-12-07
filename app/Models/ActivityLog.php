@@ -121,6 +121,10 @@ class ActivityLog extends Model
             {
                 return $user_name . " " . __('Moved the deal') . " <b>" . $remark['title'] . "</b> " . __('from') . " " . __(ucwords($remark['old_status'])) . " " . __('to') . " " . __(ucwords($remark['new_status']));
             }
+            elseif($this->log_type == 'Delete Team')
+            {
+                return $user_name . ' ' . __('Delete') . " <b>" . $remark['title'][0] . "</b>";
+            }
         }
         else
         {
@@ -209,6 +213,10 @@ class ActivityLog extends Model
             else if($type == 'Create Comment')
             {
                 $icon = 'message-circle';
+            }
+            else if($type == 'Delete Team')
+            {
+                $icon = 'user-x';
             }
         }
 

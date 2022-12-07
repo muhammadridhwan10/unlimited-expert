@@ -521,6 +521,27 @@ class ProjectController extends Controller
         return view('projects.invite', compact('project_id', 'users'));
     }
 
+    public function inviteClientView(Request $request, $project_id)
+    {
+        $usr          = Auth::user();
+        $project      = Project::find($project_id);
+
+        $user_project = $project->users->pluck('id')->toArray();
+
+        if(\Auth::user()->type = 'client')
+        {
+            $user_contact = User::where('type','=','staff_client')->whereNOTIn('id', $user_project)->pluck('id')->toArray();
+        }
+        else
+        {
+            $user_contact = User::where('created_by', \Auth::user()->creatorId())->where('type','!=','client')->whereNOTIn('id', $user_project)->pluck('id')->toArray();
+        }
+        $arrUser      = array_unique($user_contact);
+        $users        = User::whereIn('id', $arrUser)->get();
+
+        return view('projects.invite-client', compact('project_id', 'users'));
+    }
+
     public function inviteProjectUserMember(Request $request)
     {
         $authuser = Auth::user();
@@ -533,6 +554,8 @@ class ProjectController extends Controller
                 'invited_by' => $authuser->id,
             ]
         );
+
+        $users = User::where('id', $request->user_id)->pluck('name');
 
         $firebaseToken = User::where('id', $request->user_id)->whereNotNull('device_token')->pluck('device_token');
         $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
@@ -564,15 +587,13 @@ class ProjectController extends Controller
 
         $response = curl_exec($ch);
 
-        $users = User::where('id', $request->user_id)->get();
-
         // Make entry in activity_log tbl
         ActivityLog::create(
             [
                 'user_id' => $authuser->id,
                 'project_id' => $request->project_id,
                 'log_type' => 'Invite User',
-                'remark' => json_encode(['title' => $users->name]),
+                'remark' => json_encode(['title' => $users]),
             ]
         );
 
@@ -585,16 +606,88 @@ class ProjectController extends Controller
         );
     }
 
+    public function inviteProjectClientMember(Request $request)
+    {
+        $authuser = Auth::user();
 
+        // Make entry in project_user tbl
+        ProjectUser::create(
+            [
+                'project_id' => $request->project_id,
+                'user_id' => $request->user_id,
+                'invited_by' => $authuser->id,
+            ]
+        );
 
+        $users = User::where('id', $request->user_id)->pluck('name');
 
+        $firebaseToken = User::where('id', $request->user_id)->whereNotNull('device_token')->pluck('device_token');
+        $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
+
+        $data = [
+            "registration_ids" => $firebaseToken,
+            "notification" => [
+                "title" => 'AUP-APPS',
+                "body" => $authuser->name . ' menginvite anda kedalam project baru',  
+                "icon" => 'https://i.postimg.cc/NfFPWKS8/logo-tgs.png',
+                "content_available" => true,
+                "priority" => "high",
+            ]
+        ];
+        $dataString = json_encode($data);
+    
+        $headers = [
+            'Authorization: key=' . $SERVER_API_KEY,
+            'Content-Type: application/json',
+        ];
+    
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
+
+        $response = curl_exec($ch);
+
+        // Make entry in activity_log tbl
+        ActivityLog::create(
+            [
+                'user_id' => $authuser->id,
+                'project_id' => $request->project_id,
+                'log_type' => 'Invite User',
+                'remark' => json_encode(['title' => $users]),
+            ]
+        );
+
+        return json_encode(
+            [
+                'code' => 200,
+                'status' => 'Success',
+                'success' => __('User invited successfully.'),
+            ]
+        );
+    }
 
     public function destroyProjectUser($id, $user_id)
     {
+        $authuser = Auth::user();
         $project = Project::find($id);
+        $users = User::where('id', $user_id)->pluck('name');
+
             if($project->created_by == \Auth::user()->ownerId())
             {
                 ProjectUser::where('project_id', '=', $project->id)->where('user_id', '=', $user_id)->delete();
+
+                ActivityLog::create(
+                    [
+                        'user_id' => $authuser->id,
+                        'project_id' => $project->id,
+                        'log_type' => 'Delete Team',
+                        'remark' => json_encode(['title' => $users]),
+                    ]
+                );
 
                 return redirect()->back()->with('success', __('User successfully deleted!'));
             }
@@ -605,12 +698,45 @@ class ProjectController extends Controller
 
     }
 
+    // public function destroyProjectClient($id, $user_id)
+    // {
+    //     $project = Project::find($id);
+        
+    //         if($project->created_by == \Auth::user()->ownerId())
+    //         {
+    //             ProjectUser::where('project_id', '=', $project->id)->where('invited_by', '=', Auth::user()->id)->where('user_id', '=', $user_id)->delete();
+
+    //             return redirect()->back()->with('success', __('User successfully deleted!'));
+    //         }
+    //         else
+    //         {
+    //             return redirect()->back()->with('error', __('Permission Denied.'));
+    //         }
+
+    // }
+
     public function loadUser(Request $request)
     {
         if($request->ajax())
         {
             $project    = Project::find($request->project_id);
             $returnHTML = view('projects.users', compact('project'))->render();
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'html' => $returnHTML,
+                ]
+            );
+        }
+    }
+
+    public function loadClient(Request $request)
+    {
+        if($request->ajax())
+        {
+            $project    = Project::find($request->project_id);
+            $returnHTML = view('projects.clients', compact('project'))->render();
 
             return response()->json(
                 [

@@ -50,14 +50,16 @@
         <div class="card-body">
             <div class="row mb-4 align-items-center">
                 <div class="col-6">
-                    <h5> {{__('Checklist')}}</h5>
+                    <h5> {{__('Sub Task')}}</h5>
                 </div>
                 <div class="col-6 ">
+                    @if(\Auth::user()->type != 'client')
                     <div class="float-end">
                         <a data-bs-toggle="collapse" href="#form-checklist" role="button" aria-expanded="false" aria-controls="form-checklist" data-bs-toggle="tooltip" title="{{__('Add item')}}" class="btn btn-sm btn-primary">
                             <i class="ti ti-plus"></i>
                         </a>
                     </div>
+                    @endif
                 </div>
             </div>
             <div class="checklist" id="checklist">
@@ -66,15 +68,18 @@
                         <div class="px-3 py-2 row align-items-center">
                             @csrf
                             <div class="col-10">
-                                <input type="text" name="name" required class="form-control" placeholder="{{__('Checklist Name')}}"/>
+                                <input type="text" name="name" required class="form-control" placeholder="{{__('Sub Task Name')}}"/>
                             </div>
                             <div class="col-10">
-                                <input type="url" name="link" required class="form-control" placeholder="{{__('https://example.com')}}"/>
+                                <input type="text" name="description" required class="form-control" placeholder="{{__('Description')}}"/>
                             </div>
                             <div class="col-2 card-meta d-inline-flex align-items-center pb-5">
                                 <button class="btn btn-sm btn-primary" type="button" id="checklist_submit" data-bs-toggle="tooltip" title="{{__('Create')}}">
                                     <i class="ti ti-check"></i>
                                 </button>
+                            </div>
+                            <div class="col-10">
+                                <input type="url" name="link" required class="form-control" placeholder="{{__('https://example.com')}}"/>
                             </div>
                         </div>
                     </div>
@@ -83,19 +88,32 @@
                 @foreach($task->checklist as $checklist)
                     <div class="card border shadow-none checklist-member">
                         <div class="px-3 py-2 row align-items-center">
-                            <div class="col">
+                            <div class="col-10">
                                 <div class="form-check form-check-inline">
+                                @if(\Auth::user()->type != 'client')
                                     <input type="checkbox" class="form-check-input" id="check-item-{{ $checklist->id }}" @if($checklist->status) checked @endif data-url="{{route('checklist.update',[$task->project_id,$checklist->id])}}">
-                                    <label class="form-check-label h6 text-sm" for="check-item-{{ $checklist->id }}"><a href="{{ $checklist->link }}" target="_blank"> {{ $checklist->name }}</a></label> 
+                                @endif
+                                    <label class="form-check-label h6 text-sm" for="check-item-{{ $checklist->id }}"><a> {{ $checklist->name }}</a></label> 
+                                </div>
+                            </div>
+                            <div class="col-10">
+                                <div class="form-check form-check-inline">
+                                    <label class="form-check-label h6 text-sm" for="check-item-{{ $checklist->id }}"><a href="{{ $checklist->link }}" target="_blank"> {{ $checklist->link }}</a></label> 
                                 </div>
                             </div>
                             <div class="col-auto">
+                            @if(\Auth::user()->type != 'client')
                                 <div class="action-btn bg-danger ms-2">
                                     <a href="#" class="mx-3 btn btn-sm  align-items-center delete-checklist" data-url="{{ route('checklist.destroy',[$task->project_id,$checklist->id]) }}">
                                         <i data-bs-toggle="tooltip" title="{{__('Delete')}}" class="ti ti-trash text-white"></i>
                                     </a>
                                 </div>
-
+                            @endif
+                            </div>
+                            <div class="col-10">
+                                <div class="form-check form-check-inline">
+                                    <label class="form-check-label h6 text-sm text-black" for="check-item-{{ $checklist->id }}"><a>{{ $checklist->description }}</a></label> 
+                                </div>
                             </div>
                         </div>
                     </div>

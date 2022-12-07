@@ -200,10 +200,11 @@
             $(document).on('click', '#checklist_submit', function () {
                 var name = $("#form-checklist input[name=name]").val();
                 var link = $("#form-checklist input[name=link]").val();
+                var description = $("#form-checklist input[name=description]").val();
                 if (name != '') {
                     $.ajax({
                         url: $("#form-checklist").data('action'),
-                        data: {link: link, name: name, "_token": "{{ csrf_token() }}"},
+                        data: {link: link, description: description, name: name, "_token": "{{ csrf_token() }}"},
                         type: 'POST',
                         success: function (data) {
                             data = JSON.parse(data);
@@ -215,7 +216,13 @@
                             '                        <div class="col">' +
                             '                            <div class="form-check form-check-inline">' +
                             '                                <input type="checkbox" class="form-check-input" id="check-item-' + data.id + '" value="' + data.id + '" data-url="' + data.updateUrl + '">' +
-                            '                                <label class="form-check-label h6 text-sm" for="check-item-' + data.id + '"><a href="' + data.link + '" target="_blank">' + data.name + '</a></label>' +
+                            '                                <label class="form-check-label h6 text-sm" for="check-item-' + data.id + '"><a>' + data.name + '</a></label>' +
+                            '                            </div>' +
+                            '                            <div class="form-check form-check-inline">' +
+                            '                                <label class="form-check-label h6 text-sm" for="check-item-' + data.id + '"><a href="' + data.link + '" target="_blank">' + data.link + '</a></label>' +
+                            '                            </div>' +
+                            '                            <div class="form-check form-check-inline">' +
+                            '                                <label class="form-check-label h6 text-sm text-black" for="check-item-' + data.id + '"><a>' + data.description + '</a></label>' +
                             '                            </div>' +
                             '                        </div>' +
                             '                        <div class="col-auto"> <div class="action-btn bg-danger ms-2">' +
@@ -229,6 +236,7 @@
                             $("#checklist").append(html);
                             $("#form-checklist input[name=name]").val('');
                             $("#form-checklist input[name=link]").val('');
+                            $("#form-checklist input[name=description]").val('');
                             $("#form-checklist").collapse('toggle');
                         },
                         error: function (data) {
@@ -516,12 +524,21 @@
                                                                 <span>{{__('View')}}</span>
                                                             </a>
                                                         @endcan
-                                                        @can('edit project task')
-                                                            <a href="#!" data-size="lg" data-url="{{ route('projects.tasks.edit',[$project->id,$taskDetail->id]) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Edit ').$taskDetail->name}}">
-                                                                <i class="ti ti-pencil"></i>
-                                                                <span>{{__('Edit')}}</span>
-                                                            </a>
-                                                        @endcan
+                                                        @if(Auth::user()->type == "client")
+                                                            @can('edit project task')
+                                                                <a href="#!" data-size="lg" data-url="{{ route('projects.tasks.edit',[$project->id,$taskDetail->id]) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Invite Member To ').$taskDetail->name}}">
+                                                                    <i class="ti ti-send"></i>
+                                                                    <span>{{__('Invite User')}}</span>
+                                                                </a>
+                                                            @endcan
+                                                        @else
+                                                            @can('edit project task')
+                                                                <a href="#!" data-size="lg" data-url="{{ route('projects.tasks.edit',[$project->id,$taskDetail->id]) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Edit ').$taskDetail->name}}">
+                                                                    <i class="ti ti-pencil"></i>
+                                                                    <span>{{__('Edit')}}</span>
+                                                                </a>
+                                                            @endcan
+                                                        @endif
                                                         @can('delete project task')
                                                             {!! Form::open(['method' => 'DELETE', 'route' => ['projects.tasks.destroy', [$project->id,$taskDetail->id]]]) !!}
                                                             <a href="#!" class="dropdown-item bs-pass-para">

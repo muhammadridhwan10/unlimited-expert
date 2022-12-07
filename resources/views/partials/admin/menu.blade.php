@@ -856,6 +856,13 @@
                             </a>
                         </li>
                     @endif
+                    @if(Gate::check('manage team'))
+                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'team') ? ' active' : '' }}">
+                            <a href="{{ route('team.index') }}" class="dash-link">
+                                <span class="dash-micon"><i class="ti ti-users"></i></span><span class="dash-mtext">{{__('Team')}}</span>
+                            </a>
+                        </li>
+                    @endif
                         @if(Gate::check('manage contract'))
                             <li class="dash-item dash-hasmenu{{ (Request::segment(1) == 'contract')?'active':''}}">
                                 <a href="{{ route('contract.index') }}" class="dash-link">

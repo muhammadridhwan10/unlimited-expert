@@ -2,6 +2,9 @@
 
 <div class="row">
     <div class="col-12 pb-2">
+        <b>{{__('Project Name')}}</b> : <span>{{ (!empty($task->project->project_name)) ? $task->project->project_name : '-' }}</span>
+    </div>
+    <div class="col-12 pb-2">
         <b>{{__(' Estimated Hours')}}</b> : <span>{{ (!empty($task->estimated_hrs)) ? number_format($task->estimated_hrs) : '-' }}</span>
     </div>
     <div class="col-12 pb-2">

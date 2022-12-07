@@ -72,7 +72,7 @@
                             </a>
                         </div>
                         <div class="col ml-n2">
-                            <p class="d-block h6 text-sm mb-0">{{ $user->name }}</p>
+                            <p class="d-block h6 text-sm mb-0">{{ $user->name }} <span class="badge rounded-pill bg-info">{{ $user->type }}</span></p>
                             <p class="card-text text-sm text-muted mb-0">{{ $user->email }}</p>
                         </div>
                         <div class="col-auto text-end add_usr" data-id="{{ $user->id }}">

@@ -124,6 +124,34 @@
             });
         });
 
+        $(document).ready(function () {
+            loadProjectClient();
+            $(document).on('click', '.invite_client', function () {
+                var project_id = $('#project_id').val();
+                var user_id = $(this).attr('data-id');
+
+                $.ajax({
+                    url: '{{ route('invite.project.client.member') }}',
+                    method: 'POST',
+                    dataType: 'json',
+                    data: {
+                        'project_id': project_id,
+                        'user_id': user_id,
+                        "_token": "{{ csrf_token() }}"
+                    },
+                    success: function (data) {
+                        if (data.code == '200') {
+                            show_toastr(data.status, data.success, 'success')
+                            setInterval('location.reload()', 5000);
+                            loadProjectClient();
+                        } else if (data.code == '404') {
+                            show_toastr(data.status, data.errors, 'error')
+                        }
+                    }
+                });
+            });
+        });
+
         function loadProjectUser() {
             var mainEle = $('#project_users');
             var project_id = '{{$project->id}}';
@@ -133,6 +161,24 @@
                 data: {project_id: project_id},
                 beforeSend: function () {
                     $('#project_users').html('<tr><th colspan="2" class="h6 text-center pt-5">{{__('Loading...')}}</th></tr>');
+                },
+                success: function (data) {
+                    mainEle.html(data.html);
+                    $('[id^=fire-modal]').remove();
+                    loadConfirm();
+                }
+            });
+        }
+
+        function loadProjectClient() {
+            var mainEle = $('#project_client');
+            var project_id = '{{$project->id}}';
+
+            $.ajax({
+                url: '{{ route('project.client') }}',
+                data: {project_id: project_id},
+                beforeSend: function () {
+                    $('#project_client').html('<tr><th colspan="2" class="h6 text-center pt-5">{{__('Loading...')}}</th></tr>');
                 },
                 success: function (data) {
                     mainEle.html(data.html);
@@ -467,8 +513,30 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <h5>{{__('Members')}}</h5>
                         @can('edit project')
+                        @if(Auth::user()->type != "client")
                             <div class="float-end">
                                 <a href="#" data-size="lg" data-url="{{ route('invite.project.member.view', $project->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="" class="btn btn-sm btn-primary" data-bs-original-title="{{__('Add Member')}}">
+                                    <i class="ti ti-plus"></i>
+                                </a>
+                            </div>
+                        @endif
+                        @endcan
+                    </div>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush list" id="project_users">
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h5>{{__('Members Client')}}</h5>
+                        @can('edit project')
+                            <div class="float-end">
+                                <a href="#" data-size="lg" data-url="{{ route('invite.project.client.view', $project->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="" class="btn btn-sm btn-primary" data-bs-original-title="{{__('Add Member Client')}}">
                                     <i class="ti ti-plus"></i>
                                 </a>
                             </div>
@@ -476,7 +544,7 @@
                     </div>
                 </div>
                 <div class="card-body">
-                    <ul class="list-group list-group-flush list" id="project_users">
+                    <ul class="list-group list-group-flush list" id="project_client">
                     </ul>
                 </div>
             </div>

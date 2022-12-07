@@ -1,5 +1,5 @@
 @foreach($project->users as $user)
-    @if($user->type !== "staff_client")
+    @if($user->type == "staff_client")
         <li class="list-group-item px-0">
             <div class="row align-items-center justify-content-between">
                 <div class="col-sm-auto mb-3 mb-sm-0">
@@ -15,15 +15,14 @@
                         </div>
                     </div>
                 </div>
-                @if(Auth::user()->type != "client")
                 <div class="col-sm-auto text-sm-end d-flex align-items-center">
                     <div class="action-btn bg-danger ms-2">
                         {!! Form::open(['method' => 'DELETE', 'route' => ['projects.user.destroy',  [$project->id,$user->id]]]) !!}
                         <a href="#" class="mx-3 btn btn-sm  align-items-center bs-pass-para" data-bs-toggle="tooltip" title="{{__('Delete')}}"><i class="ti ti-trash text-white"></i></a>
+
                         {!! Form::close() !!}
                     </div>
                 </div>
-                @endif
             </div>
         </li>
     @endif

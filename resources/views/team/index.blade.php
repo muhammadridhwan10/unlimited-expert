@@ -3,18 +3,18 @@
     $profile=asset(Storage::url('uploads/avatar/'));
 @endphp
 @section('page-title')
-    {{__('Manage User')}}
+    {{__('Manage Team')}}
 @endsection
 @push('script-page')
 
 @endpush
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('User')}}</li>
+    <li class="breadcrumb-item">{{__('Team')}}</li>
 @endsection
 @section('action-btn')
     <div class="float-end">
-        <a href="#" data-size="lg" data-url="{{ route('users.create') }}" data-ajax-popup="true"  data-bs-toggle="tooltip" title="{{__('Create New User')}}"  class="btn btn-sm btn-primary">
+        <a href="#" data-size="lg" data-url="{{ route('team.create') }}" data-ajax-popup="true"  data-bs-toggle="tooltip" title="{{__('Create New Team')}}"  class="btn btn-sm btn-primary">
             <i class="ti ti-plus"></i>
         </a>
     </div>
@@ -23,14 +23,14 @@
     <div class="row">
         <div class="col-xxl-12">
             <div class="row">
-                @foreach($users as $user)
+                @foreach($teams as $team)
                     <div class="col-md-3">
                         <div class="card text-center">
                             <div class="card-header border-0 pb-0">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <h6 class="mb-0">
                                         <div class=" badge bg-primary p-2 px-3 rounded">
-                                            {{ ucfirst($user->type) }}
+                                            {{ ucfirst($team->type) }}
                                         </div>
                                     </h6>
 
@@ -45,41 +45,37 @@
                                         </button>
 
                                         <div class="dropdown-menu dropdown-menu-end">
-                                            @can('edit user')
-                                                <a href="#!" data-size="lg" data-url="{{ route('users.edit',$user->id) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Edit User')}}">
+                                            @can('edit team')
+                                                <a href="#!" data-size="lg" data-url="{{ route('team.edit',$team->id) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Edit Team')}}">
                                                     <i class="ti ti-pencil"></i>
                                                     <span>{{__('Edit')}}</span>
                                                 </a>
                                             @endcan
 
-                                            @can('delete user')
-                                                    {!! Form::open(['method' => 'DELETE', 'route' => ['users.destroy', $user['id']],'id'=>'delete-form-'.$user['id']]) !!}
+                                            @can('delete team')
+                                                    {!! Form::open(['method' => 'DELETE', 'route' => ['team.destroy', $team['id']],'id'=>'delete-form-'.$team['id']]) !!}
                                                 <a href="#!"  class="dropdown-item bs-pass-para">
                                                     <i class="ti ti-archive"></i>
-                                                    <span> @if($user->delete_status!=0){{__('Delete')}} @else {{__('Restore')}}@endif</span>
+                                                    <span> @if($team->delete_status!=0){{__('Delete')}} @else {{__('Restore')}}@endif</span>
                                                 </a>
 
                                                 {!! Form::close() !!}
                                             @endcan
-                                            <a href="#!" data-url="{{route('users.reset',\Crypt::encrypt($user->id))}}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Reset Password')}}">
-                                                <i class="ti ti-adjustments"></i>
-                                                <span>  {{__('Reset Password')}}</span>
-                                            </a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="card-body full-card">
                                 <div class="img-fluid rounded-circle card-avatar">
-                                    <img src="{{(!empty($user->avatar))? asset(Storage::url("uploads/avatar/".$user->avatar)): asset(Storage::url("uploads/avatar/avatar.png"))}}"  class="img-user wid-80 rounded-circle">
+                                    <img src="{{(!empty($team->avatar))? asset(Storage::url("uploads/avatar/".$team->avatar)): asset(Storage::url("uploads/avatar/avatar.png"))}}"  class="img-user wid-80 rounded-circle">
                                 </div>
-                                <h4 class=" mt-2 text-primary">{{ $user->name }}</h4>
-                                <small class="text-primary">{{ $user->email }}</small>
+                                <h4 class=" mt-2 text-primary">{{ $team->name }}</h4>
+                                <small class="text-primary">{{ $team->email }}</small>
                                 <p></p>
 
 
                                 <div class="col text-center d-block h6 mb-0" data-bs-toggle="tooltip" title="{{__('Last Login')}}">
-                                    {{ (!empty($user->last_login_at)) ? $user->last_login_at : '' }}
+                                    {{ (!empty($team->last_login_at)) ? $team->last_login_at : '' }}
                                 </div>
                             </div>
                         </div>

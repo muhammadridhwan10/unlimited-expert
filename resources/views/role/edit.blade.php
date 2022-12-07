@@ -31,7 +31,7 @@
             <div class="tab-content" id="pills-tabContent">
                 <div class="tab-pane fade show active" id="staff" role="tabpanel" aria-labelledby="pills-home-tab">
                     @php
-                        $modules=['user','role','client','product & service','constant unit','constant tax','constant category','company settings'];
+                        $modules=['user','team','role','client','product & service','constant unit','constant tax','constant category','company settings'];
                        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin'){
                            $modules[] = 'language';
                            $modules[] = 'permission';

@@ -36,6 +36,7 @@ class User extends Authenticatable
         'last_login_at',
         'created_by',
         'device_token',
+        'client_id',
     ];
 
     protected $hidden = [
@@ -81,7 +82,7 @@ class User extends Authenticatable
 
     public function ownerId()
     {
-        if($this->type == 'company' || $this->type == 'super admin')
+        if($this->type == 'admin' || $this->type == 'company')
         {
             return $this->id;
         }

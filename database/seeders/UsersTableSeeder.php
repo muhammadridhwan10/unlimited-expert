@@ -67,6 +67,30 @@ class UsersTableSeeder extends Seeder
                 'updated_at' => date('Y-m-d H:i:s'),
             ],
             [
+                'name' => 'manage team',
+                'guard_name' => 'web',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
+                'name' => 'create team',
+                'guard_name' => 'web',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
+                'name' => 'edit team',
+                'guard_name' => 'web',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
+                'name' => 'delete team',
+                'guard_name' => 'web',
+                'created_at' => date('Y-m-d H:i:s'),
+                'updated_at' => date('Y-m-d H:i:s'),
+            ],
+            [
                 'name' => 'create language',
                 'guard_name' => 'web',
                 'created_at' => date('Y-m-d H:i:s'),
@@ -2941,6 +2965,10 @@ class UsersTableSeeder extends Seeder
             ['name' => 'create user'],
             ['name' => 'edit user'],
             ['name' => 'delete user'],
+            ['name' => 'manage team'],
+            ['name' => 'create team'],
+            ['name' => 'edit team'],
+            ['name' => 'delete team'],
             ['name' => 'create language'],
             ['name' => 'manage system settings'],
             ['name' => 'manage stripe settings'],
@@ -2977,6 +3005,10 @@ class UsersTableSeeder extends Seeder
             ['name' => 'create user'],
             ['name' => 'edit user'],
             ['name' => 'delete user'],
+            ['name' => 'manage team'],
+            ['name' => 'create team'],
+            ['name' => 'edit team'],
+            ['name' => 'delete team'],
             ['name' => 'manage role'],
             ['name' => 'create role'],
             ['name' => 'edit role'],
@@ -3512,6 +3544,10 @@ class UsersTableSeeder extends Seeder
             ['name' => 'create user'],
             ['name' => 'edit user'],
             ['name' => 'delete user'],
+            ['name' => 'manage team'],
+            ['name' => 'create team'],
+            ['name' => 'edit team'],
+            ['name' => 'delete team'],
             ['name' => 'manage role'],
             ['name' => 'create role'],
             ['name' => 'edit role'],
@@ -4193,6 +4229,27 @@ class UsersTableSeeder extends Seeder
         ];
 
         $clientRole->givePermissionTo($clientPermission);
+
+        $staff_clientRole       = Role::create(
+            [
+                'name' => 'staff_client',
+                'created_by' => $company->id,
+            ]
+        );
+        $staff_clientPermission = [
+            ['name' => 'manage client dashboard'],
+            ['name' => 'manage project'],
+            ['name' => 'view project'],
+            ['name' => 'view grant chart'],
+            ['name' => 'manage project task'],
+            ['name' => 'create project task'],
+            ['name' => 'edit project task'],
+            ['name' => 'view project task'],
+            ['name' => 'view activity'],
+            ['name' => 'view task'],
+        ];
+
+        $staff_clientRole->givePermissionTo($staff_clientPermission);
 
         // $client = User::create(
         //     [

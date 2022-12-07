@@ -139,6 +139,31 @@
             });
         });
 
+        // $(document).on('click', '.invite_client', function () {
+        //         var project_id = $('#project_id').val();
+        //         var user_id = $(this).attr('data-id');
+
+        //         $.ajax({
+        //             url: '{{ route('invite.project.client.member') }}',
+        //             method: 'POST',
+        //             dataType: 'json',
+        //             data: {
+        //                 'project_id': project_id,
+        //                 'user_id': user_id,
+        //                 "_token": "{{ csrf_token() }}"
+        //             },
+        //             success: function (data) {
+        //                 if (data.code == '200') {
+        //                     show_toastr(data.status, data.success, 'success')
+        //                     setInterval('location.reload()', 5000);
+        //                 } else if (data.code == '404') {
+        //                     show_toastr(data.status, data.errors, 'error')
+        //                 }
+        //             }
+        //         });
+        //     });
+        // });
+
         var currentRequest = null;
 
         function ajaxFilterProjectView(project_sort, keyword = '', status = '') {
