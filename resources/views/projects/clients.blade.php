@@ -16,12 +16,14 @@
                     </div>
                 </div>
                 <div class="col-sm-auto text-sm-end d-flex align-items-center">
+                    @if(Auth::user()->type !== "staff_client")
                     <div class="action-btn bg-danger ms-2">
                         {!! Form::open(['method' => 'DELETE', 'route' => ['projects.user.destroy',  [$project->id,$user->id]]]) !!}
                         <a href="#" class="mx-3 btn btn-sm  align-items-center bs-pass-para" data-bs-toggle="tooltip" title="{{__('Delete')}}"><i class="ti ti-trash text-white"></i></a>
 
                         {!! Form::close() !!}
                     </div>
+                    @endif
                 </div>
             </div>
         </li>

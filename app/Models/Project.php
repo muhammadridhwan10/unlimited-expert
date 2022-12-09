@@ -416,6 +416,22 @@ class Project extends Model
             $projectData['canceled'] = (int)($total != 0 ? number_format(($canceled / $total) * 100, 2) : 0);
 //            dd($projectData);
         }
+        else if(\Auth::user()->type == 'staff_client')
+        {
+            $users = User::where('id', '=', \Auth::user()->id)->get();
+
+            $on_going  = Project::where('status', '=', 'in_progress')->where('client_id', '=', $users[0]['client_id'])->count();
+            $on_hold   = Project::where('status', '=', 'on_hold')->where('client_id', '=', $users[0]['client_id'])->count();
+            $completed = Project::where('status', '=', 'complete')->where('client_id', '=', $users[0]['client_id'])->count();
+            $canceled = Project::where('status', '=', 'canceled')->where('client_id', '=', $users[0]['client_id'])->count();
+            $total     = $on_going + $on_hold + $completed + $canceled;
+
+            $projectData['on_going']  = (int)($total != 0 ? number_format(($on_going / $total) * 100, 2) : 0);
+            $projectData['on_hold']   = (int)($total != 0 ? number_format(($on_hold / $total) * 100, 2) : 0);
+            $projectData['completed'] = (int)($total != 0 ? number_format(($completed / $total) * 100, 2) : 0);
+            $projectData['canceled'] = (int)($total != 0 ? number_format(($canceled / $total) * 100, 2) : 0);
+//            dd($projectData);
+        }
         else
         {
 

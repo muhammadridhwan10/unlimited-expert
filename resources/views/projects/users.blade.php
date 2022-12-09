@@ -15,7 +15,7 @@
                         </div>
                     </div>
                 </div>
-                @if(Auth::user()->type != "client")
+                @if(Auth::user()->type !== "client" && Auth::user()->type !== "staff_client")
                 <div class="col-sm-auto text-sm-end d-flex align-items-center">
                     <div class="action-btn bg-danger ms-2">
                         {!! Form::open(['method' => 'DELETE', 'route' => ['projects.user.destroy',  [$project->id,$user->id]]]) !!}

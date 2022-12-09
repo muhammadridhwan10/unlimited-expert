@@ -23,6 +23,19 @@
                 @enderror
             </div>
         </div>
+        @if(\Auth::user()->type != 'super admin')
+            <div class="form-group col-md-6">
+                {{ Form::label('role', __('User Role'),['class'=>'form-label']) }}
+                {!! Form::select('role', $roles, null,array('class' => 'form-control select','required'=>'required')) !!}
+                @error('role')
+                <small class="invalid-role" role="alert">
+                    <strong class="text-danger">{{ $message }}</strong>
+                </small>
+                @enderror
+            </div>
+        @elseif(\Auth::user()->type == 'company')
+            {!! Form::hidden('role', 'company', null,array('class' => 'form-control select2','required'=>'required')) !!}
+        @endif
         <div class="col-md-6">
             <div class="form-group">
                 {{Form::label('password',__('Password'),['class'=>'form-label'])}}

@@ -652,6 +652,21 @@
 
                 <!--------------------- End CRM ----------------------------------->
 
+                        @if(Auth::user()->type == "staff_client")
+                                <ul class="dash-navbar">
+                                    @if(Gate::check('manage client dashboard'))
+
+                                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'dashboard') ? ' active' : '' }}">
+                                            <a href="{{ route('client.dashboard.view') }}" class="dash-link">
+                                                <span class="dash-micon"><i class="ti ti-home"></i></span><span class="dash-mtext">{{__('Dashboard')}}</span>
+                                            </a>
+                                        </li>
+
+                                    @endif
+
+                                </ul>    
+                        @endif
+
                     <!--------------------- Start Project ----------------------------------->
 
                     @if(\Auth::user()->show_project() == 1)
@@ -723,8 +738,6 @@
 
                 <!--------------------- End Project ----------------------------------->
 
-
-
                     <!--------------------- Start User Managaement System ----------------------------------->
 
                     @if(\Auth::user()->type!='super admin' && ( Gate::check('manage user') || Gate::check('manage role') || Gate::check('manage client')))
@@ -787,22 +800,24 @@
 
 
 
-
-                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'support')?'active':''}}">
-                            <a href="{{route('support.index')}}" class="dash-link">
-                                <span class="dash-micon"><i class="ti ti-headphones"></i></span><span class="dash-mtext">{{__('IT Support')}}</span>
-                            </a>
-                        </li>
-                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'zoom-meeting' || Request::segment(1) == 'zoom-meeting-calender')?'active':''}}">
-                                <a href="{{route('zoom-meeting.index')}}" class="dash-link">
-                                    <span class="dash-micon"><i class="ti ti-user-check"></i></span><span class="dash-mtext">{{__('Zoom Meeting')}}</span>
+                        @if(Auth::user()->type !== 'staff_client')
+                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'support')?'active':''}}">
+                                <a href="{{route('support.index')}}" class="dash-link">
+                                    <span class="dash-micon"><i class="ti ti-headphones"></i></span><span class="dash-mtext">{{__('IT Support')}}</span>
                                 </a>
-                        </li>
-                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'chats')?'active':''}}">
-                            <a href="{{ url('chats') }}" class="dash-link">
-                                <span class="dash-micon"><i class="ti ti-message-circle"></i></span><span class="dash-mtext">{{__('Messenger')}}</span>
-                            </a>
-                        </li>
+                            </li>
+                                <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'zoom-meeting' || Request::segment(1) == 'zoom-meeting-calender')?'active':''}}">
+                                    <a href="{{route('zoom-meeting.index')}}" class="dash-link">
+                                        <span class="dash-micon"><i class="ti ti-user-check"></i></span><span class="dash-mtext">{{__('Zoom Meeting')}}</span>
+                                    </a>
+                            </li>
+                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'chats')?'active':''}}">
+                                <a href="{{ url('chats') }}" class="dash-link">
+                                    <span class="dash-micon"><i class="ti ti-message-circle"></i></span><span class="dash-mtext">{{__('Messenger')}}</span>
+                                </a>
+                            </li>
+                        @endif
+
                         @if(\Auth::user()->type=='company' || \Auth::user()->type=='admin')
 
                             <li class="dash-item dash-hasmenu {{ Request::segment(1) == 'email_template' || Request::route()->getName() == 'manage.email.language' ? ' active dash-trigger' : 'collapsed' }}">

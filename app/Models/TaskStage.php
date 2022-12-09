@@ -91,6 +91,31 @@ class TaskStage extends Model
 
             return $arrTaskData;
         }
+        elseif($usr->type == 'staff_client')
+        {
+            $users = User::where('id', '=', $usr->id)->get();
+            foreach($stages as $key => $stage)
+            {
+                $data = [];
+                foreach($arrDate as $d)
+                {
+                    $data[] = ProjectTask::join('projects', 'project_tasks.project_id', '=', 'projects.id')->where('projects.client_id', '=', $users[0]['client_id'])->where('stage_id', '=', $stage->id)->whereDate('project_tasks.updated_at', '=', $d)->count();
+                }
+
+                $dataset['name']           = $stage->name;
+//                $dataset['fill']            = '!0';
+                $dataset['backgroundColor'] = 'transparent';
+                $dataset['borderColor']     = $stage->color;
+                $dataset['data']            = $data;
+                $arrTask[]                  = $dataset;
+                $i++;
+            }
+            $arrTaskData = array_merge($arrDay, ['dataset' => $arrTask]);
+            unset($arrTaskData['dataset'][$i - 1]['fill']);
+            $arrTaskData['dataset'][$i - 1]['backgroundColor'] = '#ccc';
+
+            return $arrTaskData;
+        }
         else
         {
             foreach($stages as $key => $stage)

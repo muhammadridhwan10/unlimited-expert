@@ -946,7 +946,7 @@ class User extends Authenticatable
     public static function show_project()
     {
         $user_type = \Auth::user()->type;
-        if($user_type == 'company' || $user_type == 'super admin')
+        if($user_type == 'company' || $user_type == 'admin')
         {
             $user = User::where('id', \Auth::user()->id)->first();
         }

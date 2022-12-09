@@ -1,4 +1,4 @@
-{{Form::model($team,array('route' => array('team.update', $team->id), 'method' => 'PUT')) }}
+{{Form::model($user,array('route' => array('team.update', $user->id), 'method' => 'PUT')) }}
 <div class="modal-body">
     <div class="row">
         <div class="col-md-6">
@@ -23,6 +23,17 @@
                 @enderror
             </div>
         </div>
+        @if(\Auth::user()->type != 'super admin')
+            <div class="form-group col-md-6">
+                {{ Form::label('role', __('User Role'),['class'=>'form-label']) }}
+                {!! Form::select('role', $roles, $user->roles,array('class' => 'form-control select','required'=>'required')) !!}
+                @error('role')
+                <small class="invalid-role" role="alert">
+                    <strong class="text-danger">{{ $message }}</strong>
+                </small>
+                @enderror
+            </div>
+        @endif
         @if(!$customFields->isEmpty())
             <div class="col-md-6">
                 <div class="tab-pane fade show" id="tab-2" role="tabpanel">

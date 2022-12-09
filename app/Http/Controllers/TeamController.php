@@ -51,7 +51,7 @@ class TeamController extends Controller
         if(\Auth::user()->type == 'client')
         {
             $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'client')->get();
-            $roles = Role::where('name','=','client')->get()->pluck('name', 'id');
+            $roles = Role::where('name','=','staff_client')->get()->pluck('name', 'id');
         }
         else
         {
@@ -87,18 +87,16 @@ class TeamController extends Controller
                 return redirect()->back()->with('error', $messages->first());
             }
 
-            $role = 'staff_client';
-
             $objUser               = \Auth::user();
-            $role_r                = Role::where('name', '=', $role);
+            $role_r                = Role::findById($request->role);
             $psw                   = $request->password;
             $request['password']   = Hash::make($request->password);
-            $request['type']       = $role;
+            $request['type']       = $role_r->name;
             $request['lang']       = !empty($default_language) ? $default_language->value : 'en';
             $request['created_by'] = \Auth::user()->creatorId();
             $request['client_id']  = \Auth::user()->id;
             $user = User::create($request->all());
-            // $user->assignRole($role_r);
+            $user->assignRole($role_r);
 
             // if($request['type'] != 'client')
             //     \App\Models\Utility::employeeDetails($user->id,\Auth::user()->creatorId());
@@ -106,7 +104,7 @@ class TeamController extends Controller
             //Send Email
 
             $user->password     = $psw;
-            $user->type         = $role;
+            $user->type         = $role_r->name;
 
             $userArr = [
                 'email' => $user->email,
@@ -127,7 +125,7 @@ class TeamController extends Controller
     {
         if(Auth::user()->type == 'client')
         {
-            $roles = Role::where('name','=','client')->get()->pluck('name', 'id');
+            $roles = Role::where('name','=','staff_client')->get()->pluck('name', 'id');
         }
         else
         {
@@ -170,9 +168,7 @@ class TeamController extends Controller
                     return redirect()->back()->with('error', $messages->first());
                 }
 
-                $roles = 'staff_client';
-
-                $role = Role::where('name', '=', $roles);
+                $role = Role::findById($request->role);
                 $input = $request->all();
                 $input['type'] = $roles;
 

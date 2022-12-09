@@ -68,6 +68,10 @@ class DashboardController extends Controller
             {
                 return redirect()->route('client.dashboard.view');
             }
+            elseif(Auth::user()->type == 'staff_client')
+            {
+                return redirect()->route('client.dashboard.view');
+            }
             elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                     $data['latestIncome']  = Revenue::orderBy('id', 'desc')->limit(5)->get();
@@ -721,6 +725,131 @@ class DashboardController extends Controller
                 $pay_amount                         = 0;
 
                 if(Auth::user()->type == 'client')
+                {
+                    if(!empty($project['project_budget']))
+                    {
+                        $project['client_project_budget_due_per'] = intval(($pay_amount / $project['project_budget']) * 100);
+                    }
+                    else
+                    {
+                        $project['client_project_budget_due_per'] = 0;
+                    }
+
+                }
+
+                $top_tasks       = Auth::user()->created_top_due_task();
+                $users['staff']  = User::where('created_by', '=', Auth::user()->creatorId())->count();
+                $users['user']   = User::where('created_by', '=', Auth::user()->creatorId())->where('type', '!=', 'client')->count();
+                $users['client'] = User::where('created_by', '=', Auth::user()->creatorId())->where('type', '=', 'client')->count();
+                $project_status  = array_values(Project::$project_status);
+                $projectData     = \App\Models\Project::getProjectStatus();
+
+                $taskData        = \App\Models\TaskStage::getChartData();
+
+                return view('dashboard.clientView', compact('calenderTasks', 'arrErr', 'arrCount', 'chartData', 'project', 'invoice', 'top_tasks', 'top_due_invoice', 'users', 'project_status', 'projectData', 'taskData','transdate','currentYear'));
+            }
+            elseif(Auth::user()->type = "staff_client")
+            {
+                $transdate = date('Y-m-d', time());
+                $currentYear  = date('Y');
+
+                $calenderTasks = [];
+                $chartData     = [];
+                $arrCount      = [];
+                $arrErr        = [];
+                $m             = date("m");
+                $de            = date("d");
+                $y             = date("Y");
+                $format        = 'Y-m-d';
+                $user          = \Auth::user();
+                if(\Auth::user()->can('View Task'))
+                {
+                    $company_setting = Utility::settings();
+                }
+                $arrTemp = [];
+                for($i = 0; $i <= 7 - 1; $i++)
+                {
+                    $date                 = date($format, mktime(0, 0, 0, $m, ($de - $i), $y));
+                    $arrTemp['date'][]    = __(date('D', strtotime($date)));
+                    $arrTemp['invoice'][] = 10;
+                    $arrTemp['payment'][] = 20;
+                }
+
+                $chartData = $arrTemp;
+
+                foreach($user->clientDeals as $deal)
+                {
+                    foreach($deal->tasks as $task)
+                    {
+                        $calenderTasks[] = [
+                            'title' => $task->name,
+                            'start' => $task->date,
+                            'url' => route(
+                                'deals.tasks.show', [
+                                                      $deal->id,
+                                                      $task->id,
+                                                  ]
+                            ),
+                            'className' => ($task->status) ? 'bg-success border-success' : 'bg-warning border-warning',
+                        ];
+                    }
+
+                    $calenderTasks[] = [
+                        'title' => $deal->name,
+                        'start' => $deal->created_at->format('Y-m-d'),
+                        'url' => route('deals.show', [$deal->id]),
+                        'className' => 'deal bg-primary border-primary',
+                    ];
+                }
+                $client_deal = $user->clientDeals->pluck('id');
+
+                $arrCount['deal'] = $user->clientDeals->count();
+                if(!empty($client_deal->first()))
+                {
+                    $arrCount['task'] = DealTask::whereIn('deal_id', [$client_deal])->count();
+                }
+                else
+                {
+                    $arrCount['task'] = 0;
+                }
+
+                $users = User::where('id', '=', Auth::user()->id)->get();
+
+                $project['projects']             = Project::where('client_id', '=', $users[0]['client_id'])->where('created_by', \Auth::user()->creatorId())->where('end_date', '>', date('Y-m-d'))->limit(5)->orderBy('end_date')->get();
+                $project['projects_count']       = count($project['projects']);
+                $user_projects                   = Project::where('client_id', $users[0]['client_id'])->pluck('id', 'id')->toArray();
+                $tasks                           = ProjectTask::whereIn('project_id', $user_projects)->where('created_by', \Auth::user()->creatorId())->get();
+                $project['projects_tasks_count'] = count($tasks);
+                $project['project_budget']       = Project::where('client_id', $users[0]['client_id'])->sum('budget');
+
+                $project_last_stages      = Auth::user()->last_projectstage();
+                $project_last_stage       = (!empty($project_last_stages) ? $project_last_stages->id : 0);
+                $project['total_project'] = Auth::user()->user_project();
+                $total_project_task       = Auth::user()->created_total_project_task();
+                $allProject               = Project::where('client_id', $users[0]['client_id'])->where('created_by', \Auth::user()->creatorId())->get();
+                $allProjectCount          = count($allProject);
+
+                $bugs                               = Bug::whereIn('project_id', $user_projects)->where('created_by', \Auth::user()->creatorId())->get();
+                $project['projects_bugs_count']     = count($bugs);
+                $bug_last_stage                     = BugStatus::orderBy('order', 'DESC')->first();
+                $completed_bugs                     = Bug::whereIn('project_id', $user_projects)->where('status', $bug_last_stage->id)->where('created_by', \Auth::user()->creatorId())->get();
+                $allBugCount                        = count($bugs);
+                $completedBugCount                  = count($completed_bugs);
+                $project['project_bug_percentage']  = ($allBugCount != 0) ? intval(($completedBugCount / $allBugCount) * 100) : 0;
+                $complete_task                      = Auth::user()->project_complete_task($project_last_stage);
+                $completed_project                  = Project::where('client_id', $users[0]['client_id'])->where('status', 'complete')->where('created_by', \Auth::user()->creatorId())->get();
+                $completed_project_count            = count($completed_project);
+                $project['project_percentage']      = ($allProjectCount != 0) ? intval(($completed_project_count / $allProjectCount) * 100) : 0;
+                $project['project_task_percentage'] = ($total_project_task != 0) ? intval(($complete_task / $total_project_task) * 100) : 0;
+                $invoice                            = [];
+                $top_due_invoice                    = [];
+                $invoice['total_invoice']           = 5;
+                $complete_invoice                   = 0;
+                $total_due_amount                   = 0;
+                $top_due_invoice                    = array();
+                $pay_amount                         = 0;
+
+                if(Auth::user()->type == 'staff_client')
                 {
                     if(!empty($project['project_budget']))
                     {

@@ -78,6 +78,76 @@
 
 
     </script>
+    <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase.js"></script>
+    <script>
+
+
+        var firebaseConfig = {
+            apiKey: "AIzaSyDD7yWFgBi1xlc7y7FBHSNalQjnDAHq__g",
+            databaseURL: "https://aup-apps-581d7-default-rtdb.firebaseio.com",
+            authDomain: "aup-apps-581d7.firebaseapp.com",
+            projectId: "aup-apps-581d7",
+            storageBucket: "aup-apps-581d7.appspot.com",
+            messagingSenderId: "1058833635712",
+            appId: "1:1058833635712:web:3c4c99990b390eb6258965"
+        };
+        // measurementId: G-R1KQTR3JBN
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const messaging = firebase.messaging();
+
+        function IntitalizeFireBaseMessaging() {
+                messaging
+                .requestPermission()
+                .then(function () {
+                    console.log("Notification Permission");
+                    return messaging.getToken()
+                })
+                .then(function(token) {
+                    console.log(token);
+
+                    $.ajaxSetup({
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        }
+                    });
+
+                    $.ajax({
+                        url: '{{ route("save-token") }}',
+                        type: 'POST',
+                        data: {
+                            token: token
+                        },
+                        dataType: 'JSON',
+                    });
+
+                }).catch(function (err) {
+                    toastr.error('User Chat Token Error'+ err, null, {timeOut: 3000, positionClass: "toast-bottom-right"});
+                });
+        }  
+        
+
+        messaging.onMessage(function(payload) {
+            const noteTitle = payload.notification.title;
+            const noteOptions = {
+                body: payload.notification.body,
+                icon: payload.notification.icon,
+            };
+            new Notification(noteTitle, noteOptions);
+
+            if(Notification.permission==="granted")
+            {
+                    var notification=new Notification(payload.notification.title,notificationOption);
+
+                    notification.onclick=function (ev) {
+                        ev.preventDefault();
+                        window.open(payload.notification.click_action,'_blank');
+                        notification.close();
+                    }
+            }
+        });
+        IntitalizeFireBaseMessaging();
+    </script>
     <script>
 
 
@@ -294,7 +364,6 @@
                                         </div>
                                     </div>
                     @endif
-
                 <div class="col-xxl-12">
                     <div class="card">
                         <div class="card-header">
@@ -381,7 +450,7 @@
     </div>
 
     <div class="row">
-        <div class="{{ (Auth::user()->type =='company' || Auth::user()->type =='client') ? 'col-xl-6 col-lg-6 col-md-6' : 'col-xl-8 col-lg-8 col-md-8' }} col-sm-12">
+        <div class="{{ (Auth::user()->type =='company' || Auth::user()->type =='client' || Auth::user()->type =='staff_client') ? 'col-xl-6 col-lg-6 col-md-6' : 'col-xl-8 col-lg-8 col-md-8' }} col-sm-12">
             <div class="card bg-none min-410 mx-410">
                 <div class="card-header">
                     <h5>{{ __('Top Due Project') }}</h5>
