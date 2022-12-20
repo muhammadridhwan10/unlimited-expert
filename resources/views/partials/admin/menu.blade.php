@@ -566,7 +566,13 @@
                                         </li>
                                     @endif
 
-                                    @if(Gate::check('manage print settings'))
+                                    <!-- @if(Gate::check('manage print settings'))
+                                        <li class="dash-item {{ (Request::route()->getName() == 'print-setting') ? ' active' : '' }}">
+                                            <a class="dash-link" href="{{ route('print.setting') }}">{{__('Print Settings')}}</a>
+                                        </li>
+                                    @endif -->
+
+                                    @if(\Auth::user()->type=='admin' || \Auth::user()->type=='company')
                                         <li class="dash-item {{ (Request::route()->getName() == 'print-setting') ? ' active' : '' }}">
                                             <a class="dash-link" href="{{ route('print.setting') }}">{{__('Print Settings')}}</a>
                                         </li>

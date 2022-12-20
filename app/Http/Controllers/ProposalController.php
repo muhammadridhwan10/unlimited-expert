@@ -596,7 +596,14 @@ class ProposalController extends Controller
 
                 ];
 //                dd($proposalArr);
-                $resp = \App\Models\Utility::sendEmailTemplate('proposal_send', [$customer->id => $customer->email], $proposalArr);
+                if(Auth::user()->type == 'admin')
+                {
+                    $resp = Utility::sendEmailTemplate('proposal_send', [$customer->email], $proposalArr);
+                }
+                else
+                {
+                    $resp = Utility::sendEmailTemplate('proposal_send', [$customer->id => $customer->email], $proposalArr);
+                }
                 return redirect()->back()->with('success', __('Proposal successfully sent.') . (($resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
 
             }
@@ -641,7 +648,14 @@ class ProposalController extends Controller
 
                 ];
 //                dd($proposalArr);
-                $resp = \App\Models\Utility::sendEmailTemplate('proposal_send', [$customer->id => $customer->email], $proposalArr);
+                if(Auth::user()->type == 'admin')
+                {
+                    $resp = Utility::sendEmailTemplate('proposal_send', [$customer->email], $proposalArr);
+                }
+                else
+                {
+                    $resp = Utility::sendEmailTemplate('proposal_send', [$customer->id => $customer->email], $proposalArr);
+                }
                 return redirect()->back()->with('success', __('Proposal successfully sent.') . (($resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
 
             }

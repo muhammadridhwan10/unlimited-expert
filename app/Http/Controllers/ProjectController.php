@@ -55,7 +55,7 @@ class ProjectController extends Controller
             {
                 $users   = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
-                $tasktemplate = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
+                $tasktemplate = ProductServiceCategory::where('type', 3)->get()->pluck('name', 'id');
                 $clients->prepend('Select Client', '');
                 $users->prepend('Select User', '');
                 $tasktemplate->prepend('Select Task Template', '');
@@ -64,7 +64,7 @@ class ProjectController extends Controller
             {
                 $users   = User::where('type', '!=', 'client')->get()->pluck('name', 'id');
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
-                $tasktemplate = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
+                $tasktemplate = ProductServiceCategory::where('type', 3)->get()->pluck('name', 'id');
                 $clients->prepend('Select Client', '');
                 $users->prepend('Select User', '');
                 $tasktemplate->prepend('Select Task Template', '');

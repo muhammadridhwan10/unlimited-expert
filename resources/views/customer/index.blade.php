@@ -52,6 +52,7 @@ table-border-style">
                             <tr>
                                 <th>#</th>
                                 <th> {{__('Name')}}</th>
+                                <th> {{__('Position')}}</th>
                                 <th> {{__('Contact')}}</th>
                                 <th> {{__('Email')}}</th>
                                 <th> {{__('Balance')}}</th>
@@ -74,6 +75,7 @@ table-border-style">
                                         @endcan
                                     </td>
                                     <td class="font-style">{{$customer['name']}}</td>
+                                    <td>{{$customer['position']}}</td>
                                     <td>{{$customer['contact']}}</td>
                                     <td>{{$customer['email']}}</td>
                                     <td>{{\Auth::user()->priceFormat($customer['balance'])}}</td>

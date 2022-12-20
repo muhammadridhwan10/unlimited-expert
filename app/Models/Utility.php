@@ -70,7 +70,7 @@ class Utility extends Model
             "paypal_secret_key" => "",
             "stripe_key" => "",
             "stripe_secret" => "",
-            "decimal_number" => "2",
+            "decimal_number" => "",
             "tax_type" => "",
             "shipping_display" => "on",
             "journal_prefix" => "#JUR",
@@ -180,7 +180,7 @@ class Utility extends Model
             "paypal_secret_key" => "",
             "stripe_key" => "",
             "stripe_secret" => "",
-            "decimal_number" => "2",
+            "decimal_number" => "",
             "tax_type" => "",
             "shipping_display" => "on",
             "journal_prefix" => "#JUR",
@@ -339,7 +339,7 @@ class Utility extends Model
     {
         $arr              = [];
         $arr['colors']    = [
-            '003580',
+            'F58025',
             '666666',
             '6676ef',
             'f50102',
@@ -371,16 +371,9 @@ class Utility extends Model
             '000',
         ];
         $arr['templates'] = [
-            "template1" => "New York",
-            "template2" => "Toronto",
-            "template3" => "Rio",
-            "template4" => "London",
-            "template5" => "Istanbul",
-            "template6" => "Mumbai",
-            "template7" => "Hong Kong",
-            "template8" => "Tokyo",
-            "template9" => "Sydney",
-            "template10" => "Paris",
+            "template1" => "Template Pusat 1",
+            "template2" => "Template Pusat 2",
+            "template3" => "Template Bekasi 1",
         ];
 
         return $arr;
@@ -388,7 +381,7 @@ class Utility extends Model
 
     public static function priceFormat($settings, $price)
     {
-        return (($settings['site_currency_symbol_position'] == "pre") ? $settings['site_currency_symbol'] : '') . number_format($price, Utility::getValByName('decimal_number')) . (($settings['site_currency_symbol_position'] == "post") ? $settings['site_currency_symbol'] : '');
+        return (($settings['site_currency_symbol_position'] == "pre") ? $settings['site_currency_symbol'] : '') . number_format($price) . (($settings['site_currency_symbol_position'] == "post") ? $settings['site_currency_symbol'] : '');
     }
 
     public static function currencySymbol($settings)
@@ -409,7 +402,7 @@ class Utility extends Model
     public static function invoiceNumberFormat($settings, $number)
     {
 
-        return $settings["invoice_prefix"] . sprintf("%05d", $number);
+        return $settings["invoice_prefix"] . date($number);
     }
 
     public static function proposalNumberFormat($settings, $number)
@@ -1511,6 +1504,18 @@ class Utility extends Model
         if(!empty($date) && $date != '0000-00-00')
         {
             return date("d M Y", strtotime($date));
+        }
+        else
+        {
+            return '';
+        }
+    }
+
+    public static function getDateFormatedInvoice($date)
+    {
+        if(!empty($date) && $date != '0000-00-00')
+        {
+            return date("Y", strtotime($date));
         }
         else
         {

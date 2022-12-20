@@ -10,6 +10,7 @@ class ProductService extends Model
     protected $fillable = [
         'name',
         'sku',
+        'periode',
         'sale_price',
         'purchase_price',
         'tax_id',

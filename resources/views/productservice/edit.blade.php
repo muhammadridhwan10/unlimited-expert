@@ -11,9 +11,17 @@
         </div>
         <div class="col-md-6">
             <div class="form-group">
-                {{ Form::label('sku', __('SKU'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                {{ Form::label('sku', __('EL'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                 <div class="form-icon-user">
                     {{ Form::text('sku', null, array('class' => 'form-control','required'=>'required')) }}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                {{ Form::label('periode', __('Periode (dalam tahun)'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                <div class="form-icon-user">
+                {{ Form::select('periode', $year, null, ['class' => 'form-control select']) }}
                 </div>
             </div>
         </div>

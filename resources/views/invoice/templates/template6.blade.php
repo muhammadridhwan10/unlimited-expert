@@ -535,7 +535,7 @@
         }
 
     </style>
-    @if($settings_data['SITE_RTL']=='on')
+    @if (env('SITE_RTL') == 'on')
         <link rel="stylesheet" href="{{ asset('css/bootstrap-rtl.css') }}">
     @endif
 </head>
@@ -556,7 +556,7 @@
                                         <div data-v-4b3dcb8a="" class="col-2">
                                             <h1 data-v-4b3dcb8a="" class="fancy-title mb5">{{ __('INVOICE') }}</h1>
                                         </div>
-                                        <div data-v-4b3dcb8a="" class="col-2 text-right">
+                                        <div data-v-4b3dcb8a="" class="col-2 ">
                                             <img data-v-4b3dcb8a="" src="{{ $img }}" class="d-logo"
                                                 style="max-width: 250px">
                                         </div>
@@ -603,7 +603,7 @@
                                                     </div>
                                                 @endif
                                             </div>
-                                                <div class="text-align-center">
+                                                <div class="float-right">
                                                     {!! DNS2D::getBarcodeHTML(route('invoice.link.copy',\Crypt::encrypt($invoice->invoice_id)), "QRCODE",2,2) !!}
                                                 </div>
                                         </div>
@@ -657,17 +657,13 @@
 
                                             <div data-v-f2a183a6="" class="d-table-tr"
                                                 style="background: {{ $color }};color:{{ $font_color }}">
-                                                <div class="d-table-th w-5">{{ __('Item') }}</div>
-                                                <div class="d-table-th w-2">{{ __('Quantity') }}</div>
-                                                <div class="d-table-th w-3">{{ __('Rate') }}</div>
+                                                <div class="d-table-th w-4">{{ __('Item') }}</div>
+                                                <div class="d-table-th w-3">{{ __('Quantity') }}</div>
+                                                <div class="d-table-th w-4">{{ __('Rate') }}</div>
                                                 <div class="d-table-th w-5">{{ __('Tax') }} (%)</div>
-                                                @if ($invoice->discount_apply == 1)
-                                                    <div class="d-table-th w-2">{{ __('Discount') }}</div>
-                                                @else
-                                                    <div class="d-table-th w-2"></div>
-                                                @endif
-                                                <div class="d-table-th w-3">{{ __('Description') }}</div>
-                                                <div class="d-table-th w-4 text-right">{{ __('Price') }}<br><small
+                                                    <div class="d-table-th w-4">{{ __('Discount') }}</div>
+
+                                                <div class="d-table-th w-4 ">{{ __('Price') }}<br><small
                                                         class="text-danger">{{ __('before tax & discount') }}</small>
                                                 </div>
                                             </div>
@@ -678,13 +674,13 @@
 
                                                         <div class="d-table-tr"
                                                             style="border-bottom:1px solid {{ $color }};">
-                                                            <div class="d-table-td w-5">
+                                                            <div class="d-table-td w-4">
                                                                 <pre data-v-f2a183a6="">{{ $item->name }}</pre>
                                                             </div>
-                                                            <div class="d-table-td w-2">
+                                                            <div class="d-table-td w-3">
                                                                 <pre data-v-f2a183a6="">{{ $item->quantity }}</pre>
                                                             </div>
-                                                            <div class="d-table-td w-3">
+                                                            <div class="d-table-td w-4">
                                                                 <pre
                                                                     data-v-f2a183a6="">{{ Utility::priceFormat($settings, $item->price) }}</pre>
                                                             </div>
@@ -699,21 +695,13 @@
                                                                     @endif
                                                                 </pre>
                                                             </div>
-                                                            @if ($invoice->discount_apply == 1)
-                                                                <div class="d-table-td w-2">
+                                                                <div class="d-table-td w-4">
                                                                     <pre
                                                                         data-v-f2a183a6="">{{ $item->discount != 0 ? Utility::priceFormat($settings, $item->discount) : '-' }}</pre>
                                                                 </div>
-                                                            @else
-                                                                <div class="d-table-td w-2">
-                                                                    <pre data-v-f2a183a6=""></pre>
-                                                                </div>
-                                                            @endif
-                                                            <div class="d-table-td w-3">
-                                                                <pre
-                                                                    data-v-f2a183a6="">{{ !empty($item->description) ? $item->description : '-' }}</pre>
-                                                            </div>
-                                                            <div class="d-table-td w-4 text-right">
+
+
+                                                            <div class="d-table-td w-4">
                                                                 <span>{{ Utility::priceFormat($settings, $item->price * $item->quantity) }}</span>
                                                             </div>
                                                         </div>
@@ -731,7 +719,7 @@
                                                         <div class="d-table-td w-5">
                                                             <pre data-v-f2a183a6="">-</pre>
                                                         </div>
-                                                        <div class="d-table-td w-4 text-right"><span>-</span></div>
+                                                        <div class="d-table-td w-4 "><span>-</span></div>
                                                     </div>
                                                 @endif
                                             </div>
@@ -741,7 +729,7 @@
                                                 <div class="d-table-td w-5">
                                                     <pre data-v-f2a183a6="">{{ __('Total') }}</pre>
                                                 </div>
-                                                <div class="d-table-td w-2">
+                                                <div class="d-table-td w-3">
                                                     <pre data-v-f2a183a6="">{{ $invoice->totalQuantity }}</pre>
                                                 </div>
                                                 <div class="d-table-td w-3">
@@ -752,20 +740,13 @@
                                                     <pre
                                                         data-v-f2a183a6="">{{ Utility::priceFormat($settings, $invoice->totalTaxPrice) }}</pre>
                                                 </div>
-                                                @if ($invoice->discount_apply == 1)
-                                                    <div class="d-table-td w-2">
+
+                                                    <div class="d-table-td w-4">
                                                         <pre
                                                             data-v-f2a183a6="">{{ Utility::priceFormat($settings, $invoice->totalDiscount) }}</pre>
                                                     </div>
-                                                @else
-                                                    <div class="d-table-td w-2">
-                                                        <pre data-v-f2a183a6="">-</pre>
-                                                    </div>
-                                                @endif
-                                                <div class="d-table-td w-3">
-                                                    <pre data-v-f2a183a6="">-</pre>
-                                                </div>
-                                                <div class="d-table-td w-4 text-right">
+
+                                                <div class="d-table-td w-4 ">
                                                     <span>{{ Utility::priceFormat($settings, $invoice->getSubTotal()) }}
                                                     </span>
                                                 </div>

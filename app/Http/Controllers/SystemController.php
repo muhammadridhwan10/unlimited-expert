@@ -720,6 +720,12 @@ class SystemController extends Controller
 
             return view('settings.print', compact('settings'));
         }
+        elseif(Auth::user()->type == "admin")
+        {
+            $settings = Utility::settings();
+
+            return view('settings.print', compact('settings'));
+        }
         else
         {
             return redirect()->back()->with('error', 'Permission denied.');

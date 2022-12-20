@@ -13,6 +13,14 @@
         </div>
         <div class="col-lg-6 col-md-6 col-sm-6">
             <div class="form-group">
+                {{Form::label('position',__('Position'),['class'=>'form-label'])}}
+                <div class="form-icon-user">
+                    {{Form::text('position',null,array('class'=>'form-control','required'=>'required'))}}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-6">
+            <div class="form-group">
                 {{Form::label('contact',__('Contact'),['class'=>'form-label'])}}
                 <div class="form-icon-user">
                     {{Form::text('contact',null,array('class'=>'form-control','required'=>'required'))}}

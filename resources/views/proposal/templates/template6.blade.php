@@ -1,4 +1,3 @@
-
 @php
     $settings_data = \App\Models\Utility::settingsById($proposal->created_by);
 @endphp
@@ -502,7 +501,7 @@
             float: right;
         }
     </style>
- @if($settings_data['SITE_RTL']=='on')
+   @if($settings_data['SITE_RTL']=='on')
         <link rel="stylesheet" href="{{ asset('css/bootstrap-rtl.css') }}">
     @endif
 </head>
@@ -594,17 +593,12 @@
                                 <div data-v-4b3dcb8a="" class="d-table">
                                     <div data-v-4b3dcb8a="" class="d-table">
                                         <div data-v-f2a183a6="" class="d-table-tr" style="background: {{$color}};color:{{$font_color}}">
-                                            <div class="d-table-th w-5">{{__('Item')}}</div>
-                                            <div class="d-table-th w-2">{{__('Quantity')}}</div>
-                                            <div class="d-table-th w-3">{{__('Rate')}}</div>
+                                            <div class="d-table-th w-4">{{__('Item')}}</div>
+                                            <div class="d-table-th w-3">{{__('Quantity')}}</div>
+                                            <div class="d-table-th w-4">{{__('Rate')}}</div>
                                             <div class="d-table-th w-5">{{__('Tax')}} (%)</div>
-                                            @if($proposal->discount_apply==1)
-                                                <div class="d-table-th w-2">{{__('Discount')}}</div>
-                                            @else
-                                                <div class="d-table-th w-2"></div>
-                                            @endif
-                                            <div class="d-table-th w-3">{{__('Description')}}</div>
-                                            <div class="d-table-th w-4 text-right">{{__('Price')}}<br><small class="text-danger">{{__('before tax & discount')}}</small>
+                                            <div class="d-table-th w-4">{{__('Discount')}}</div>
+                                            <div class="d-table-th w-4">{{__('Price')}}<br><small class="text-danger">{{__('before tax & discount')}}</small>
                                             </div>
                                         </div>
                                         <div class="d-table-body">
@@ -644,7 +638,7 @@
                                                         <div class="d-table-td w-3">
                                                             <pre data-v-f2a183a6="">{{!empty($item->description)?$item->description:'-'}}</pre>
                                                         </div>
-                                                        <div class="d-table-td w-4 text-right"><span>{{Utility::priceFormat($settings,$item->price * $item->quantity)}}</span></div>
+                                                        <div class="d-table-td w-4"><span>{{Utility::priceFormat($settings,$item->price * $item->quantity)}}</span></div>
                                                     </div>
                                                 @endforeach
                                             @else
@@ -659,7 +653,7 @@
                                                     <div class="d-table-td w-5">
                                                         <pre data-v-f2a183a6="">-</pre>
                                                     </div>
-                                                    <div class="d-table-td w-4 text-right"><span>-</span></div>
+                                                    <div class="d-table-td w-4"><span>-</span></div>
                                                 </div>
                                             @endif
                                         </div>
@@ -687,7 +681,7 @@
                                                 </div>
                                             @endif
 
-                                            <div class="d-table-td w-4 text-right">
+                                            <div class="d-table-td w-4">
                                                     <span>{{Utility::priceFormat($settings,$proposal->getSubTotal())}}
                                                     </span>
                                             </div>

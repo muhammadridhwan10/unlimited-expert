@@ -70,7 +70,7 @@ class User extends Authenticatable
 
     public function creatorId()
     {
-        if($this->type == 'company' || $this->type == 'super admin')
+        if($this->type == 'company' && $this->type == 'admin')
         {
             return $this->id;
         }
@@ -82,7 +82,7 @@ class User extends Authenticatable
 
     public function ownerId()
     {
-        if($this->type == 'admin' || $this->type == 'company')
+        if($this->type == 'company' && $this->type == 'admin')
         {
             return $this->id;
         }
@@ -114,7 +114,7 @@ class User extends Authenticatable
     {
         $settings = Utility::settings();
 
-        return (($settings['site_currency_symbol_position'] == "pre") ? $settings['site_currency_symbol'] : '') . number_format($price, Utility::getValByName('decimal_number')) . (($settings['site_currency_symbol_position'] == "post") ? $settings['site_currency_symbol'] : '');
+        return (($settings['site_currency_symbol_position'] == "pre") ? $settings['site_currency_symbol'] : '') . number_format($price) . (($settings['site_currency_symbol_position'] == "post") ? $settings['site_currency_symbol'] : '');
     }
 
     public function currencySymbol()
@@ -142,7 +142,7 @@ class User extends Authenticatable
     {
         $settings = Utility::settings();
 
-        return $settings["invoice_prefix"] . sprintf("%05d", $number);
+        return $settings["invoice_prefix"] . sprintf($number);
     }
 
     public function proposalNumberFormat($number)
@@ -931,7 +931,7 @@ class User extends Authenticatable
     public static function show_account()
     {
         $user_type = \Auth::user()->type;
-        if($user_type == 'company' || $user_type == 'super admin')
+        if($user_type == 'company' || $user_type == 'admin')
         {
             $user = User::where('id', \Auth::user()->id)->first();
         }

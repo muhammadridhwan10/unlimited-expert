@@ -140,9 +140,9 @@
                                 <tr>
                                     <td class="Id">
                                         @if (\Auth::guard('customer')->check())
-                                            <a href="{{ route('customer.invoice.show', \Crypt::encrypt($invoice->id)) }}" class="btn btn-outline-primary">{{ AUth::user()->invoiceNumberFormat($invoice->invoice_id) }}</a>
+                                            <a href="{{ route('customer.invoice.show', \Crypt::encrypt($invoice->id)) }}" class="btn btn-outline-primary">{{ $invoice->invoice_id }}</a>
                                         @else
-                                            <a href="{{ route('invoice.show', \Crypt::encrypt($invoice->id)) }}" class="btn btn-outline-primary">{{ AUth::user()->invoiceNumberFormat($invoice->invoice_id) }}</a>
+                                            <a href="{{ route('invoice.show', \Crypt::encrypt($invoice->id)) }}" class="btn btn-outline-primary">{{ $invoice->invoice_id }}</a>
                                         @endif
                                     </td>
                                     @if (!\Auth::guard('customer')->check())
@@ -151,8 +151,7 @@
                                     <td>{{ Auth::user()->dateFormat($invoice->issue_date) }}</td>
                                     <td>
                                         @if ($invoice->due_date < date('Y-m-d'))
-                                            <p class="text-danger">
-                                                {{ \Auth::user()->dateFormat($invoice->due_date) }}</p>
+                                            <div class="text-danger">{{ \Auth::user()->dateFormat($invoice->due_date) }}</div>
                                         @else
                                             {{ \Auth::user()->dateFormat($invoice->due_date) }}
                                         @endif

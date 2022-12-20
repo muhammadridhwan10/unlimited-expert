@@ -8,7 +8,7 @@
 
         </div>
         <div class="form-group col-md-6">
-            {{ Form::label('Product', __('SKU'),['class'=>'form-label']) }}<br>
+            {{ Form::label('Product', __('EL'),['class'=>'form-label']) }}<br>
             {{$productService->sku}}
 
         </div>

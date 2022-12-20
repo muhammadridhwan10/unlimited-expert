@@ -248,14 +248,31 @@ class AuthenticatedSessionController extends Controller
 
     public function download_win()
     {
-        $url = "https://drive.google.com/uc?export=download&id=1s432CbnYETGVgb4PGbOEilvuANcPZR13";
-        return Redirect::to($url);
+        // $url = "https://drive.google.com/uc?export=download&id=1NIwA0wxIUiMk29orvrNkyZwAnHDWTu5l";
+        // return Redirect::to($url);
+        $zip = new ZipArchive();
+        $file_name = 'Aup-Desktop-win.zip';
+
+        if($zip->open(public_path($file_name), ZipArchive::CREATE) == TRUE)
+        {
+            $files = File::files(public_path('files/win'));
+            if(count($files) > 0)
+            {
+                foreach ($files as $key => $value) {
+                    $relativeName = basename($value);
+                    $zip->addFile($value, $relativeName);
+                }
+                $zip->close();
+                return response()->download(public_path($file_name));
+            }
+        }
+        dd('File Tidak Bisa di Download');
     }
 
     public function download_mac()
     {
         $zip = new ZipArchive();
-        $file_name = 'Aup-Desktop.zip';
+        $file_name = 'Aup-Desktop-mac.zip';
 
         if($zip->open(public_path($file_name), ZipArchive::CREATE) == TRUE)
         {

@@ -16,6 +16,7 @@ class ProductServiceCategory extends Model
         'Product & Service',
         'Income',
         'Expense',
+        'Template Task',
     ];
 
     public function categories()

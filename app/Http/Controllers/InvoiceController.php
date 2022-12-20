@@ -54,7 +54,7 @@ class InvoiceController extends Controller
                 {
                     $query->where('customer_id', '=', $request->customer);
                 }
-                if(!empty($request->issue_date))
+                if(!empty($request->issue_))
                 {
                     $date_range = explode(' - ', $request->issue_date);
                     $query->where('issue_date', $date_range);
@@ -210,7 +210,7 @@ class InvoiceController extends Controller
             $status = Invoice::$statues;
 
             $invoice                 = new Invoice();
-            $invoice->invoice_id     = $this->invoiceNumber();
+            $invoice->invoice_id     = $request->invoice_id;
             $invoice->customer_id    = $request->customer_id;
             $invoice->status         = 0;
             $invoice->issue_date     = $request->issue_date;
@@ -287,7 +287,7 @@ class InvoiceController extends Controller
 
             if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
-                $invoice_number = \Auth::user()->invoiceNumberFormat($invoice->invoice_id);
+                $invoice_number = $invoice->invoice_id;
                 $customers      = Customer::get()->pluck('name', 'id');
                 $category       = ProductServiceCategory::where('type', 1)->get()->pluck('name', 'id');
                 $category->prepend('Select Category', '');
@@ -298,7 +298,7 @@ class InvoiceController extends Controller
             }
             else
             {
-                $invoice_number = \Auth::user()->invoiceNumberFormat($invoice->invoice_id);
+                $invoice_number = $invoice->invoice_id;
                 $customers      = Customer::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $category       = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 1)->get()->pluck('name', 'id');
                 $category->prepend('Select Category', '');
@@ -470,18 +470,19 @@ class InvoiceController extends Controller
     {
         if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
         {
-            $latest = Invoice::latest()->first();
+            date_default_timezone_set('Asia/Jakarta');
+            $latest = now()->format('Y-m-d') . "/";
         }
         else
         {
-            $latest = Invoice::where('created_by', '=', \Auth::user()->creatorId())->latest()->first();
+            $latest =  now()->format('Y-m-d') . "/";
         }
         if(!$latest)
         {
             return 1;
         }
 
-        return $latest->invoice_id + 1;
+        return $latest;
     }
 
     public function show($ids)
@@ -680,8 +681,14 @@ class InvoiceController extends Controller
                 'invoice_url' => $invoice->url,
 
             ];
-            $resp = Utility::sendEmailTemplate('customer_invoice_send', [$customer->id => $customer->email], $customerArr);
-
+            if(Auth::user()->type == 'admin')
+            {
+                $resp = Utility::sendEmailTemplate('customer_invoice_send', [$customer->email], $customerArr);
+            }
+            else
+            {
+                $resp = Utility::sendEmailTemplate('customer_invoice_send', [$customer->id => $customer->email], $customerArr);
+            }
             return redirect()->back()->with('success', __('Invoice successfully sent.') .(($resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
         }
         else
@@ -712,7 +719,14 @@ class InvoiceController extends Controller
 
             ];
 
-            $resp = Utility::sendEmailTemplate('customer_invoice_send', [$customer->id => $customer->email], $customerArr);
+            if(Auth::user()->type == 'admin')
+            {
+                $resp = Utility::sendEmailTemplate('customer_invoice_send', [$customer->email], $customerArr);
+            }
+            else
+            {
+                $resp = Utility::sendEmailTemplate('customer_invoice_send', [$customer->id => $customer->email], $customerArr);
+            }
 
 
             return redirect()->back()->with('success', __('Invoice successfully sent.') . ((isset($smtp_error)) ? '<br> <span class="text-danger">' . $smtp_error . '</span>' : ''));
@@ -927,8 +941,14 @@ class InvoiceController extends Controller
 
             ];
 
-
-            $resp = Utility::sendEmailTemplate('payment_reminder', [$customer->id => $customer->email], $reminderArr);
+            if(Auth::user()->type == 'admin')
+            {
+                $resp = Utility::sendEmailTemplate('payment_reminder', [$customer->email], $reminderArr);
+            }
+            else
+            {
+                $resp = Utility::sendEmailTemplate('payment_reminder', [$customer->id => $customer->email], $reminderArr);
+            }
 
         }
         //Twilio Notification
@@ -1008,7 +1028,7 @@ class InvoiceController extends Controller
         {
             $invoice                            = Invoice::where('id', $invoice_id)->first();
             $duplicateInvoice                   = new Invoice();
-            $duplicateInvoice->invoice_id       = $this->invoiceNumber();
+            $duplicateInvoice->invoice_id       = $invoice['invoice_id'];
             $duplicateInvoice->customer_id      = $invoice['customer_id'];
             $duplicateInvoice->issue_date       = date('Y-m-d');
             $duplicateInvoice->due_date         = $invoice['due_date'];
@@ -1046,13 +1066,19 @@ class InvoiceController extends Controller
 
     public function previewInvoice($template, $color)
     {
+        date_default_timezone_set('Asia/Jakarta');
+
         $objUser  = \Auth::user();
         $settings = Utility::settings();
         $invoice  = new Invoice();
+        $invoices  = new Invoice();
+
+        $kode_invoice = now()->format('Y-m-d') . "/";
 
         $customer                   = new \stdClass();
         $customer->email            = '<Email>';
         $customer->shipping_name    = '<Customer Name>';
+        $customer->position         = '<Customer Position>';
         $customer->shipping_country = '<Country>';
         $customer->shipping_state   = '<State>';
         $customer->shipping_city    = '<City>';
@@ -1071,14 +1097,14 @@ class InvoiceController extends Controller
         $taxesData     = [];
 
         $items = [];
-        for($i = 1; $i <= 3; $i++)
+        for($i = 1; $i <= 1; $i++)
         {
             $item           = new \stdClass();
             $item->name     = 'Item ' . $i;
             $item->quantity = 1;
             $item->tax      = 5;
             $item->discount = 50;
-            $item->price    = 100;
+            $item->price    = 1000000;
 
             $taxes = [
                 'Tax 1',
@@ -1107,14 +1133,16 @@ class InvoiceController extends Controller
             $items[]       = $item;
         }
 
-        $invoice->invoice_id = 1;
+        $invoice->invoice_id = "#AUR/FIN/2022-12-16/001";
         $invoice->issue_date = date('Y-m-d H:i:s');
         $invoice->due_date   = date('Y-m-d H:i:s');
         $invoice->itemData   = $items;
 
         $invoice->totalTaxPrice = 60;
-        $invoice->totalQuantity = 3;
-        $invoice->totalRate     = 300;
+        $invoice->totalQuantity = 1;
+        $invoices->sku = "AUR/EL/MJ/XII/2022/080";
+        $invoices->periode = 2022;
+        $invoice->totalRate     = 1000000;
         $invoice->totalDiscount = 10;
         $invoice->taxesData     = $taxesData;
         $invoice->created_by     = $objUser->creatorId();
@@ -1140,15 +1168,21 @@ class InvoiceController extends Controller
 
         }
 
+        $logo_kap = asset(\Storage::url('logo').'/logo-kap.png');
+        $ttd      = asset(\Storage::url('ttd').'/ttd.png');
 
 
 
-        return view('invoice.templates.' . $template, compact('invoice', 'preview', 'color', 'img', 'settings', 'customer', 'font_color', 'customFields'));
+
+        return view('invoice.templates.' . $template, compact('invoice', 'invoices', 'kode_invoice', 'preview', 'color', 'img', 'logo_kap', 'ttd', 'settings', 'customer', 'font_color', 'customFields'));
     }
 
     public function invoice($invoice_id)
     {
         $settings = Utility::settings();
+
+        date_default_timezone_set('Asia/Jakarta');
+        $kode_invoice = now()->format('Y-m-d') . "/";
 
         $invoiceId = Crypt::decrypt($invoice_id);
         $invoice   = Invoice::where('id', $invoiceId)->first();
@@ -1163,13 +1197,18 @@ class InvoiceController extends Controller
         }
 
         $customer      = $invoice->customer;
+        $itemss        = $invoice->items;
+        foreach($itemss as $products)
+        {
+            $invoices = $products->products;
+        }
         $items         = [];
         $totalTaxPrice = 0;
         $totalQuantity = 0;
         $totalRate     = 0;
         $totalDiscount = 0;
         $taxesData     = [];
-        foreach($invoice->items as $product)
+        foreach($itemss as $product)
         {
             $item              = new \stdClass();
             $item->name        = !empty($product->product()) ? $product->product()->name : '';
@@ -1224,6 +1263,7 @@ class InvoiceController extends Controller
         $invoice->totalRate     = $totalRate;
         $invoice->totalDiscount = $totalDiscount;
         $invoice->taxesData     = $taxesData;
+        $invoice->ref_number    = 21564626;
         $invoice->customField   = CustomField::getData($invoice, 'invoice');
         $customFields           = [];
         if(!empty(\Auth::user()))
@@ -1250,13 +1290,16 @@ class InvoiceController extends Controller
         $company_logo = Utility::getValByName('company_logo_dark');
         $img          = asset($logo . '/' . (isset($company_logo) && !empty($company_logo) ? $company_logo : 'logo-dark.png'));
 
+        $logo_kap = asset(\Storage::url('logo').'/logo-kap.png');
+        $ttd      = asset(\Storage::url('ttd').'/ttd.png');
+
 
         if($invoice)
         {
             $color      = '#' . $settings['invoice_color'];
             $font_color = Utility::getFontColor($color);
 
-            return view('invoice.templates.' . $settings['invoice_template'], compact('invoice', 'color', 'settings', 'customer', 'img', 'font_color', 'customFields'));
+            return view('invoice.templates.' . $settings['invoice_template'], compact('invoice', 'invoices', 'kode_invoice', 'color', 'settings', 'customer', 'img','logo_kap', 'ttd', 'font_color', 'customFields'));
         }
         else
         {
@@ -1290,9 +1333,9 @@ class InvoiceController extends Controller
         }
 
 
-        $invoice_logo = \Auth::user()->id . '_invoice_logo.png';
-        $path = $request->file('invoice_logo')->storeAs('invoice_logo', $invoice_logo);
-        $post['invoice_logo'] = $invoice_logo;
+        // $invoice_logo = \Auth::user()->id . '_invoice_logo.png';
+        // $path = $request->file('invoice_logo')->storeAs('invoice_logo', $invoice_logo);
+        // $post['invoice_logo'] = $invoice_logo;
 
         foreach($post as $key => $data)
         {

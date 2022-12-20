@@ -222,7 +222,7 @@
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
     <li class="breadcrumb-item"><a href="{{route('invoice.index')}}">{{__('Invoice')}}</a></li>
-    <li class="breadcrumb-item">{{ AUth::user()->invoiceNumberFormat($invoice->invoice_id) }}</li>
+    <li class="breadcrumb-item">{{ $invoice->invoice_id }}</li>
 @endsection
 
 
@@ -325,7 +325,7 @@
                                     <h4>{{__('Invoice')}}</h4>
                                 </div>
                                 <div class="col-xs-12 col-sm-12 col-nd-6 col-lg-6 col-12 text-end">
-                                    <h4 class="invoice-number">{{ AUth::user()->invoiceNumberFormat($invoice->invoice_id) }}</h4>
+                                    <h4 class="invoice-number">{{ $invoice->invoice_id }}</h4>
                                 </div>
                                 <div class="col-12">
                                     <hr>
@@ -335,6 +335,12 @@
                             <div class="row">
                                 <div class="col text-end">
                                     <div class="d-flex align-items-center justify-content-end">
+                                        <div class="me-4">
+                                            <small>
+                                                <strong>{{__('Ref Number')}} :</strong><br>
+                                                {{$invoice->ref_number}}<br><br>
+                                            </small>
+                                        </div>
                                         <div class="me-4">
                                             <small>
                                                 <strong>{{__('Issue Date')}} :</strong><br>
@@ -432,7 +438,7 @@
                                                 <th class="text-dark">@if($invoice->discount_apply==1){{__('Discount')}}@endif</th>
                                                 <th class="text-dark">{{__('Description')}}</th>
                                                 <th class="text-end text-dark" width="12%">{{__('Price')}}<br>
-                                                    <small class="text-danger font-weight-bold">{{__('before tax & discount')}}</small>
+                                                    <small class="text-danger font-weight-bold">{{__('after tax')}}</small>
                                                 </th>
                                             </tr>
                                             @php
@@ -534,7 +540,7 @@
                                                 <td class="blue-text text-end"><b>{{__('Total')}}</b></td>
                                                 <td class="blue-text text-end">{{\Auth::user()->priceFormat($invoice->getTotal())}}</td>
                                             </tr>
-                                            <tr>
+                                            <!-- <tr>
                                                 <td colspan="6"></td>
                                                 <td class="text-end"><b>{{__('Paid')}}</b></td>
                                                 <td class="text-end">{{\Auth::user()->priceFormat(($invoice->getTotal()-$invoice->getDue())-($invoice->invoiceTotalCreditNote()))}}</td>
@@ -548,7 +554,7 @@
                                                 <td colspan="6"></td>
                                                 <td class="text-end"><b>{{__('Due')}}</b></td>
                                                 <td class="text-end">{{\Auth::user()->priceFormat($invoice->getDue())}}</td>
-                                            </tr>
+                                            </tr> -->
                                             </tfoot>
                                         </table>
                                     </div>

@@ -69,7 +69,8 @@
                             <thead>
                             <tr>
                                 <th>{{__('Name')}}</th>
-                                <th>{{__('Sku')}}</th>
+                                <th>{{__('EL')}}</th>
+                                <th>{{__('Periode')}}</th>
                                 <th>{{__('Sale Price')}}</th>
                                 <th>{{__('Purchase Price')}}</th>
                                 <th>{{__('Tax')}}</th>
@@ -85,6 +86,7 @@
                                 <tr class="font-style">
                                     <td>{{ $productService->name}}</td>
                                     <td>{{ $productService->sku }}</td>
+                                    <td>{{ Utility::getDateFormatedInvoice($productService->periode) }}</td>
                                     <td>{{ \Auth::user()->priceFormat($productService->sale_price) }}</td>
                                     <td>{{  \Auth::user()->priceFormat($productService->purchase_price )}}</td>
                                     <td>

@@ -11,10 +11,16 @@
         </div>
         <div class="col-md-6">
             <div class="form-group">
-                {{ Form::label('sku', __('SKU'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                {{ Form::label('sku', __('EL'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                 <div class="form-icon-user">
                     {{ Form::text('sku', '', array('class' => 'form-control','required'=>'required')) }}
                 </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div id="periode" class="form-group">
+                {{ Form::label('periode', __('Periode (dalam tahun)'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                {{ Form::select('periode', $year, null, ['class' => 'form-control select']) }}
             </div>
         </div>
         <div class="form-group col-md-12">
@@ -94,5 +100,12 @@
     <input type="submit" value="{{__('Create')}}" class="btn  btn-primary">
 </div>
 {{Form::close()}}
+<script>
+    $(function() {
+    $( "#periode" ).datepicker({
+        changeYear: true
+    });
+});
+</script>
 
 

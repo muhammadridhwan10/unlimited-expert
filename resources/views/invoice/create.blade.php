@@ -47,8 +47,8 @@
                         for (var i = 0; i < inputs.length; i++) {
                             subTotal = parseFloat(subTotal) + parseFloat($(inputs[i]).html());
                         }
-                        $('.subTotal').html(subTotal.toFixed(2));
-                        $('.totalAmount').html(subTotal.toFixed(2));
+                        $('.subTotal').html(subTotal.toFixed(0));
+                        $('.totalAmount').html(subTotal.toFixed(0));
                     }
                 },
                 ready: function (setIndexes) {
@@ -140,8 +140,8 @@
                         }
                     }
                     var itemTaxPrice = parseFloat((totalItemTaxRate / 100) * (item.product.sale_price * 1));
-                    $(el.parent().parent().find('.itemTaxPrice')).val(itemTaxPrice.toFixed(2));
-                    $(el.parent().parent().find('.itemTaxRate')).val(totalItemTaxRate.toFixed(2));
+                    $(el.parent().parent().find('.itemTaxPrice')).val(itemTaxPrice.toFixed(0));
+                    $(el.parent().parent().find('.itemTaxRate')).val(totalItemTaxRate.toFixed(0));
                     $(el.parent().parent().find('.taxes')).html(taxes);
                     $(el.parent().parent().find('.tax')).val(tax);
                     $(el.parent().parent().find('.unit')).html(item.unit);
@@ -154,7 +154,7 @@
                     for (var i = 0; i < inputs.length; i++) {
                         subTotal = parseFloat(subTotal) + parseFloat($(inputs[i]).html());
                     }
-                    $('.subTotal').html(subTotal.toFixed(2));
+                    $('.subTotal').html(subTotal.toFixed(0));
 
 
                     var totalItemPrice = 0;
@@ -169,8 +169,8 @@
                         totalItemTaxPrice += parseFloat(itemTaxPriceInput[j].value);
                     }
 
-                    $('.totalTax').html(totalItemTaxPrice.toFixed(2));
-                    $('.totalAmount').html((parseFloat(subTotal) + parseFloat(totalItemTaxPrice)).toFixed(2));
+                    $('.totalTax').html(totalItemTaxPrice.toFixed(0));
+                    $('.totalAmount').html((parseFloat(subTotal) - parseFloat(totalItemTaxPrice)).toFixed(0));
 
                 },
             });
@@ -190,7 +190,7 @@
 
             var totalItemTaxRate = $(el.find('.itemTaxRate')).val();
             var itemTaxPrice = parseFloat((totalItemTaxRate / 100) * (totalItemPrice));
-            $(el.find('.itemTaxPrice')).val(itemTaxPrice.toFixed(2));
+            $(el.find('.itemTaxPrice')).val(itemTaxPrice.toFixed(0));
 
 
             var totalItemTaxPrice = 0;
@@ -205,10 +205,10 @@
             for (var i = 0; i < inputs.length; i++) {
                 subTotal = parseFloat(subTotal) + parseFloat($(inputs[i]).html());
             }
-            $('.subTotal').html(subTotal.toFixed(2));
-            $('.totalTax').html(totalItemTaxPrice.toFixed(2));
+            $('.subTotal').html(subTotal.toFixed(0));
+            $('.totalTax').html(totalItemTaxPrice.toFixed(0));
 
-            $('.totalAmount').html((parseFloat(subTotal) + parseFloat(totalItemTaxPrice)).toFixed(2));
+            $('.totalAmount').html((parseFloat(subTotal) - parseFloat(totalItemTaxPrice)).toFixed(0));
 
         })
         $(document).on('keyup', '.price', function () {
@@ -224,7 +224,7 @@
 
             var totalItemTaxRate = $(el.find('.itemTaxRate')).val();
             var itemTaxPrice = parseFloat((totalItemTaxRate / 100) * (totalItemPrice));
-            $(el.find('.itemTaxPrice')).val(itemTaxPrice.toFixed(2));
+            $(el.find('.itemTaxPrice')).val(itemTaxPrice.toFixed(0));
 
 
             var totalItemTaxPrice = 0;
@@ -239,10 +239,10 @@
             for (var i = 0; i < inputs.length; i++) {
                 subTotal = parseFloat(subTotal) + parseFloat($(inputs[i]).html());
             }
-            $('.totalTax').html(totalItemTaxPrice.toFixed(2));
+            $('.totalTax').html(totalItemTaxPrice.toFixed(0));
 
-            $('.subTotal').html(subTotal.toFixed(2));
-            $('.totalAmount').html((parseFloat(subTotal) + parseFloat(totalItemTaxPrice)).toFixed(2));
+            $('.subTotal').html(subTotal.toFixed(0));
+            $('.totalAmount').html((parseFloat(subTotal) - parseFloat(totalItemTaxPrice)).toFixed(0));
 
         })
 
@@ -256,7 +256,7 @@
 
             var totalItemTaxRate = $(el.find('.itemTaxRate')).val();
             var itemTaxPrice = parseFloat((totalItemTaxRate / 100) * (totalItemPrice));
-            $(el.find('.itemTaxPrice')).val(itemTaxPrice.toFixed(2));
+            $(el.find('.itemTaxPrice')).val(itemTaxPrice.toFixed(0));
 
 
             var totalItemTaxPrice = 0;
@@ -282,11 +282,11 @@
             for (var i = 0; i < inputs.length; i++) {
                 subTotal = parseFloat(subTotal) + parseFloat($(inputs[i]).html());
             }
-            $('.subTotal').html(subTotal.toFixed(2));
-            $('.totalDiscount').html(totalItemDiscountPrice.toFixed(2));
-            $('.totalTax').html(totalItemTaxPrice.toFixed(2));
+            $('.subTotal').html(subTotal.toFixed(0));
+            $('.totalDiscount').html(totalItemDiscountPrice.toFixed(0));
+            $('.totalTax').html(totalItemTaxPrice.toFixed(0));
 
-            $('.totalAmount').html((parseFloat(subTotal) - parseFloat(totalItemDiscountPrice) + parseFloat(totalItemTaxPrice)).toFixed(2));
+            $('.totalAmount').html((parseFloat(subTotal) - parseFloat(totalItemDiscountPrice) - parseFloat(totalItemTaxPrice)).toFixed(0));
         })
 
         var customerId = '{{$customerId}}';
@@ -337,7 +337,7 @@
                                     <div class="form-group">
                                         {{ Form::label('invoice_number', __('Invoice Number'),['class'=>'form-label']) }}
                                         <div class="form-icon-user">
-                                            <input type="text" class="form-control" value="{{$invoice_number}}" readonly>
+                                            <input name="invoice_id" type="text" class="form-control" value="{{$invoice_number}}">
                                         </div>
                                     </div>
                                 </div>

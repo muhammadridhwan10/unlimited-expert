@@ -104,6 +104,7 @@ class CustomerController extends Controller
                 $customer                  = new Customer();
                 $customer->customer_id     = $this->customerNumber();
                 $customer->name            = $request->name;
+                $customer->position        = $request->position;
                 $customer->contact         = $request->contact;
                 $customer->email           = $request->email;
                 $customer->tax_number      =$request->tax_number;
@@ -194,6 +195,7 @@ class CustomerController extends Controller
             }
 
             $customer->name             = $request->name;
+            $customer->position         = $request->position;
             $customer->contact          = $request->contact;
             $customer->email           = $request->email;
             $customer->tax_number      =$request->tax_number;

@@ -157,8 +157,8 @@
                                                 <label class="col-form-label">{{__('Invoice Logo')}}</label>
                                                 <div class="choose-files mt-5 ">
                                                     <label for="invoice_logo">
-                                                        <div class=" bg-primary invoice_logo_update"> <i class="ti ti-upload px-1"></i>{{__('Choose file here')}}</div>
-                                                        <input type="file" class="form-control file" name="invoice_logo" id="invoice_logo" data-filename="invoice_logo_update">
+                                                        <!-- <div class=" bg-primary invoice_logo_update"> <i class="ti ti-upload px-1"></i>{{__('Choose file here')}}</div> -->
+                                                        <!-- <input type="file" class="form-control file" name="invoice_logo" id="invoice_logo" data-filename="invoice_logo_update"> -->
                                                     </label>
                                                 </div>
                                             </div>

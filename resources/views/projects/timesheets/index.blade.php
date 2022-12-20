@@ -168,7 +168,7 @@
             if (user_id != undefined) {
                 data.user_id = user_id;
             }
-            if (type == 'create')
+            if (type == 'create') {
                 var title = '{{ __("Create Timesheet") }}';
                 data.project_id = '{{ $project->id }}';
             } else if (type == 'edit') {
