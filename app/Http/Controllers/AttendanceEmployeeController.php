@@ -514,7 +514,7 @@ class AttendanceEmployeeController extends Controller
             $startTime = Utility::getValByName('company_start_time');
             $endTime   = Utility::getValByName('company_end_time');
 
-            if(Auth::user()->type == 'Employee' || Auth::user()->type =='junior audit' || Auth::user()->type =='senior audit' || Auth::user()->type =='junior accounting' || Auth::user()->type =='senior accounting' || Auth::user()->type =='staff IT')
+            if(Auth::user()->type == 'Employee' || Auth::user()->type == 'intern' || Auth::user()->type == 'intern' || Auth::user()->type =='junior audit' || Auth::user()->type =='senior audit' || Auth::user()->type =='junior accounting' || Auth::user()->type =='senior accounting' || Auth::user()->type =='staff IT')
             {
 
                 $date = date("Y-m-d");

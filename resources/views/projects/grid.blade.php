@@ -42,9 +42,14 @@
                     <div class="card-body">
                         <div class="row g-2 justify-content-between">
                             <div class="col-auto"><span class="badge rounded-pill bg-{{\App\Models\Project::$status_color[$project->status]}}">{{ __(\App\Models\Project::$project_status[$project->status]) }}</span>
+                            @if ($project->tags === "PUSAT")
+                            <span class="badge rounded-pill bg-info">{{ $project->tags }}</span>
+                            @elseif ($project->tags === "BEKASI")
+                                <span class="badge rounded-pill bg-warning">{{ $project->tags }}</span>
+                            @endif
                             </div>
-
                         </div>
+                        <!-- <span class="badge rounded-pill bg-info">{{ $project->tags }}</span> -->
                         <p class="text-muted text-sm mt-3">{{ $project->description }}</p>
                         <small>{{__('MEMBERS')}}</small>
                         <div class="user-group">

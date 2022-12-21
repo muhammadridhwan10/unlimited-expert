@@ -23,9 +23,9 @@
                                                         </div>
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Halo!</p>
-                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">{{ $comment->user->name }} mentioned you in a comment on the task {{ $comment->task->name }}.</p>
+                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">New comment on the task {{ $comment->task->name }} in project {{ $comment->task->project->project_name }}.</p>
                                                         <br>
-                                                        <h2 style="color:#444444;font-family:sans-serif;font-weight:600;line-height:1.4;margin:0;margin-bottom:15px;text-align:center" align="center">""{{ $comment->comment }}""</h2>
+                                                        <h2 style="color:#444444;font-family:sans-serif;font-weight:600;line-height:1.4;margin:0;margin-bottom:15px;text-align:center" align="center">{{ $comment->user->name }} : {{ $comment->comment }}</h2>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px;text-align:center">
                                                         <br>
                                                         <br>
