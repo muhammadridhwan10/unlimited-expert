@@ -85,7 +85,7 @@ class ClientController extends Controller
                     $user      = \Auth::user();
                     $validator = \Validator::make(
                         $request->all(), [
-                                           'name' => 'required',
+                                           'name' => 'required|unique:users',
                                            'email' => 'required|email|unique:users',
                                            'password' => 'required',
                                        ]
@@ -553,6 +553,43 @@ class ClientController extends Controller
         );
 
 
+    }
+
+    public function filterClientView(Request $request)
+    {
+
+        if(\Auth::user()->can('manage client'))
+        {
+            $usr           = Auth::user();
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+            {
+                $user_projects = User::where('type', '=', 'client')->pluck('id','id')->toArray();
+            }
+            if($request->ajax() && $request->has('view') && $request->has('sort'))
+            {
+                $sort     = explode('-', $request->sort);
+                $clients = User::whereIn('id', array_keys($user_projects))->orderBy($sort[0], $sort[1]);
+
+                if(!empty($request->keyword))
+                {
+                    $clients->where('name', 'LIKE', $request->keyword . '%');
+                }
+
+                $clients   = $clients->get();
+                $returnHTML = view('clients.' . $request->view, compact('clients', 'user_projects'))->render();
+
+                return response()->json(
+                    [
+                        'success' => true,
+                        'html' => $returnHTML,
+                    ]
+                );
+            }
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
     }
 
 
