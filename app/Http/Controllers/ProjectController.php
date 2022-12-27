@@ -127,6 +127,17 @@ class ProjectController extends Controller
             $project->tags = $request->tag;
             $project->created_by = \Auth::user()->creatorId();
             $project->save();
+
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $project->id,
+                    'task_id' => 0,
+                    'log_type' => 'Create Project',
+                    'remark' => json_encode(['title' => $project->project_name]),
+                ]
+            );
+
             ProjectUser::create(
                 [
                     'project_id' => $project->id,
@@ -474,6 +485,16 @@ class ProjectController extends Controller
             $project->tags = $request->tag;
             $project->save();
 
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $project->id,
+                    'task_id' => 0,
+                    'log_type' => 'Update Project',
+                    'remark' => json_encode(['title' => $project->project_name]),
+                ]
+            );
+
             $template = Project::with('details')->get();
             foreach ($template as $templates) 
             {
@@ -498,15 +519,6 @@ class ProjectController extends Controller
                 $tasks->created_by     = \Auth::user()->creatorId();
                 $tasks->save();
 
-                ActivityLog::create(
-                    [
-                        'user_id' => \Auth::user()->id,
-                        'project_id' => $project->id,
-                        'task_id' => $tasks->id,
-                        'log_type' => 'Create Task',
-                        'remark' => json_encode(['title' => $tasks->name]),
-                    ]
-                );
             }
 
             return redirect()->route('projects.index')->with('success', __('Project Updated Successfully'));
@@ -532,6 +544,15 @@ class ProjectController extends Controller
                 Utility::checkFileExistsnDelete([$project->project_image]);
             }
             $project->delete();
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $project->id,
+                    'task_id' => 0,
+                    'log_type' => 'Delete Project',
+                    'remark' => json_encode(['title' => $project->project_name]),
+                ]
+            );
             return redirect()->back()->with('success', __('Project Successfully Deleted.'));
         }
         else

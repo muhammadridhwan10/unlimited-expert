@@ -525,7 +525,7 @@ class ProjectTaskController extends Controller
                     'user_id' => $user->id,
                     'project_id' => $projectID,
                     'task_id' => $taskID,
-                    'log_type' => 'Create Checklist',
+                    'log_type' => 'Create Sub Task',
                     'remark' => json_encode(['title' => $request->name]),
                 ]
             );
@@ -559,7 +559,7 @@ class ProjectTaskController extends Controller
                     'user_id' => \Auth::user()->id,
                     'project_id' => $projectID,
                     'task_id' => $checkList->task_id,
-                    'log_type' => 'Update Checklist',
+                    'log_type' => 'Update Sub Task',
                     'remark' => json_encode(['title' => $checkList->name]),
                 ]
             );
@@ -584,7 +584,7 @@ class ProjectTaskController extends Controller
                     'user_id' => \Auth::user()->id,
                     'project_id' => $projectID,
                     'task_id' => $checkList->task_id,
-                    'log_type' => 'Delete Checklist',
+                    'log_type' => 'Delete Sub Task',
                     'remark' => json_encode(['title' => $checkList->name]),
                 ]
             );
@@ -657,7 +657,7 @@ class ProjectTaskController extends Controller
         }
     }
 
-    public function linkDestroy(Request $request, $projectID, $taskID, $linkID)
+    public function linkDestroy($projectID, $linkID)
     {
 
         if(\Auth::user()->can('view project task'))
@@ -669,7 +669,7 @@ class ProjectTaskController extends Controller
                 [
                     'user_id' => \Auth::user()->id,
                     'project_id' => $projectID,
-                    'task_id' => $taskID,
+                    'task_id' => $link->task_id,
                     'log_type' => 'Delete Link',
                     'remark' => json_encode(['title' => $link->link]),
                 ]

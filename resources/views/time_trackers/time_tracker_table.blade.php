@@ -134,7 +134,9 @@
                                             <div class="col-1">
                                                 <img alt="Image placeholder" src="{{ asset('assets/images/gallery.png')}}" class="avatar view-images rounded-circle avatar-sm" data-toggle="tooltip" data-original-title="{{__('View Screenshot images')}}" style="height: 25px;width:24px;margin-right:10px;cursor: pointer;" data-id="{{$t['id']}}" id="track-images-{{$t['id']}}">
                                                 <i data-id="{{$t['id']}}" data-is_billable="{{$t['is_billable']}}" data-toggle="tooltip" data-original-title="{{$t['is_billable'] ==1? __('Click to Mark Non-Billable'):__('Click to Mark Billable')}}" class="change_billable ti ti-dollar-sign {{$t['is_billable'] ==1?'doller-billable':'doller-non-billable'}}"></i>
+                                                @if (Auth::user()->type == 'admin' || Auth::user()->type == 'company')
                                                 <i class="ti ti-times text-danger mx-2 pointer remove-track " data-toggle="tooltip" data-original-title="{{__('Delete')}}" data-id="{{$t['id']}}" data-url=""></i>
+                                                @endif
                                             </div>
                                         </div>
                                         @endforeach

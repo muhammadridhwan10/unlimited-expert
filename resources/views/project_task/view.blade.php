@@ -162,12 +162,12 @@
                 </form>
 
                 @foreach($task->link as $link)
-                    <div class="card border shadow-none checklist-member">
+                    <div class="card border shadow-none link-member">
                         <div class="px-3 py-2 row align-items-center">
                             <div class="col">
                                 <div class="form-check form-check-inline">
                                     <label class="form-check-label h6 text-sm" for="check-item-{{ $link->id }}">
-                                    <a id="tasklinks" href="{{ $link->link }}">{{ $link->link }}</a>
+                                    <a id="tasklinks" href="{{ $link->link }}" target="_blank">{{ $link->link }}</a>
 
                                     </label>
                                 </div>

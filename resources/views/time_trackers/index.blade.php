@@ -82,6 +82,7 @@
                                     <td>{{$total_name}}</td>
                                     <td>
                                         <img alt="Image placeholder" src="{{ asset('assets/images/gallery.png')}}" class="avatar view-images rounded-circle avatar-sm" data-bs-toggle="tooltip" title="{{__('View Screenshot images')}}" data-original-title="{{__('View Screenshot images')}}" style="height: 25px;width:24px;margin-right:10px;cursor: pointer;" data-id="{{$trecker->id}}" id="track-images-{{$trecker->id}}">
+                                        @if (Auth::user()->type == 'admin' || Auth::user()->type == 'company')
                                         <div class="action-btn bg-danger ms-2">
                                             {!! Form::open(['method' => 'DELETE', 'route' => ['tracker.destroy', $trecker->id],'id'=>'delete-form-'.$trecker->id]) !!}
 
@@ -90,6 +91,7 @@
                                             </a>
                                             {!! Form::close() !!}
                                         </div>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach

@@ -49,6 +49,18 @@ class ActivityLog extends Model
             {
                 return $user_name . ' ' . __('Upload new file') . ' <b>' . $remark['file_name'] . '</b>';
             }
+            elseif($this->log_type == 'Create Project')
+            {
+                return $user_name . ' ' . __('Create new Project') . " <b>" . $remark['title'] . "</b>";
+            }
+            elseif($this->log_type == 'Update Project')
+            {
+                return $user_name . ' ' . __('Update Project') . " <b>" . $remark['title'] . "</b>";
+            }
+            elseif($this->log_type == 'Delete Project')
+            {
+                return $user_name . ' ' . __('Delete Project') . " <b>" . $remark['title'] . "</b>";
+            }
             elseif($this->log_type == 'Create Bug')
             {
                 return $user_name . ' ' . __('Created new bug') . ' <b>' . $remark['title'] . '</b>';
@@ -69,17 +81,13 @@ class ActivityLog extends Model
             {
                 return $user_name . ' ' . __('Create new Expense') . " <b>" . $remark['title'] . "</b>";
             }
-            elseif($this->log_type == 'Create Task')
+            elseif($this->log_type == 'Create Sub Task')
             {
-                return $user_name . ' ' . __('Create new Task') . " <b>" . $remark['title'] . "</b>";
+                return $user_name . ' ' . __('Create new Sub Task') . " <b>" . $remark['title'] . "</b>";
             }
-            elseif($this->log_type == 'Create Checklist')
+            elseif($this->log_type == 'Update Sub Task')
             {
-                return $user_name . ' ' . __('Create new Checklist') . " <b>" . $remark['title'] . "</b>";
-            }
-            elseif($this->log_type == 'Update Checklist')
-            {
-                return $user_name . ' ' . __('Update Checklist') . " <b>" . $remark['title'] . "</b>";
+                return $user_name . ' ' . __('Update Sub Task') . " <b>" . $remark['title'] . "</b>";
             }
             elseif($this->log_type == 'Create Attachment')
             {
@@ -125,6 +133,14 @@ class ActivityLog extends Model
             {
                 return $user_name . ' ' . __('Delete') . " <b>" . $remark['title'][0] . "</b>";
             }
+            elseif($this->log_type == 'Delete Sub Task')
+            {
+                return $user_name . ' ' . __('Delete Sub Task') . " <b>" . $remark['title'] . "</b>";
+            }
+            elseif($this->log_type == 'Delete Comment')
+            {
+                return $user_name . ' ' . __('Delete Comment') . " <b>" . $remark['title'] . "</b>";
+            }
         }
         else
         {
@@ -166,6 +182,18 @@ class ActivityLog extends Model
             {
                 $icon = 'list';
             }
+            else if($type == 'Create Project')
+            {
+                $icon = 'file-text';
+            }
+            else if($type == 'Update Project')
+            {
+                $icon = 'edit';
+            }
+            else if($type == 'Delete Project')
+            {
+                $icon = 'x';
+            }
             else if($type == 'Move Task')
             {
                 $icon = 'command';
@@ -206,10 +234,6 @@ class ActivityLog extends Model
             {
                 $icon = 'book';
             }
-            elseif($type == 'Create Task')
-            {
-                $icon = 'list';
-            }
             else if($type == 'Create Comment')
             {
                 $icon = 'message-circle';
@@ -217,6 +241,38 @@ class ActivityLog extends Model
             else if($type == 'Delete Team')
             {
                 $icon = 'user-x';
+            }
+            else if($type == 'Delete Sub Task')
+            {
+                $icon = 'x';
+            }
+            else if($type == 'Create Sub Task')
+            {
+                $icon = 'folder-plus';
+            }
+            else if($type == 'Update Sub Task')
+            {
+                $icon = 'edit';
+            }
+            else if($type == 'Create Link')
+            {
+                $icon = 'link';
+            }
+            else if($type == 'Delete Link')
+            {
+                $icon = 'x';
+            }
+            else if($type == 'Delete Comment')
+            {
+                $icon = 'x-circle';
+            }
+            else if($type == 'Create Attachment')
+            {
+                $icon = 'file';
+            }
+            else if($type == 'Delete Attachment')
+            {
+                $icon = 'file-minus';
             }
         }
 

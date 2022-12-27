@@ -149,7 +149,7 @@ class ProjectTask extends Model
 
     public function activity_log()
     {
-        return ActivityLog::where('user_id', '=', \Auth::user()->id)->where('project_id', '=', $this->project_id)->where('task_id', '=', $this->id)->get();
+        return ActivityLog::where('project_id', '=', $this->project_id)->where('task_id', '=', $this->id)->get();
     }
 
     // Return milestone wise tasks

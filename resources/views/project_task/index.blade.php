@@ -170,8 +170,7 @@
                                 '                    <div class="px-3 py-2 row align-items-center">' +
                                 '                        <div class="col">' +
                                 '                            <div class="form-check form-check-inline">' +
-                                '                                <input type="checkbox" class="form-check-input" id="check-item-' + data.id + '" value="' + data.id + '" data-url="' + data.updateUrl + '">' +
-                                '                                <label class="form-check-label h6 text-sm" for="check-item-' + data.id + '">' + data.link + '</label>' +
+                                '                                <label class="form-check-label h6 text-sm" for="check-item-' + data.id + '">' + data.link + '" target="_blank"</label>' +
                                 '                            </div>' +
                                 '                        </div>' +
                                 '                        <div class="col-auto"> <div class="action-btn bg-danger ms-2">' +
@@ -196,6 +195,29 @@
                 }
             });
 
+            $(document).on("click", ".delete-link", function () {
+                var btn = $(this);
+                $.ajax({
+                    url: $(this).attr('data-url'),
+                    type: 'DELETE',
+                    dataType: 'JSON',
+                    data: {"_token": "{{ csrf_token() }}"},
+                    success: function (data) {
+                        // load_task($('.task-id').attr('id'));
+                        show_toastr('{{__('success')}}', '{{ __("Sub task Deleted Successfully!")}}');
+                        btn.closest('.link-member').remove();
+                    },
+                    error: function (data) {
+                        data = data.responseJSON;
+                        if (data.message) {
+                            show_toastr('error', data.message);
+                        } else {
+                            show_toastr('error', '{{ __("Some Thing Is Wrong!")}}');
+                        }
+                    }
+                });
+            });
+
             /*For Task Checklist*/
             $(document).on('click', '#checklist_submit', function () {
                 var name = $("#form-checklist input[name=name]").val();
@@ -210,7 +232,7 @@
                             data = JSON.parse(data);
                             console.log('form-checklist', data);
                             // load_task($('.task-id').attr('id'));
-                            show_toastr('{{__('success')}}', '{{ __("Checklist Added Successfully!")}}');
+                            show_toastr('{{__('success')}}', '{{ __("Sub Task Added Successfully!")}}');
                             var html = '<div class="card border shadow-none checklist-member">' +
                             '                    <div class="px-3 py-2 row align-items-center">' +
                             '                        <div class="col">' +
@@ -256,7 +278,7 @@
                     data: {"_token": "{{ csrf_token() }}"},
                     success: function (data) {
                         // load_task($('.task-id').attr('id'));
-                        show_toastr('{{__('Success')}}', '{{ __("Checklist Updated Successfully!")}}', 'success');
+                        show_toastr('{{__('Success')}}', '{{ __("Sub Task Updated Successfully!")}}', 'success');
                     },
                     error: function (data) {
                         data = data.responseJSON;

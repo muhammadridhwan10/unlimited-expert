@@ -20,9 +20,11 @@
                                     <!-- <a href="#" class="delete-icon"  data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$image->id}}').submit();">
                                                 <i class="ti ti-trash"></i>
                                             </a> -->
+                                @if (Auth::user()->type == 'admin' || Auth::user()->type == 'company')
                                 <a href="#" class="mx-3 btn btn-sm  align-items-center action-btn bg-danger ms-2 bs-pass-para"  data-confirm-delete="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="removeImage({{$image->id}})">
                                     <i class="ti ti-trash text-white"></i>
                                 </a>
+                                @endif
                             </div>
                         </div>
                     @endforeach

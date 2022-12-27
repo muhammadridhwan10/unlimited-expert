@@ -625,6 +625,17 @@ Route::resource('clients', 'ClientController')->middleware(
         'XSS',
     ]
 );
+Route::get(
+    'clients-view', [
+    'as' => 'filter.clients.view',
+    'uses' => 'ClientController@filterClientView',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
 Route::any('client-reset-password/{id}', 'ClientController@clientPassword')->name('clients.reset');
 Route::post('client-reset-password/{id}', 'ClientController@clientPasswordReset')->name('client.password.update');
 // Deal Module

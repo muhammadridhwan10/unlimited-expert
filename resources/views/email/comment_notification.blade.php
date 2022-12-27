@@ -1,5 +1,5 @@
 <div style="background-color:#f6f6f6;font-family:sans-serif;font-size:14px;line-height:1.4;margin:0;padding:0">
-    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Halo! {{ $comment->user->name }} mentioned you in a comment on the task.</span>
+    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Halo! {{ $comment->userss->name }} mentioned you in a comment on the task.</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse:separate;background-color:#f6f6f6;width:100%" width="100%" bgcolor="#f6f6f6">
         <tbody>
             <tr>
@@ -25,7 +25,7 @@
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Halo!</p>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">New comment on the task {{ $comment->task->name }} in project {{ $comment->task->project->project_name }}.</p>
                                                         <br>
-                                                        <h2 style="color:#444444;font-family:sans-serif;font-weight:600;line-height:1.4;margin:0;margin-bottom:15px;text-align:center" align="center">{{ $comment->user->name }} : {{ $comment->comment }}</h2>
+                                                        <h2 style="color:#444444;font-family:sans-serif;font-weight:600;line-height:1.4;margin:0;margin-bottom:15px;text-align:center" align="center">{{ $comment->userss->name }} : {{ $comment->comment }}</h2>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px;text-align:center">
                                                         <br>
                                                         <br>
