@@ -36,6 +36,12 @@ class Project extends Model
         'complete' => 'Complete',
         'canceled' => 'Canceled'
     ];
+    
+    public static $tags=[
+        'PUSAT' => 'PUSAT',
+        'BEKASI' => 'BEKASI',
+        'MALANG' => 'MALANG',
+    ];
 
     public static $status_color = [
         'on_hold' => 'warning',

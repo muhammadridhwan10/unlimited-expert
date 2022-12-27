@@ -55,7 +55,7 @@ class ProjectController extends Controller
             {
                 $users   = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
-                $tasktemplate = ProductServiceCategory::where('type', 3)->get()->pluck('name', 'id');
+                $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
                 $clients->prepend('Select Client', '');
                 $users->prepend('Select User', '');
                 $tasktemplate->prepend('Select Task Template', '');
@@ -64,7 +64,7 @@ class ProjectController extends Controller
             {
                 $users   = User::where('type', '!=', 'client')->get()->pluck('name', 'id');
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
-                $tasktemplate = ProductServiceCategory::where('type', 3)->get()->pluck('name', 'id');
+                $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
                 $clients->prepend('Select Client', '');
                 $users->prepend('Select User', '');
                 $tasktemplate->prepend('Select Task Template', '');
@@ -393,25 +393,31 @@ class ProjectController extends Controller
             {
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
                 $project = Project::findOrfail($project->id);
+                $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
+                $tasktemplate->prepend('Select Task Template', '');
 
-                return view('projects.edit', compact('project', 'clients'));
+                return view('projects.edit', compact('tasktemplate','project', 'clients'));
 
             }
             elseif($usr->type == 'company')
             {
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
                 $project = Project::findOrfail($project->id);
+                $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
+                $tasktemplate->prepend('Select Task Template', '');
 
-                return view('projects.edit', compact('project', 'clients'));
+                return view('projects.edit', compact('tasktemplate', 'project', 'clients'));
 
             }
             else{
                 
                 $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
                 $project = Project::findOrfail($project->id);
+                $tasktemplate = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('category_id', 'id');
+                $tasktemplate->prepend('Select Task Template', '');
                 if($project->created_by == \Auth::user()->creatorId())
                 {
-                    return view('projects.edit', compact('project', 'clients'));
+                    return view('projects.edit', compact('tasktemplate','project', 'clients'));
                 }
                 else
                 {
@@ -458,6 +464,8 @@ class ProjectController extends Controller
                 $request->file('project_image')->storeAs('projects', $imageName);
                 $project->project_image      = 'projects/'.$imageName;
             }
+            $project->template_task_id = $request->template_task;
+            // dd($project->template_task_id);
             $project->budget = $request->budget;
             $project->client_id = $request->client;
             $project->description = $request->description;
@@ -465,6 +473,42 @@ class ProjectController extends Controller
             $project->estimated_hrs = $request->estimated_hrs;
             $project->tags = $request->tag;
             $project->save();
+
+            $template = Project::with('details')->get();
+            foreach ($template as $templates) 
+            {
+                $details = $templates->details;
+            }
+
+            $category = $request->items;
+            $category_id = $request->category_id;
+
+            for($i = 0; $i < count($details); $i++)
+            {
+                // dd($details);
+                $tasks                 = new ProjectTask();
+                $tasks->project_id     = $project->id;
+                $tasks->assign_to      = \Auth::user()->creatorId();
+                $tasks->stage_id       =  $details[$i]['stage_id'];
+                $tasks->name           = $details[$i]['name'];
+                $tasks->start_date     = $project->start_date;
+                $tasks->end_date       = $project->end_date;
+                $tasks->estimated_hrs  = $details[$i]['estimated_hrs'];
+                $tasks->description    = $details[$i]['description'];
+                $tasks->created_by     = \Auth::user()->creatorId();
+                $tasks->save();
+
+                ActivityLog::create(
+                    [
+                        'user_id' => \Auth::user()->id,
+                        'project_id' => $project->id,
+                        'task_id' => $tasks->id,
+                        'log_type' => 'Create Task',
+                        'remark' => json_encode(['title' => $tasks->name]),
+                    ]
+                );
+            }
+
             return redirect()->route('projects.index')->with('success', __('Project Updated Successfully'));
         }
         else
@@ -903,6 +947,10 @@ class ProjectController extends Controller
                 if(!empty($request->status))
                 {
                     $projects->whereIn('status', $request->status);
+                }
+                if(!empty($request->tags))
+                {
+                    $projects->whereIn('tags', $request->tags);
                 }
                 $projects   = $projects->get();
                 $returnHTML = view('projects.' . $request->view, compact('projects', 'user_projects'))->render();

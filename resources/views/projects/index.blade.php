@@ -9,6 +9,14 @@
     <li class="breadcrumb-item">{{__('Projects')}}</li>
 @endsection
 @section('action-btn')
+
+    <div class ="float-start">
+                <div class="input-group">
+                    <span class="input-group-text text-body"><i class="fas fa-search" aria-hidden="true"></i></span>
+                    <input id="project_keyword" name="keyword" type="search" class="form-control" placeholder="Search...">
+                </div>
+    </div>
+
     <div class="float-end">
         @if($view == 'grid')
             <a href="{{ route('projects.list','list') }}"  data-bs-toggle="tooltip" title="{{__('List View')}}" class="btn btn-sm btn-primary">
@@ -56,6 +64,17 @@
                 </div>
             {{------------ End Status Filter ----------------}}
 
+            {{------------ Start Tags Filter ----------------}}
+                <a href="#" class="btn btn-sm btn-primary action-item" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="btn-inner--icon">{{__('Tags')}}</span>
+                </a>
+                <div class="dropdown-menu  project-filter-actions-tags dropdown-steady" id="tags">
+                    <a class="dropdown-item filter-action-tags filter-show-all-tags pl-4 active" href="#">{{__('Show All')}}</a>
+                    @foreach(\App\Models\Project::$tags as $key => $val)
+                        <a class="dropdown-item filter-action-tags pl-4" href="#" data-val="{{ $key }}">{{__($val)}}</a>
+                    @endforeach
+                </div>
+            {{------------ End Status Filter ----------------}}
 
         @can('create project')
             <a href="#" data-size="lg" data-url="{{ route('projects.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Project')}}" class="btn btn-sm btn-primary">
@@ -74,6 +93,7 @@
         $(document).ready(function () {
             var sort = 'created_at-desc';
             var status = '';
+            var tags = '';
             ajaxFilterProjectView('created_at-desc');
             $(".project-filter-actions").on('click', '.filter-action', function (e) {
                 if ($(this).hasClass('filter-show-all')) {
@@ -97,20 +117,45 @@
 
                 status = filterArray;
 
-                ajaxFilterProjectView(sort, $('#project_keyword').val(), status);
+                ajaxFilterProjectView(sort, $('#project_keyword').val(), status, tags);
+            });
+
+            $(".project-filter-actions-tags").on('click', '.filter-action-tags', function (e) {
+                if ($(this).hasClass('filter-show-all-tags')) {
+                    $('.filter-action-tags').removeClass('active');
+                    $(this).addClass('active');
+                } else {
+                    $('.filter-show-all-tags').removeClass('active');
+                    if ($(this).hasClass('active')) {
+                        $(this).removeClass('active');
+                        $(this).blur();
+                    } else {
+                        $(this).addClass('active');
+                    }
+                }
+
+                var filterArray = [];
+                var url = $(this).parents('.project-filter-actions-tags').attr('data-url');
+                $('div.project-filter-actions-tags').find('.active').each(function () {
+                    filterArray.push($(this).attr('data-val'));
+                });
+
+                tags = filterArray;
+
+                ajaxFilterProjectView(sort, $('#project_keyword').val(), status, tags);
             });
 
             // when change sorting order
             $('#project_sort').on('click', 'a', function () {
                 sort = $(this).attr('data-val');
-                ajaxFilterProjectView(sort, $('#project_keyword').val(), status);
+                ajaxFilterProjectView(sort, $('#project_keyword').val(), status, tags);
                 $('#project_sort a').removeClass('active');
                 $(this).addClass('active');
             });
 
             // when searching by project name
             $(document).on('keyup', '#project_keyword', function () {
-                ajaxFilterProjectView(sort, $(this).val(), status);
+                ajaxFilterProjectView(sort, $(this).val(), status, tags);
             });
 
 
@@ -190,7 +235,7 @@
 
         var currentRequest = null;
 
-        function ajaxFilterProjectView(project_sort, keyword = '', status = '') {
+        function ajaxFilterProjectView(project_sort, keyword = '', status = '', tags = '') {
             var mainEle = $('#project_view');
             var view = '{{$view}}';
             var data = {
@@ -198,6 +243,7 @@
                 sort: project_sort,
                 keyword: keyword,
                 status: status,
+                tags: tags,
             }
 
             currentRequest = $.ajax({

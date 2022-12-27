@@ -356,7 +356,18 @@
                                     <span class="text-white text-sm">{{__('End Date')}}</span>
                                     <h5 class="text-white text-nowrap">{{ Utility::getDateFormated($project->end_date) }}</h5>
                                 </div>
-
+                            </div>
+                            <div class="d-block d-sm-flex align-items-center justify-content-between">
+                                <div class="row align-items-center">
+                                    <span class="text-white text-sm">{{__('Client')}}</span>
+                                    <h5 class="text-white text-nowrap">{{ $project->user->name }}</h5>
+                                </div>
+                            </div>
+                            <div class="d-block d-sm-flex align-items-center justify-content-between">
+                                <div class="row align-items-center">
+                                    <span class="text-white text-sm">{{__('PC Client Email')}}</span>
+                                    <h5 class="text-white text-nowrap">{{ $project->user->email }}</h5>
+                                </div>
                             </div>
                         </div>
                     </div>
