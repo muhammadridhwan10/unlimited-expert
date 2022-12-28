@@ -100,7 +100,7 @@
                 <div class="col-xl-6 img-card-side">
                     <div class="auth-img-content">
                         <img
-                            src="{{ asset('assets/images/auth/img-auth-3.svg') }}"
+                            src="{{ asset('assets/images/auth/tgs.png') }}"
                             alt=""
                             class="img-fluid"
                         />
@@ -108,8 +108,9 @@
                             “Attention is the new currency”
                         </h3>
                         <p class="text-white">
-                            The more effortless the writing looks, the more effort the
-                            writer actually put into the process.
+                        Teamwork is so important that it is virtually impossible for you to reach the heights 
+                        of your capabilities or make the money 
+                        that you want without becoming very good at it
                         </p>
                     </div>
                 </div>

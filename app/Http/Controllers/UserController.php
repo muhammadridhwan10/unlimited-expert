@@ -32,11 +32,11 @@ class UserController extends Controller
         {
             if(\Auth::user()->type = 'admin')
             {
-                $users = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get();
+                $users = User::where('type', '!=', 'client')->get();
             }
             elseif(\Auth::user()->type = 'company')
             {
-                $users = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get();
+                $users = User::where('type', '!=', 'client')->get();
             }
             else
             {
