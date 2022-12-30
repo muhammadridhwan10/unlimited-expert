@@ -36,6 +36,16 @@ class User extends Authenticatable
         'last_login_at',
         'created_by',
         'device_token',
+        'alamat',
+        'telp',
+        'npwp',
+        'client_business_sector_id',
+        'client_ownership_status_id',
+        'book_year',
+        'engagement_type',
+        'engagement_types',
+        'auditing_standard',
+        'client_accounting_standard_id',
         'client_id',
     ];
 
@@ -48,6 +58,34 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public static $engagement_type = [
+        'perikatan_tahun_pertama' => 'Perikatan Tahun Pertama',
+        'perikatan_berulang' => 'Perikatan Berulang',
+    ];
+
+    public static $engagement_types = [
+        'audit_atas_laporan_keuangan' => 'Audit Atas Laporan Keuangan',
+    ];
+
+    public static $auditing_standard = [
+        'standard_profesional_akuntan_publik' => 'Standard Profesional Akuntan Publik',
+    ];
+
+    public function business_sector()
+    {
+        return $this->belongsTo('App\Models\ClientBusinessSector', 'client_business_sector_id', 'id');
+    }
+
+    public function accounting_standard()
+    {
+        return $this->belongsTo('App\Models\ClientAccountingStandard', 'client_accounting_standard_id', 'id');
+    }
+
+    public function ownership_status()
+    {
+        return $this->belongsTo('App\Models\ClientOwnershipStatus', 'client_ownership_status_id', 'id');
+    }
 
     public $settings;
 

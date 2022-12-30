@@ -724,6 +724,11 @@
                                                         <a class="dash-link" href="{{route('project-task-stages.index')}}">{{__('Project Task Stages')}}</a>
                                                     </li>
                                                 @endcan
+                                                @can('manage project task template')
+                                                    <li class="dash-item {{ (Request::route()->getName() == 'categorytemplate.index') ? 'active' : '' }}">
+                                                        <a class="dash-link" href="{{route('categorytemplate.index')}}">{{__('Category Template')}}</a>
+                                                    </li>
+                                                @endcan
                                                 @can('manage bug status')
                                                     <li class="dash-item {{ (Request::route()->getName() == 'bugstatus.index') ? 'active' : '' }}">
                                                         <a class="dash-link" href="{{route('bugstatus.index')}}">{{__('Bug Status')}}</a>
@@ -743,6 +748,52 @@
                     @endif
 
                 <!--------------------- End Project ----------------------------------->
+
+                    <!--------------------- Start Audit Managaement System ----------------------------------->
+
+                    @if(\Auth::user()->type!='super admin' && ( Gate::check('manage user') || Gate::check('manage role') || Gate::check('manage client')))
+                            <li class="dash-item dash-hasmenu">
+                                <a href="#!" class="dash-link {{ (Request::segment(1) == 'users' || Request::segment(1) == 'roles' || Request::segment(1) == 'clients')?' active dash-trigger':''}}"
+                                ><span class="dash-micon"><i class="ti ti-book"></i></span
+                                    ><span class="dash-mtext">{{__('Audit Management')}}</span
+                                    ><span class="dash-arrow"><i data-feather="chevron-right"></i></span
+                                    ></a>
+                                <ul class="dash-submenu">
+                                    @can('manage user')
+                                        <li class="dash-item {{ (Request::route()->getName() == 'office.index' || Request::route()->getName() == 'office.create' || Request::route()->getName() == 'office.edit') ? ' active' : '' }}">
+                                            <a class="dash-link" href="{{ route('office.index') }}">{{__('Office')}}</a>
+                                        </li>
+                                    @endcan
+                                    @can('manage user')
+                                        <li class="dash-item {{ (Request::route()->getName() == 'servicetype.index' || Request::route()->getName() == 'servicetype.create' || Request::route()->getName() == 'servicetype.edit') ? ' active' : '' }}">
+                                            <a class="dash-link" href="{{ route('servicetype.index') }}">{{__('Service Type')}}</a>
+                                        </li>
+                                    @endcan
+                                    @can('manage user')
+                                        <li class="dash-item {{ (Request::route()->getName() == 'accountant.index' || Request::route()->getName() == 'accountant.create' || Request::route()->getName() == 'accountant.edit') ? ' active' : '' }}">
+                                            <a class="dash-link" href="{{ route('accountant.index') }}">{{__('Accountant')}}</a>
+                                        </li>
+                                    @endcan
+                                    @can('manage user')
+                                        <li class="dash-item {{ (Request::route()->getName() == 'accountingstandard.index' || Request::route()->getName() == 'accountingstandard.create' || Request::route()->getName() == 'accountingstandard.edit') ? ' active' : '' }}">
+                                            <a class="dash-link" href="{{ route('accountingstandard.index') }}">{{__('Accounting Standard')}}</a>
+                                        </li>
+                                    @endcan
+                                    @can('manage user')
+                                        <li class="dash-item {{ (Request::route()->getName() == 'businesssector.index' || Request::route()->getName() == 'businesssector.create' || Request::route()->getName() == 'businesssector.edit') ? ' active' : '' }}">
+                                            <a class="dash-link" href="{{ route('businesssector.index') }}">{{__('Business Sector Standard')}}</a>
+                                        </li>
+                                    @endcan
+                                    @can('manage user')
+                                        <li class="dash-item {{ (Request::route()->getName() == 'ownershipstatus.index' || Request::route()->getName() == 'ownershipstatus.create' || Request::route()->getName() == 'ownershipstatus.edit') ? ' active' : '' }}">
+                                            <a class="dash-link" href="{{ route('ownershipstatus.index') }}">{{__('Ownership Status')}}</a>
+                                        </li>
+                                    @endcan
+                                </ul>
+                            </li>
+                        @endif
+
+                    <!--------------------- End Audit Managaement System----------------------------------->
 
                     <!--------------------- Start User Managaement System ----------------------------------->
 

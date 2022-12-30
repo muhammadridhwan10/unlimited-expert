@@ -30,6 +30,15 @@ class ProjectTask extends Model
         'is_complete',
         'marked_at',
         'progress',
+        'category_template_id',
+    ];
+
+    public static $filter=[
+        'Client Data' => 'Client Data',
+        'Pre engagement' => 'Pre engagement',
+        'Risk Assessment' => 'Risk Assessment',
+        'Risk Response' => 'Risk Response',
+        'Conclution and Completion' => 'Conclution and Completion',
     ];
 
     public static $priority = [
@@ -50,6 +59,10 @@ class ProjectTask extends Model
         return $this->hasOne('App\Models\Milestone','id', 'milestone_id');
     }
 
+    public function category_templates()
+    {
+        return $this->belongsTo('App\Models\CategoryTemplate', 'category_template_id', 'id');
+    }
 
     public function users()
     {

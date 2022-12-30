@@ -93,6 +93,55 @@ Route::resource('users', 'UserController')->middleware(
         'revalidate',
     ]
 );
+Route::resource('accountant', 'AccountantController')->middleware(
+    [
+        'auth',
+        'XSS',
+        'revalidate',
+    ]
+);
+Route::resource('office', 'OfficeController')->middleware(
+    [
+        'auth',
+        'XSS',
+        'revalidate',
+    ]
+);
+Route::resource('servicetype', 'ServiceTypeController')->middleware(
+    [
+        'auth',
+        'XSS',
+        'revalidate',
+    ]
+);
+Route::resource('office', 'OfficeController')->middleware(
+    [
+        'auth',
+        'XSS',
+        'revalidate',
+    ]
+);
+Route::resource('accountingstandard', 'ClientAccountingStandardController')->middleware(
+    [
+        'auth',
+        'XSS',
+        'revalidate',
+    ]
+);
+Route::resource('businesssector', 'ClientBusinessSectorController')->middleware(
+    [
+        'auth',
+        'XSS',
+        'revalidate',
+    ]
+);
+Route::resource('ownershipstatus', 'ClientOwnershipStatusController')->middleware(
+    [
+        'auth',
+        'XSS',
+        'revalidate',
+    ]
+);
 Route::resource('team', 'TeamController')->middleware(
     [
         'auth',
@@ -2481,6 +2530,18 @@ Route::get(
     ]
 );
 Route::get(
+    'client_information/{id}', [
+    'as' => 'client_information.view',
+    'uses' => 'ProjectController@ClientInformation',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::get(
     'projects-view', [
     'as' => 'filter.project.view',
     'uses' => 'ProjectController@filterProjectView',
@@ -2831,6 +2892,26 @@ Route::post(
 ]
 );
 Route::post('project-task-new-stage', 'TaskStageController@storingValue')->name('new-task-stage')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::resource('categorytemplate', 'CategoryTemplateController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post(
+    '/category-template/order', [
+    'as' => 'category-template.order',
+    'uses' => 'CategoryTemplateController@order',
+]
+);
+Route::post('category-template-new', 'CategoryTemplateController@storingValue')->name('category-template-new')->middleware(
     [
         'auth',
         'XSS',

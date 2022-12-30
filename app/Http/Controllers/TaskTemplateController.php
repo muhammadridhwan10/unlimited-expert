@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Utility;
 use App\Models\ProjectTaskTemplate;
+use App\Models\CategoryTemplate;
 use App\Models\CustomField;
 use Illuminate\Support\Facades\Crypt;
 use App\Models\ProductServiceCategory;
@@ -22,6 +23,8 @@ class TaskTemplateController extends Controller
             if(\Auth::user()->type = 'admin')
             {
                 $category = ProductServiceCategory::all()->pluck('name', 'id');
+                $category_template = CategoryTemplate::get()->pluck('name', 'id');
+                $category_template->prepend('Select Category Template', '');
                 $category->prepend('Select Category', '');
     
                 // $status = Invoice::$statues;
@@ -44,11 +47,13 @@ class TaskTemplateController extends Controller
                 // }
                 $templates = $query;
     
-                return view('tasktemplate.index', compact('templates', 'category'));
+                return view('tasktemplate.index', compact('templates', 'category', 'category_template'));
             }
             elseif(\Auth::user()->type = 'company')
             {
                 $category = ProductServiceCategory::all()->pluck('name', 'id');
+                $category_template = CategoryTemplate::get()->pluck('name', 'id');
+                $category_template->prepend('Select Category Template', '');
                 $category->prepend('Select Category', '');
     
                 // $status = Invoice::$statues;
@@ -71,11 +76,13 @@ class TaskTemplateController extends Controller
                 // }
                 $templates = $query;
     
-                return view('tasktemplate.index', compact('templates', 'category'));
+                return view('tasktemplate.index', compact('templates', 'category', 'category_template'));
             }
             else
             {
                 $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $category_template = CategoryTemplate::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $category_template->prepend('Select Category Template', '');
                 $category->prepend('Select Category', '');
     
                 // $status = Invoice::$statues;
@@ -98,7 +105,7 @@ class TaskTemplateController extends Controller
                 // }
                 $templates = $query->get();
     
-                return view('tasktemplate.index', compact('templates', 'category'));
+                return view('tasktemplate.index', compact('templates', 'category', 'category_template'));
             }
         }
         else
@@ -116,16 +123,20 @@ class TaskTemplateController extends Controller
             {
                 $customFields   = CustomField::where('module', '=', 'tasktemplate')->get();
                 $categorys = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
+                $category_template = CategoryTemplate::get()->pluck('name', 'id');
+                $category_template->prepend('Select Category Template', '');
                 $categorys->prepend('Select Category', '');
             }
             else
             {
                 $customFields   = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
                 $categorys = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 1)->get()->pluck('name', 'id');
+                $category_template = CategoryTemplate::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $category_template->prepend('Select Category Template', '');
                 $categorys->prepend('Select Category', '');
             }
         
-            return view('tasktemplate.create', compact('categorys', 'customFields'));
+            return view('tasktemplate.create', compact('categorys', 'customFields', 'category_template'));
         }
         else
         {
@@ -156,6 +167,7 @@ class TaskTemplateController extends Controller
 
             $category = $request->items;
             $category_id = $request->category_id;
+            $category_template_id = $request->category_template_id;
 
 
             for($i = 0; $i < count($category); $i++)
@@ -164,6 +176,7 @@ class TaskTemplateController extends Controller
                 $task_template->stage_id       = 1;
                 $task_template->name           = $category[$i]['name'];
                 $task_template->category_id    = $category_id;
+                $task_template->category_template_id      = $category_template_id;
                 // $task_template->start_date     = $category[$i]['start_date'];
                 // $task_template->end_date       = $category[$i]['end_date'];
                 $task_template->estimated_hrs  = $category[$i]['estimated_hrs'];
@@ -192,6 +205,8 @@ class TaskTemplateController extends Controller
             if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $category       = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
+                $category_template = CategoryTemplate::get()->pluck('name', 'id');
+                $category_template->prepend('Select Category Template', '');
                 $category->prepend('Select Category', '');
     
                 $tasktemplate->customField = CustomField::getData($tasktemplate, 'tasktemplate');
@@ -200,6 +215,8 @@ class TaskTemplateController extends Controller
             else
             {
                 $category       = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 1)->get()->pluck('name', 'id');
+                $category_template = CategoryTemplate::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $category_template->prepend('Select Category Template', '');
                 $category->prepend('Select Category', '');
     
                 $tasktemplate->customField = CustomField::getData($tasktemplate, 'tasktemplate');
@@ -207,7 +224,7 @@ class TaskTemplateController extends Controller
             }
 
 
-            return view('tasktemplate.edit', compact('tasktemplate','category', 'customFields'));
+            return view('tasktemplate.edit', compact('tasktemplate','category', 'customFields', 'category_template'));
         }
         else
         {
@@ -225,8 +242,6 @@ class TaskTemplateController extends Controller
                     $request->all(), [
                         'category_id' => 'required',
                         'estimated_hrs' => 'required',
-                        'start_date' => 'required',
-                        'end_date' => 'required',
                     ]
                 );
                 if($validator->fails())
@@ -236,6 +251,7 @@ class TaskTemplateController extends Controller
                     return redirect()->route('tasktemplate.index')->with('error', $messages->first());
                 }
                 $tasktemplate->category_id      = $request->category_id;
+                $tasktemplate->category_template_id      = $request->category_template_id;
                 $tasktemplate->name             = $request->name;
                 // $tasktemplate->start_date       = $request->start_date;
                 // $tasktemplate->end_date         = $request->end_date;
@@ -253,8 +269,6 @@ class TaskTemplateController extends Controller
                     $request->all(), [
                         'category_id' => 'required',
                         'estimated_hrs' => 'required',
-                        'start_date' => 'required',
-                        'end_date' => 'required',
                     ]
                 );
                 if($validator->fails())
@@ -264,6 +278,7 @@ class TaskTemplateController extends Controller
                     return redirect()->route('tasktemplate.index')->with('error', $messages->first());
                 }
                 $tasktemplate->category_id      = $request->category_id;
+                $tasktemplate->category_template_id      = $request->category_template_id;
                 $tasktemplate->name             = $request->name;
                 // $tasktemplate->start_date       = $request->start_date;
                 // $tasktemplate->end_date         = $request->end_date;

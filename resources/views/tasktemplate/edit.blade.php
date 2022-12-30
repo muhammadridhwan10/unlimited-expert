@@ -27,6 +27,12 @@
                                     {{ Form::label('category_id', __('Category'),['class'=>'form-label']) }}
                                     {{ Form::select('category_id', $category,null, array('class' => 'form-control select','required'=>'required')) }}
                                 </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ Form::label('category_template_id', __('Category Template'),['class'=>'form-label']) }}
+                                        {{ Form::select('category_template_id', $category_template,null, array('class' => 'form-control select','required'=>'required')) }}
+                                    </div>
+                                </div>
 
                                 @if(!$customFields->isEmpty())
                                     <div class="col-md-6">

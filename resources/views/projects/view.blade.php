@@ -365,8 +365,10 @@
                             </div>
                             <div class="d-block d-sm-flex align-items-center justify-content-between">
                                 <div class="row align-items-center">
-                                    <span class="text-white text-sm">{{__('PC Client Email')}}</span>
-                                    <h5 class="text-white text-nowrap">{{ $project->user->email }}</h5>
+                                    <h5 class="text-white text-nowrap">{{__('Client Information')}}</h5>
+                                    <a href="#" class="text-white text-sm" data-size="lg" data-url="{{ route('client_information.view', $project->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Client Information')}}">
+                                        {{ 'Click Here' }}
+                                    </a>
                                 </div>
                             </div>
                         </div>

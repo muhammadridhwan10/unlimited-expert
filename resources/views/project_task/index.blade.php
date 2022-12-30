@@ -500,6 +500,19 @@
     <li class="breadcrumb-item">{{__('Task')}}</li>
 @endsection
 @section('action-btn')
+    <div class="float-end">
+            {{------------ Start Tags Filter ----------------}}
+                <a href="#" class="btn btn-sm btn-primary action-item" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <span class="btn-inner--icon">{{__('Filter')}}</span>
+                </a>
+                <div class="dropdown-menu  project-filter-actions-tags dropdown-steady" id="tags">
+                    <a class="dropdown-item filter-action-tags filter-show-all-tags pl-4 active" href="#">{{__('Show All')}}</a>
+                    @foreach(\App\Models\ProjectTask::$filter as $key => $val)
+                        <a class="dropdown-item filter-action-tags pl-4" href="#" data-val="{{ $key }}">{{__($val)}}</a>
+                    @endforeach
+                </div>
+            {{------------ End Status Filter ----------------}}
+    </div>
 @endsection
 
 @section('content')
@@ -525,6 +538,17 @@
                                     <div class="card draggable-item" id="{{$taskDetail->id}}">
                                         <div class="pt-3 ps-3">
                                             <div class="badge-xs badge bg-{{\App\Models\ProjectTask::$priority_color[$taskDetail->priority]}} p-2 px-3 rounded">{{ __(\App\Models\ProjectTask::$priority[$taskDetail->priority]) }}</div>
+                                            @if ($taskDetail->category_templates->name === "Client Data")
+                                            <span class="badge-xs badge bg-info  p-2 px-3 rounded">{{ $taskDetail->category_templates->name }}</span>
+                                            @elseif ($taskDetail->category_templates->name === "Pre engagement")
+                                            <span class="badge-xs badge bg-warning  p-2 px-3 rounded">{{ $taskDetail->category_templates->name }}</span>
+                                            @elseif ($taskDetail->category_templates->name === "Risk Assessment")
+                                            <span class="badge-xs badge bg-danger  p-2 px-3 rounded">{{ $taskDetail->category_templates->name }}</span>
+                                            @elseif ($taskDetail->category_templates->name === "Risk Response")
+                                            <span class="badge-xs badge bg-success  p-2 px-3 rounded">{{ $taskDetail->category_templates->name }}</span>
+                                            @elseif ($taskDetail->category_templates->name === "Conclution and Completion")
+                                            <span class="badge-xs badge bg-dark  p-2 px-3 rounded">{{ $taskDetail->category_templates->name }}</span>
+                                            @endif
                                         </div>
                                         <div class="card-header border-0 pb-0 position-relative">
                                             <h5>

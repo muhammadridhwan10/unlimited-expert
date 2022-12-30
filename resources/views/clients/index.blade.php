@@ -12,6 +12,12 @@
     <li class="breadcrumb-item">{{__('Client')}}</li>
 @endsection
 @section('action-btn')
+    <div class ="float-start">
+                <div class="input-group">
+                    <span class="input-group-text text-body"><i class="fas fa-search" aria-hidden="true"></i></span>
+                    <input id="project_keyword" name="keyword" type="search" class="form-control" placeholder="Search...">
+                </div>
+    </div>
     <div class="float-end">
         <a href="#" data-size="md" data-url="{{ route('clients.create') }}" data-ajax-popup="true"  data-bs-toggle="tooltip" title="{{__('Create')}}"  class="btn btn-sm btn-primary">
             <i class="ti ti-plus"></i>
@@ -19,7 +25,7 @@
     </div>
 @endsection
 @section('content')
-    <div class="row">
+    <div class="row" id="client_view">
         <div class="col-xxl-12">
             <div class="row">
                 @foreach($clients as $client)
@@ -106,3 +112,38 @@
         </div>
     </div>
 @endsection
+
+@push('script-page')
+    <script>
+        $(document).ready(function () {
+            // when searching by project name
+            $(document).on('keyup', '#project_keyword', function () {
+                ajaxFilterProjectView($('#project_keyword').val());
+            });
+        });
+
+        var currentRequest = null;
+
+        function ajaxFilterProjectView(keyword = '') {
+            var mainEle = $('#client_view');
+            var data = {
+                keyword: keyword
+            }
+
+            currentRequest = $.ajax({
+                url: '{{ route('filter.clients.view') }}',
+                data: data,
+                beforeSend: function () {
+                    if (currentRequest != null) {
+                        currentRequest.abort();
+                    }
+                },
+                success: function (data) {
+                    mainEle.html(data.html);
+                    $('[id^=fire-modal]').remove();
+                    loadConfirm();
+                }
+            });
+        }
+    </script>
+@endpush

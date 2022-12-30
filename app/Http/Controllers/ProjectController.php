@@ -181,6 +181,7 @@ class ProjectController extends Controller
                 $tasks->assign_to      = \Auth::user()->creatorId();
                 $tasks->stage_id       =  $details[$i]['stage_id'];
                 $tasks->name           = $details[$i]['name'];
+                $tasks->category_template_id      =  $details[$i]['category_template_id'];
                 $tasks->start_date     = $project->start_date;
                 $tasks->end_date       = $project->end_date;
                 $tasks->estimated_hrs  = $details[$i]['estimated_hrs'];
@@ -512,6 +513,7 @@ class ProjectController extends Controller
                 $tasks->assign_to      = \Auth::user()->creatorId();
                 $tasks->stage_id       =  $details[$i]['stage_id'];
                 $tasks->name           = $details[$i]['name'];
+                $tasks->category_template_id      =  $details[$i]['category_template_id'];
                 $tasks->start_date     = $project->start_date;
                 $tasks->end_date       = $project->end_date;
                 $tasks->estimated_hrs  = $details[$i]['estimated_hrs'];
@@ -1464,6 +1466,48 @@ class ProjectController extends Controller
     {
         $treckers=TimeTracker::with('user')->where('project_id',$id)->get();
         return view('time_trackers.index',compact('treckers'));
+    }
+
+    public function ClientInformation(Request $request, $project_id)
+    {
+        $usr          = \Auth::user();
+        if(\Auth::user()->can('edit project'))
+        {
+            if($usr->type == 'admin')
+            {
+                $clients = User::where('type', '=', 'client')->where('name', '=', 'KAP AGUS UBAIDILLAH & REKAN')->get()->pluck('name');
+                $project = Project::findOrfail($project_id);
+
+                return view('projects.client', compact('project_id','project', 'clients'));
+
+            }
+            elseif($usr->type == 'company')
+            {
+                $clients = User::where('type', '=', 'client')->where('name', '=', 'KAP AGUS UBAIDILLAH & REKAN')->get()->pluck('name');
+                $project = Project::findOrfail($project_id);
+
+                return view('projects.client', compact('project_id','project', 'clients'));
+
+            }
+            else{
+                
+                $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
+                $project = Project::findOrfail($project_id);
+                if($project->created_by == \Auth::user()->creatorId())
+                {
+                    return view('projects.client', compact('project', 'clients'));
+                }
+                else
+                {
+                    return response()->json(['error' => __('Permission denied.')], 401);
+                }
+            }
+            return view('projects.client',compact('project_id', 'project'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
     }
 
 }

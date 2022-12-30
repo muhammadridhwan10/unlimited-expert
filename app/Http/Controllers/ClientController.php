@@ -7,6 +7,9 @@ use App\Models\ClientPermission;
 use App\Models\Mail\UserCreate;
 use App\Models\Contract;
 use App\Models\CustomField;
+use App\Models\ClientBusinessSector;
+use App\Models\ClientOwnershipStatus;
+use App\Models\ClientAccountingStandard;
 use App\Models\Estimation;
 use App\Models\Invoice;
 use App\Models\Plan;
@@ -67,9 +70,15 @@ class ClientController extends Controller
             }
             else
             {
+                $businesssector         = ClientBusinessSector::get()->pluck('name', 'id');
+                $ownershipstatus        = ClientOwnershipStatus::get()->pluck('name', 'id');
+                $accountingstandard     = ClientAccountingStandard::get()->pluck('name', 'id');
+                $businesssector->prepend('Select Business Sector', '');
+                $ownershipstatus->prepend('Select Ownership Status', '');
+                $accountingstandard->prepend('Select Accounting Standard', '');
                 $customFields = CustomField::where('module', '=', 'client')->get();
 
-                return view('clients.create', compact('customFields'));
+                return view('clients.create', compact('businesssector','ownershipstatus','accountingstandard','customFields'));
             }
         }
         else
@@ -113,6 +122,16 @@ class ClientController extends Controller
                                 'name' => $request->name,
                                 'email' => $request->email,
                                 'job_title' => $request->job_title,
+                                'alamat' => $request->alamat,
+                                'telp' => $request->telp,
+                                'npwp' => $request->npwp,
+                                'client_business_sector_id' => $request->client_business_sector_id,
+                                'client_ownership_status_id' => $request->client_ownership_status_id,
+                                'book_year' => $request->book_year,
+                                'engagement_type' => $request->engagement_type,
+                                'engagement_types' => $request->engagement_types,
+                                'auditing_standard' => $request->auditing_standard,
+                                'client_accounting_standard_id' => $request->client_accounting_standard_id,
                                 'password' => Hash::make($request->password),
                                 'type' => 'client',
                                 'lang' => Utility::getValByName('default_language'),
@@ -318,24 +337,42 @@ class ClientController extends Controller
             $user = \Auth::user();
             if($client->created_by == $user->creatorId())
             {
-                $client->customField = CustomField::getData($client, 'client');
+                $client->customField    = CustomField::getData($client, 'client');
+                $businesssector         = ClientBusinessSector::get()->pluck('name', 'id');
+                $ownershipstatus        = ClientOwnershipStatus::get()->pluck('name', 'id');
+                $accountingstandard     = ClientAccountingStandard::get()->pluck('name', 'id');
+                $businesssector->prepend('Select Business Sector', '');
+                $ownershipstatus->prepend('Select Ownership Status', '');
+                $accountingstandard->prepend('Select Accounting Standard', '');
                 $customFields        = CustomField::where('module', '=', 'client')->get();
 
-                return view('clients.edit', compact('client', 'customFields'));
+                return view('clients.edit', compact('client', 'businesssector','ownershipstatus','accountingstandard', 'customFields'));
             }
             elseif(\Auth::user()->type = 'admin')
             {
                 $client->customField = CustomField::getData($client, 'client');
+                $businesssector         = ClientBusinessSector::get()->pluck('name', 'id');
+                $ownershipstatus        = ClientOwnershipStatus::get()->pluck('name', 'id');
+                $accountingstandard     = ClientAccountingStandard::get()->pluck('name', 'id');
+                $businesssector->prepend('Select Business Sector', '');
+                $ownershipstatus->prepend('Select Ownership Status', '');
+                $accountingstandard->prepend('Select Accounting Standard', '');
                 $customFields        = CustomField::where('module', '=', 'client')->get();
 
-                return view('clients.edit', compact('client', 'customFields'));
+                return view('clients.edit', compact('client', 'businesssector','ownershipstatus','accountingstandard', 'customFields'));
             }
             elseif(\Auth::user()->type = 'company')
             {
                 $client->customField = CustomField::getData($client, 'client');
+                $businesssector         = ClientBusinessSector::get()->pluck('name', 'id');
+                $ownershipstatus        = ClientOwnershipStatus::get()->pluck('name', 'id');
+                $accountingstandard     = ClientAccountingStandard::get()->pluck('name', 'id');
+                $businesssector->prepend('Select Business Sector', '');
+                $ownershipstatus->prepend('Select Ownership Status', '');
+                $accountingstandard->prepend('Select Accounting Standard', '');
                 $customFields        = CustomField::where('module', '=', 'client')->get();
 
-                return view('clients.edit', compact('client', 'customFields'));
+                return view('clients.edit', compact('client','businesssector','ownershipstatus','accountingstandard', 'customFields'));
             }
             else
             {
@@ -376,6 +413,16 @@ class ClientController extends Controller
                     return redirect()->back()->with('error', $messages->first());
                 }
                 $post['email'] = $request->email;
+                $post['alamat'] = $request->alamat;
+                $post['telp'] = $request->telp;
+                $post['npwp'] = $request->npwp;
+                $post['client_business_sector_id'] = $request->client_business_sector_id;
+                $post['client_ownership_status_id'] = $request->client_ownership_status_id;
+                $post['book_year'] = $request->book_year;
+                $post['engagement_type'] = $request->engagement_type;
+                $post['engagement_types'] = $request->engagement_types;
+                $post['auditing_standard'] = $request->auditing_standard;
+                $post['client_accounting_standard_id'] = $request->client_accounting_standard_id;
 
                 $client->update($post);
 
@@ -406,6 +453,18 @@ class ClientController extends Controller
                     return redirect()->back()->with('error', $messages->first());
                 }
                 $post['email'] = $request->email;
+                $post['alamat'] = $request->alamat;
+                $post['telp'] = $request->telp;
+                $post['npwp'] = $request->npwp;
+                $post['client_business_sector_id'] = $request->client_business_sector_id;
+                $post['client_ownership_status_id'] = $request->client_ownership_status_id;
+                $post['book_year'] = $request->book_year;
+                $post['engagement_type'] = $request->engagement_type;
+                $post['engagement_types'] = $request->engagement_types;
+                $post['auditing_standard'] = $request->auditing_standard;
+                $post['client_accounting_standard_id'] = $request->client_accounting_standard_id;
+
+                dd($post);
 
                 $client->update($post);
 
@@ -436,6 +495,17 @@ class ClientController extends Controller
                     return redirect()->back()->with('error', $messages->first());
                 }
                 $post['email'] = $request->email;
+                $post['alamat'] = $request->alamat;
+                $post['telp'] = $request->telp;
+                $post['npwp'] = $request->npwp;
+                $post['client_business_sector_id'] = $request->client_business_sector_id;
+                $post['client_ownership_status_id'] = $request->client_ownership_status_id;
+                $post['book_year'] = $request->book_year;
+                $post['engagement_type'] = $request->engagement_type;
+                $post['engagement_types'] = $request->engagement_types;
+                $post['auditing_standard'] = $request->auditing_standard;
+                $post['client_accounting_standard_id'] = $request->client_accounting_standard_id;
+                
 
                 $client->update($post);
 

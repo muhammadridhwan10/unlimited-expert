@@ -101,6 +101,7 @@
                             <thead>
                             <tr>
                                 <th> {{ __('Category') }}</th>
+                                <th> {{ __('Category Template') }}</th>
                                 @if (!\Auth::guard('customer')->check())
                                     <th>{{ __('Name') }}</th>
                                 @endif
@@ -122,6 +123,7 @@
                                 <tr>
                                     @if (!\Auth::guard('customer')->check())
                                         <td> {{ !empty($template->category) ? $template->category->name : '' }} </td>
+                                        <td> {{ !empty($template->category_templates) ? $template->category_templates->name : '' }} </td>
                                     @endif
                                     <td>{{($template['name'])}}</td>
                                     <td>{{($template->estimated_hrs)}}</td>
