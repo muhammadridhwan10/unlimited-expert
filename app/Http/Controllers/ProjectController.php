@@ -70,6 +70,16 @@ class ProjectController extends Controller
                 $tasktemplate->prepend('Select Task Template', '');
                 
             }
+            elseif(\Auth::user()->can('create project'))
+            {
+                $users   = User::where('type', '!=', 'client')->get()->pluck('name', 'id');
+                $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
+                $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
+                $clients->prepend('Select Client', '');
+                $users->prepend('Select User', '');
+                $tasktemplate->prepend('Select Task Template', '');
+                
+            }
             else
             {
                 $users   = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
@@ -420,6 +430,16 @@ class ProjectController extends Controller
 
                 return view('projects.edit', compact('tasktemplate', 'project', 'clients'));
 
+            }
+            elseif(\Auth::user()->can('edit project'))
+            {
+                $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
+                $project = Project::findOrfail($project->id);
+                $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
+                $tasktemplate->prepend('Select Task Template', '');
+
+                return view('projects.edit', compact('tasktemplate','project', 'clients'));
+                
             }
             else{
                 

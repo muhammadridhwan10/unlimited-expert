@@ -500,19 +500,6 @@
     <li class="breadcrumb-item">{{__('Task')}}</li>
 @endsection
 @section('action-btn')
-    <div class="float-end">
-            {{------------ Start Tags Filter ----------------}}
-                <a href="#" class="btn btn-sm btn-primary action-item" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="btn-inner--icon">{{__('Filter')}}</span>
-                </a>
-                <div class="dropdown-menu  project-filter-actions-tags dropdown-steady" id="tags">
-                    <a class="dropdown-item filter-action-tags filter-show-all-tags pl-4 active" href="#">{{__('Show All')}}</a>
-                    @foreach(\App\Models\ProjectTask::$filter as $key => $val)
-                        <a class="dropdown-item filter-action-tags pl-4" href="#" data-val="{{ $key }}">{{__($val)}}</a>
-                    @endforeach
-                </div>
-            {{------------ End Status Filter ----------------}}
-    </div>
 @endsection
 
 @section('content')
