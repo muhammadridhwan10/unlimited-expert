@@ -12,6 +12,7 @@ use App\Models\BugFile;
 use App\Models\BugComment;
 use App\Models\Milestone;
 use App\Models\ProjectTaskTemplate;
+use App\Models\PublicAccountant;
 use App\Models\ProductServiceCategory;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ProjectNotification;
@@ -56,6 +57,8 @@ class ProjectController extends Controller
                 $users   = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
                 $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
+                $public_accountant = PublicAccountant::get()->pluck('name', 'id');
+                $public_accountant->prepend('Select Public Accountant', '');
                 $clients->prepend('Select Client', '');
                 $users->prepend('Select User', '');
                 $tasktemplate->prepend('Select Task Template', '');
@@ -65,6 +68,8 @@ class ProjectController extends Controller
                 $users   = User::where('type', '!=', 'client')->get()->pluck('name', 'id');
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
                 $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
+                $public_accountant = PublicAccountant::get()->pluck('name', 'id');
+                $public_accountant->prepend('Select Public Accountant', '');
                 $clients->prepend('Select Client', '');
                 $users->prepend('Select User', '');
                 $tasktemplate->prepend('Select Task Template', '');
@@ -75,6 +80,8 @@ class ProjectController extends Controller
                 $users   = User::where('type', '!=', 'client')->get()->pluck('name', 'id');
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
                 $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
+                $public_accountant = PublicAccountant::get()->pluck('name', 'id');
+                $public_accountant->prepend('Select Public Accountant', '');
                 $clients->prepend('Select Client', '');
                 $users->prepend('Select User', '');
                 $tasktemplate->prepend('Select Task Template', '');
@@ -85,11 +92,13 @@ class ProjectController extends Controller
                 $users   = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
                 $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
                 $tasktemplate = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('category_id', 'id');
+                $public_accountant = PublicAccountant::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $public_accountant->prepend('Select Public Accountant', '');
                 $clients->prepend('Select Client', '');
                 $users->prepend('Select User', '');
                 $tasktemplate->prepend('Select Task Template', '');
             }
-            return view('projects.create', compact('clients','users','tasktemplate'));
+            return view('projects.create', compact('clients','users','public_accountant','tasktemplate'));
         }
         else
         {
@@ -129,6 +138,7 @@ class ProjectController extends Controller
                 $project->project_image      = 'projects/'.$imageName;
             }
             $project->client_id = $request->client;
+            $project->public_accountant_id = $request->public_accountant_id;
             $project->template_task_id = $request->template_task_id;
             $project->budget = !empty($request->budget) ? $request->budget : 0;
             $project->description = $request->description;
@@ -416,9 +426,11 @@ class ProjectController extends Controller
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
                 $project = Project::findOrfail($project->id);
                 $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
+                $public_accountant = PublicAccountant::get()->pluck('name', 'id');
+                $public_accountant->prepend('Select Public Accountant', '');
                 $tasktemplate->prepend('Select Task Template', '');
 
-                return view('projects.edit', compact('tasktemplate','project', 'clients'));
+                return view('projects.edit', compact('tasktemplate','public_accountant','project', 'clients'));
 
             }
             elseif($usr->type == 'company')
@@ -426,9 +438,11 @@ class ProjectController extends Controller
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
                 $project = Project::findOrfail($project->id);
                 $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
+                $public_accountant = PublicAccountant::get()->pluck('name', 'id');
+                $public_accountant->prepend('Select Public Accountant', '');
                 $tasktemplate->prepend('Select Task Template', '');
 
-                return view('projects.edit', compact('tasktemplate', 'project', 'clients'));
+                return view('projects.edit', compact('tasktemplate','public_accountant', 'project', 'clients'));
 
             }
             elseif(\Auth::user()->can('edit project'))
@@ -436,9 +450,11 @@ class ProjectController extends Controller
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
                 $project = Project::findOrfail($project->id);
                 $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
+                $public_accountant = PublicAccountant::get()->pluck('name', 'id');
+                $public_accountant->prepend('Select Public Accountant', '');
                 $tasktemplate->prepend('Select Task Template', '');
 
-                return view('projects.edit', compact('tasktemplate','project', 'clients'));
+                return view('projects.edit', compact('tasktemplate','public_accountant','project', 'clients'));
                 
             }
             else{
@@ -446,17 +462,19 @@ class ProjectController extends Controller
                 $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
                 $project = Project::findOrfail($project->id);
                 $tasktemplate = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('category_id', 'id');
+                $public_accountant = PublicAccountant::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $public_accountant->prepend('Select Public Accountant', '');
                 $tasktemplate->prepend('Select Task Template', '');
                 if($project->created_by == \Auth::user()->creatorId())
                 {
-                    return view('projects.edit', compact('tasktemplate','project', 'clients'));
+                    return view('projects.edit', compact('tasktemplate','public_accountant','project', 'clients'));
                 }
                 else
                 {
                     return response()->json(['error' => __('Permission denied.')], 401);
                 }
             }
-            return view('projects.edit',compact('project'));
+            return view('projects.edit',compact('project','public_accountant'));
         }
         else
         {
@@ -500,6 +518,7 @@ class ProjectController extends Controller
             // dd($project->template_task_id);
             $project->budget = $request->budget;
             $project->client_id = $request->client;
+            $project->public_accountant_id = $request->public_accountant_id;
             $project->description = $request->description;
             $project->status = $request->status;
             $project->estimated_hrs = $request->estimated_hrs;

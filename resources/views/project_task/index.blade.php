@@ -525,15 +525,15 @@
                                     <div class="card draggable-item" id="{{$taskDetail->id}}">
                                         <div class="pt-3 ps-3">
                                             <div class="badge-xs badge bg-{{\App\Models\ProjectTask::$priority_color[$taskDetail->priority]}} p-2 px-3 rounded">{{ __(\App\Models\ProjectTask::$priority[$taskDetail->priority]) }}</div>
-                                            @if ($taskDetail->category_templates->name === "Client Data")
+                                            @if ($taskDetail->category_templates->name === "A. Client Data")
                                             <span class="badge-xs badge bg-info  p-2 px-3 rounded">{{ $taskDetail->category_templates->name }}</span>
-                                            @elseif ($taskDetail->category_templates->name === "Pre engagement")
+                                            @elseif ($taskDetail->category_templates->name === "B. Pre engagement")
                                             <span class="badge-xs badge bg-warning  p-2 px-3 rounded">{{ $taskDetail->category_templates->name }}</span>
-                                            @elseif ($taskDetail->category_templates->name === "Risk Assessment")
+                                            @elseif ($taskDetail->category_templates->name === "C. Risk Assessment")
                                             <span class="badge-xs badge bg-danger  p-2 px-3 rounded">{{ $taskDetail->category_templates->name }}</span>
-                                            @elseif ($taskDetail->category_templates->name === "Risk Response")
+                                            @elseif ($taskDetail->category_templates->name === "D. Risk Response")
                                             <span class="badge-xs badge bg-success  p-2 px-3 rounded">{{ $taskDetail->category_templates->name }}</span>
-                                            @elseif ($taskDetail->category_templates->name === "Conclution and Completion")
+                                            @elseif ($taskDetail->category_templates->name === "E. Conclution and Completion")
                                             <span class="badge-xs badge bg-dark  p-2 px-3 rounded">{{ $taskDetail->category_templates->name }}</span>
                                             @endif
                                         </div>

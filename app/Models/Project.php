@@ -19,6 +19,7 @@ class Project extends Model
         'start_date',
         'end_date',
         'client_id',
+        'public_accountant_id',
         'project_image',
         'budget',
         'estimated_hrs',
