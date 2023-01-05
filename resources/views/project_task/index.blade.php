@@ -447,7 +447,7 @@
                         load_task(data.task_id);
                     }
                 });
-            });
+            });        
         });
 
         function load_task(id) {
@@ -500,130 +500,200 @@
     <li class="breadcrumb-item">{{__('Task')}}</li>
 @endsection
 @section('action-btn')
+    <div class="float-end">
+            <a class="btn btn-sm btn-primary" data-bs-toggle="collapse" href="#multiCollapseExample1" role="button" aria-expanded="false" aria-controls="multiCollapseExample1" data-bs-toggle="tooltip" title="{{__('Filter')}}">
+                <i class="ti ti-filter"></i>
+            </a>
+    </div>
+
 @endsection
 
 @section('content')
     <div class="row">
         <div class="col-sm-12">
-            <div class="row kanban-wrapper horizontal-scroll-cards" data-containers='{{json_encode($stageClass)}}' data-plugin="dragula">
-                @foreach($stages as $stage)
-                    @php($tasks = $stage->tasks)
-                    <div class="col">
-                        <div class="card">
-                            <div class="card-header">
-                                @can('create project task')
-                                    <div class="float-end">
-                                        <a href="#" data-size="lg" data-url="{{ route('projects.tasks.create',[$project->id,$stage->id]) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Add Task in ').$stage->name}}" class="btn btn-sm btn-primary">
-                                            <i class="ti ti-plus"></i>
-                                        </a>
+            <div class=" mt-2 " id="multiCollapseExample1">
+                <div class="card">
+                    <div class="card-body">
+                        {{ Form::open(array('route' => array('projects.tasks.index',$project->id),'method' => 'GET','id'=>'frm_submit')) }}
+                        <div class="d-flex align-items-center justify-content-end">
+                                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 me-2">
+                                    <div class="btn-box">
+                                        {{ Form::label('category_template_id', __('Group Name'),['class'=>'form-label']) }}
+                                        {{ Form::select('category_template_id',$category_template_id,null, array('class' => 'form-control select')) }}
                                     </div>
-                                @endcan
-                                <h4 class="mb-0">{{$stage->name}}</h4>
+                                </div>
+                            <div class="col-auto float-end ms-2 mt-4">
+
+                                <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('frm_submit').submit(); return false;" data-bs-toggle="tooltip" data-original-title="{{__('apply')}}">
+                                    <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
+                                </a>
+                                <a href="{{ route('projects.tasks.index',$project->id) }}" class="btn btn-sm btn-danger" data-bs-toggle="tooltip"
+                                   title="{{ __('Reset') }}">
+                                    <span class="btn-inner--icon"><i class="ti ti-trash-off text-white "></i></span>
+                                </a>
                             </div>
-                            <div class="card-body kanban-box" id="task-list-{{$stage->id}}" data-status="{{$stage->id}}">
-                                @foreach($tasks as $taskDetail)
-                                    <div class="card draggable-item" id="{{$taskDetail->id}}">
-                                        <div class="pt-3 ps-3">
-                                            <div class="badge-xs badge bg-{{\App\Models\ProjectTask::$priority_color[$taskDetail->priority]}} p-2 px-3 rounded">{{ __(\App\Models\ProjectTask::$priority[$taskDetail->priority]) }}</div>
-                                            @if ($taskDetail->category_templates->name === "A. Client Data")
-                                            <span class="badge-xs badge bg-info  p-2 px-3 rounded">{{ $taskDetail->category_templates->name }}</span>
-                                            @elseif ($taskDetail->category_templates->name === "B. Pre engagement")
-                                            <span class="badge-xs badge bg-warning  p-2 px-3 rounded">{{ $taskDetail->category_templates->name }}</span>
-                                            @elseif ($taskDetail->category_templates->name === "C. Risk Assessment")
-                                            <span class="badge-xs badge bg-danger  p-2 px-3 rounded">{{ $taskDetail->category_templates->name }}</span>
-                                            @elseif ($taskDetail->category_templates->name === "D. Risk Response")
-                                            <span class="badge-xs badge bg-success  p-2 px-3 rounded">{{ $taskDetail->category_templates->name }}</span>
-                                            @elseif ($taskDetail->category_templates->name === "E. Conclution and Completion")
-                                            <span class="badge-xs badge bg-dark  p-2 px-3 rounded">{{ $taskDetail->category_templates->name }}</span>
-                                            @endif
-                                        </div>
-                                        <div class="card-header border-0 pb-0 position-relative">
-                                            <h5>
-                                                <a href="#" data-url="{{ route('projects.tasks.show',[$project->id,$taskDetail->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$taskDetail->name}}">{{$taskDetail->name}}</a>
-                                            </h5>
-                                            <div class="card-header-right">
-                                                <div class="btn-group card-option">
-                                                    <button type="button" class="btn dropdown-toggle"
-                                                            data-bs-toggle="dropdown" aria-haspopup="true"
-                                                            aria-expanded="false">
-                                                        <i class="ti ti-dots-vertical"></i>
-                                                    </button>
 
-                                                    <div class="dropdown-menu dropdown-menu-end">
-
-                                                        @can('view project task')
-                                                            <a href="#!" data-size="md" data-url="{{ route('projects.tasks.show',[$project->id,$taskDetail->id]) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('View')}}">
-                                                                <i class="ti ti-bookmark"></i>
-                                                                <span>{{__('View')}}</span>
-                                                            </a>
-                                                        @endcan
-                                                        @if(Auth::user()->type == "client")
-                                                            @can('edit project task')
-                                                                <a href="#!" data-size="lg" data-url="{{ route('projects.tasks.edit',[$project->id,$taskDetail->id]) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Invite Member To ').$taskDetail->name}}">
-                                                                    <i class="ti ti-send"></i>
-                                                                    <span>{{__('Invite User')}}</span>
-                                                                </a>
-                                                            @endcan
-                                                        @else
-                                                            @can('edit project task')
-                                                                <a href="#!" data-size="lg" data-url="{{ route('projects.tasks.edit',[$project->id,$taskDetail->id]) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Edit ').$taskDetail->name}}">
-                                                                    <i class="ti ti-pencil"></i>
-                                                                    <span>{{__('Edit')}}</span>
-                                                                </a>
-                                                            @endcan
-                                                        @endif
-                                                        @can('delete project task')
-                                                            {!! Form::open(['method' => 'DELETE', 'route' => ['projects.tasks.destroy', [$project->id,$taskDetail->id]]]) !!}
-                                                            <a href="#!" class="dropdown-item bs-pass-para">
-                                                                <i class="ti ti-archive"></i>
-                                                                <span> {{__('Delete')}} </span>
-                                                            </a>
-                                                            {!! Form::close() !!}
-                                                        @endcan
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="card-body">
-                                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                                <ul class="list-inline mb-0">
-                                                    <li class="list-inline-item d-inline-flex align-items-center" data-bs-toggle="tooltip" title="{{__('Files')}}">
-                                                        <i class="f-16 text-primary ti ti-file"></i> {{ count($taskDetail->taskFiles) }}
-                                                    </li>
-                                                    <li class="list-inline-item d-inline-flex align-items-center" data-bs-toggle="tooltip" title="{{__('Task Progress')}}">
-                                                        @if(str_replace('%','',$taskDetail->taskProgress()['percentage']) > 0)<span class="text-md">{{ $taskDetail->taskProgress()['percentage'] }}</span>@endif
-                                                    </li>
-                                                </ul>
-                                                <div class="user-group">
-                                                    @if(!empty($taskDetail->end_date) && $taskDetail->end_date != '0000-00-00')<span data-bs-toggle="tooltip" title="{{__('End Date')}}" @if(strtotime($taskDetail->end_date) < time())class="text-danger"@endif>{{ Utility::getDateFormated($taskDetail->end_date) }}</span>@endif
-                                                </div>
-                                            </div>
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <ul class="list-inline mb-0">
-
-                                                    <li class="list-inline-item d-inline-flex align-items-center" data-bs-toggle="tooltip" title="{{__('Comments')}}">
-                                                        <i class="f-16 text-primary ti ti-message"></i> {{ count($taskDetail->comments) }}
-                                                    </li>
-
-                                                    <li class="list-inline-item d-inline-flex align-items-center" data-bs-toggle="tooltip" title="{{__('Task Checklist')}}">
-                                                        <i class="f-16 text-primary ti ti-list"></i>{{ $taskDetail->countTaskChecklist() }}
-                                                    </li>
-                                                </ul>
-                                                <div class="user-group">
-                                                    @foreach($taskDetail->users() as $user)
-                                                        <img @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset('/storage/uploads/avatar/avatar.png')}}" @endif alt="image" data-bs-toggle="tooltip" title="{{(!empty($user)?$user->name:'')}}">
-                                                    @endforeach
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
                         </div>
-
+                        {{ Form::close() }}
                     </div>
-                @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="col-12">
+                    <div class="card-body table-border-style">
+                        <div class="table-responsive">
+                            <table class="table datatable">
+                                <thead>
+                                <tr>
+                                    <th scope="col">{{__('Name')}}</th>
+                                    <th scope="col">{{__('End Date')}}</th>
+                                    <th scope="col">{{__('Assigned To')}}</th>
+                                    <th scope="col">{{__('Priority')}}</th>
+                                    <th scope="col">{{__('Completion')}}
+                                    <div class="text-danger" style="font-size:8px;">
+                                    {{ __('from sub task') }}
+                                    </div>
+                                    </th>
+                                    <th scope="col"></th>
+                                    <th scope="col">{{ __('Action') }}</th>
+                                </tr>
+                                </thead>
+                                <tbody class="list">
+                                @if(count($tasks) > 0)
+                                    @foreach($tasks as $task)
+                                        <tr>
+                                            <td>
+                                                <p>
+                                                @if ($task->category_templates->name === "00. Client Data")
+                                                <span class="badge-xs badge bg-info  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
+                                                @elseif ($task->category_templates->name === "A. Pre engagement")
+                                                <span class="badge-xs badge bg-warning  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
+                                                @elseif ($task->category_templates->name === "B. Risk Assessment")
+                                                <span class="badge-xs badge bg-danger  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
+                                                @elseif ($task->category_templates->name === "C. Risk Response")
+                                                <span class="badge-xs badge bg-success  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
+                                                @elseif ($task->category_templates->name === "D. Conclution and Completion")
+                                                <span class="badge-xs badge bg-dark  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
+                                                @endif
+                                                </p>
+                                                <span class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.show',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}}">{{$task->name}}</a></span>
+                                                <span class="d-flex text-sm text-muted justify-content-between">
+                                            <p class="m-0">{{ $task->project->project_name }}</p>
+                                                @if ($task->stage_id == 1)
+                                                <span class="me-5 badge bg-primary p-2 px-3 rounded">{{ $task->stage->name }}</span>
+                                                @elseif ($task->stage_id == 2)
+                                                <span class="me-5 badge bg-info p-2 px-3 rounded">{{ $task->stage->name }}</span>
+                                                @elseif ($task->stage_id == 3)
+                                                <span class="me-5 badge bg-warning p-2 px-3 rounded">{{ $task->stage->name }}</span>
+                                                @elseif ($task->stage_id == 4)
+                                                <span class="me-5 badge bg-success p-2 px-3 rounded">{{ $task->stage->name }}</span>
+                                                @endif
+                                            </td>
+                                            <td class="{{ (strtotime($task->end_date) < time()) ? 'text-danger' : '' }}">{{ Utility::getDateFormated($task->end_date) }}</td>
+                                            <td>
+                                                <div class="avatar-group">
+                                                    @if($task->users()->count() > 0)
+                                                        @if($users = $task->users())
+                                                            @foreach($users as $key => $user)
+                                                                @if($key< 3)
+                                                                    <a href="#" class="avatar rounded-circle avatar-sm">
+                                                                        <img data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset('/storage/uploads/avatar/avatar.png')}}" @endif title="{{ $user->name }}" class="hweb">
+                                                                    </a>
+                                                                    {{ $user->name }}
+                                                                @else
+                                                                    @break
+                                                                @endif
+                                                            @endforeach
+                                                        @endif
+                                                        @if(count($users) > 3)
+                                                            <a href="#" class="avatar rounded-circle avatar-sm">
+                                                                <img  data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset('/storage/uploads/avatar/avatar.png')}}" @endif class="hweb">
+                                                            </a>
+                                                            {{ $user->name }}
+                                                        @endif
+                                                    @else
+                                                        {{ __('-') }}
+                                                    @endif
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="status_badge badge p-2 px-3 rounded bg-{{__(\App\Models\ProjectTask::$priority_color[$task->priority])}}">{{ __(\App\Models\ProjectTask::$priority[$task->priority]) }}</span>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <span class="completion mr-2">{{ $task->taskProgress()['percentage'] }}</span>
+                                                    {{--<div>
+                                                        <div class="progress" style="width: 100px;">
+                                                            <div class="progress-bar bg-{{ $task->taskProgress()['color'] }}" role="progressbar" aria-valuenow="{{ $task->taskProgress()['percentage'] }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ $task->taskProgress()['percentage'] }};"></div>
+                                                        </div>
+                                                    </div>--}}
+                                                </div>
+                                            </td>
+                                            <td class="text-end w-15">
+                                                <div class="actions">
+                                                    <a class="action-item px-1" data-bs-toggle="tooltip" title="{{__('Attachment')}}" data-original-title="{{__('Attachment')}}">
+                                                        <i class="ti ti-paperclip mr-2"></i>{{ count($task->taskFiles) }}
+                                                    </a>
+                                                    <a class="action-item px-1" data-bs-toggle="tooltip" title="{{__('Comment')}}" data-original-title="{{__('Comment')}}">
+                                                        <i class="ti ti-brand-hipchat mr-2"></i>{{ count($task->comments) }}
+                                                    </a>
+                                                    <a class="action-item px-1" data-bs-toggle="tooltip" title="{{__('Checklist')}}" data-original-title="{{__('Checklist')}}">
+                                                        <i class="ti ti-list-check mr-2"></i>{{ $task->countTaskChecklist() }}
+                                                    </a>
+                                                </div>
+                                            </td>
+                                            <td class="Action">
+                                                <span>
+                                                    @if(Auth::user()->type == "client")    
+                                                        @can('edit project task')
+                                                            <div class="action-btn bg-primary ms-2">
+                                                                <a href="#!" data-size="lg" data-url="{{ route('projects.tasks.edit',[$project->id,$task->id]) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Invite Member To ').$task->name}}"
+                                                                class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="Edit "
+                                                                data-original-title="{{ __('Invite User') }}">
+                                                                    <i class="ti ti-send text-white"></i>
+                                                                </a>
+                                                            </div>
+                                                        @endcan
+                                                    @else
+                                                        @can('edit project task')
+                                                            <div class="action-btn bg-primary ms-2">
+                                                                <a href="#!" data-size="lg" data-url="{{ route('projects.tasks.edit',[$project->id,$task->id]) }}" data-ajax-popup="true" 
+                                                                class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" data-bs-original-title="{{__('Edit ').$task->name}}">
+                                                                    <i class="ti ti-pencil text-white"></i>
+                                                                </a>
+                                                            </div>
+                                                        @endcan
+                                                    @endif
+                                                    @can('delete project task')
+                                                        <div class="action-btn bg-danger ms-2">
+                                                        {!! Form::open(['method' => 'DELETE', 'route' => ['projects.tasks.destroy', [$project->id,$task->id]]]) !!}
+                                                                    <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para " data-bs-toggle="tooltip" title="{{__('Delete')}}"
+                                                                       data-original-title="{{ __('Delete') }}"
+                                                                       data-confirm="{{ __('Are You Sure?') . '|' . __('This action can not be undone. Do you want to continue?') }}"
+                                                                       data-confirm-yes="document.getElementById('delete-form-{{ $task->id }}').submit();">
+                                                                        <i class="ti ti-trash text-white"></i>
+                                                                    </a>
+                                                                {!! Form::close() !!}
+                                                            </div>
+                                                    @endcan
+                                                </span>
+                                        </td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr>
+                                        <th scope="col" colspan="7"><h6 class="text-center">{{__('No tasks found')}}</h6></th>
+                                    </tr>
+                                @endif
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

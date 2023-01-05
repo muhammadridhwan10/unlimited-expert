@@ -9,6 +9,7 @@ use App\Models\TaskFile;
 use App\Models\Bug;
 use App\Models\User;
 use App\Models\ProjectUser;
+use App\Models\CategoryTemplate;
 use App\Models\BugStatus;
 use App\Models\TaskStage;
 use App\Models\ActivityLog;
@@ -24,57 +25,61 @@ use App\Mail\CommentNotification;
 
 class ProjectTaskController extends Controller
 {
-    public function index($project_id)
+    public function index(Request $request, $project_id)
     {
         $usr = \Auth::user();
         if(\Auth::user()->can('manage project task'))
         {
             if($usr->type == 'admin')
             {
-                $project = Project::find($project_id);
-                $stages  = TaskStage::orderBy('order')->get();
-                foreach($stages as $status)
+                $category_template_id       = CategoryTemplate::all()->pluck('name', 'id');
+                $category_template_id->prepend('All', '');
+                $project    = Project::find($project_id);
+                $taskss      = ProjectTask::where('project_id', '=', $project_id)->get();
+                if(!empty($request->category_template_id))
                 {
-                    $stageClass[] = 'task-list-' . $status->id;
-                    $task         = ProjectTask::where('project_id', '=', $project_id);
-                    // check project is shared or owner
-
-                    //end
-                    $task->orderBy('order');
-                    $status['tasks'] = $task->where('stage_id', '=', $status->id)->get();
+                    $tasks = $taskss->where('category_template_id', '=', $request->category_template_id);         
+                }elseif($request->category_template_id = 'All')
+                {
+                    $tasks = ProjectTask::where('project_id', '=', $project_id)->get();
                 }
+
+                return view('project_task.index', compact('tasks','category_template_id','project'));
             }
             elseif($usr->type == 'company')
             {
-                $project = Project::find($project_id);
-                $stages  = TaskStage::orderBy('order')->get();
-                foreach($stages as $status)
+                $category_template_id       = CategoryTemplate::all()->pluck('name', 'id');
+                $category_template_id->prepend('All', '');
+                $project    = Project::find($project_id);
+                $taskss      = ProjectTask::where('project_id', '=', $project_id)->get();
+                if(!empty($request->category_template_id))
                 {
-                    $stageClass[] = 'task-list-' . $status->id;
-                    $task         = ProjectTask::where('project_id', '=', $project_id);
-                    // check project is shared or owner
-
-                    //end
-                    $task->orderBy('order');
-                    $status['tasks'] = $task->where('stage_id', '=', $status->id)->get();
-                }
-            }
-            else{
-                $project = Project::find($project_id);
-                $stages  = TaskStage::orderBy('order')->where('created_by',\Auth::user()->creatorId())->get();
-                foreach($stages as $status)
+                    $tasks = $taskss->where('category_template_id', '=', $request->category_template_id);         
+                }elseif($request->category_template_id = 'All')
                 {
-                    $stageClass[] = 'task-list-' . $status->id;
-                    $task         = ProjectTask::where('project_id', '=', $project_id);
-                    // check project is shared or owner
-    
-                    //end
-                    $task->orderBy('order');
-                    $status['tasks'] = $task->where('stage_id', '=', $status->id)->get();
+                    $tasks = ProjectTask::where('project_id', '=', $project_id)->get();
                 }
+
+                return view('project_task.index', compact('tasks','category_template_id','project'));
+            }
+            else
+            {
+                $category_template_id       = CategoryTemplate::all()->pluck('name', 'id');
+                $category_template_id->prepend('All', '');
+                $project    = Project::find($project_id);
+                $taskss      = ProjectTask::where('project_id', '=', $project_id)->get();
+                if(!empty($request->category_template_id))
+                {
+                    $tasks = $taskss->where('category_template_id', '=', $request->category_template_id);         
+                }elseif($request->category_template_id = 'All')
+                {
+                    $tasks = ProjectTask::where('project_id', '=', $project_id)->get();
+                }
+                
+                return view('project_task.index', compact('tasks','category_template_id','project'));
             }
 
-            return view('project_task.index', compact('stages', 'stageClass', 'project'));
+            
         }
         else
         {
@@ -327,8 +332,9 @@ class ProjectTaskController extends Controller
             $project = Project::find($project_id);
             $task    = ProjectTask::find($task_id);
             $hrs     = Project::projectHrs($project_id);
+            $taskstage   = TaskStage::get()->pluck('name', 'id');
 
-            return view('project_task.edit', compact('project', 'task', 'hrs'));
+            return view('project_task.edit', compact('project', 'taskstage', 'task', 'hrs'));
         }
         else
         {
@@ -357,6 +363,13 @@ class ProjectTaskController extends Controller
             $post = $request->all();
             $task = ProjectTask::find($task_id);
             $task->update($post);
+
+            if($task->stage_id == 4)
+            {
+                $task->is_complete = 1;
+            }
+
+            $task->save();
 
             return redirect()->back()->with('success', __('Task Updated successfully.'));
         }

@@ -105,6 +105,12 @@
                     {{ Form::date('end_date', null, ['class' => 'form-control']) }}
                 </div>
             </div>
+            <div class="col-6">
+                <div class="form-group">
+                    {{ Form::label('stage_id', __('Stage'),['class' => 'form-label']) }}
+                    {{ Form::select('stage_id', $taskstage, null, ['class' => 'form-control']) }}
+                </div>
+            </div>
         </div>
         <div class="form-group">
             <label class="form-label">{{__('Task members')}}</label>

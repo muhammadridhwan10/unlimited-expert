@@ -19,7 +19,7 @@
                 </div>
     </div>
     <div class="float-end">
-        <a href="#" data-size="md" data-url="{{ route('clients.create') }}" data-ajax-popup="true"  data-bs-toggle="tooltip" title="{{__('Create')}}"  class="btn btn-sm btn-primary">
+        <a href="#" data-size="lg" data-url="{{ route('clients.create') }}" data-ajax-popup="true"  data-bs-toggle="tooltip" title="{{__('Create')}}"  class="btn btn-sm btn-primary">
             <i class="ti ti-plus"></i>
         </a>
     </div>

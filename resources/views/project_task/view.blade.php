@@ -93,14 +93,14 @@
                                 @if(\Auth::user()->type != 'client')
                                     <input type="checkbox" class="form-check-input" id="check-item-{{ $checklist->id }}" @if($checklist->status) checked @endif data-url="{{route('checklist.update',[$task->project_id,$checklist->id])}}">
                                 @endif
-                                    <label class="form-check-label h6 text-sm" for="check-item-{{ $checklist->id }}"><a> {{ $checklist->name }}</a></label> 
+                                    <label class="form-check-label h6 text-sm" for="check-item-{{ $checklist->id }}"><a href="{{ $checklist->link }}" target="_blank"> {{ $checklist->name }}</a></label> 
                                 </div>
                             </div>
-                            <div class="col-10">
+                            <!-- <div class="col-10">
                                 <div class="form-check form-check-inline">
                                     <label class="form-check-label h6 text-sm" for="check-item-{{ $checklist->id }}"><a href="{{ $checklist->link }}" target="_blank"> {{ $checklist->link }}</a></label> 
                                 </div>
-                            </div>
+                            </div> -->
                             <div class="col-auto">
                             @if(\Auth::user()->type != 'client')
                                 <div class="action-btn bg-danger ms-2">

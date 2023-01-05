@@ -116,13 +116,13 @@
         <div class="col-sm-4">
             <div class="form-group">
                 {{ Form::label('client_business_sector_id', __('Client Business Sector'), ['class' => 'form-label']) }}
-                {{ Form::text('client_business_sector_id', $project->user->business_sector->name, array('class' => 'form-control', 'readonly' => 'true')) }}
+                {{ Form::text('client_business_sector_id', !empty($project->user->business_sector->name)? $project->user->business_sector->name:'' , array('class' => 'form-control', 'readonly' => 'true')) }}
             </div>
         </div>
         <div class="col-sm-4">
             <div class="form-group">
                 {{ Form::label('client_accounting_standard_id', __('Client Accounting Standard'), ['class' => 'form-label']) }}
-                {{ Form::text('client_accounting_standard_id', $project->user->accounting_standard->name, array('class' => 'form-control', 'readonly' => 'true')) }}
+                {{ Form::text('client_accounting_standard_id', !empty($project->user->accounting_standard->name)? $project->user->accounting_standard->name:'', array('class' => 'form-control', 'readonly' => 'true')) }}
             </div>
         </div>
     </div>
@@ -132,7 +132,7 @@
         <div class="col-sm-4">
         <div class="form-group">
             {{ Form::label('client_ownership_status_id', __('Client Ownership Status'), ['class' => 'form-label']) }}
-            {{ Form::text('client_ownership_status_id', $project->user->ownership_status->name, array('class' => 'form-control', 'readonly' => 'true')) }}
+            {{ Form::text('client_ownership_status_id', !empty($project->user->ownership_status->name)? $project->user->ownership_status->name:'', array('class' => 'form-control', 'readonly' => 'true')) }}
         </div>
         </div>
         <div class="col-sm-4">

@@ -34,11 +34,11 @@ class ProjectTask extends Model
     ];
 
     public static $filter=[
-        'Client Data' => 'Client Data',
-        'Pre engagement' => 'Pre engagement',
-        'Risk Assessment' => 'Risk Assessment',
-        'Risk Response' => 'Risk Response',
-        'Conclution and Completion' => 'Conclution and Completion',
+        '00. Client Data' => 'Client Data',
+        'A. Pre engagement' => 'Pre engagement',
+        'B. Risk Assessment' => 'Risk Assessment',
+        'C. Risk Response' => 'Risk Response',
+        'D. Conclution and Completion' => 'Conclution and Completion',
     ];
 
     public static $priority = [
