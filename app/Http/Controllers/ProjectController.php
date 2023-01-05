@@ -23,6 +23,7 @@ use App\Models\ProjectUser;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use App\Mail\InviteMemberNotification;
 
 class ProjectController extends Controller
 {
@@ -653,15 +654,27 @@ class ProjectController extends Controller
         $authuser = Auth::user();
 
         // Make entry in project_user tbl
-        ProjectUser::create(
-            [
-                'project_id' => $request->project_id,
-                'user_id' => $request->user_id,
-                'invited_by' => $authuser->id,
-            ]
-        );
+
+        $post                   = [];
+        $post['project_id']     = $request->project_id;
+        $post['user_id']        = $request->user_id;
+        $post['invited_by']     = $authuser->id;
+
+        $inviteuser = ProjectUser::create($post);
+
+            
+        // ProjectUser::create(
+        //     [
+        //         'project_id' => $request->project_id,
+        //         'user_id' => $request->user_id,
+        //         'invited_by' => $authuser->id,
+        //     ]
+        // );
 
         $users = User::where('id', $request->user_id)->pluck('name');
+
+        $member = User::where('id', $request->user_id)->pluck('email');
+        Mail::to($member)->send(new InviteMemberNotification($inviteuser));
 
         $firebaseToken = User::where('id', $request->user_id)->whereNotNull('device_token')->pluck('device_token');
         $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';

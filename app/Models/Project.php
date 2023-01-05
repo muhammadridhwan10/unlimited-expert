@@ -65,6 +65,11 @@ class Project extends Model
         return $this->belongsTo(User::class, "client_id", "id");
     }
 
+    public function accountant()
+    {
+        return $this->belongsTo(PublicAccountant::class, "public_accountant_id", "id");
+    }
+
     protected $appends = ['img_image'];
 
     // Make new attribute for directly get image

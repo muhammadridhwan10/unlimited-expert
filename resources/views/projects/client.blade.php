@@ -26,9 +26,7 @@
         <div class="col-sm-4">
             <div class="form-group">
                 {{ Form::label('auditor_identity', __('Public Accountant Firm Name (KAP)'), ['class' => 'form-label']) }}
-                @foreach ($clients as $kap )
-                    {{ Form::text('client', $kap, array('class' => 'form-control', 'readonly' => 'true')) }}
-                @endforeach
+                {{ Form::text('client', !empty($project->accountant->office->name) ? $project->accountant->office->name:'', array('class' => 'form-control', 'readonly' => 'true')) }}
             </div>
         </div>
         <div class="col-sm-4">
@@ -48,9 +46,7 @@
         <div class="col-sm-4">
             <div class="form-group">
                 {{ Form::label('auditor_identity', __('Public Accountant Name (AP)'), ['class' => 'form-label']) }}
-                @foreach ($clients as $kap )
-                    {{ Form::text('client', $kap, array('class' => 'form-control', 'readonly' => 'true')) }}
-                @endforeach
+                {{ Form::text('client', !empty($project->accountant->name) ? $project->accountant->name:'', array('class' => 'form-control', 'readonly' => 'true')) }}
             </div>
         </div>
         <div class="col-sm-4">
