@@ -222,11 +222,12 @@
             $(document).on('click', '#checklist_submit', function () {
                 var name = $("#form-checklist input[name=name]").val();
                 var link = $("#form-checklist input[name=link]").val();
+                var parent_id = $("#form-checklist select[name=parent_id]").val();
                 var description = $("#form-checklist input[name=description]").val();
                 if (name != '') {
                     $.ajax({
                         url: $("#form-checklist").data('action'),
-                        data: {link: link, description: description, name: name, "_token": "{{ csrf_token() }}"},
+                        data: {parent_id: parent_id, link: link, description: description, name: name, "_token": "{{ csrf_token() }}"},
                         type: 'POST',
                         success: function (data) {
                             data = JSON.parse(data);
@@ -246,6 +247,9 @@
                             '                            <div class="form-check form-check-inline">' +
                             '                                <label class="form-check-label h6 text-sm text-black" for="check-item-' + data.id + '"><a>' + data.description + '</a></label>' +
                             '                            </div>' +
+                            '                            <div class="form-check form-check-inline">' +
+                            '                                <label class="form-check-label h6 text-sm text-black" for="check-item-' + data.id + '"><a>' + data.parent_id + '</a></label>' +
+                            '                            </div>' +
                             '                        </div>' +
                             '                        <div class="col-auto"> <div class="action-btn bg-danger ms-2">' +
                             '                            <a href="#" class="mx-3 btn btn-sm  align-items-center delete-link" role="button" data-url="' + data.deleteUrl + '">' +
@@ -259,6 +263,7 @@
                             $("#form-checklist input[name=name]").val('');
                             $("#form-checklist input[name=link]").val('');
                             $("#form-checklist input[name=description]").val('');
+                            $("#form-checklist input[select=parent_id]").val('');
                             $("#form-checklist").collapse('toggle');
                         },
                         error: function (data) {
@@ -435,6 +440,33 @@
                 });
             });
 
+            $("#browser").treeview();
+
+            // second example
+            $("#navigation").treeview({
+                persist: "location",
+                collapsed: true,
+                unique: true
+            });
+
+            // third example
+            $("#red").treeview({
+                animated: "fast",
+                collapsed: true,
+                unique: true,
+                persist: "cookie",
+                toggle: function() {
+                    window.console && console.log("%o was toggled", this);
+                }
+            });
+
+            // fourth example
+            $("#black, #gray").treeview({
+                control: "#treecontrol",
+                persist: "cookie",
+                cookieId: "treeview-black"
+            });
+
             /*Progress Move*/
             $(document).on('change', '#task_progress', function () {
                 var progress = $(this).val();
@@ -499,6 +531,9 @@
     <li class="breadcrumb-item"><a href="{{route('projects.show',$project->id)}}">    {{ucwords($project->project_name)}}</a></li>
     <li class="breadcrumb-item">{{__('Task')}}</li>
 @endsection
+@push('script-page')
+    <script src="{{asset('js/jquery-treeview.js')}}"></script>
+@endpush
 @section('action-btn')
     <div class="float-end">
             <a class="btn btn-sm btn-primary" data-bs-toggle="collapse" href="#multiCollapseExample1" role="button" aria-expanded="false" aria-controls="multiCollapseExample1" data-bs-toggle="tooltip" title="{{__('Filter')}}">

@@ -14,7 +14,13 @@ class TaskChecklist extends Model
         'user_type',
         'created_by',
         'status',
+        'parent_id',
     ];
+
+    public function subtasks()
+    {
+        return $this->hasMany(TaskChecklist::class, 'parent_id','id');
+    }
 
     public function user()
     {

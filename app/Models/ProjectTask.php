@@ -124,7 +124,7 @@ class ProjectTask extends Model
 
     public function countTaskChecklist()
     {
-        return $this->checklist->where('status', '=', 1)->count() . '/' . $this->checklist->count();
+        return $this->checklist->where('status', '=', 1)->count() . '/' . $this->checklist->where('parent_id','=', 0)->count();
     }
 
     public static function deleteTask($task_ids)

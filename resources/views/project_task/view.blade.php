@@ -78,33 +78,48 @@
                                     <i class="ti ti-check"></i>
                                 </button>
                             </div>
-                            <div class="col-10">
+                            <div class="col-10 mb-3">
                                 <input type="url" name="link" required class="form-control" placeholder="{{__('https://example.com')}}"/>
+                            </div>
+                            <div class="col-10">
+                                <select id="parent_id" name="parent_id" class="form-control" required>
+                                    <option value="0">Parent</option>
+                                    @foreach ($task->checklist as $childtask)
+                                    <option value="{{ $childtask->id }}">{{ $childtask->name }}</option>
+                                    @endforeach
+                                </select>
                             </div>
                         </div>
                     </div>
                 </form>
 
-                @foreach($task->checklist as $checklist)
+                @foreach($subtask as $category)
                     <div class="card border shadow-none checklist-member">
                         <div class="px-3 py-2 row align-items-center">
                             <div class="col-10">
                                 <div class="form-check form-check-inline">
                                 @if(\Auth::user()->type != 'client')
-                                    <input type="checkbox" class="form-check-input" id="check-item-{{ $checklist->id }}" @if($checklist->status) checked @endif data-url="{{route('checklist.update',[$task->project_id,$checklist->id])}}">
+                                    <input type="checkbox" class="form-check-input" id="check-item-{{ $category->id }}" @if($category->status) checked @endif data-url="{{route('checklist.update',[$task->project_id,$category->id])}}">
                                 @endif
-                                    <label class="form-check-label h6 text-sm" for="check-item-{{ $checklist->id }}"><a href="{{ $checklist->link }}" target="_blank"> {{ $checklist->name }}</a></label> 
+                                    <label class="form-check-label h6 text-sm" for="check-item-{{ $category->id }}"><a href="{{ $category->link }}" target="_blank"> {{ $category->name }}</a></label> 
+                                    @if(count($category->subtasks))
+                                    <ul>
+                                            @foreach($category->subtasks as $subtask)
+                                                    <li class="form-check-label h6 text-sm"><a href="{{ $subtask->link }}" target="_blank"> {{ $subtask->name }}</a></li>
+                                            @endforeach
+                                    </ul>
+                                    @endif
                                 </div>
                             </div>
                             <!-- <div class="col-10">
                                 <div class="form-check form-check-inline">
-                                    <label class="form-check-label h6 text-sm" for="check-item-{{ $checklist->id }}"><a href="{{ $checklist->link }}" target="_blank"> {{ $checklist->link }}</a></label> 
+                                    <label class="form-check-label h6 text-sm" for="check-item-{{ $category->id }}"><a href="{{ $category->link }}" target="_blank"> {{ $category->link }}</a></label> 
                                 </div>
                             </div> -->
                             <div class="col-auto">
                             @if(\Auth::user()->type != 'client')
                                 <div class="action-btn bg-danger ms-2">
-                                    <a href="#" class="mx-3 btn btn-sm  align-items-center delete-checklist" data-url="{{ route('checklist.destroy',[$task->project_id,$checklist->id]) }}">
+                                    <a href="#" class="mx-3 btn btn-sm  align-items-center delete-checklist" data-url="{{ route('checklist.destroy',[$task->project_id,$category->id]) }}">
                                         <i data-bs-toggle="tooltip" title="{{__('Delete')}}" class="ti ti-trash text-white"></i>
                                     </a>
                                 </div>
@@ -112,7 +127,7 @@
                             </div>
                             <div class="col-10">
                                 <div class="form-check form-check-inline">
-                                    <label class="form-check-label h6 text-sm text-black" for="check-item-{{ $checklist->id }}"><a>{{ $checklist->description }}</a></label> 
+                                    <label class="form-check-label h6 text-sm text-black" for="check-item-{{ $category->id }}"><a>{{ $category->description }}</a></label> 
                                 </div>
                             </div>
                         </div>
@@ -121,7 +136,7 @@
                         <div class="px-3 py-2 row align-items-center">
                             <div class="col">
                                 <div class="form-check form-check-inline">
-                                    <label class="form-check-label h6 text-sm" for="check-item-{{ $checklist->id }}">{{ $checklist->link }}</label>
+                                    <label class="form-check-label h6 text-sm" for="check-item-{{ $category->id }}">{{ $category->link }}</label>
                                 </div>
                             </div>
                         </div>

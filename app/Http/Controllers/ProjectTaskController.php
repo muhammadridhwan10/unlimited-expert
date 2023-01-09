@@ -316,8 +316,9 @@ class ProjectTaskController extends Controller
         {
             $allow_progress = Project::find($project_id)->task_progress;
             $task           = ProjectTask::find($task_id);
+            $subtask        = TaskChecklist::where('task_id', $task_id)->where('parent_id', 0)->get();
 
-            return view('project_task.view', compact('task', 'allow_progress'));
+            return view('project_task.view', compact('task','subtask', 'allow_progress'));
         }
         else
         {
@@ -517,6 +518,7 @@ class ProjectTaskController extends Controller
             $post['user_type']          = 'User';
             $post['created_by']         = \Auth::user()->id;
             $post['status']             = 0;
+            $post['parent_id']          = $request->parent_id;
 
             $checkList            = TaskChecklist::create($post);
             $user                 = $checkList->user;
