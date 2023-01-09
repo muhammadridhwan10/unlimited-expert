@@ -84,7 +84,7 @@ class ProjectTask extends Model
         $project    = Project::find($this->project_id);
         $percentage = 0;
 
-        $total_checklist     = $this->checklist->count();
+        $total_checklist     = $this->checklist->where('parent_id','=',0)->count();
         $completed_checklist = $this->checklist()->where('status', '=', '1')->count();
 
         if($total_checklist > 0)
