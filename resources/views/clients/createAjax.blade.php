@@ -40,12 +40,6 @@
         </div>
         <div class="col-6">
             <div class="form-group">
-                {{ Form::label('book_year', __('Book Year'),['class'=>'form-label']) }}
-                {{ Form::text('book_year', null, array('class' => 'form-control','placeholder'=>__('Enter Book Year'))) }}
-            </div>
-        </div>
-        <div class="col-6">
-            <div class="form-group">
                 {{ Form::label('engagement_type', __('Engagement Type'),['class'=>'form-label']) }}
                 {{ Form::text('engagement_type', null, array('class' => 'form-control','placeholder'=>__('Enter Engagement Type'))) }}
             </div>

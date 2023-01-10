@@ -6,7 +6,7 @@
                     <div class="card-header border-0 pb-0">
                         <div class="d-flex align-items-center">
                             <img {{ $project->img_image }} class="img-fluid wid-30 me-2" alt="">
-                            <h5 class="mb-0"><a class="text-dark" href="{{ route('projects.show',$project) }}">{{ $project->project_name }}</a></h5>
+                            <h5 class="mb-0"><a class="text-dark" href="{{ route('projects.show',$project) }}">{{ $project->project_name }} {{$project->book_year}}</a></h5>
                         </div>
                         <div class="card-header-right">
                             <div class="btn-group card-option">
@@ -15,7 +15,7 @@
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-end">
                                     @can('edit project')
-                                        <a href="#!" data-size="lg" data-url="{{ route('projects.edit', $project->id) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Edit User')}}">
+                                        <a href="#!" data-size="lg" data-url="{{ route('projects.edit', $project->id) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Edit Project')}}">
                                             <i class="ti ti-pencil"></i>
                                             <span>{{__('Edit')}}</span>
                                         </a>

@@ -76,10 +76,16 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-12 col-md-12">
+        <div class="col-sm-6 col-md-6">
             <div class="form-group">
                 {{ Form::label('tag', __('Tag'), ['class' => 'form-label']) }}
                 {{ Form::text('tag', null, ['class' => 'form-control', 'data-toggle' => 'tags']) }}
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-6">
+            <div class="form-group">
+                {{ Form::label('book_year', __('Book Year'),['class'=>'form-label']) }}
+                {{ Form::text('book_year', null, array('class' => 'form-control','placeholder'=>__('Enter Book Year'))) }}
             </div>
         </div>
     </div>

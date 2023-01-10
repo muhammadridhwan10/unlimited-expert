@@ -52,12 +52,6 @@
         </div>
         <div class="col-6">
             <div class="form-group">
-                {{ Form::label('book_year', __('Book Year'),['class'=>'form-label']) }}
-                {{ Form::text('book_year', null, array('class' => 'form-control','placeholder'=>__('Enter Book Year'))) }}
-            </div>
-        </div>
-        <div class="col-6">
-            <div class="form-group">
                 {{ Form::label('engagement_type', __('Engagement Type'), ['class' => 'form-label']) }}
                 <select name="engagement_type" id="engagement_type" class="form-control main-element">
                     @foreach(\App\Models\User::$engagement_type as $et => $v)

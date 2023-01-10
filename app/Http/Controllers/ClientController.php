@@ -127,7 +127,6 @@ class ClientController extends Controller
                                 'npwp' => $request->npwp,
                                 'client_business_sector_id' => $request->client_business_sector_id,
                                 'client_ownership_status_id' => $request->client_ownership_status_id,
-                                'book_year' => $request->book_year,
                                 'engagement_type' => $request->engagement_type,
                                 'engagement_types' => $request->engagement_types,
                                 'auditing_standard' => $request->auditing_standard,
@@ -418,7 +417,6 @@ class ClientController extends Controller
                 $post['npwp'] = $request->npwp;
                 $post['client_business_sector_id'] = $request->client_business_sector_id;
                 $post['client_ownership_status_id'] = $request->client_ownership_status_id;
-                $post['book_year'] = $request->book_year;
                 $post['engagement_type'] = $request->engagement_type;
                 $post['engagement_types'] = $request->engagement_types;
                 $post['auditing_standard'] = $request->auditing_standard;
@@ -458,7 +456,6 @@ class ClientController extends Controller
                 $post['npwp'] = $request->npwp;
                 $post['client_business_sector_id'] = $request->client_business_sector_id;
                 $post['client_ownership_status_id'] = $request->client_ownership_status_id;
-                $post['book_year'] = $request->book_year;
                 $post['engagement_type'] = $request->engagement_type;
                 $post['engagement_types'] = $request->engagement_types;
                 $post['auditing_standard'] = $request->auditing_standard;
@@ -500,7 +497,6 @@ class ClientController extends Controller
                 $post['npwp'] = $request->npwp;
                 $post['client_business_sector_id'] = $request->client_business_sector_id;
                 $post['client_ownership_status_id'] = $request->client_ownership_status_id;
-                $post['book_year'] = $request->book_year;
                 $post['engagement_type'] = $request->engagement_type;
                 $post['engagement_types'] = $request->engagement_types;
                 $post['auditing_standard'] = $request->auditing_standard;

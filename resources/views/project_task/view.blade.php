@@ -105,7 +105,14 @@
                                     @if(count($category->subtasks))
                                     <ul>
                                             @foreach($category->subtasks as $subtask)
-                                                    <li class="form-check-label h6 text-sm"><a href="{{ $subtask->link }}" target="_blank"> {{ $subtask->name }}</a></li>
+                                                    <li class="form-check-label h6 text-sm">
+                                                        <a href="{{ $subtask->link }}" target="_blank"> {{ $subtask->name }}</a>
+                                                        <div class="action-btn h6">
+                                                            <a href="#" data-size="lg" class="mx-3 btn btn-sm  align-items-center text-info" data-ajax-popup="true" data-url="{{ route('subtask.edit',[$task->project_id, $subtask->id]) }}" data-bs-original-title="{{__('Edit ').$category->name}}">
+                                                                {{__('Edit')}}
+                                                            </a>
+                                                        </div>
+                                                    </li>
                                             @endforeach
                                     </ul>
                                     @endif
@@ -118,6 +125,11 @@
                             </div> -->
                             <div class="col-auto">
                             @if(\Auth::user()->type != 'client')
+                                <div class="action-btn bg-primary ms-2">
+                                    <a href="#" data-size="lg" class="mx-3 btn btn-sm  align-items-center" data-ajax-popup="true" data-url="{{ route('subtask.edit',[$task->project_id,$category->id]) }}" data-bs-original-title="{{__('Edit ').$category->name}}">
+                                        <i data-bs-toggle="tooltip" title="{{__('Edit')}}" class="ti ti-pencil text-white"></i>
+                                    </a>
+                                </div>
                                 <div class="action-btn bg-danger ms-2">
                                     <a href="#" class="mx-3 btn btn-sm  align-items-center delete-checklist" data-url="{{ route('checklist.destroy',[$task->project_id,$category->id]) }}">
                                         <i data-bs-toggle="tooltip" title="{{__('Delete')}}" class="ti ti-trash text-white"></i>

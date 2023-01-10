@@ -20,6 +20,7 @@ use Carbon\Carbon;
 use App\Models\ActivityLog;
 use App\Models\ProjectTask;
 use App\Models\ProjectUser;
+use App\Models\TaskStage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -145,6 +146,7 @@ class ProjectController extends Controller
             $project->description = $request->description;
             $project->status = $request->status;
             $project->estimated_hrs = $request->estimated_hrs;
+            $project->book_year = $request->book_year;
             $project->tags = $request->tag;
             $project->created_by = \Auth::user()->creatorId();
             $project->save();
@@ -523,6 +525,7 @@ class ProjectController extends Controller
             $project->description = $request->description;
             $project->status = $request->status;
             $project->estimated_hrs = $request->estimated_hrs;
+            $project->book_year = $request->book_year;
             $project->tags = $request->tag;
             $project->save();
 
@@ -1560,6 +1563,42 @@ class ProjectController extends Controller
         {
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
+    }
+
+    public function getProjectChart($arrParam)
+    {
+        $arrDuration = [];
+        if ($arrParam['duration'] && $arrParam['duration'] == 'week') {
+            $previous_week = Utility::getFirstSeventhWeekDay(-1);
+            foreach ($previous_week['datePeriod'] as $dateObject) {
+                $arrDuration[$dateObject->format('Y-m-d')] = $dateObject->format('D');
+            }
+        }
+
+        $arrTask = [
+            'label' => [],
+            'color' => [],
+        ];
+        $stages = TaskStage::where('created_by', '=', $arrParam['created_by'])->orderBy('order');
+
+        foreach ($arrDuration as $date => $label) {
+            $objProject = projectTask::select('stage_id', \DB::raw('count(*) as total'))->whereDate('updated_at', '=', $date)->groupBy('stage_id');
+
+            if (isset($arrParam['project_id'])) {
+                $objProject->where('project_id', '=', $arrParam['project_id']);
+            }
+
+
+            $data = $objProject->pluck('total', 'stage_id')->all();
+
+            foreach ($stages->pluck('name', 'id')->toArray() as $id => $stage) {
+                $arrTask[$id][] = isset($data[$id]) ? $data[$id] : 0;
+            }
+            $arrTask['label'][] = __($label);
+        }
+        $arrTask['stages'] = $stages->pluck('name', 'id')->toArray();
+
+        return $arrTask;
     }
 
 }

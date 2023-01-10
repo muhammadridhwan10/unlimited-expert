@@ -532,7 +532,6 @@
     <li class="breadcrumb-item">{{__('Task')}}</li>
 @endsection
 @push('script-page')
-    <script src="{{asset('js/jquery-treeview.js')}}"></script>
 @endpush
 @section('action-btn')
     <div class="float-end">

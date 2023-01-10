@@ -38,7 +38,7 @@
         <div class="col-sm-4">
             <div class="form-group">
                 {{ Form::label('book_year', __('Book Year'), ['class' => 'form-label']) }}
-                {{ Form::text('book_year', $project->user->book_year, array('class' => 'form-control', 'readonly' => 'true')) }}
+                {{ Form::text('book_year', $project->book_year, array('class' => 'form-control', 'readonly' => 'true')) }}
             </div>
         </div>
     </div>

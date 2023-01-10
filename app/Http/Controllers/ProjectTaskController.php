@@ -1255,4 +1255,47 @@ class ProjectTaskController extends Controller
         $task->end_date   = $request->end;
         $task->save();
     }
+
+    public function subtaskEdit($projectID, $checklistID)
+    {
+        if(\Auth::user()->can('edit project task'))
+        {
+            $project    = Project::find($projectID);
+            $subtask    = TaskChecklist::find($checklistID);
+            $task       = ProjectTask::find($subtask->task_id);
+
+            return view('project_task.edit_subtask', compact('project', 'task', 'subtask'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function subtaskUpdate(Request $request,$projectID, $checklistID)
+    {
+
+        if(\Auth::user()->can('view project task'))
+        {
+            $post = $request->all();
+            $subtask = TaskChecklist::find($checklistID);
+            $subtask->update($post);
+
+            // ActivityLog::create(
+            //     [
+            //         'user_id' => \Auth::user()->id,
+            //         'project_id' => $projectID,
+            //         'task_id' => $checkList->task_id,
+            //         'log_type' => 'Update Sub Task',
+            //         'remark' => json_encode(['title' => $checkList->name]),
+            //     ]
+            // );
+
+            return redirect()->back()->with('success', __(' Sub Task Updated successfully.'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
 }

@@ -33,7 +33,7 @@
                         @can('create timesheet')
                             <div class="col text-end project_tasks_select">
                                 <div class="dropdown btn btn-sm p-0">
-                                    <a class=" btn btn-primary add-small " role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                                    <a class=" btn btn-primary add-small " role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
                                         <i class="ti ti-plus mr-2"></i>{{__('Add Task on Timesheet')}}
                                     </a>
                                     <div class="dropdown-menu dropdown-menu-right tasks-box" x-placement="bottom-end">

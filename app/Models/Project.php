@@ -27,6 +27,7 @@ class Project extends Model
         'template_task_id',
         'description',
         'status',
+        'book_year',
         'tags',
         'created_by'
     ];
@@ -473,6 +474,5 @@ class Project extends Model
     {
         return ProjectTask::where('project_id', '=', $project_id)->where('stage_id', '=', $last_stage_id)->count();
     }
-
 
 }

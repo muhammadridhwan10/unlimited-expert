@@ -2807,6 +2807,23 @@ Route::post(
     'uses' => 'ProjectTaskController@checklistUpdate',
 ]
 );
+Route::get(
+    '/projects/{id}/checklist/{cid}/edit', [
+    'as' => 'subtask.edit',
+    'uses' => 'ProjectTaskController@subtaskEdit',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::post(
+    '/projects/{id}/checklist/{cid}/update', [
+    'as' => 'subtask.update',
+    'uses' => 'ProjectTaskController@subtaskUpdate',
+]
+);
 Route::delete(
     '/projects/{id}/checklist/{cid}', [
     'as' => 'checklist.destroy',
@@ -3649,3 +3666,11 @@ Route::get('/plan/{flag}', ['as' => 'error.plan.show','uses' => 'PaymentWallPaym
 Route::post('/paymentwall' , ['as' => 'invoice.paymentwallpayment','uses' =>'PaymentWallPaymentController@invoicepaymentwall'])->middleware(['XSS']);
 Route::post('/invoice-pay-with-paymentwall/{plan}',['as' => 'invoice.pay.with.paymentwall','uses' =>'PaymentWallPaymentController@invoicePayWithPaymentwall'])->middleware(['XSS']);
 Route::get('/invoices/{flag}/{invoice}', ['as' => 'error.invoice.show','uses' => 'PaymentWallPaymentController@invoiceerror']);
+
+
+////**===================================== Project Reports =======================================================////
+
+Route::resource('/project_report', ProjectReportController::class)->middleware(['auth', 'XSS']);
+Route::post('/project_report_data', [ProjectReportController::class, 'ajax_data'])->name('projects.ajax')->middleware(['auth','XSS']);
+Route::post('/project_report/tasks/{id}', [ProjectReportController::class, 'ajax_tasks_report'])->name('tasks.report.ajaxdata')->middleware(['auth','XSS']);
+Route::get('export/task_report/{id}', [ProjectReportController::class, 'export'])->name('project_report.export');
