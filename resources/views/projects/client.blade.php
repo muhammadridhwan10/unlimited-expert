@@ -151,7 +151,7 @@
             </div>
         </div>
     </div>    
-    {{ Form::hidden('project_id', $project_id,['id'=>'project_id']) }}
+    {{ Form::hidden('project_id', $project->id,['id'=>'project_id']) }}
 </div>
 <script>
 
