@@ -139,7 +139,8 @@
                             </div>
                             <div class="col-10">
                                 <div class="form-check form-check-inline">
-                                    <label class="form-check-label h6 text-sm text-black" for="check-item-{{ $category->id }}"><a>{{ $category->description }}</a></label> 
+                                    <label class="mx-3 align-items-center text-dark">{{ $category->description }}</label>
+                                    <!-- <label class="form-check-label h6 text-sm" for="check-item-{{ $category->id }}"><a>{{ $category->description }}</a></label>  -->
                                 </div>
                             </div>
                         </div>

@@ -87,14 +87,15 @@ class ProjectTaskController extends Controller
         }
     }
 
-    public function create($project_id, $stage_id)
+    public function create($project_id)
     {
         if(\Auth::user()->can('create project task'))
         {
+            $category_template_id   = CategoryTemplate::all()->pluck('name', 'id');
             $project = Project::find($project_id);
             $hrs     = Project::projectHrs($project_id);
 
-            return view('project_task.create', compact('project_id', 'stage_id', 'project', 'hrs'));
+            return view('project_task.create', compact('project_id', 'category_template_id', 'project', 'hrs'));
         }
         else
         {
@@ -102,7 +103,7 @@ class ProjectTaskController extends Controller
         }
     }
 
-    public function store(Request $request, $project_id, $stage_id)
+    public function store(Request $request, $project_id)
     {
 
         if(\Auth::user()->can('create project task'))
@@ -125,15 +126,12 @@ class ProjectTaskController extends Controller
             $last_stage = $project->first()->id;
             $post               = $request->all();
             $post['project_id'] = $project->id;
-            $post['stage_id']   = $stage_id;
+            $post['stage_id']   = 1;
             $post['assign_to'] = $request->assign_to;
             $post['created_by'] = \Auth::user()->creatorId();
             $post['start_date']=date("Y-m-d H:i:s", strtotime($request->start_date));
             $post['end_date']=date("Y-m-d H:i:s", strtotime($request->end_date));
-            if($stage_id == $last_stage)
-            {
-                $post['marked_at']   = date('Y-m-d');
-            }
+            $post['category_template_id'] = $request->category_template_id;
             $task = ProjectTask::create($post);
 
             //Make entry in activity log

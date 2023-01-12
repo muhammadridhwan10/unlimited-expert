@@ -2671,7 +2671,7 @@ Route::get(
     ]
 );
 Route::get(
-    '/projects/{pid}/task/{sid}', [
+    '/projects/{pid}/task/create', [
     'as' => 'projects.tasks.create',
     'uses' => 'ProjectTaskController@create',
 ]
@@ -2682,7 +2682,7 @@ Route::get(
     ]
 );
 Route::post(
-    '/projects/{pid}/task/{sid}', [
+    '/projects/{pid}/task', [
     'as' => 'projects.tasks.store',
     'uses' => 'ProjectTaskController@store',
 ]
