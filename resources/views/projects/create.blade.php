@@ -60,12 +60,12 @@
                 {{ Form::number('budget', null, ['class' => 'form-control']) }}
             </div>
         </div>
-        <div class="col-6 col-md-6">
+        <!-- <div class="col-6 col-md-6">
             <div class="form-group">
                 {{ Form::label('estimated_hrs', __('Estimated Hours'),['class' => 'form-label']) }}
-                {{ Form::number('estimated_hrs', null, ['class' => 'form-control','min'=>'0','maxlength' => '8']) }}
+                {{ Form::number('estimated_hrs', null, ['class' => 'form-control','min'=>'0','maxlength' => '8', 'readonly' => 'true']) }}
             </div>
-        </div>
+        </div> -->
     </div>
     <div class="row">
         <div class="col-sm-12 col-md-12">

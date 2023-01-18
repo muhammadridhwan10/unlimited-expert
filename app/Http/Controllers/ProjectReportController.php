@@ -4,7 +4,11 @@ namespace App\Http\Controllers;
 use App\Models\Milestone;
 use App\Models\Projectstages;
 use App\Models\TaskStage;
+use App\Models\TaskChecklist;
+use App\Models\TaskFile;
+use App\Models\TaskComment;
 use App\Models\User;
+use Auth;
 use App\Models\Utility;
 use App\Models\ProjectTask;
 use App\Models\ProjectStage;
@@ -95,6 +99,9 @@ class ProjectReportController extends Controller
         }
         else
         {
+            $usr           = Auth::user();
+            $users         = User::where('id', '=', $user->id)->get();
+            $status = Project::$project_status;
             $projects = Project::select('projects.*')->leftjoin('project_users', 'project_users.project_id', 'projects.id')->where('project_users.user_id', '=', $user->id)->orderby('id','desc')->get();
 
         }
@@ -127,19 +134,7 @@ class ProjectReportController extends Controller
             {
                 $project = Project::where('client_id', '=', $user->id)->where('id',$id)->first();
             }
-            elseif(\Auth::user()->type == 'company')
-            {
-
-                $project = Project::find($id);
-
-            }
-            elseif(\Auth::user()->type == 'admin')
-            {
-
-                $project = Project::find($id);
-
-            }
-            elseif(\Auth::user()->type == 'company')
+            elseif(\Auth::user()->type !== 'client' && \Auth::user()->type !== 'staff_client')
             {
 
                 $project = Project::find($id);
@@ -149,6 +144,14 @@ class ProjectReportController extends Controller
             {
                 $project = Project::select('projects.*')->leftjoin('project_users', 'project_users.project_id', 'projects.id')->where('project_users.user_id', '=', $user->id)->first();
             }
+
+            $count = $project->estimated_hrs;
+            $category = Project::category_progress($count, $project->id);
+
+            $Preengagement = $category['Preengagement'];
+            $Riskassessment = $category['Riskassessment'];
+            $Riskresponse = $category['Riskresponse'];
+            $Conclutioncompletion = $category['Conclutioncompletion'];
 
             if ($user) {
                 $chartData = $this->getProjectChart(
@@ -212,11 +215,16 @@ class ProjectReportController extends Controller
                     $logged_hour = 0;
 
 
-                   $tasks = ProjectTask::where('project_id',$id)->get();
-                   $data = [];
-                   foreach ($tasks as $task)
-                   {
-                       $timesheets_task = Timesheet::where('task_id',$task->id)->where('project_id',$id)->get();
+                    $tasks = ProjectTask::where('project_id',$id)->get();
+                    $data = [];
+                    foreach ($tasks as $task)
+                    {
+                        $countsubtask = TaskChecklist::where('project_id', $task->project_id)->where('parent_id','=', 0)->count();
+                        $counttaskfile = TaskFile::where('project_id', $task->project_id)->count();
+                        $counttaskcomment = TaskComment::where('project_id', $task->project_id)->count();
+                        $countchecked = TaskChecklist::where('project_id', $task->project_id)->where('status', '=', 1)->count();
+                        $timesheets_task = Timesheet::where('task_id',$task->id)->where('project_id',$id)->get();
+                        $totalchecked = $countchecked . '/' .  $countsubtask;
 
                     foreach($timesheets_task as $timesheet)
                     {
@@ -239,7 +247,7 @@ class ProjectReportController extends Controller
                 $tasks = ProjectTask::where('project_id','=',$id)->get();
 
 
-                return view('project_report.show', compact('user','users', 'arrProcessPer_status_task','arrProcess_Label_priority','esti_logged_hour_chart','logged_hour_chart','arrProcessPer_priority','arrProcess_Label_status_tasks','project','milestones', 'daysleft','chartData','arrProcessClass','stages','tasks'));
+                return view('project_report.show', compact('user','users','countsubtask', 'counttaskfile', 'counttaskcomment', 'totalchecked', 'arrProcessPer_status_task','arrProcess_Label_priority','esti_logged_hour_chart','logged_hour_chart','arrProcessPer_priority','arrProcess_Label_status_tasks','project','milestones', 'daysleft','chartData','arrProcessClass','stages','tasks','Preengagement', 'Riskassessment', 'Riskresponse', 'Conclutioncompletion'));
 
          }
         }

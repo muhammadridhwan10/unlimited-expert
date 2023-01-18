@@ -517,6 +517,7 @@ class ProjectTaskController extends Controller
             $post['created_by']         = \Auth::user()->id;
             $post['status']             = 0;
             $post['parent_id']          = $request->parent_id;
+            $post['project_id']         = $projectID;
 
             $checkList            = TaskChecklist::create($post);
             $user                 = $checkList->user;
@@ -621,6 +622,7 @@ class ProjectTaskController extends Controller
             $post['link']       = $request->link;
             $post['created_by'] = \Auth::user()->creatorId();
             $post['user_type']  = \Auth::user()->type;
+            $post['project_id']  = $projectID;
 
             $link = TaskLink::create($post);
             $user    = $link->user;
@@ -714,6 +716,7 @@ class ProjectTaskController extends Controller
             $post['file_size']   = round(($request->file->getSize() / 1024) / 1024, 2) . ' MB';
             $post['created_by']  = \Auth::user()->id;
             $post['user_type']   = 'User';
+            $post['project_id']  = $projectID;
             $TaskFile            = TaskFile::create($post);
             $user                = $TaskFile->user;
             $TaskFile->deleteUrl = '';
@@ -808,6 +811,7 @@ class ProjectTaskController extends Controller
             $post               = [];
             $post['task_id']    = $taskID;
             $post['user_id']    = \Auth::user()->id;
+            $post['project_id'] = $projectID;
             $post['comment']    = $request->comment;
             $post['created_by'] = \Auth::user()->creatorId();
             $post['user_type']  = \Auth::user()->type;

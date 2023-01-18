@@ -18,6 +18,9 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\ProjectNotification;
 use Carbon\Carbon;
 use App\Models\ActivityLog;
+use DateTime;
+use DatePeriod;
+use DateInterval;
 use App\Models\ProjectTask;
 use App\Models\ProjectUser;
 use App\Models\TaskStage;
@@ -133,6 +136,51 @@ class ProjectController extends Controller
             $project->project_name = $request->project_name;
             $project->start_date = date("Y-m-d H:i:s", strtotime($request->start_date));
             $project->end_date = date("Y-m-d H:i:s", strtotime($request->end_date));
+
+            $tanggal_mulai = $project->start_date;
+            $tanggal_akhir = $project->end_date;
+
+            $startDate = new DateTime($tanggal_mulai);
+            $endDate = new DateTime($tanggal_akhir);
+            $periodInterval = new DateInterval( "PT1H" );
+
+            $period = new DatePeriod($startDate, $periodInterval, $endDate );
+            $count = 0;
+
+            foreach($period as $date)
+            {
+                $startofday = clone $date;
+                $startofday->setTime(9,00);
+                $endofday = clone $date;
+                $endofday->setTime(18,00);
+
+                if($date > $startofday && $date <= $endofday && !in_array($date->format('l'), array('Sunday','Saturday')) && ($date->format('H') <= 12 || $date->format('H') > 13)){
+                    $count++;
+                }
+                
+            }
+            
+            // tanggalnya diubah formatnya ke Y-m-d 
+            $tanggal_mulai = strtotime($tanggal_mulai);
+            
+            $tanggal_akhir = strtotime($tanggal_akhir);
+            
+            $jumlahhariefektif = array();
+            $sabtuminggu = array();
+            
+            for ($i=$tanggal_mulai; $i <= $tanggal_akhir; $i += (60 * 60 * 24)) {
+                if (date('w', $i) !== '0' && date('w', $i) !== '6') {
+                    $hariefektif[] = $i;
+                } else {
+                    $sabtuminggu[] = $i;
+                }
+            
+            }
+
+            $jumlah_hariefektif = count($hariefektif);
+            $jumlah_sabtuminggu = count($sabtuminggu);
+            $abtotal = $jumlah_hariefektif + $jumlah_sabtuminggu;
+
             if($request->hasFile('project_image'))
             {
                 $imageName = time() . '.' . $request->project_image->extension();
@@ -145,7 +193,7 @@ class ProjectController extends Controller
             $project->budget = !empty($request->budget) ? $request->budget : 0;
             $project->description = $request->description;
             $project->status = $request->status;
-            $project->estimated_hrs = $request->estimated_hrs;
+            $project->estimated_hrs = $count;
             $project->book_year = $request->book_year;
             $project->tags = $request->tag;
             $project->created_by = \Auth::user()->creatorId();
@@ -223,6 +271,44 @@ class ProjectController extends Controller
                 );
             }
 
+                $category = Project::category_progress($count, $project->id); 
+
+                $Preengagement = $category['TotalPreengagement'];
+                $Riskassessment = $category['TotalRiskassessment'];
+                $Riskresponse = $category['TotalRiskresponse'];
+                $Conclutioncompletion = $category['TotalConclutioncompletion'];
+
+                $task = ProjectTask::where('project_id','=', $project->id)->get();
+
+                for($i = 0; $i < count($task); $i++)
+                {
+                    if($task[$i]['category_template_id'] == 1)
+                    {
+                        $estimated_hrs = 0;
+                    }
+                    elseif($task[$i]['category_template_id'] == 2)
+                    {
+                        $estimated_hrs = $Preengagement;
+                    }
+                    elseif($task[$i]['category_template_id'] == 3)
+                    {
+                        $estimated_hrs = $Riskassessment;
+                    }
+                    elseif($task[$i]['category_template_id'] == 4)
+                    {
+                        $estimated_hrs = $Riskresponse;
+                    }
+                    elseif($task[$i]['category_template_id'] == 5)
+                    {
+                        $estimated_hrs = $Conclutioncompletion;
+                    }
+
+                    ProjectTask::where(['id' => $task[$i]['id']])->update([
+                        'estimated_hrs' => $estimated_hrs,
+                    ]);
+
+    
+                }
 
             //Slack Notification
             $setting  = Utility::settings(\Auth::user()->creatorId());
@@ -302,7 +388,7 @@ class ProjectController extends Controller
 
 
                 // Users Assigned
-                $total_users = User::where('created_by', '=', $usr->id)->count();
+                $total_users = $project->users->where('type','!==','admin')->where('type','!==','company')->count();
 
 
                 $project_data['user_assigned'] = [
@@ -348,7 +434,14 @@ class ProjectController extends Controller
 
                 // Time spent
 
+                if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+                {
+                    $times = $project->timesheets()->where('project_id', '=', $project->id)->pluck('time')->toArray();
+                }
+                else
+                {
                     $times = $project->timesheets()->where('created_by', '=', $usr->id)->pluck('time')->toArray();
+                }
                 $totaltime                  = str_replace(':', '.', Utility::timeToHr($times));
                 $project_data['time_spent'] = [
                     'total' => number_format($totaltime) . '/' . number_format($totaltime),
@@ -374,7 +467,15 @@ class ProjectController extends Controller
                 foreach(array_keys($seven_days) as $k => $date)
                 {
                         $task_cnt     = $project->tasks()->where('is_complete', '=', 1)->whereRaw("find_in_set('" . $usr->id . "',assign_to)")->where('marked_at', 'LIKE', $date)->count();
-                        $arrTimesheet = $project->timesheets()->where('created_by', '=', $usr->id)->where('date', 'LIKE', $date)->pluck('time')->toArray();
+                        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+                        {
+                            $arrTimesheet = $project->timesheets()->where('project_id', '=', $project->id)->where('date', 'LIKE', $date)->pluck('time')->toArray();
+                        }
+                        else
+                        {
+                            $arrTimesheet = $project->timesheets()->where('created_by', '=', $usr->id)->where('date', 'LIKE', $date)->pluck('time')->toArray();
+                        }
+                        
 
                     // Task Chart Count
                     $cnt += $task_cnt;
@@ -510,6 +611,50 @@ class ProjectController extends Controller
             $project->project_name = $request->project_name;
             $project->start_date = date("Y-m-d H:i:s", strtotime($request->start_date));
             $project->end_date = date("Y-m-d H:i:s", strtotime($request->end_date));
+            $tanggal_mulai = $project->start_date;
+            $tanggal_akhir = $project->end_date;
+
+            $startDate = new DateTime($tanggal_mulai);
+            $endDate = new DateTime($tanggal_akhir);
+            $periodInterval = new DateInterval( "PT1H" );
+
+            $period = new DatePeriod($startDate, $periodInterval, $endDate );
+            $count = 0;
+
+            foreach($period as $date)
+            {
+                $startofday = clone $date;
+                $startofday->setTime(9,00);
+                $endofday = clone $date;
+                $endofday->setTime(18,00);
+
+                if($date > $startofday && $date <= $endofday && !in_array($date->format('l'), array('Sunday','Saturday')) && ($date->format('H') <= 12 || $date->format('H') > 13)){
+                    $count++;
+                }
+                
+            }
+            
+            // tanggalnya diubah formatnya ke Y-m-d 
+            $tanggal_mulai = strtotime($tanggal_mulai);
+            
+            $tanggal_akhir = strtotime($tanggal_akhir);
+            
+            $jumlahhariefektif = array();
+            $sabtuminggu = array();
+            
+            for ($i=$tanggal_mulai; $i <= $tanggal_akhir; $i += (60 * 60 * 24)) {
+                if (date('w', $i) !== '0' && date('w', $i) !== '6') {
+                    $hariefektif[] = $i;
+                } else {
+                    $sabtuminggu[] = $i;
+                }
+            
+            }
+
+            $jumlah_hariefektif = count($hariefektif);
+            $jumlah_sabtuminggu = count($sabtuminggu);
+            $abtotal = $jumlah_hariefektif + $jumlah_sabtuminggu;
+
             if($request->hasFile('project_image'))
             {
                 Utility::checkFileExistsnDelete([$project->project_image]);
@@ -524,7 +669,7 @@ class ProjectController extends Controller
             $project->public_accountant_id = $request->public_accountant_id;
             $project->description = $request->description;
             $project->status = $request->status;
-            $project->estimated_hrs = $request->estimated_hrs;
+            $project->estimated_hrs = $count;
             $project->book_year = $request->book_year;
             $project->tags = $request->tag;
             $project->save();
@@ -563,6 +708,45 @@ class ProjectController extends Controller
                 $tasks->description    = $details[$i]['description'];
                 $tasks->created_by     = \Auth::user()->creatorId();
                 $tasks->save();
+
+            }
+
+            $category = Project::category_progress($count, $project->id); 
+
+            $Preengagement = $category['TotalPreengagement'];
+            $Riskassessment = $category['TotalRiskassessment'];
+            $Riskresponse = $category['TotalRiskresponse'];
+            $Conclutioncompletion = $category['TotalConclutioncompletion'];
+
+            $task = ProjectTask::where('project_id','=', $project->id)->get();
+
+            for($i = 0; $i < count($task); $i++)
+            {
+                if($task[$i]['category_template_id'] == 1)
+                {
+                    $estimated_hrs = 0;
+                }
+                elseif($task[$i]['category_template_id'] == 2)
+                {
+                    $estimated_hrs = $Preengagement;
+                }
+                elseif($task[$i]['category_template_id'] == 3)
+                {
+                    $estimated_hrs = $Riskassessment;
+                }
+                elseif($task[$i]['category_template_id'] == 4)
+                {
+                    $estimated_hrs = $Riskresponse;
+                }
+                elseif($task[$i]['category_template_id'] == 5)
+                {
+                    $estimated_hrs = $Conclutioncompletion;
+                }
+
+                ProjectTask::where(['id' => $task[$i]['id']])->update([
+                    'estimated_hrs' => $estimated_hrs,
+                ]);
+
 
             }
 

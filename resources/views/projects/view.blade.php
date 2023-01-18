@@ -461,7 +461,7 @@
                     </div>
                     <div class="d-flex align-items-center justify-content-between mb-2">
                         <div class="d-flex align-items-center">
-                            <span class="text-muted">{{__('User Assigned')}}</span>
+                            <span class="text-muted">{{__('Total Members')}}</span>
                         </div>
                         <span>{{ $project_data['user_assigned']['total'] }}</span>
                     </div>

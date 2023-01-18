@@ -79,7 +79,7 @@
                 <div class="form-group">
                     {{ Form::label('estimated_hrs', __('Estimated Hours'),['class' => 'form-label']) }}<span class="text-danger">*</span>
                     <small class="form-text text-muted mb-2 mt-0">{{__('allocated total ').$hrs['allocated'].__(' hrs in other tasks')}}</small>
-                    {{ Form::number('estimated_hrs', null, ['class' => 'form-control','required' => 'required','min'=>'0','maxlength' => '8']) }}
+                    {{ Form::number('estimated_hrs', null, ['class' => 'form-control','readonly' => 'true']) }}
                 </div>
             </div>
             <div class="col-6">

@@ -130,9 +130,9 @@
                                                 <td class="border-0">{{(int) $project->users->count()  }}</td>
                                             </tr>
                                         </tbody>
-                                   </table>
+                                    </table>
                                 </div>
-                                <div class="col-5 ">
+                                <!-- <div class="col-5 ">
                                             @php
                                                 $task_percentage = $project->project_progress()['percentage'];
                                                 $data =trim($task_percentage,'%');
@@ -156,6 +156,54 @@
                                             </div>
                                         </div>
                                     </div>
+                                </div> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @php
+                    $task_percentage = $project->project_progress()['percentage'];
+                    $data =trim($task_percentage,'%');
+                    $status = $data > 0 && $data <= 25 ? 'red' : ($data > 25 && $data <= 50 ? 'orange' : ($data > 50 && $data <= 75 ? 'blue' : ($data > 75 && $data <= 100 ? 'green' : '')));
+                @endphp
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header" style="padding: 25px 35px !important;">
+                            <div class="d-flex justify-content-between align-items-center">
+
+                                <div class="row">
+                                    <h5 class="mb-0">{{ __('Project Progress') }}</h5>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart">
+                                <div class="chartjs-size-monitor">
+                                    <div class="chartjs-size-monitor-expand">
+                                        <div class=""></div>
+                                    </div>
+                                    <div class="chartjs-size-monitor-shrink">
+                                        <div class=""></div>
+                                    </div>
+                                </div>
+                                <div id="projects-chart" class="chart-canvas chartjs-render-monitor" height="150"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="float-end">
+                                <a href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Refferals"><i class=""></i></a>
+                            </div>
+                            <h5>{{ __('Task Priority') }}</h5>
+                        </div>
+                        <div class="card-body"  style="min-height: 280px;">
+                            <div class="row align-items-center">
+                                <div class="col-12">
+                                    <div id='chart_priority'></div>
                                 </div>
                             </div>
                         </div>
@@ -180,24 +228,6 @@
                     </div>
                 </div>
 
-                <div class="col-md-3">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="float-end">
-                                <a href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Refferals"><i class=""></i></a>
-                            </div>
-                            <h5>{{ __('Task Priority') }}</h5>
-                        </div>
-                        <div class="card-body"  style="min-height: 280px;">
-                            <div class="row align-items-center">
-                                <div class="col-12">
-                                    <div id='chart_priority'></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <div class="col-md-4">
                     <div class="card">
                         <div class="card-header">
@@ -215,11 +245,79 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>{{ __('Hours Estimation Category')}}</h5>
+                        </div>
+                        <div class="card-body" style="min-height: 280px;">
+                            <div class="row align-items-center">
+                                <div class="col-7">
+                                    <table class="table" >
+                                        <tbody>
+                                            <tr class="border-0" >
+                                                <th class="border-0" >{{ __('Preengagement')}}:</th>
+                                                <td class="border-0"> {{$Preengagement . ' Hours'}}</td>
+                                            </tr>
+                                            <tr role="row">
+                                                <th class="border-0">{{ __('Riskassessment') }}:</th>
+                                                <td class="border-0">{{$Riskassessment . ' Hours'}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Riskresponse') }}:</th>
+                                                <td class="border-0">{{$Riskresponse . ' Hours'}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Conclution and Completion')}}:</th>
+                                                <td class="border-0">{{$Conclutioncompletion . ' Hours'}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>{{ __('Task Detail')}}</h5>
+                        </div>
+                        <div class="card-body" style="min-height: 280px;">
+                            <div class="row align-items-center">
+                                <div class="col-7">
+                                    <table class="table" >
+                                        <tbody>
+                                            <tr class="border-0" >
+                                                <th class="border-0" >{{ __('Total Sub Task')}}:</th>
+                                                <td class="border-0"> {{$countsubtask}}</td>
+                                            </tr>
+                                            <tr role="row">
+                                                <th class="border-0">{{ __('Total Attachment') }}:</th>
+                                                <td class="border-0">{{$counttaskfile}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Total Comment') }}:</th>
+                                                <td class="border-0">{{$counttaskcomment}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Subtask Checked / Total Sub Task')}}:</th>
+                                                <td class="border-0">{{$totalchecked}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 @php
 $lastStage=\App\Models\TaskStage::where('created_by',\Auth::user()->creatorId())->orderby('id','desc')->first();
 
 @endphp
-                <div class="col-md-5">
+                <div class="col-md-7">
                     <div class="card ">
                         <div class="card-header">
                             <h5>{{ __('Users') }}</h5>
@@ -281,64 +379,9 @@ $lastStage=\App\Models\TaskStage::where('created_by',\Auth::user()->creatorId())
                     </div>
                 </div>
 
-                <!-- <div class="col-md-7">
-                    <div class="card ">
-                        <div class="card-header">
-                            <h5>{{ __('Milestones') }}</h5>
-                        </div>
-                        <div class="card-body table-border-style ">
-                            <div class="table-responsive milestone">
-                                <table class="table" >
-                                    <thead>
-                                        <tr>
-                                            <th> {{__('Name')}}</th>
-                                            <th> {{__('Progress')}}</th>
-                                            <th> {{__('Cost')}}</th>
-                                            <th> {{__('Status')}}</th>
-                                            <th> {{__('Start Date')}}</th>
-                                            <th> {{__('End Date')}}</th>
-                                        </tr>
-                                    </thead>
-                                     <tbody>
-                                           @foreach($project->milestones as $milestone)
-                                                <tr>
-                                               <td>{{$milestone->title}}</td>
-                                                <td>
-                                                    <div class="progress_wrapper">
-                                                            <div class="progress">
-                                                                    <div class="progress-bar" role="progressbar"  style="width: {{ $milestone->progress }}px;"
-                                                                    aria-valuenow="55" aria-valuemin="0" aria-valuemax="100">
-                                                                    </div>
-                                                            </div>
-                                                                    <div class="progress_labels">
-                                                                        <div class="total_progress">
-                                                                            <strong> {{ $milestone->progress }}%</strong>
-                                                                        </div>
-                                                                    </div>
-                                                    </div>
-                                                </td>
-                                               <td>{{$milestone->cost}}</td>
-                                               <td> @if($milestone->status == 'complete')
-                                                                    <label class="badge bg-success p-2 px-3 rounded">{{__('Complete')}}</label>
-                                                                @else
-                                                       <label class="badge bg-warning p-2 px-3 rounded">{{__('Incomplete')}}</label>
-                                                   @endif</td>
-
-                                               <td>{{$milestone->start_date}}</td>
-                                               <td>{{$milestone->due_date}}</td>
-                                            </tr>
-                                           @endforeach
-
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div> -->
-
         </div>
 
-        <div class="col-sm-12">
+        <!-- <div class="col-sm-12">
             <div class="col-md-12  row d-sm-flex align-items-center justify-content-end">
                 <div class="col-1">
                     <button class=" btn btn-primary mx-2 btn-filter apply">
@@ -346,102 +389,103 @@ $lastStage=\App\Models\TaskStage::where('created_by',\Auth::user()->creatorId())
                     </button>
                 </div>
             </div>
-        </div>
+        </div> -->
 
         <div class="col-sm-12 mt-3">
                 <div class="card">
                     <div class="card-body mt-3 mx-2">
                         <div class="row mt-2">
                             <div class="table-responsive">
-                                    <table class="table datatable">
-                                        <thead>
-                                                <th>{{ __('Task Name') }}</th>
-                                                <th>{{ __('Milestone') }}</th>
-                                                <th>{{ __('Start Date') }}</th>
-                                                <th>{{ __('End Date') }}</th>
-                                                <th>{{ __('Assigned to') }}</th>
-                                                <th> {{__('Total Logged Hours')}}</th>
-                                                <th>{{ __('Priority') }}</th>
-                                                <th>{{ __('Stage') }}</th>
-
-                                            </thead>
-
+                                <table class="table datatable">
+                                    <thead>
+                                        <tr>
+                                            <th>{{ __('Task Name') }}</th>
+                                            <th>{{ __('Milestone') }}</th>
+                                            <th>{{ __('Start Date') }}</th>
+                                            <th>{{ __('End Date') }}</th>
+                                            <th>{{ __('Assigned to') }}</th>
+                                            <th> {{__('Total Estimated Hours')}}</th>
+                                            <th> {{__('Total Logged Hours')}}</th>
+                                            <th>{{ __('Priority') }}</th>
+                                            <th>{{ __('Stage') }}</th>
+                                        </tr>
+                                    </thead>
+                                        <tbody class="list">
                                         @foreach($tasks as $task)
                                             @php
-                                                $hours_format_number = 0;
-                                                $total_hours = 0;
-                                                $hourdiff_late = 0;
-                                                $esti_late_hour =0;
-                                                $esti_late_hour_chart=0;
+                                                    $hours_format_number = 0;
+                                                    $total_hours = 0;
+                                                    $hourdiff_late = 0;
+                                                    $esti_late_hour =0;
+                                                    $esti_late_hour_chart=0;
 
-                                                $total_user_task = App\Models\ProjectTask::where('project_id',$project->id)->whereRaw("FIND_IN_SET(?,  assign_to) > 0", [$user->id])->get()->count();
+                                                    $total_user_task = App\Models\ProjectTask::where('project_id',$project->id)->whereRaw("FIND_IN_SET(?,  assign_to) > 0", [$user->id])->get()->count();
 
-                                                $all_task = App\Models\ProjectTask::where('project_id',$project->id)->whereRaw("FIND_IN_SET(?,  assign_to) > 0", [$user->id])->get();
+                                                    $all_task = App\Models\ProjectTask::where('project_id',$project->id)->whereRaw("FIND_IN_SET(?,  assign_to) > 0", [$user->id])->get();
 
-                                                $total_complete_task = App\Models\ProjectTask::join('task_stages','task_stages.id','=','project_tasks.stage_id')
-                                                ->where('task_stages.project_id','=',$project->id)->where('stage_id',4)->where('assign_to','=',$user->id)->get()->count();
+                                                    $total_complete_task = App\Models\ProjectTask::join('task_stages','task_stages.id','=','project_tasks.stage_id')
+                                                    ->where('task_stages.project_id','=',$project->id)->where('stage_id',4)->where('assign_to','=',$user->id)->get()->count();
 
-                                                $logged_hours = 0;
-                                                $timesheets = App\Models\Timesheet::where('project_id',$project->id)->where('task_id' ,$task->id)->get();
+                                                    $logged_hours = 0;
+                                                    $timesheets = App\Models\Timesheet::where('project_id',$project->id)->where('task_id' ,$task->id)->get();
                                             @endphp
                                             @foreach($timesheets as $timesheet)
 
-                                                @php
+                                                    @php
 
-                                                    $hours =  date('H', strtotime($timesheet->time));
-                                                    $minutes =  date('i', strtotime($timesheet->time));
-                                                    $total_hours = $hours + ($minutes/60) ;
-                                                    $logged_hours += $total_hours ;
-                                                    $hours_format_number = number_format($logged_hours, 2, '.', '');
-                                                @endphp
+                                                        $hours =  date('H', strtotime($timesheet->time));
+                                                        $minutes =  date('i', strtotime($timesheet->time));
+                                                        $total_hours = $hours + ($minutes/60) ;
+                                                        $logged_hours += $total_hours ;
+                                                        $hours_format_number = number_format($logged_hours, 2, '.', '');
+                                                    @endphp
                                             @endforeach
-                                            <tbody>
-
-                                            <td>
-                                                <a href="#!" data-size="md" data-url="{{ route('projects.tasks.show',[$project->id,$task->id]) }}"
-                                                   data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('View')}}">
-                                                    {{$task->name}}
-                                                </a>
-                                            </td>
-                                            <td>{{ (!empty($task->milestone)) ? $task->milestone->title : '-' }}</td>
-                                            <td>{{$task->start_date}}</td>
-                                            <td>{{$task->end_date}}</td>
-                                            <td>
-                                                <div class="avatar-group">
-                                                    @if($task->users()->count() > 0)
-                                                        @if($users = $task->users())
-                                                            @foreach($users as $key => $user)
-                                                                @if($key<3)
-                                                                    <a href="#" class="avatar rounded-circle avatar-sm">
-                                                                        <img src="{{$user->getImgImageAttribute()}}" title="{{ $user->name }}">
-                                                                    </a>
-                                                                @else
-                                                                    @break
-                                                                @endif
-                                                            @endforeach
+                                            <tr>
+                                                <td>
+                                                    <a href="#!" data-size="md" data-url="{{ route('projects.tasks.show',[$project->id,$task->id]) }}"
+                                                    data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('View')}}">
+                                                        {{$task->name}}
+                                                    </a>
+                                                </td>
+                                                <td>{{ (!empty($task->milestone)) ? $task->milestone->title : '-' }}</td>
+                                                <td>{{$task->start_date}}</td>
+                                                <td>{{$task->end_date}}</td>
+                                                <td>
+                                                    <div class="avatar-group">
+                                                        @if($task->users()->count() > 0)
+                                                            @if($users = $task->users())
+                                                                @foreach($users as $key => $user)
+                                                                    @if($key < 3)
+                                                                        <a href="#" class="avatar rounded-circle avatar-sm">
+                                                                            <img src="{{$user->getImgImageAttribute()}}" title="{{ $user->name }}">
+                                                                        </a>
+                                                                    @else
+                                                                        @break
+                                                                    @endif
+                                                                @endforeach
+                                                            @endif
+                                                            @if(count($users) > 3)
+                                                                <a href="#" class="avatar rounded-circle avatar-sm">
+                                                                    <img src="{{$user->getImgImageAttribute()}}">
+                                                                </a>
+                                                            @endif
+                                                        @else
+                                                            {{ __('-') }}
                                                         @endif
-                                                        @if(count($users) > 3)
-                                                            <a href="#" class="avatar rounded-circle avatar-sm">
-                                                                <img src="{{$user->getImgImageAttribute()}}">
-                                                            </a>
-                                                        @endif
-                                                    @else
-                                                        {{ __('-') }}
-                                                    @endif
-                                                </div>
-                                            </td>
-                                            <td>{{$hours_format_number}}</td>
-                                            <td>
-                                                <div class="">
-                                                    <span class="badge p-2 px-3 status_badge rounded bg-{{\App\Models\ProjectTask::$priority_color[$task->priority]}}">{{ \App\Models\ProjectTask::$priority[$task->priority] }}</span>
-                                                </div>
-                                            </td>
-                                            <td>{{ $task->stage->name }}</td>
-
-
-                                            </tbody>
+                                                    </div>
+                                                </td>
+                                                <td>{{$task->estimated_hrs. ' H'}}</td>
+                                                <td>{{$hours_format_number}}</td>
+                                                <td>
+                                                    <div class="">
+                                                        <span class="badge p-2 px-3 status_badge rounded bg-{{\App\Models\ProjectTask::$priority_color[$task->priority]}}">{{ \App\Models\ProjectTask::$priority[$task->priority] }}</span>
+                                                    </div>
+                                                </td>
+                                                <td>{{ $task->stage->name }}</td>
+                                            </tr>
                                         @endforeach
-                                    </table>
+                                        </tbody>
+                                </table>
                                 </div>
                         </div>
                     </div>
@@ -485,6 +529,48 @@ $lastStage=\App\Models\TaskStage::where('created_by',\Auth::user()->creatorId())
 </script>
 
 <script>
+    (function () {
+    var options = {
+        series: [{!! json_encode($data) !!}],
+        chart: {
+            height: 475,
+            type: 'radialBar',
+            offsetY: -20,
+            sparkline: {
+                enabled: true
+            }
+        },
+        plotOptions: {
+            radialBar: {
+                startAngle: -90,
+                endAngle: 90,
+                track: {
+                    background: "#e7e7e7",
+                    strokeWidth: '97%',
+                    margin: 5, // margin is in pixels
+                },
+                dataLabels: {
+                    name: {
+                        show: true
+                    },
+                    value: {
+                        offsetY: -50,
+                        fontSize: '20px'
+                    }
+                }
+            }
+        },
+        grid: {
+            padding: {
+                top: -10
+            }
+        },
+        colors: ["#51459d"],
+        labels: ['Progress'],
+    };
+    var chart = new ApexCharts(document.querySelector("#projects-chart"), options);
+    chart.render();
+})();
 
     var options = {
             series: [{

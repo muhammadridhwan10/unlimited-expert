@@ -123,6 +123,36 @@ class Project extends Model
         ];
     }
 
+    public function category_progress($count, $project_id)
+    {
+
+        $Preengagements = ProjectTask::where('project_id','=', $project_id)->where('category_template_id', '=', 2)->count();
+        $Riskassessments = ProjectTask::where('project_id','=', $project_id)->where('category_template_id', '=', 3)->count();
+        $Riskresponses = ProjectTask::where('project_id','=', $project_id)->where('category_template_id', '=', 4)->count();
+        $Conclutioncompletions = ProjectTask::where('project_id','=', $project_id)->where('category_template_id', '=', 5)->count();
+
+        $Preengagement = (5 / 100) * $count;
+        $Riskassessment = (10 / 100) * $count;
+        $Riskresponse = (75 / 100) * $count;
+        $Conclutioncompletion = (10 / 100) * $count;
+
+        $totalpreengagement = $Preengagement / $Preengagements;
+        $totalriskassessments = $Riskassessment / $Riskassessments;
+        $totalriskresponse = $Riskresponse / $Riskresponses;
+        $totalconclutioncompletion = $Conclutioncompletion / $Conclutioncompletions;
+
+        return [
+            'Preengagement' => $Preengagement,
+            'Riskassessment' => $Riskassessment,
+            'Riskresponse' => $Riskresponse,
+            'Conclutioncompletion' => $Conclutioncompletion,
+            'TotalPreengagement' => $totalpreengagement,
+            'TotalRiskassessment' => $totalriskassessments,
+            'TotalRiskresponse' => $totalriskresponse,
+            'TotalConclutioncompletion' => $totalconclutioncompletion,
+        ];
+    }
+
     public function project_progress_admin()
     {
 

@@ -7,7 +7,7 @@
                     <div class="d-flex align-items-start">
                         <div class="ms-2">
                             <p class="text-muted text-sm mb-0">{{__('Estimated Hours')}}</p>
-                            <h3 class="mb-0 text-success">{{ (!empty($task->estimated_hrs)) ? number_format($task->estimated_hrs) : '-' }}</h3>
+                            <h3 class="mb-0 text-success">{{ (!empty($task->estimated_hrs)) ? $task->estimated_hrs : '-' }}</h3>
 
                         </div>
                     </div>

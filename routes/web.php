@@ -2,6 +2,7 @@
 
 use App\Models\Utility;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProjectReportController;
 
 /*
 |--------------------------------------------------------------------------
@@ -3669,8 +3670,7 @@ Route::get('/invoices/{flag}/{invoice}', ['as' => 'error.invoice.show','uses' =>
 
 
 ////**===================================== Project Reports =======================================================////
-
-Route::resource('/project_report', ProjectReportController::class)->middleware(['auth', 'XSS']);
-Route::post('/project_report_data', [ProjectReportController::class, 'ajax_data'])->name('projects.ajax')->middleware(['auth','XSS']);
-Route::post('/project_report/tasks/{id}', [ProjectReportController::class, 'ajax_tasks_report'])->name('tasks.report.ajaxdata')->middleware(['auth','XSS']);
-Route::get('export/task_report/{id}', [ProjectReportController::class, 'export'])->name('project_report.export');
+Route::resource('/project_report', 'ProjectReportController')->middleware(['auth', 'XSS']);
+Route::post('/project_report_data', 'ProjectReportController@ajax_data')->name('projects.ajax')->middleware(['auth','XSS']);
+Route::post('/project_report/tasks/{id}', 'ProjectReportController@ajax_tasks_report')->name('tasks.report.ajaxdata')->middleware(['auth','XSS']);
+Route::get('export/task_report/{id}', 'ProjectReportController@export')->name('project_report.export');

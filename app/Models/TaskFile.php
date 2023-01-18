@@ -14,6 +14,7 @@ class TaskFile extends Model
         'task_id',
         'user_type',
         'created_by',
+        'project_id',
     ];
 
     public function user()

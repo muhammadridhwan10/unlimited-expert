@@ -45,9 +45,15 @@
                 {!! Form::select('template_task', $tasktemplate, null,array('class' => 'form-control')) !!}
             </div>
         </div>
+        <div class="col-sm-6 col-md-6">
+            <div class="form-group">
+                {{ Form::label('budget', __('Budget'), ['class' => 'form-label']) }}
+                {{ Form::number('budget', null, ['class' => 'form-control']) }}
+            </div>
+        </div>
 
     </div>
-    <div class="row">
+    <!-- <div class="row">
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
                 {{ Form::label('budget', __('Budget'), ['class' => 'form-label']) }}
@@ -60,7 +66,7 @@
                 {{ Form::number('estimated_hrs', null, ['class' => 'form-control','min'=>'0','maxlength' => '8']) }}
             </div>
         </div>
-    </div>
+    </div> -->
     <div class="row">
         <div class="col-sm-12 col-md-12">
             <div class="form-group">

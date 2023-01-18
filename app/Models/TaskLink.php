@@ -15,6 +15,7 @@ class TaskLink extends Model
         'user_id',
         'user_type',
         'created_by',
+        'project_id',
     ];
 
     public function user()

@@ -715,11 +715,11 @@
                                             <a class="dash-link" href="{{ route('time.tracker') }}">{{__('Tracker')}}</a>
                                         </li>
                                     @endif
-                                    <!-- @if (\Auth::user()->type !== 'client' && \Auth::user()->type !== 'staff_client')
+                                    @if (\Auth::user()->type !== 'client' && \Auth::user()->type !== 'staff_client')
                                         <li class="dash-item  {{(Request::route()->getName() == 'project_report.index' || Request::route()->getName() == 'project_report.show') ? 'active' : ''}}">
                                             <a class="dash-link" href="{{route('project_report.index') }}">{{__('Project Report')}}</a>
                                         </li>
-                                    @endif -->
+                                    @endif
                                     @if(Gate::check('manage project task stage') || Gate::check('manage bug status') || Gate::check('manage project task template'))
                                         <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'bugstatus' || Request::segment(1) == 'project-task-stages' || Request::segment(1) == 'tasktemplate') ? 'active dash-trigger' : ''}}">
                                             <a class="dash-link" href="#">{{__('Project System Setup')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>

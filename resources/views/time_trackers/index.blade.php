@@ -75,7 +75,7 @@
                                 <tr>
                                     <td>{{$trecker->name}}</td>
                                     <td>{{$trecker->user->name}}</td>
-                                    <td>{{$trecker->project_task}}</td>
+                                    <td>{{$trecker->tasks->name}}</td>
                                     <td>{{$trecker->project_name}}</td>
                                     <td>{{date("H:i:s",strtotime($trecker->start_time))}}</td>
                                     <td>{{date("H:i:s",strtotime($trecker->end_time))}}</td>

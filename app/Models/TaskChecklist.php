@@ -15,6 +15,7 @@ class TaskChecklist extends Model
         'created_by',
         'status',
         'parent_id',
+        'project_id',
     ];
 
     public function subtasks()

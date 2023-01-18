@@ -21,7 +21,7 @@
                                 @foreach($tasks as $task)
                                     <tr>
                                         <td>
-                                            <span class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.index',$task->project->id) }}">{{ $task->name }}</a></span>
+                                            <span class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.show',[$task->project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg">{{ $task->name }}</a></span>
                                             <span class="d-flex text-sm text-muted justify-content-between">
                                         <p class="m-0">{{ $task->project->project_name }}</p>
                                     <span class="me-5 badge p-2 px-3 rounded bg-{{ (\Auth::user()->checkProject($task->project_id) == 'Owner') ? 'success' : 'warning'  }}">
