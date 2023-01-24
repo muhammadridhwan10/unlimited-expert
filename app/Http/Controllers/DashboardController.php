@@ -417,7 +417,7 @@ class DashboardController extends Controller
             if(\Auth::user()->can('show hrm dashboard'))
             {
                 $user = Auth::user();
-                if($user->type != 'client' && $user->type != 'company' && $user->type != 'admin')
+                if($user->type != 'client' && $user->type != 'staff_client' && $user->type != 'company' && $user->type != 'admin')
                 {
                     $emp = Employee::where('user_id', '=', $user->id)->first();
 

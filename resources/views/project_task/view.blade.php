@@ -162,7 +162,7 @@
         <div class="card-body">
             <div class="row mb-4 align-items-center">
                 <div class="col-6">
-                    <h5> {{__('Link')}}</h5>
+                    <h5> {{__('Link (Optional)')}}</h5>
                 </div>
                 <div class="col-6 ">
                     <div class="float-end">
@@ -218,7 +218,7 @@
         <div class="card-body">
             <div class="row mb-4 align-items-center">
                 <div class="col-6">
-                    <h5> {{__('Attachments')}}</h5>
+                    <h5> {{__('Attachments (Optional)')}}</h5>
                 </div>
                 <div class="col-6 ">
                     <div class="float-end">

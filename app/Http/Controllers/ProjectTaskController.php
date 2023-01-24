@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\Task;
 use App\Models\Utility;
 use App\Models\TaskFile;
+use App\Models\Timesheet;
 use App\Models\Bug;
 use App\Models\User;
 use App\Models\ProjectUser;
@@ -221,32 +222,40 @@ class ProjectTaskController extends Controller
     {
 
         $usr           = Auth::user();
-        if(\Auth::user()->type == 'client'){
+        if(\Auth::user()->type == 'client')
+        {
             $user_projects = Project::where('client_id',\Auth::user()->id)->pluck('id','id')->toArray();
-        }elseif(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin'){
+        }elseif(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+        {
             $user_projects = Project::all()->pluck('id','id')->toArray();
         }
-        elseif(\Auth::user()->type != 'client'){
-          $user_projects = $usr->projects()->pluck('project_id','project_id')->toArray();
+        elseif(\Auth::user()->type != 'client')
+        {
+            $user_projects = $usr->projects()->pluck('project_id','project_id')->toArray();
         }
         if($request->ajax() && $request->has('view') && $request->has('sort'))
         {
             $sort  = explode('-', $request->sort);
             $task = ProjectTask::whereIn('project_id', $user_projects)->get();
             $tasks = ProjectTask::whereIn('project_id', $user_projects)->orderBy($sort[0], $sort[1]);
-            if(\Auth::user()->type != 'super admin'){
-              if(\Auth::user()->type == 'client'){
-                  $tasks->where('created_by',\Auth::user()->creatorId());
-              }
-              elseif(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin'){
-                $tasks->get();
-              }
-              else{
-                $tasks->whereRaw("find_in_set('" . $usr->id . "',assign_to)");
-              }
+            if(\Auth::user()->type != 'super admin')
+            {
+                if(\Auth::user()->type == 'client')
+                {
+                    $tasks->where('created_by',\Auth::user()->creatorId());
+                }
+                elseif(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+                {
+                    $tasks->get();
+                }
+                else
+                {
+                    $tasks->whereRaw("find_in_set('" . $usr->id . "',assign_to)");
+                }
             }
-            else{
-              $tasks->where('created_by',\Auth::user()->creatorId());
+            else
+            {
+                $tasks->where('created_by',\Auth::user()->creatorId());
             }
             if(!empty($request->keyword))
             {
@@ -1300,4 +1309,139 @@ class ProjectTaskController extends Controller
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
     }
+
+    // public function play(Request $request, $project_id, $task_id)
+    // {
+    //     $settings = Utility::settings();
+    //     $task = ProjectTask::find($task_id);
+    //     $project = Project::find($task->project_id);
+
+    //     $userId      = Auth::user()->id;
+    //     $todayPlay   = Timesheet::where('created_by', '=', $userId)->where('date', date('Y-m-d'))->first();
+    //     if(empty($todayPlay))
+    //     {
+
+    //         $startTime = Utility::getValByName('company_start_time');
+    //         $endTime   = Utility::getValByName('company_end_time');
+
+    //         $timesheet = Timesheet::orderBy('id', 'desc')->where('created_by', '=', $userId)->where('time', '=', '00:00:00')->first();
+
+    //         if($timesheet != null)
+    //         {
+    //             $timesheet             = Timesheet::find($timesheet->id);
+    //             $timesheet->end_time = $endTime;
+    //             $timesheet->save();
+    //         }
+
+    //         $date = date("Y-m-d");
+    //         $time = date("H:i:s");
+
+    //         $checkDb = Timesheet::where('created_by', '=', \Auth::user()->id)->get()->toArray();
+
+    //         if(empty($checkDb))
+    //         {
+    //             $timePlay                = new Timesheet();
+    //             $timePlay->created_by    = $userId;
+    //             $timePlay->date          = $date;
+    //             $timePlay->project_id    = $task->project_id;
+    //             $timePlay->task_id       = $task_id;
+    //             $timePlay->start_time    = $time;
+    //             $timePlay->end_time      = '00:00:00';
+
+    //             $timePlay->save();
+
+    //             return redirect()->route('taskBoard.view', 'list')->with('success', __('Employee Successfully Play Time.'));
+    //         }
+
+    //         foreach($checkDb as $check)
+    //         {
+
+
+    //             $timePlay                = new Timesheet();
+    //             $timePlay->created_by    = $userId;
+    //             $timePlay->date          = $date;
+    //             $timePlay->project_id    = $task->project_id;
+    //             $timePlay->task_id       = $task_id;
+    //             $timePlay->start_time    = $time;
+    //             $timePlay->end_time      = '00:00:00';
+
+    //             $timePlay->save();
+
+    //             return redirect()->route('taskBoard.view', 'list')->with('success', __('Employee Successfully Play Time.'));
+
+    //         }
+    //     }
+    //     else
+    //     {
+    //         return redirect()->back()->with('error', __('Employee are not allow multiple time clock in & clock for every day.'));
+    //     }
+    // }
+
+    // public function stop(Request $request, $id)
+    // {
+
+    //     $userId      = Auth::user()->id;
+    //     $stoptime    = Timesheet::where('created_by', '=', $userId)->where('date', date('Y-m-d'))->first();
+
+    //     if(!empty($stoptime) && $stoptime->end_time == '00:00:00')
+    //     {
+
+    //         $timesheets = Timesheet::where('id', $id)->where('created_by', $userId)->first();
+
+    //         $startTime = $timesheets->start_time;
+    //         $endTime   = Utility::getValByName('company_end_time');
+
+    //         if(Auth::user()->type !== 'client' && Auth::user()->type !== 'staff_client')
+    //         {
+
+    //             $date = date("Y-m-d");
+    //             $time = date("H:i:s");
+                
+    //             $totalLateSeconds = strtotime($time) - strtotime($startTime);
+
+    //             $hours = floor($totalLateSeconds / 3600);
+    //             $mins  = floor($totalLateSeconds / 60 % 60);
+    //             $secs  = floor($totalLateSeconds % 60);
+    //             $late  = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
+
+    //             $timesheet['end_time']      = $time;
+    //             $timesheet['time']          = $late;
+
+    //             if(!empty($request->date)) {
+    //                 $timesheet['date']       =  $request->date;
+    //             }
+    //             //                dd($attendanceEmployee);
+    //             Timesheet::where('id',$id)->update($timesheet);
+    //             //                $attendanceEmployee->save();
+
+    //             return redirect()->route('taskBoard.view', 'list')->with('success', __('Employee successfully Stop Timer.'));
+    //         }
+    //         else
+    //         {
+    //             $date = date("Y-m-d");
+    //             $time = date("H:i:s");
+                
+    //             $totalLateSeconds = strtotime($request->start_time) - strtotime($startTime);
+
+    //             $hours = floor($totalLateSeconds / 3600);
+    //             $mins  = floor($totalLateSeconds / 60 % 60);
+    //             $secs  = floor($totalLateSeconds % 60);
+    //             $late  = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
+
+    //             $timesheetEmployee                 = Timesheet::find($id);
+    //             $timesheetEmployee->created_by     = $userId;
+    //             $timesheetEmployee->date           = $date;
+    //             $timesheetEmployee->end_time       = $time;
+    //             $timesheetEmployee->time           = $late;
+
+    //             $timesheetEmployee->save();
+
+    //             return redirect()->back()->with('success', __('Employee successfully Stop Timer.'));
+    //         }
+    //     }
+    //     else
+    //     {
+    //         return redirect()->back()->with('error', __('Employee are not allow multiple time clock in & clock for every day.'));
+    //     }
+    // }
 }

@@ -17,8 +17,8 @@
         </div>
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
-                {{ Form::label('end_date', __('End Date'), ['class' => 'form-label']) }}
-                {{ Form::date('end_date', null, ['class' => 'form-control']) }}
+                {{ Form::label('total_days', __('Total Days Working'), ['class' => 'form-label']) }}
+                {{ Form::text('total_days', null, ['class' => 'form-control']) }}
             </div>
         </div>
     </div>
@@ -39,7 +39,7 @@
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
                 {{ Form::label('client', __('Client'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                {!! Form::select('client', $clients, null,array('class' => 'form-control','required'=>'required')) !!}
+                {!! Form::select('client', $clients, null,array('class' => 'form-control select2','id'=>'choices-multiple1','required'=>'required')) !!}
             </div>
         </div>
         <div class="col-sm-6 col-md-6">

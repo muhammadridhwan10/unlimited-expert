@@ -2180,6 +2180,20 @@ Route::post('attendanceemployee/attendance', 'AttendanceEmployeeController@atten
     ]
 );
 
+// Route::post('tasks/play/project/{pid}/task/{tid}', 'ProjectTaskController@play')->name('tasks.play')->middleware(
+//     [
+//         'auth',
+//         'XSS',
+//     ]
+// );
+
+// Route::put('tasks/stop/{id}', 'ProjectTaskController@stop')->name('tasks.stop')->middleware(
+//     [
+//         'auth',
+//         'XSS',
+//     ]
+// );
+
 Route::resource('attendanceemployee', 'AttendanceEmployeeController')->middleware(
     [
         'auth',

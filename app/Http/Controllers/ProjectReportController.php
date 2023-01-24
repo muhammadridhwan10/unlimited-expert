@@ -115,6 +115,8 @@ class ProjectReportController extends Controller
         public function show(Request $request,$id)
         {
 
+            $id       = \Crypt::decrypt($id);
+
             $user = \Auth::user();
 
             if(\Auth::user()->type == 'admin')
@@ -219,9 +221,38 @@ class ProjectReportController extends Controller
                     $data = [];
                     foreach ($tasks as $task)
                     {
+                        $projects = $task->project;
+
+                        $awal_project  = $projects->start_date;
+                        $akhir_project = $projects->end_date;
+                        
+                        $awal_project = strtotime($awal_project);
+                        
+                        $akhir_project = strtotime($akhir_project);
+                        
+                        $jumlahhari = array();
+                        $sabtuminggu = array();
+                        
+                        for ($i = $awal_project; $i <= $akhir_project; $i += (60 * 60 * 24)) {
+                            if (date('w', $i) !== '0' && date('w', $i) !== '6') {
+                                $jumlahhari[] = $i;
+                            } else {
+                                $sabtuminggu[] = $i;
+                            }
+                        
+                        }
+                        $jumlahhari = count($jumlahhari);
+
+                        $jumlahtask = $tasks->count();
+
+                        $totaltask = intval($jumlahtask * 4);
+                        $ratarata  = intval($totaltask / $jumlahhari);
+
+                        $target = intval($ratarata * $jumlahhari);
+
                         $countsubtask = TaskChecklist::where('project_id', $task->project_id)->where('parent_id','=', 0)->count();
-                        $counttaskfile = TaskFile::where('project_id', $task->project_id)->count();
-                        $counttaskcomment = TaskComment::where('project_id', $task->project_id)->count();
+                        $counttasklink = TaskChecklist::where('project_id', $task->project_id)->where('link','!=', NULL)->pluck('link')->count(). '/' .  $target;
+                        $counttaskcomment = TaskComment::where('project_id', $task->project_id)->count(). '/' .  $target;
                         $countchecked = TaskChecklist::where('project_id', $task->project_id)->where('status', '=', 1)->count();
                         $timesheets_task = Timesheet::where('task_id',$task->id)->where('project_id',$id)->get();
                         $totalchecked = $countchecked . '/' .  $countsubtask;
@@ -247,7 +278,7 @@ class ProjectReportController extends Controller
                 $tasks = ProjectTask::where('project_id','=',$id)->get();
 
 
-                return view('project_report.show', compact('user','users','countsubtask', 'counttaskfile', 'counttaskcomment', 'totalchecked', 'arrProcessPer_status_task','arrProcess_Label_priority','esti_logged_hour_chart','logged_hour_chart','arrProcessPer_priority','arrProcess_Label_status_tasks','project','milestones', 'daysleft','chartData','arrProcessClass','stages','tasks','Preengagement', 'Riskassessment', 'Riskresponse', 'Conclutioncompletion'));
+                return view('project_report.show', compact('user','users', 'ratarata', 'jumlahhari', 'countsubtask', 'counttasklink', 'counttaskcomment', 'totalchecked', 'arrProcessPer_status_task','arrProcess_Label_priority','esti_logged_hour_chart','logged_hour_chart','arrProcessPer_priority','arrProcess_Label_status_tasks','project','milestones', 'daysleft','chartData','arrProcessClass','stages','tasks','Preengagement', 'Riskassessment', 'Riskresponse', 'Conclutioncompletion'));
 
          }
         }

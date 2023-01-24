@@ -15,6 +15,10 @@ use App\Models\Tag;
 use App\Models\ProjectTask;
 use App\Models\TimeTracker;
 use App\Models\TrackPhoto;
+use App\Models\Timesheet;
+use DateTime;
+use DatePeriod;
+use DateInterval;
 use Illuminate\Support\Facades\Validator;
 
 
@@ -58,7 +62,12 @@ class ApiController extends Controller
         if($user->isUser())
         {
             $assign_pro_ids = ProjectUser::where('user_id',$user->id)->pluck('project_id');
-            $project_s      = Project::with('tasks')->select(
+            $project_s      = Project::with(['tasks' => function($query)
+            {
+                $user = auth()->user();
+                $query->whereRaw("find_in_set('" . $user->id . "',assign_to)")->get();
+    
+            }])->select(
                 [
                     'project_name',
                     'id',
@@ -84,6 +93,29 @@ class ApiController extends Controller
         return $this->success([
             'projects' => $project_s,
         ],'Get Project List successfully.');
+    }
+
+    public function getTask(Request $request)
+    {
+        $date = date("Y-m-d");
+        $time = date("H:i:s");
+        $startTime = '10:00:12';
+        $timesheet = Timesheet::where('id', 1)->where('created_by', 120)->first();
+        
+        $totalLateSeconds = strtotime($time) - strtotime($timesheet->start_time);
+
+        $hours = floor($totalLateSeconds / 3600);
+        $mins  = floor($totalLateSeconds / 60 % 60);
+        $secs  = floor($totalLateSeconds % 60);
+        $late  = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
+        dd($late);
+
+        $timesheet['clock_out']     = $time;
+        $timesheet['time']          = $late;
+
+        if(!empty($request->date)) {
+            $timesheet['date']       =  $request->date;
+        }
     }
 
     public function addTracker(Request $request){
@@ -137,10 +169,28 @@ class ApiController extends Controller
             // dd($tracker);
             if($tracker)
             {
+                $date = date("Y-m-d");
                 $tracker->end_time   = $request->has('time') ?  date("Y-m-d H:i:s",strtotime($request->input('time'))) : date("Y-m-d H:i:s");
                 $tracker->is_active  = 0;
                 $tracker->total_time = Utility::diffance_to_time($tracker->start_time, $tracker->end_time);
                 $tracker->save();
+
+                $timesheet = new Timesheet;
+                $timesheet->project_id = $tracker->project_id;
+                $timesheet->task_id = $tracker->task_id;
+                $timesheet->date = $date;
+                $seconds = $tracker->total_time;
+
+                $H = floor($seconds / 3600);
+                $i = ($seconds / 60) % 60;
+                $s = $seconds % 60;
+
+                $time = sprintf("%02d:%02d:%02d", $H, $i, $s);
+                $timesheet->time = $time;
+                $timesheet->created_by = $tracker->created_by;
+
+                $timesheet->save();
+
                 return $this->success( $tracker,'Stop time successfully.');
             }
         }

@@ -131,15 +131,15 @@ class Project extends Model
         $Riskresponses = ProjectTask::where('project_id','=', $project_id)->where('category_template_id', '=', 4)->count();
         $Conclutioncompletions = ProjectTask::where('project_id','=', $project_id)->where('category_template_id', '=', 5)->count();
 
-        $Preengagement = (5 / 100) * $count;
-        $Riskassessment = (10 / 100) * $count;
-        $Riskresponse = (75 / 100) * $count;
+        $Preengagement = (3 / 100) * $count;
+        $Riskassessment = (17 / 100) * $count;
+        $Riskresponse = (70 / 100) * $count;
         $Conclutioncompletion = (10 / 100) * $count;
 
-        $totalpreengagement = $Preengagement / $Preengagements;
-        $totalriskassessments = $Riskassessment / $Riskassessments;
-        $totalriskresponse = $Riskresponse / $Riskresponses;
-        $totalconclutioncompletion = $Conclutioncompletion / $Conclutioncompletions;
+        $totalpreengagement = number_format($Preengagement / $Preengagements, 2, '.', '');
+        $totalriskassessments = number_format($Riskassessment / $Riskassessments, 2, '.', '');
+        $totalriskresponse = number_format($Riskresponse / $Riskresponses, 2, '.', '');
+        $totalconclutioncompletion = number_format($Conclutioncompletion / $Conclutioncompletions, 2, '.', '');
 
         return [
             'Preengagement' => $Preengagement,
@@ -312,6 +312,7 @@ class Project extends Model
                                 $timesheetArray[$i]['dateArray'][$j]['url']  = route('timesheet.create', $project_id);
                             }
                         }
+                                        
                         $calculatedtasktime              = Utility::calculateTimesheetHours($times);
                         $totaltaskdatetimes[]            = $calculatedtasktime;
                         $timesheetArray[$i]['totaltime'] = $calculatedtasktime;
@@ -326,7 +327,16 @@ class Project extends Model
         {
             $dateperioddate                  = $date->format('Y-m-d');
             $new_projects_timesheet          = clone $projects_timesheet;
-            $totalDateTimes[$dateperioddate] = Utility::calculateTimesheetHours($new_projects_timesheet->where('date', $dateperioddate)->pluck('time')->toArray());
+            $authuser                        = Auth::user();
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $totalDateTimes[$dateperioddate] = Utility::calculateTimesheetHours($new_projects_timesheet->where('date', $dateperioddate)->pluck('time')->toArray());
+            }
+            elseif(\Auth::user()->type !== 'client' && \Auth::user()->type !== 'staff_client')
+            {
+                $totalDateTimes[$dateperioddate] = Utility::calculateTimesheetHours($new_projects_timesheet->where('date', $dateperioddate)->get()->where('created_by', $authuser->id)->pluck('time')->toArray());
+            }
+            
         }
         $returnHTML = view('projects.timesheets.week', compact('timesheetArray', 'totalDateTimes', 'calculatedtotaltaskdatetime', 'days', 'allProjects'))->render();
 

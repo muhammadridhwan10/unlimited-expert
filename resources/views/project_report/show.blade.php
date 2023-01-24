@@ -283,7 +283,7 @@
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
-                            <h5>{{ __('Task Detail')}}</h5>
+                            <h5>{{ __(' Task Quality Control')}}</h5>
                         </div>
                         <div class="card-body" style="min-height: 280px;">
                             <div class="row align-items-center">
@@ -295,8 +295,8 @@
                                                 <td class="border-0"> {{$countsubtask}}</td>
                                             </tr>
                                             <tr role="row">
-                                                <th class="border-0">{{ __('Total Attachment') }}:</th>
-                                                <td class="border-0">{{$counttaskfile}}</td>
+                                                <th class="border-0">{{ __('Total Link') }}:</th>
+                                                <td class="border-0">{{$counttasklink}}</td>
                                             </tr>
                                             <tr>
                                                 <th class="border-0">{{ __('Total Comment') }}:</th>
@@ -305,6 +305,14 @@
                                             <tr>
                                                 <th class="border-0">{{ __('Subtask Checked / Total Sub Task')}}:</th>
                                                 <td class="border-0">{{$totalchecked}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Average Link Per Tasks')}}:</th>
+                                                <td class="border-0">{{$ratarata}} {{'Link'}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Average Comment Per Tasks')}}:</th>
+                                                <td class="border-0">{{$ratarata}} {{'Comment'}}</td>
                                             </tr>
                                         </tbody>
                                     </table>

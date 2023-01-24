@@ -776,7 +776,7 @@
                                     @endcan
                                     @can('manage user')
                                         <li class="dash-item {{ (Request::route()->getName() == 'accountant.index' || Request::route()->getName() == 'accountant.create' || Request::route()->getName() == 'accountant.edit') ? ' active' : '' }}">
-                                            <a class="dash-link" href="{{ route('accountant.index') }}">{{__('Accountant')}}</a>
+                                            <a class="dash-link" href="{{ route('accountant.index') }}">{{__('Public Accountant ')}}</a>
                                         </li>
                                     @endcan
                                     @can('manage user')

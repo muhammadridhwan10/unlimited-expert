@@ -17,6 +17,35 @@
 @endsection
 
 @section('content')
+    <style type="text/css">
+        /* .task-name{*/
+        /*    padding: 1.5rem 1.5rem !important;*/
+        /*} */
+
+
+
+        .table thead th {
+            border-bottom: 1px solid #000 !important;
+
+            background: #fff !important;
+        }
+
+        .day-time, .total-value, .value {
+            /* display: inline-block; */
+            border: 1px solid #afafaf !important;
+            padding: 3px 19px !important;
+            border-radius: 30px !important;
+            /*width: 80px !important;*/
+            color: #afafaf;
+            text-align: center !important;
+        }
+
+        .table thead th {
+            padding: 0.9rem 3rem !important;
+        }
+
+
+    </style>
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -30,22 +59,6 @@
                             <a href="#" class="action-item next"><i class="ti ti-arrow-right"></i></a>
                         </div>
 
-                        @can('create timesheet')
-                            <div class="col text-end project_tasks_select">
-                                <div class="dropdown btn btn-sm p-0">
-                                    <a class=" btn btn-primary add-small " role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-                                        <i class="ti ti-plus mr-2"></i>{{__('Add Task on Timesheet')}}
-                                    </a>
-                                    <div class="dropdown-menu dropdown-menu-right tasks-box" x-placement="bottom-end">
-                                        <div class="scrollbar-inner">
-                                            <div class="mh-280">
-                                                <div class="tasks-list"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endcan
                     </div>
                 </div>
                 <div class="card-wrapper project-timesheet overflow-auto"></div>
@@ -61,7 +74,7 @@
     </div>
 @endsection
 
-@push('css-page')
+<!-- @push('css-page')
     <style type="text/css">
         .task-name{
             padding: 1.5rem 1.5rem !important;
@@ -84,7 +97,8 @@
             text-align: center !important;
         }
     </style>
-@endpush
+@endpush -->
+
 @push('script-page')
     <script>
         function ajaxFilterTimesheetTableView() {
@@ -98,19 +112,14 @@
                 project_id: project_id,
             }
 
-
-
             $.ajax({
                 url: '{{ route('filter.timesheet.table.view') }}',
                 data: data,
                 success: function (data) {
-
-                    // console.log(data);
                     $('.weekly-dates-div .weekly-dates').text(data.onewWeekDate);
                     $('.weekly-dates-div #selected_dates').val(data.selectedDate);
 
                     $('.project_tasks_select .tasks-list .dropdown-item').remove();
-
                     $.each(data.sectiontasks, function (i, item) {
 
                         var optionhtml = '';
@@ -161,6 +170,7 @@
             var date = $(this).data('date');
             var task_id = $(this).data('task-id');
             var user_id = $(this).data('user-id');
+            // var p_id = $(this).data('project-id');
 
             data.date = date;
             data.task_id = task_id;
@@ -168,6 +178,7 @@
             if (user_id != undefined) {
                 data.user_id = user_id;
             }
+
             if (type == 'create') {
                 var title = '{{ __("Create Timesheet") }}';
                 data.project_id = '{{ $project->id }}';
@@ -176,12 +187,14 @@
             }
 
             $("#commonModal .modal-title").html(title + ` <small>(` + moment(date).format("ddd, Do MMM YYYY") + `)</small>`);
+
             $.ajax({
                 url: url,
                 data: data,
                 dataType: 'html',
                 success: function (data) {
                     $('#commonModal .body').html(data);
+                    // $('#commonModal .modal-body').html(data);
                     $('#commonModal').modal('show');
 
                     if ($('#date').length > 0) {

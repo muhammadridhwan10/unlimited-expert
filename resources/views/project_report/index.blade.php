@@ -151,7 +151,7 @@
                                     <td class="">
                                         @can('manage project')
                                             <div class="action-btn bg-warning ms-2">
-                                                <a href="{{ route('project_report.show', $project->id) }}" class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="{{__('Show')}}" data-original-title="{{__('Detail')}}">
+                                                <a href="{{ route('project_report.show', \Crypt::encrypt($project->id)) }}" class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="{{__('Show')}}" data-original-title="{{__('Detail')}}">
                                                     <i class="ti ti-eye text-white"></i>
                                                 </a>
                                             </div>

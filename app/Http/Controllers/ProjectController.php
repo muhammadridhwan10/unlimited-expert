@@ -135,51 +135,34 @@ class ProjectController extends Controller
             $project = new Project();
             $project->project_name = $request->project_name;
             $project->start_date = date("Y-m-d H:i:s", strtotime($request->start_date));
-            $project->end_date = date("Y-m-d H:i:s", strtotime($request->end_date));
+            
 
             $tanggal_mulai = $project->start_date;
-            $tanggal_akhir = $project->end_date;
-
-            $startDate = new DateTime($tanggal_mulai);
-            $endDate = new DateTime($tanggal_akhir);
-            $periodInterval = new DateInterval( "PT1H" );
-
-            $period = new DatePeriod($startDate, $periodInterval, $endDate );
-            $count = 0;
-
-            foreach($period as $date)
-            {
-                $startofday = clone $date;
-                $startofday->setTime(9,00);
-                $endofday = clone $date;
-                $endofday->setTime(18,00);
-
-                if($date > $startofday && $date <= $endofday && !in_array($date->format('l'), array('Sunday','Saturday')) && ($date->format('H') <= 12 || $date->format('H') > 13)){
-                    $count++;
+            $tanggal_akhir = $request->total_days;
+        
+            $d = new DateTime($tanggal_mulai);
+            $t = $d->getTimestamp();
+        
+            for($i=0; $i< $tanggal_akhir; $i++){
+        
+                $addDay = 86400;
+        
+                $nextDay = date('w', ($t+$addDay));
+        
+                if($nextDay == 0 || $nextDay == 6) {
+                    $i--;
                 }
-                
+        
+                $t = $t+$addDay;
             }
-            
-            // tanggalnya diubah formatnya ke Y-m-d 
-            $tanggal_mulai = strtotime($tanggal_mulai);
-            
-            $tanggal_akhir = strtotime($tanggal_akhir);
-            
-            $jumlahhariefektif = array();
-            $sabtuminggu = array();
-            
-            for ($i=$tanggal_mulai; $i <= $tanggal_akhir; $i += (60 * 60 * 24)) {
-                if (date('w', $i) !== '0' && date('w', $i) !== '6') {
-                    $hariefektif[] = $i;
-                } else {
-                    $sabtuminggu[] = $i;
-                }
-            
-            }
+        
+            $d->setTimestamp($t);
+        
+            $end_date = $d->format( 'Y-m-d H:i:s' );
 
-            $jumlah_hariefektif = count($hariefektif);
-            $jumlah_sabtuminggu = count($sabtuminggu);
-            $abtotal = $jumlah_hariefektif + $jumlah_sabtuminggu;
+            $project->end_date = $end_date;
+
+            $count = $tanggal_akhir * 8;
 
             if($request->hasFile('project_image'))
             {
@@ -249,7 +232,7 @@ class ProjectController extends Controller
                 // dd($details);
                 $tasks                 = new ProjectTask();
                 $tasks->project_id     = $project->id;
-                $tasks->assign_to      = \Auth::user()->creatorId();
+                $tasks->assign_to      = 0;
                 $tasks->stage_id       =  $details[$i]['stage_id'];
                 $tasks->name           = $details[$i]['name'];
                 $tasks->category_template_id      =  $details[$i]['category_template_id'];
@@ -612,48 +595,31 @@ class ProjectController extends Controller
             $project->start_date = date("Y-m-d H:i:s", strtotime($request->start_date));
             $project->end_date = date("Y-m-d H:i:s", strtotime($request->end_date));
             $tanggal_mulai = $project->start_date;
-            $tanggal_akhir = $project->end_date;
-
-            $startDate = new DateTime($tanggal_mulai);
-            $endDate = new DateTime($tanggal_akhir);
-            $periodInterval = new DateInterval( "PT1H" );
-
-            $period = new DatePeriod($startDate, $periodInterval, $endDate );
-            $count = 0;
-
-            foreach($period as $date)
-            {
-                $startofday = clone $date;
-                $startofday->setTime(9,00);
-                $endofday = clone $date;
-                $endofday->setTime(18,00);
-
-                if($date > $startofday && $date <= $endofday && !in_array($date->format('l'), array('Sunday','Saturday')) && ($date->format('H') <= 12 || $date->format('H') > 13)){
-                    $count++;
+            $tanggal_akhir = $request->total_days;
+        
+            $d = new DateTime($tanggal_mulai);
+            $t = $d->getTimestamp();
+        
+            for($i=0; $i< $tanggal_akhir; $i++){
+        
+                $addDay = 86400;
+        
+                $nextDay = date('w', ($t+$addDay));
+        
+                if($nextDay == 0 || $nextDay == 6) {
+                    $i--;
                 }
-                
+        
+                $t = $t+$addDay;
             }
-            
-            // tanggalnya diubah formatnya ke Y-m-d 
-            $tanggal_mulai = strtotime($tanggal_mulai);
-            
-            $tanggal_akhir = strtotime($tanggal_akhir);
-            
-            $jumlahhariefektif = array();
-            $sabtuminggu = array();
-            
-            for ($i=$tanggal_mulai; $i <= $tanggal_akhir; $i += (60 * 60 * 24)) {
-                if (date('w', $i) !== '0' && date('w', $i) !== '6') {
-                    $hariefektif[] = $i;
-                } else {
-                    $sabtuminggu[] = $i;
-                }
-            
-            }
+        
+            $d->setTimestamp($t);
+        
+            $end_date = $d->format( 'Y-m-d H:i:s' );
 
-            $jumlah_hariefektif = count($hariefektif);
-            $jumlah_sabtuminggu = count($sabtuminggu);
-            $abtotal = $jumlah_hariefektif + $jumlah_sabtuminggu;
+            $project->end_date = $end_date;
+
+            $count = $tanggal_akhir * 8;
 
             if($request->hasFile('project_image'))
             {
@@ -698,7 +664,7 @@ class ProjectController extends Controller
                 // dd($details);
                 $tasks                 = new ProjectTask();
                 $tasks->project_id     = $project->id;
-                $tasks->assign_to      = \Auth::user()->creatorId();
+                $tasks->assign_to      = 0;
                 $tasks->stage_id       =  $details[$i]['stage_id'];
                 $tasks->name           = $details[$i]['name'];
                 $tasks->category_template_id      =  $details[$i]['category_template_id'];
@@ -707,7 +673,7 @@ class ProjectController extends Controller
                 $tasks->estimated_hrs  = $details[$i]['estimated_hrs'];
                 $tasks->description    = $details[$i]['description'];
                 $tasks->created_by     = \Auth::user()->creatorId();
-                $tasks->save();
+                $tasks->update();
 
             }
 
