@@ -235,8 +235,6 @@ class UserController extends Controller
             $user = User::find($id);
             if($user)
             {
-                if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
-                {
                     if($user->delete_status == 0)
                     {
                         $user->delete_status = 1;
@@ -245,10 +243,9 @@ class UserController extends Controller
                     {
                         $user->delete_status = 0;
                     }
+
                     $user->save();
-                }
-                if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
-                {
+                    
                     $employee = Employee::where(['user_id' => $user->id])->delete();
                     if($employee){
                         $delete_user = User::where(['id' => $user->id])->delete();
@@ -260,7 +257,6 @@ class UserController extends Controller
                     }else{
                         return redirect()->back()->with('error', __('Something is wrong.'));
                     }
-                }
 
                 return redirect()->route('users.index')->with('success', __('User successfully deleted .'));
             }

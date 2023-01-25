@@ -511,8 +511,23 @@ class AttendanceEmployeeController extends Controller
         if(!empty($todayAttendance) && $todayAttendance->clock_out == '00:00:00')
         {
 
-            $startTime = Utility::getValByName('company_start_time');
-            $endTime   = Utility::getValByName('company_end_time');
+            $employee = Employee::where('id', $employeeId)->first();
+            
+            if($employee->branch_id == 1)
+            {
+                $startTime = Utility::getValByName('company_start_time');
+                $endTime   = Utility::getValByName('company_end_time');
+            }
+            elseif($employee->branch_id == 2)
+            {
+                $startTime = "08:30";
+                $endTime   = "17:30";
+            }
+            elseif($employee->branch_id == 3)
+            {
+                $startTime = "08:00";
+                $endTime   = "17:00";
+            }
 
             if(Auth::user()->type == 'Employee' || Auth::user()->type == 'intern' || Auth::user()->type == 'intern' || Auth::user()->type =='junior audit' || Auth::user()->type =='senior audit' || Auth::user()->type =='junior accounting' || Auth::user()->type =='senior accounting' || Auth::user()->type =='staff IT')
             {
@@ -638,8 +653,23 @@ class AttendanceEmployeeController extends Controller
         if(empty($todayAttendance))
         {
 
-            $startTime = Utility::getValByName('company_start_time');
-            $endTime   = Utility::getValByName('company_end_time');
+            $employee = Employee::where('id', $employeeId)->first();
+            
+            if($employee->branch_id == 1)
+            {
+                $startTime = Utility::getValByName('company_start_time');
+                $endTime   = Utility::getValByName('company_end_time');
+            }
+            elseif($employee->branch_id == 2)
+            {
+                $startTime = "08:30";
+                $endTime   = "17:30";
+            }
+            elseif($employee->branch_id == 3)
+            {
+                $startTime = "08:00";
+                $endTime   = "17:00";
+            }
 
             $attendance = AttendanceEmployee::orderBy('id', 'desc')->where('employee_id', '=', $employeeId)->where('clock_out', '=', '00:00:00')->first();
 
@@ -825,11 +855,27 @@ class AttendanceEmployeeController extends Controller
         {
             if(!empty($request->branch) && !empty($request->department))
             {
-                $startTime = Utility::getValByName('company_start_time');
-                $endTime   = Utility::getValByName('company_end_time');
                 $date      = $request->date;
 
                 $employees = $request->employee_id;
+                $employee = Employee::where('id', $employees)->first();
+            
+                if($employee->branch_id == 1)
+                {
+                    $startTime = Utility::getValByName('company_start_time');
+                    $endTime   = Utility::getValByName('company_end_time');
+                }
+                elseif($employee->branch_id == 2)
+                {
+                    $startTime = "08:30";
+                    $endTime   = "17:30";
+                }
+                elseif($employee->branch_id == 3)
+                {
+                    $startTime = "08:00";
+                    $endTime   = "17:00";
+                }
+
                 $atte      = [];
                 foreach($employees as $employee)
                 {

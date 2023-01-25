@@ -457,8 +457,21 @@ class DashboardController extends Controller
                     $time               = date("H:i:s");
                     $employeeAttendance = AttendanceEmployee::orderBy('id', 'desc')->where('employee_id', '=', !empty(\Auth::user()->employee) ? \Auth::user()->employee->id : 0)->where('date', '=', $date)->first();
 
-                    $officeTime['startTime'] = Utility::getValByName('company_start_time');
-                    $officeTime['endTime']   = Utility::getValByName('company_end_time');
+                    if($emp->branch_id == 1)
+                    {
+                        $officeTime['startTime']    = Utility::getValByName('company_start_time');
+                        $officeTime['endTime']      = Utility::getValByName('company_end_time');
+                    }
+                    elseif($emp->branch_id == 2)
+                    {
+                        $officeTime['startTime']    = "08:30";
+                        $officeTime['endTime']      = "17:30";
+                    }
+                    elseif($emp->branch_id == 3)
+                    {
+                        $officeTime['startTime']    = "08:00";
+                        $officeTime['endTime']      = "17:00";
+                    }
 
                     return view('dashboard.dashboard', compact('arrEvents', 'announcements', 'employees', 'meetings', 'employeeAttendance', 'officeTime'));
                 }elseif($user->type = 'admin')
@@ -508,8 +521,62 @@ class DashboardController extends Controller
 
 
                     $meetings = Meeting::limit(5)->get();
+                    $officeTime['startTime'] = Utility::getValByName('company_start_time');
+                    $officeTime['endTime']   = Utility::getValByName('company_end_time');
 
-                    return view('dashboard.dashboard', compact('arrEvents', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
+                    return view('dashboard.dashboard', compact('arrEvents', 'officeTime', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
+                }
+                elseif($user->type = 'company')
+                {
+                    $events    = Event::all();
+                    $arrEvents = [];
+
+                    foreach($events as $event)
+                    {
+                        $arr['id']    = $event['id'];
+                        $arr['title'] = $event['title'];
+                        $arr['start'] = $event['start_date'];
+                        $arr['end']   = $event['end_date'];
+
+                        $arr['backgroundColor'] = $event['color'];
+                        $arr['borderColor']     = "#fff";
+                        $arr['textColor']       = "white";
+                        $arr['url']             = route('event.edit', $event['id']);
+
+                        $arrEvents[] = $arr;
+                    }
+
+
+                    $announcements = Announcement::orderBy('announcements.id', 'desc')->take(5)->get();
+
+
+                    $emp           = User::where('type', '!=', 'client')->get();
+                    $countEmployee = count($emp);
+
+                    $user      = User::where('type', '!=', 'client')->get();
+                    $countUser = count($user);
+
+
+                    $countTrainer    = Trainer::all()->count();
+                    $onGoingTraining = Training::where('status', '=', 1)->count();
+                    $doneTraining    = Training::where('status', '=', 2)->count();
+
+                    $currentDate = date('Y-m-d');
+
+                    $employees   = User::where('type', '=', 'client')->get();
+                    $countClient = count($employees);
+                    $notClockIn  = AttendanceEmployee::where('date', '=', $currentDate)->get()->pluck('employee_id');
+
+                    $notClockIns = Employee::whereNotIn('id', $notClockIn)->get();
+                    $activeJob   = Job::where('status', 'active')->count();
+                    $inActiveJOb = Job::where('status', 'in_active')->count();
+
+
+                    $meetings = Meeting::limit(5)->get();
+                    $officeTime['startTime'] = Utility::getValByName('company_start_time');
+                    $officeTime['endTime']   = Utility::getValByName('company_end_time');
+
+                    return view('dashboard.dashboard', compact('arrEvents', 'officeTime', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
                 }
 
                 else
