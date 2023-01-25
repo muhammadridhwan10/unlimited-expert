@@ -28,17 +28,17 @@
                             {!! Form::text('name', null, ['class' => 'form-control','required' => 'required']) !!}
                         </div>
                         <div class="form-group col-md-6">
-                            {!! Form::label('phone', __('Phone'),['class'=>'form-label']) !!}<span class="text-danger pl-1">*</span>
+                            {!! Form::label('phone', __('Phone'),['class'=>'form-label']) !!}
                             {!! Form::number('phone',null, ['class' => 'form-control']) !!}
                         </div>
                         <div class="form-group col-md-6">
 
-                            {!! Form::label('dob', __('Date of Birth'),['class'=>'form-label']) !!}<span class="text-danger pl-1">*</span>
+                            {!! Form::label('dob', __('Date of Birth'),['class'=>'form-label']) !!}
                             {!! Form::date('dob', null, ['class' => 'form-control']) !!}
 
                         </div>
                         <div class="form-group col-md-6">
-                            {!! Form::label('gender', __('Gender'),['class'=>'form-label']) !!}<span class="text-danger pl-1">*</span>
+                            {!! Form::label('gender', __('Gender'),['class'=>'form-label']) !!}
                             <div class="d-flex radio-check mt-2">
                                 <div class="form-check form-check-inline form-group">
                                     <input type="radio" id="g_male" value="Male" name="gender" class="form-check-input" {{($employee->gender == 'Male')?'checked':''}}>
@@ -53,7 +53,7 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        {!! Form::label('address', __('Address'),['class'=>'form-label']) !!}<span class="text-danger pl-1">*</span>
+                        {!! Form::label('address', __('Address'),['class'=>'form-label']) !!}
                         {!! Form::textarea('address',null, ['class' => 'form-control','rows'=>2]) !!}
                     </div>
                     @if(\Auth::user()->type=='employee')
