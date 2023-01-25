@@ -245,14 +245,16 @@ class ProjectReportController extends Controller
 
                         $jumlahtask = $tasks->count();
 
-                        $totaltask = intval($jumlahtask * 4);
-                        $ratarata  = intval($totaltask / $jumlahhari);
+                        $totaltask        = intval($jumlahtask * 4);
+                        $rataratalink     = intval($jumlahtask / $jumlahtask);
+                        $rataratacomment  = intval($totaltask / $jumlahhari);
 
-                        $target = intval($ratarata * $jumlahhari);
+                        $targetlink    = $jumlahtask;
+                        $targetcomment = intval($rataratacomment * $jumlahhari);
 
                         $countsubtask = TaskChecklist::where('project_id', $task->project_id)->where('parent_id','=', 0)->count();
-                        $counttasklink = TaskChecklist::where('project_id', $task->project_id)->where('link','!=', NULL)->pluck('link')->count(). '/' .  $target;
-                        $counttaskcomment = TaskComment::where('project_id', $task->project_id)->count(). '/' .  $target;
+                        $counttasklink = TaskChecklist::where('project_id', $task->project_id)->where('link','!=', NULL)->pluck('link')->count(). '/' .  $targetlink;
+                        $counttaskcomment = TaskComment::where('project_id', $task->project_id)->count();
                         $countchecked = TaskChecklist::where('project_id', $task->project_id)->where('status', '=', 1)->count();
                         $timesheets_task = Timesheet::where('task_id',$task->id)->where('project_id',$id)->get();
                         $totalchecked = $countchecked . '/' .  $countsubtask;
@@ -278,7 +280,7 @@ class ProjectReportController extends Controller
                 $tasks = ProjectTask::where('project_id','=',$id)->get();
 
 
-                return view('project_report.show', compact('user','users', 'ratarata', 'jumlahhari', 'countsubtask', 'counttasklink', 'counttaskcomment', 'totalchecked', 'arrProcessPer_status_task','arrProcess_Label_priority','esti_logged_hour_chart','logged_hour_chart','arrProcessPer_priority','arrProcess_Label_status_tasks','project','milestones', 'daysleft','chartData','arrProcessClass','stages','tasks','Preengagement', 'Riskassessment', 'Riskresponse', 'Conclutioncompletion'));
+                return view('project_report.show', compact('user','users', 'rataratalink','rataratacomment', 'jumlahhari', 'countsubtask', 'counttasklink', 'counttaskcomment', 'totalchecked', 'arrProcessPer_status_task','arrProcess_Label_priority','esti_logged_hour_chart','logged_hour_chart','arrProcessPer_priority','arrProcess_Label_status_tasks','project','milestones', 'daysleft','chartData','arrProcessClass','stages','tasks','Preengagement', 'Riskassessment', 'Riskresponse', 'Conclutioncompletion'));
 
          }
         }

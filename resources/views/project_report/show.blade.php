@@ -307,12 +307,12 @@
                                                 <td class="border-0">{{$totalchecked}}</td>
                                             </tr>
                                             <tr>
-                                                <th class="border-0">{{ __('Average Link Per Tasks')}}:</th>
-                                                <td class="border-0">{{$ratarata}} {{'Link'}}</td>
+                                                <th class="border-0">{{ __('Minimum Link Per Tasks')}}:</th>
+                                                <td class="border-0">{{$rataratalink}} {{'Link'}}</td>
                                             </tr>
                                             <tr>
-                                                <th class="border-0">{{ __('Average Comment Per Tasks')}}:</th>
-                                                <td class="border-0">{{$ratarata}} {{'Comment'}}</td>
+                                                <th class="border-0">{{ __('Minimum Comment Per Tasks')}}:</th>
+                                                <td class="border-0">{{$rataratacomment}} {{'Comment'}}</td>
                                             </tr>
                                         </tbody>
                                     </table>
