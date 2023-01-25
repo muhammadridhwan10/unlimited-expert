@@ -91,7 +91,7 @@
                             </div>
                             <div class="form-group col-md-6">
                                 {!! Form::label('company_doj', 'Company Date Of Joining',['class'=>'form-label']) !!}
-                                {!! Form::date('company_doj', null, ['class' => 'form-control ','required' => 'required']) !!}
+                                {!! Form::date('company_doj', null, ['class' => 'form-control ']) !!}
                             </div>
                         </div>
                     </div>
