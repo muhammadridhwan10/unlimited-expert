@@ -51,13 +51,13 @@
     {{ Form::model($task, ['route' => ['projects.tasks.update',[$project->id, $task->id]], 'id' => 'edit_task', 'method' => 'POST']) }}
     <div class="modal-body">
         <div class="row">
-            <div class="col-8">
+            <div class="col-12">
                 <div class="form-group">
                     {{ Form::label('name', __('Task name'),['class' => 'form-label']) }}<span class="text-danger">*</span>
                     {{ Form::text('name', null, ['class' => 'form-control','required'=>'required']) }}
                 </div>
             </div>
-            <div class="col-4">
+            <!-- <div class="col-4">
                 <div class="form-group">
                     {{ Form::label('milestone_id', __('Milestone'),['class' => 'form-label']) }}
                     <select class="form-control select2" name="milestone_id" id="milestone_id">
@@ -67,7 +67,7 @@
                         @endforeach
                     </select>
                 </div>
-            </div>
+            </div> -->
             <div class="col-12">
                 <div class="form-group">
                     {{ Form::label('description', __('Description'),['class' => 'form-label']) }}

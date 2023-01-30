@@ -13,7 +13,7 @@
                 {{ Form::select('category_template_id',$category_template_id,null, array('class' => 'form-control select')) }}
             </div>
         </div>
-        <div class="col-6">
+        <!-- <div class="col-6">
             <div class="form-group">
                 {{ Form::label('milestone_id', __('Milestone'),['class' => 'form-label']) }}
                 <select class="form-control select2" name="milestone_id" id="milestone_id">
@@ -23,7 +23,7 @@
                     @endforeach
                 </select>
             </div>
-        </div>
+        </div> -->
         <div class="col-12">
             <div class="form-group">
                 {{ Form::label('description', __('Description'),['class' => 'form-label']) }}

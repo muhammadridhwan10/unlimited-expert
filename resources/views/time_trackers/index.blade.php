@@ -55,7 +55,8 @@
                             <thead>
                             <tr>
 
-                                <th> {{__('Description')}}</th>
+                                <!-- <th> {{__('Description')}}</th> -->
+                                <th> {{__('Start Date')}}</th>
                                 <th> {{__('Employee')}}</th>
                                 <th> {{__('Task')}}</th>
                                 <th> {{__('Project')}}</th>
@@ -73,7 +74,8 @@
 
                                 @endphp
                                 <tr>
-                                    <td>{{$trecker->name}}</td>
+                                    <!-- <td>{{$trecker->name}}</td> -->
+                                    <td>{{date("D-m-Y",strtotime($trecker->start_time))}}</td>
                                     <td>{{$trecker->user->name}}</td>
                                     <td>{{$trecker->tasks->name}}</td>
                                     <td>{{$trecker->project_name}}</td>

@@ -154,6 +154,7 @@ class ProjectReportController extends Controller
             $Riskassessment = $category['Riskassessment'];
             $Riskresponse = $category['Riskresponse'];
             $Conclutioncompletion = $category['Conclutioncompletion'];
+            $totalhoursestimate = $Preengagement + $Riskassessment + $Riskresponse + $Conclutioncompletion;
 
             if ($user) {
                 $chartData = $this->getProjectChart(
@@ -268,8 +269,8 @@ class ProjectReportController extends Controller
                         $logged_hour += $total_hour ;
                         $logged_hour_chart = number_format($logged_hour, 2, '.', '');
 
-                   }
-               }
+                    }
+                }
 
 
                 //Estimated Hours
@@ -280,7 +281,7 @@ class ProjectReportController extends Controller
                 $tasks = ProjectTask::where('project_id','=',$id)->get();
 
 
-                return view('project_report.show', compact('user','users', 'rataratalink','rataratacomment', 'jumlahhari', 'countsubtask', 'counttasklink', 'counttaskcomment', 'totalchecked', 'arrProcessPer_status_task','arrProcess_Label_priority','esti_logged_hour_chart','logged_hour_chart','arrProcessPer_priority','arrProcess_Label_status_tasks','project','milestones', 'daysleft','chartData','arrProcessClass','stages','tasks','Preengagement', 'Riskassessment', 'Riskresponse', 'Conclutioncompletion'));
+                return view('project_report.show', compact('user','users', 'rataratalink','rataratacomment', 'jumlahhari', 'countsubtask', 'counttasklink', 'counttaskcomment', 'totalchecked', 'arrProcessPer_status_task','arrProcess_Label_priority','esti_logged_hour_chart','logged_hour_chart','arrProcessPer_priority','arrProcess_Label_status_tasks','project','milestones', 'daysleft','chartData','arrProcessClass','stages','tasks','Preengagement', 'Riskassessment', 'Riskresponse', 'Conclutioncompletion', 'totalhoursestimate'));
 
          }
         }

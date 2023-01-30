@@ -46,6 +46,8 @@
                             <span class="badge rounded-pill bg-info">{{ $project->tags }}</span>
                             @elseif ($project->tags === "BEKASI")
                                 <span class="badge rounded-pill bg-warning">{{ $project->tags }}</span>
+                            @elseif ($project->tags === "MALANG")
+                                <span class="badge rounded-pill bg-success">{{ $project->tags }}</span>
                             @endif
                             </div>
                         </div>

@@ -241,30 +241,36 @@ class Project extends Model
                                             return ($val['created_by'] == $user_id and $val['date'] == $date);
                                         }
                                         );
+                                        $new_projects_timesheet                      = clone $projects_timesheet;
+                                        $authuser                                    = Auth::user();
+                                        $time                                        = Utility::calculateTimesheetHours($new_projects_timesheet->where('task_id', $task->id)->where('date', $date)->pluck('time')->toArray());
+
                                         $key                                                                          = array_keys($filtered_array);
                                         $user                                                                         = User::find($user_id);
                                         $timesheetArray[$k]['taskArray'][$i]['dateArray'][$count]['user_id']          = $user != null ? $user->id : '';
                                         $timesheetArray[$k]['taskArray'][$i]['dateArray'][$count]['user_name']        = $user != null ? $user->name : '';
                                         $timesheetArray[$k]['taskArray'][$i]['dateArray'][$count]['week'][$j]['date'] = $date;
-                                        if(!empty($key) && count($key) > 0)
-                                        {
-                                            $time                                                                         = Carbon::parse($tasktimesheet[$key[0]]['time'])->format('H:i');
-                                            $times[]                                                                      = $time;
-                                            $timesheetArray[$k]['taskArray'][$i]['dateArray'][$count]['week'][$j]['time'] = $time;
-                                            $timesheetArray[$k]['taskArray'][$i]['dateArray'][$count]['week'][$j]['type'] = 'edit';
-                                            $timesheetArray[$k]['taskArray'][$i]['dateArray'][$count]['week'][$j]['url']  = route(
-                                                'timesheet.edit', [
-                                                                    $project_id,
-                                                                    $tasktimesheet[$key[0]]['id'],
-                                                                ]
-                                            );
-                                        }
-                                        else
-                                        {
-                                            $timesheetArray[$k]['taskArray'][$i]['dateArray'][$count]['week'][$j]['time'] = '00:00';
-                                            $timesheetArray[$k]['taskArray'][$i]['dateArray'][$count]['week'][$j]['type'] = 'create';
-                                            $timesheetArray[$k]['taskArray'][$i]['dateArray'][$count]['week'][$j]['url']  = route('timesheet.create', $project_id);
-                                        }
+                                        $timesheetArray[$k]['taskArray'][$i]['dateArray'][$count]['week'][$j]['time'] = $time;
+                                        $times[]                                                                      = $time;
+                                        // if(!empty($key) && count($key) > 0)
+                                        // {
+                                        //     $time                                                                         = Carbon::parse($tasktimesheet[$key[0]]['time'])->format('H:i');
+                                        //     $times[]                                                                      = $time;
+                                        //     $timesheetArray[$k]['taskArray'][$i]['dateArray'][$count]['week'][$j]['time'] = $time;
+                                        //     $timesheetArray[$k]['taskArray'][$i]['dateArray'][$count]['week'][$j]['type'] = 'edit';
+                                        //     $timesheetArray[$k]['taskArray'][$i]['dateArray'][$count]['week'][$j]['url']  = route(
+                                        //         'timesheet.edit', [
+                                        //                             $project_id,
+                                        //                             $tasktimesheet[$key[0]]['id'],
+                                        //                         ]
+                                        //     );
+                                        // }
+                                        // else
+                                        // {
+                                        //     $timesheetArray[$k]['taskArray'][$i]['dateArray'][$count]['week'][$j]['time'] = '00:00';
+                                        //     $timesheetArray[$k]['taskArray'][$i]['dateArray'][$count]['week'][$j]['type'] = 'create';
+                                        //     $timesheetArray[$k]['taskArray'][$i]['dateArray'][$count]['week'][$j]['url']  = route('timesheet.create', $project_id);
+                                        // }
                                     }
                                     $calculatedtasktime                                                    = Utility::calculateTimesheetHours($times);
                                     $totaltaskdatetimes[]                                                  = $calculatedtasktime;
@@ -287,33 +293,56 @@ class Project extends Model
                     {
                         $timesheetArray[$i]['task_id']   = $task->id;
                         $timesheetArray[$i]['task_name'] = $task->name;
+                        // $response = array();
+                        // $response[] = array("time"=> $timesheet[$j]['time']);
+                        // foreach ($response as $recipient) {
+                        //     dd($recipient);
+                        // }
                         for($j = 0; $j < 7; $j++)
                         {
                             $date                                        = $days['datePeriod'][$j]->format('Y-m-d');
-                            $key                                         = array_search($date, array_column($timesheet, 'date'));
                             $timesheetArray[$i]['dateArray'][$j]['date'] = $date;
-                            if($key !== false)
-                            {
-                                $time                                        = Carbon::parse($timesheet[$key]['time'])->format('H:i');
-                                $times[]                                     = $time;
-                                $timesheetArray[$i]['dateArray'][$j]['time'] = $time;
-                                $timesheetArray[$i]['dateArray'][$j]['type'] = 'edit';
-                                $timesheetArray[$i]['dateArray'][$j]['url']  = route(
-                                    'timesheet.edit', [
-                                                        $project_id,
-                                                        $timesheet[$key]['id'],
-                                                    ]
-                                );
-                            }
-                            else
-                            {
-                                $timesheetArray[$i]['dateArray'][$j]['time'] = '00:00';
-                                $timesheetArray[$i]['dateArray'][$j]['type'] = 'create';
-                                $timesheetArray[$i]['dateArray'][$j]['url']  = route('timesheet.create', $project_id);
-                            }
+                            $new_projects_timesheet                      = clone $projects_timesheet;
+                            $authuser                                    = Auth::user();
+                            // $time = $timesheet[$j]['time'];
+                            $time                             = Utility::calculateTimesheetHours($new_projects_timesheet->where('task_id', $task->id)->where('date', $date)->pluck('time')->toArray());
+                            // dd($time);
+                            $timesheetArray[$i]['dateArray'][$j]['time'] = $time;
+
+
+                            // $date                                        = $days['datePeriod'][$j]->format('Y-m-d');
+                            // $key                                         = array_search($date, array_column($timesheet, 'date'));
+                            // $timesheetArray[$i]['dateArray'][$j]['date'] = $date;
+                            // if($key !== false)
+                            // {
+                            //     $time                                        = Carbon::parse($timesheet[$key]['time'])->format('H:i');
+                            //     $times[]                                     = $time;
+                            //     $timesheetArray[$i]['dateArray'][$j]['time'] = $time;
+                            //     $timesheetArray[$i]['dateArray'][$j]['type'] = 'edit';
+                            //     $timesheetArray[$i]['dateArray'][$j]['url']  = route(
+                            //         'timesheet.edit', [
+                            //                             $project_id,
+                            //                             $timesheet[$key]['id'],
+                            //                         ]
+                            //     );
+                            // }
+                            // else
+                            // {
+                            //     $timesheetArray[$i]['dateArray'][$j]['time'] = '00:00';
+                            //     $timesheetArray[$i]['dateArray'][$j]['type'] = 'create';
+                            //     $timesheetArray[$i]['dateArray'][$j]['url']  = route('timesheet.create', $project_id);
+                            // }
+                        }
+
+                        foreach($days['datePeriod'] as $key => $date)
+                        {
+                            $dateperioddate                  = $date->format('Y-m-d');
+                            $new_projects_timesheet          = clone $projects_timesheet;
+                            $authuser                        = Auth::user();
+                            $calculatedtotaltaskdatetime[$dateperioddate] = Utility::calculateTimesheetHours($new_projects_timesheet->where('task_id', $task->id)->where('date', $dateperioddate)->pluck('time')->toArray());
                         }
                                         
-                        $calculatedtasktime              = Utility::calculateTimesheetHours($times);
+                        $calculatedtasktime              = Utility::calculateTimesheetHours($calculatedtotaltaskdatetime);
                         $totaltaskdatetimes[]            = $calculatedtasktime;
                         $timesheetArray[$i]['totaltime'] = $calculatedtasktime;
                     }
@@ -321,23 +350,26 @@ class Project extends Model
                 }
             }
 
-        $calculatedtotaltaskdatetime = Utility::calculateTimesheetHours($totaltaskdatetimes);
+        foreach($days['datePeriod'] as $key => $date)
+        {
+            $dateperioddate                  = $date->format('Y-m-d');
+            $new_projects_timesheet          = clone $projects_timesheet;
+            $authuser                        = Auth::user();
+            $calculatedtotaltaskdatetime[$dateperioddate] = Utility::calculateTimesheetHours($new_projects_timesheet->where('date', $dateperioddate)->pluck('time')->toArray());
+            
+        }
+
+        $calculatedtotaltaskdatetime = Utility::calculateTimesheetHours($calculatedtotaltaskdatetime);
 
         foreach($days['datePeriod'] as $key => $date)
         {
             $dateperioddate                  = $date->format('Y-m-d');
             $new_projects_timesheet          = clone $projects_timesheet;
             $authuser                        = Auth::user();
-            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
-            {
-                $totalDateTimes[$dateperioddate] = Utility::calculateTimesheetHours($new_projects_timesheet->where('date', $dateperioddate)->pluck('time')->toArray());
-            }
-            elseif(\Auth::user()->type !== 'client' && \Auth::user()->type !== 'staff_client')
-            {
-                $totalDateTimes[$dateperioddate] = Utility::calculateTimesheetHours($new_projects_timesheet->where('date', $dateperioddate)->get()->where('created_by', $authuser->id)->pluck('time')->toArray());
-            }
+            $totalDateTimes[$dateperioddate] = Utility::calculateTimesheetHours($new_projects_timesheet->where('date', $dateperioddate)->pluck('time')->toArray());
             
         }
+
         $returnHTML = view('projects.timesheets.week', compact('timesheetArray', 'totalDateTimes', 'calculatedtotaltaskdatetime', 'days', 'allProjects'))->render();
 
         return $returnHTML;

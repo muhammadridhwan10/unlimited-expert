@@ -411,7 +411,7 @@
                     <div class="progress mb-3">
                         <div class="progress-bar bg-primary" style="width: {{ $project_data['open_task']['percentage'] }}%"></div>
                     </div>
-                    <div class="d-flex align-items-center justify-content-between mb-2">
+                    <!-- <div class="d-flex align-items-center justify-content-between mb-2">
                         <div class="d-flex align-items-center">
                             <span class="text-muted">{{__('Completed Milestone')}}</span>
                         </div>
@@ -419,7 +419,7 @@
                     </div>
                     <div class="progress mb-3">
                         <div class="progress-bar bg-primary" style="width: {{ $project_data['milestone']['percentage'] }}%"></div>
-                    </div>
+                    </div> -->
                 </div>
             </div>
 
@@ -514,7 +514,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-6 col-md-6">
+        <!-- <div class="col-lg-6 col-md-6">
             <div class="card">
                 <div class="card-header">
                     @can('create milestone')
@@ -576,7 +576,7 @@
 
                 </div>
             </div>
-        </div>
+        </div> -->
         @can('view activity')
             <div class="col-xl-6">
                 <div class="card activity-scroll">

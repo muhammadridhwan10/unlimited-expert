@@ -272,6 +272,10 @@
                                                 <th class="border-0">{{ __('Conclution and Completion')}}:</th>
                                                 <td class="border-0">{{$Conclutioncompletion . ' Hours'}}</td>
                                             </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Total Hours Estimation Category')}}:</th>
+                                                <td class="border-0"><div class="badge  bg-info p-2 px-3 rounded"> {{$totalhoursestimate . ' Hours'}}</div></td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -407,8 +411,8 @@ $lastStage=\App\Models\TaskStage::where('created_by',\Auth::user()->creatorId())
                                 <table class="table datatable">
                                     <thead>
                                         <tr>
-                                            <th>{{ __('Task Name') }}</th>
-                                            <th>{{ __('Milestone') }}</th>
+                                            <th>{{ __('Category Task') }}</th>
+                                            <th>{{ __('Task Name') }}</th>                                        
                                             <th>{{ __('Start Date') }}</th>
                                             <th>{{ __('End Date') }}</th>
                                             <th>{{ __('Assigned to') }}</th>
@@ -449,13 +453,8 @@ $lastStage=\App\Models\TaskStage::where('created_by',\Auth::user()->creatorId())
                                                     @endphp
                                             @endforeach
                                             <tr>
-                                                <td>
-                                                    <a href="#!" data-size="md" data-url="{{ route('projects.tasks.show',[$project->id,$task->id]) }}"
-                                                    data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('View')}}">
-                                                        {{$task->name}}
-                                                    </a>
-                                                </td>
-                                                <td>{{ (!empty($task->milestone)) ? $task->milestone->title : '-' }}</td>
+                                                <td>{{$task->category_templates->name}}</td>
+                                                <td>{{$task->name}}</td>
                                                 <td>{{$task->start_date}}</td>
                                                 <td>{{$task->end_date}}</td>
                                                 <td>
@@ -483,7 +482,7 @@ $lastStage=\App\Models\TaskStage::where('created_by',\Auth::user()->creatorId())
                                                     </div>
                                                 </td>
                                                 <td>{{$task->estimated_hrs. ' H'}}</td>
-                                                <td>{{$hours_format_number}}</td>
+                                                <td>{{$hours_format_number. ' H'}}</td>
                                                 <td>
                                                     <div class="">
                                                         <span class="badge p-2 px-3 status_badge rounded bg-{{\App\Models\ProjectTask::$priority_color[$task->priority]}}">{{ \App\Models\ProjectTask::$priority[$task->priority] }}</span>
@@ -588,7 +587,7 @@ $lastStage=\App\Models\TaskStage::where('created_by',\Auth::user()->creatorId())
             height: 210,
             type: 'bar',
         },
-        colors: ['#6fd943','#ff3a6e','#3ec9d6'],
+        colors: ['#ff3a6e','#FFFF00','#7CFC00','#3ec9d6'],
         plotOptions: {
             bar: {
 

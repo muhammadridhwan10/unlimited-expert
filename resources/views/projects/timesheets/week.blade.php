@@ -42,7 +42,7 @@
                         
                         <td><span class="task-name pl-3">{{ $taskTimesheet['task_name'] }}</span></td>
                         @foreach ($dateTimeArray['week'] as $dateSubArray)
-                            <td class="text-center"><span class="task-time day-time" data-type="{{ $dateSubArray['type'] }}" data-user-id="{{ $dateTimeArray['user_id'] }}" data-project-id="{{ $timesheet['project_id'] }}" data-task-id="{{ $taskTimesheet['task_id'] }}" data-date="{{ $dateSubArray['date'] }}" data-url="{{ $dateSubArray['url'] }}">{{ $dateSubArray['time'] != '00:00' ? $dateSubArray['time'] : '-' }}</span></td>
+                            <td class="text-center"><span class="task-time day-time" data-user-id="{{ $dateTimeArray['user_id'] }}" data-project-id="{{ $timesheet['project_id'] }}" data-task-id="{{ $taskTimesheet['task_id'] }}" data-date="{{ $dateSubArray['date'] }}">{{ $dateSubArray['time'] != '00:00' ? $dateSubArray['time'] : '-' }}</span></td>
                         @endforeach
                         <td class="text-center"><span class="total-task-time day-time">{{ $dateTimeArray['totaltime'] }}</span></td>
                     </tr>
@@ -56,7 +56,7 @@
         <tr class="">
             <td><span class="font-weight-700">{{ $timesheet['task_name'] }}</span></td>
             @foreach ($timesheet['dateArray'] as $day => $datetime)
-                <td class="text-center"><span class="task-time day-time" data-type="{{ $datetime['type'] }}" data-task-id="{{ $timesheet['task_id'] }}" data-date="{{ $datetime['date'] }}" data-url="{{ $datetime['url'] }}">{{ $datetime['time'] != '00:00' ? $datetime['time'] : '-' }}</span></td>
+                <td class="text-center"><span class="task-time day-time" data-task-id="{{ $timesheet['task_id'] }}" data-date="{{ $datetime['date'] }}">{{ $datetime['time'] != '00:00' ? $datetime['time'] : '-' }}</span></td>
             @endforeach
             <td class="text-center"><span class="total-task-time day-time">{{ $timesheet['totaltime'] }}</span></td>
         </tr>
