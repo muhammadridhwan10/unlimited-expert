@@ -705,11 +705,11 @@
                                             <a class="dash-link" href="{{route('bugs.view','list')}}">{{__('Bug')}}</a>
                                         </li>
                                     @endcan
-                                    @can('manage project task')
+                                    <!-- @can('manage project task')
                                         <li class="dash-item {{ (request()->is('calendar*') ? 'active' : '')}}">
                                             <a class="dash-link" href="{{ route('task.calendar',['all']) }}">{{__('Task Calendar')}}</a>
                                         </li>
-                                    @endcan
+                                    @endcan -->
                                     @if(\Auth::user()->type!='super admin')
                                         <li class="dash-item  {{ (Request::segment(1) == 'time-tracker')?'active open':''}}">
                                             <a class="dash-link" href="{{ route('time.tracker') }}">{{__('Tracker')}}</a>
