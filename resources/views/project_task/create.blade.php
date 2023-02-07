@@ -31,13 +31,13 @@
                 {{ Form::textarea('description', null, ['class' => 'form-control','rows'=>'1','data-toggle' => 'autosize']) }}
             </div>
         </div>
-        <div class="col-6">
+        <!-- <div class="col-6">
             <div class="form-group">
                 {{ Form::label('estimated_hrs', __('Estimated Hours'),['class' => 'form-label']) }}<span class="text-danger">*</span>
                 <small class="form-text text-muted mb-2 mt-0">{{__('allocated total ').$hrs['allocated'].__(' hrs in other tasks')}}</small>
                 {{ Form::number('estimated_hrs', null, ['class' => 'form-control','required' => 'required','min'=>'0','maxlength' => '8']) }}
             </div>
-        </div>
+        </div> -->
         <div class="col-6">
             <div class="form-group">
                 {{ Form::label('priority', __('Priority'),['class' => 'form-label']) }}

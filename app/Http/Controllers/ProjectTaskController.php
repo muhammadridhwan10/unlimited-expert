@@ -112,7 +112,6 @@ class ProjectTaskController extends Controller
             $validator = Validator::make(
                 $request->all(), [
                                 'name' => 'required',
-                                'estimated_hrs' => 'required',
                                 'priority' => 'required',
                             ]
             );
@@ -1159,34 +1158,60 @@ class ProjectTaskController extends Controller
     public function calendarView($task_by, $project_id = NULL)
     {
         $usr = Auth::user();
-        $transdate = date('Y-m-d', time());
+        $weekday = date("l");
+        if ($weekday != "Saturday" && $weekday != "Sunday") {
+            $transdate = date('Y-m-d', time());
+        }
 
         if($usr->type != 'super admin')
         {
-            if(\Auth::user()->type == 'client'){
+            if(\Auth::user()->type == 'client')
+            {
                 $user_projects = Project::where('client_id',\Auth::user()->id)->pluck('id','id')->toArray();
-            }elseif(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin'){
-                $user_projects = Project::all()->pluck('id','id')->toArray();
-            }else{
-              $user_projects = $usr->projects()->pluck('project_id','project_id')->toArray();
             }
+            elseif(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+            {
+                $user_projects = Project::all()->pluck('id','id')->toArray();
+            }
+            else
+            {
+                $user_projects = $usr->projects()->pluck('project_id','project_id')->toArray();
+            }
+
             $user_projects = (!empty($project_id) && $project_id > 0) ? [$project_id] : $user_projects;
             // if(\Auth::user()->type == 'company'){
             //   $tasks = ProjectTask::whereIn('project_id', $user_projects);
             // }
+            // if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+            // {
+            //     $tasks = ProjectTask::whereIn('project_id', $user_projects);
+            // }
+            // elseif(\Auth::user()->type != 'company')
+            // {
+            //     if(\Auth::user()->type == 'client')
+            //     {
+            //         $tasks = ProjectTask::whereIn('project_id', $user_projects);
+            //     }
+            //     else{
+            //         $tasks = ProjectTask::whereIn('project_id', $user_projects)->whereRaw("find_in_set('" . \Auth::user()->id . "',assign_to)");
+            //     }
+            // }
+
             if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
             {
-                $tasks = ProjectTask::whereIn('project_id', $user_projects);
+                $project = ProjectUser::whereIn('project_id', $user_projects);
             }
             elseif(\Auth::user()->type != 'company')
             {
-                if(\Auth::user()->type == 'client'){
-                    $tasks = ProjectTask::whereIn('project_id', $user_projects);
+                if(\Auth::user()->type == 'client')
+                {
+                    $project = ProjectUser::whereIn('project_id', $user_projects);
                 }
                 else{
-                    $tasks = ProjectTask::whereIn('project_id', $user_projects)->whereRaw("find_in_set('" . \Auth::user()->id . "',assign_to)");
+                    $project = ProjectUser::whereIn('project_id', $user_projects)->where('user_id', $usr->id);
                 }
             }
+
             if(\Auth::user()->type  == 'client')
             {
                 if($task_by == 'all')
@@ -1194,53 +1219,95 @@ class ProjectTaskController extends Controller
                     $tasks->where('created_by',\Auth::user()->creatorId());
                 }
             }
-            else{
+            else
+            {
                 if($task_by == 'my')
                 {
                     $tasks->whereRaw("find_in_set('" . $usr->id . "',assign_to)");
                 }
             }
-            $tasks    = $tasks->get();
+            $project    = $project->get();
             $arrTasks = [];
 
-            foreach($tasks as $task)
+            foreach($project as $projects)
             {
                 $arTasks = [];
-                if((!empty($task->start_date) && $task->start_date != '0000-00-00') || !empty($task->end_date) && $task->end_date != '0000-00-00')
+                if((!empty($projects->project->start_date) && $projects->project->start_date != '0000-00-00') || !empty($projects->project->end_date) && $projects->project->end_date != '0000-00-00')
                 {
-                    $arTasks['id']    = $task->id;
-                    $arTasks['title'] = $task->name;
-                    $arTasks['project'] = $task->project->project_name;
+                    $arTasks['id']    = $projects->project_id;
+                    $arTasks['title'] = $projects->project->project_name;
+                    // $arTasks['project'] = $task->project->project_name;
 
-                    if(!empty($task->start_date) && $task->start_date != '0000-00-00')
+                    if(!empty($projects->project->start_date) && $projects->project->start_date != '0000-00-00')
                     {
-                        $arTasks['start'] = $task->start_date;
+                        $arTasks['start'] = $projects->project->start_date;
                     }
-                    elseif(!empty($task->end_date) && $task->end_date != '0000-00-00')
+                    elseif(!empty($projects->project->end_date) && $projects->project->end_date != '0000-00-00')
                     {
-                        $arTasks['start'] = $task->end_date;
+                        $arTasks['start'] = $projects->project->end_date;
                     }
 
-                    if(!empty($task->end_date) && $task->end_date != '0000-00-00')
+                    if(!empty($projects->project->end_date) && $projects->project->end_date != '0000-00-00')
                     {
-                        $arTasks['end'] = $task->end_date;
+                        $arTasks['end'] = $projects->project->end_date;
                     }
-                    elseif(!empty($task->start_date) && $task->start_date != '0000-00-00')
+                    elseif(!empty($projects->project->end_date) && $projects->project->end_date != '0000-00-00')
                     {
-                        $arTasks['end'] = $task->start_date;
+                        $arTasks['end'] = $projects->project->end_date;
                     }
 
                     $arTasks['allDay']      = !0;
-                    $arTasks['className']   = 'event-' . ProjectTask::$priority_color[$task->priority];
-                    $arTasks['description'] = $task->description;
-                    $arTasks['url']         = route('task.calendar.show', $task->id);
-                    $arTasks['resize_url']  = route('task.calendar.drag', $task->id);
+                    // $arTasks['className']   = 'event-' . ProjectTask::$priority_color[$task->priority];
+                    // $arTasks['description'] = $task->description;
+                    // $arTasks['url']         = route('task.calendar.show', $projects->project_id);
+                    // $arTasks['resize_url']  = route('task.calendar.drag', $projects->project_id);
 
                     $arrTasks[] = $arTasks;
+
+                    // dd($arrTasks);
 
 
                 }
             }
+
+            // foreach($tasks as $task)
+            // {
+            //     $arTasks = [];
+            //     if((!empty($task->start_date) && $task->start_date != '0000-00-00') || !empty($task->end_date) && $task->end_date != '0000-00-00')
+            //     {
+            //         $arTasks['id']    = $task->id;
+            //         $arTasks['title'] = $task->name;
+            //         $arTasks['project'] = $task->project->project_name;
+
+            //         if(!empty($task->start_date) && $task->start_date != '0000-00-00')
+            //         {
+            //             $arTasks['start'] = $task->start_date;
+            //         }
+            //         elseif(!empty($task->end_date) && $task->end_date != '0000-00-00')
+            //         {
+            //             $arTasks['start'] = $task->end_date;
+            //         }
+
+            //         if(!empty($task->end_date) && $task->end_date != '0000-00-00')
+            //         {
+            //             $arTasks['end'] = $task->end_date;
+            //         }
+            //         elseif(!empty($task->start_date) && $task->start_date != '0000-00-00')
+            //         {
+            //             $arTasks['end'] = $task->start_date;
+            //         }
+
+            //         $arTasks['allDay']      = !0;
+            //         $arTasks['className']   = 'event-' . ProjectTask::$priority_color[$task->priority];
+            //         $arTasks['description'] = $task->description;
+            //         $arTasks['url']         = route('task.calendar.show', $task->id);
+            //         $arTasks['resize_url']  = route('task.calendar.drag', $task->id);
+
+            //         $arrTasks[] = $arTasks;
+
+
+            //     }
+            // }
 
             return view('tasks.calendar', compact('arrTasks', 'project_id', 'task_by','transdate'));
         }
@@ -1253,9 +1320,9 @@ class ProjectTaskController extends Controller
     // Calendar Show
     public function calendarShow($id)
     {
-        $task = ProjectTask::find($id);
+        $projects = ProjectUser::find($id);
 
-        return view('tasks.calendar_show', compact('task'));
+        return view('tasks.calendar_show', compact('projects'));
     }
 
     // Calendar Drag
