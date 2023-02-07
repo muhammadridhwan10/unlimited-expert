@@ -216,4 +216,34 @@ class ProjectTask extends Model
     {
         return $this->hasMany('App\Models\Timesheet', 'task_id', 'id')->orderBy('id', 'desc');
     }
+
+    public function category_progress($count, $project_id)
+    {
+
+        $Preengagements = ProjectTask::where('project_id','=', $project_id)->where('category_template_id', '=', 2)->count();
+        $Riskassessments = ProjectTask::where('project_id','=', $project_id)->where('category_template_id', '=', 3)->count();
+        $Riskresponses = ProjectTask::where('project_id','=', $project_id)->where('category_template_id', '=', 4)->count();
+        $Conclutioncompletions = ProjectTask::where('project_id','=', $project_id)->where('category_template_id', '=', 5)->count();
+
+        $Preengagement = (3 / 100) * $count;
+        $Riskassessment = (17 / 100) * $count;
+        $Riskresponse = (70 / 100) * $count;
+        $Conclutioncompletion = (10 / 100) * $count;
+
+        $totalpreengagement = number_format($Preengagement / $Preengagements, 2, '.', '');
+        $totalriskassessments = number_format($Riskassessment / $Riskassessments, 2, '.', '');
+        $totalriskresponse = number_format($Riskresponse / $Riskresponses, 2, '.', '');
+        $totalconclutioncompletion = number_format($Conclutioncompletion / $Conclutioncompletions, 2, '.', '');
+
+        return [
+            'Preengagement' => $Preengagement,
+            'Riskassessment' => $Riskassessment,
+            'Riskresponse' => $Riskresponse,
+            'Conclutioncompletion' => $Conclutioncompletion,
+            'TotalPreengagement' => $totalpreengagement,
+            'TotalRiskassessment' => $totalriskassessments,
+            'TotalRiskresponse' => $totalriskresponse,
+            'TotalConclutioncompletion' => $totalconclutioncompletion,
+        ];
+    }
 }

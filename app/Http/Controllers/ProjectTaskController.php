@@ -129,12 +129,11 @@ class ProjectTaskController extends Controller
             $post['stage_id']   = 1;
             $post['assign_to'] = $request->assign_to;
             $post['created_by'] = \Auth::user()->creatorId();
-            $post['start_date']=date("Y-m-d H:i:s", strtotime($request->start_date));
-            $post['end_date']=date("Y-m-d H:i:s", strtotime($request->end_date));
+            $post['start_date'] = $project->start_date;
+            $post['end_date'] = $project->end_date;
             $post['category_template_id'] = $request->category_template_id;
             $task = ProjectTask::create($post);
 
-            //Make entry in activity log
             ActivityLog::create(
                 [
                     'user_id' => $usr->id,
@@ -144,6 +143,63 @@ class ProjectTaskController extends Controller
                     'remark' => json_encode(['title' => $task->name]),
                 ]
             );
+
+            $start_project = $project->start_date;
+            $end_project   = $project->end_date;
+            
+            $start_projects = strtotime($start_project . "+1 days");
+            $end_projects = strtotime($end_project);
+            
+            $jml_hari = array();
+            $sabtuminggu = array();
+            
+            for ($i = $start_projects; $i <= $end_projects; $i += (60 * 60 * 24)) {
+                if (date('w', $i) !== '0' && date('w', $i) !== '6') {
+                    $jml_hari[] = $i;
+                } else {
+                    $sabtuminggu[] = $i;
+                }
+            
+            }
+            $jumlah_hari = count($jml_hari);
+
+            $category = ProjectTask::category_progress($jumlah_hari, $project->id); 
+
+            $Preengagement = $category['TotalPreengagement'];
+            $Riskassessment = $category['TotalRiskassessment'];
+            $Riskresponse = $category['TotalRiskresponse'];
+            $Conclutioncompletion = $category['TotalConclutioncompletion'];
+
+            $task = ProjectTask::where('project_id','=', $project->id)->get();
+
+            for($i = 0; $i < count($task); $i++)
+            {
+                if($task[$i]['category_template_id'] == 1)
+                {
+                    $estimated_hrs = 0;
+                }
+                elseif($task[$i]['category_template_id'] == 2)
+                {
+                    $estimated_hrs = $Preengagement;
+                }
+                elseif($task[$i]['category_template_id'] == 3)
+                {
+                    $estimated_hrs = $Riskassessment;
+                }
+                elseif($task[$i]['category_template_id'] == 4)
+                {
+                    $estimated_hrs = $Riskresponse;
+                }
+                elseif($task[$i]['category_template_id'] == 5)
+                {
+                    $estimated_hrs = $Conclutioncompletion;
+                }
+
+                ProjectTask::where(['id' => $task[$i]['id']])->update([
+                    'estimated_hrs' => $estimated_hrs,
+                ]);
+
+            }
 
 
             //Slack Notification
