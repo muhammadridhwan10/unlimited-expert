@@ -542,19 +542,41 @@ class AttendanceEmployeeController extends Controller
                 $secs                     = floor($totalEarlyLeavingSeconds % 60);
                 $earlyLeaving             = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
 
-                if(time() > strtotime($date . $endTime))
+                if($employee->branch_id == 1)
                 {
-                    //Overtime
-                    $totalOvertimeSeconds = time() - strtotime($date . $endTime);
-                    $hours                = floor($totalOvertimeSeconds / 3600);
-                    $mins                 = floor($totalOvertimeSeconds / 60 % 60);
-                    $secs                 = floor($totalOvertimeSeconds % 60);
-                    $overtime             = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
+                    $endTime   = "19:00";
+                    if(time() > strtotime($date . $endTime))
+                    {
+                        //Overtime
+                        $totalOvertimeSeconds = time() - strtotime($date . $endTime);
+                        $hours                = floor($totalOvertimeSeconds / 3600);
+                        $mins                 = floor($totalOvertimeSeconds / 60 % 60);
+                        $secs                 = floor($totalOvertimeSeconds % 60);
+                        $overtime             = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
+                    }
+                    else
+                    {
+                        $overtime = '00:00:00';
+                    }
                 }
                 else
                 {
-                    $overtime = '00:00:00';
+                        if(time() > strtotime($date . $endTime))
+                    {
+                        //Overtime
+                        $totalOvertimeSeconds = time() - strtotime($date . $endTime);
+                        $hours                = floor($totalOvertimeSeconds / 3600);
+                        $mins                 = floor($totalOvertimeSeconds / 60 % 60);
+                        $secs                 = floor($totalOvertimeSeconds % 60);
+                        $overtime             = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
+                    }
+                    else
+                    {
+                        $overtime = '00:00:00';
+                    }
                 }
+
+                
 
                 //                $attendanceEmployee                = AttendanceEmployee::find($id);
                 $attendanceEmployee['clock_out']     = $time;
