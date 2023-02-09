@@ -74,20 +74,18 @@
                                             {{ Form::date('date',isset($_GET['date'])?$_GET['date']:'', array('class' => 'form-control month-btn')) }}
                                         </div>
                                     </div>
-                                    @if(\Auth::user()->type != 'employee')
-                                        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
-                                            <div class="btn-box">
-                                                {{ Form::label('branch', __('Branch'),['class'=>'form-label'])}}
-                                                {{ Form::select('branch', $branch,isset($_GET['branch'])?$_GET['branch']:'', array('class' => 'form-control select')) }}
-                                            </div>
+                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
+                                        <div class="btn-box">
+                                            {{ Form::label('branch_id', __('Branch'),['class'=>'form-label']) }}
+                                            {{ Form::select('branch_id',$branch,null, array('class' => 'form-control select')) }}
                                         </div>
-                                        <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
-                                            <div class="btn-box">
-                                                {{ Form::label('department', __('Department'),['class'=>'form-label'])}}
-                                                {{ Form::select('department', $department,isset($_GET['department'])?$_GET['department']:'', array('class' => 'form-control select')) }}
-                                            </div>
+                                    </div>
+                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
+                                        <div class="btn-box">
+                                            {{ Form::label('department', __('Department'),['class'=>'form-label'])}}
+                                            {{ Form::select('department', $department,isset($_GET['department'])?$_GET['department']:'', array('class' => 'form-control select')) }}
                                         </div>
-                                    @endif
+                                    </div>
 
                                 </div>
                             </div>
@@ -128,6 +126,7 @@
                             <tr>
                                 @if(\Auth::user()->type!='employee')
                                     <th>{{__('Employee')}}</th>
+                                    <th>{{__('Employee Branch')}}</th>
                                 @endif
                                 <th>{{__('Date')}}</th>
                                 <th>{{__('Status')}}</th>
@@ -148,6 +147,7 @@
                                 <tr>
                                     @if(\Auth::user()->type!='employee')
                                         <td>{{!empty($attendance->employee)?$attendance->employee->name:'' }}</td>
+                                        <td>{{!empty($attendance->employee->branch)?$attendance->employee->branch->name:'' }}</td>
                                     @endif
                                     <td>{{ \Auth::user()->dateFormat($attendance->date) }}</td>
                                     <td>{{ $attendance->status }}</td>

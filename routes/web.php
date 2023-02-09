@@ -3688,3 +3688,6 @@ Route::resource('/project_report', 'ProjectReportController')->middleware(['auth
 Route::post('/project_report_data', 'ProjectReportController@ajax_data')->name('projects.ajax')->middleware(['auth','XSS']);
 Route::post('/project_report/tasks/{id}', 'ProjectReportController@ajax_tasks_report')->name('tasks.report.ajaxdata')->middleware(['auth','XSS']);
 Route::get('export/task_report/{id}', 'ProjectReportController@export')->name('project_report.export');
+
+Route::resource('translate', 'TranslationController');
+Route::post('/translate', 'TranslationController@translate')->name('translate.text');

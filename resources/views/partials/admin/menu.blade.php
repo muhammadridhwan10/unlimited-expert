@@ -863,6 +863,11 @@
 
 
                         @if(Auth::user()->type !== 'staff_client')
+                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'translate')?'active':''}}">
+                                <a href="{{route('translate.index')}}" class="dash-link">
+                                    <span class="dash-micon"><i class="ti ti-book"></i></span><span class="dash-mtext">{{__('TGS Translate')}}</span>
+                                </a>
+                            </li>
                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'support')?'active':''}}">
                                 <a href="{{route('support.index')}}" class="dash-link">
                                     <span class="dash-micon"><i class="ti ti-headphones"></i></span><span class="dash-mtext">{{__('IT Support')}}</span>

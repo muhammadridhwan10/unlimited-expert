@@ -70,15 +70,15 @@ class AttendanceEmployeeController extends Controller
                 else
                 {
                     $employee = Employee::all();
-    
-                    if(!empty($request->branch))
+
+                    if(!empty($request->branch_id))
                     {
-                        $employee->where('branch_id', $request->branch);
+                        $employee = $employee->where('branch_id', '=', $request->branch_id);
                     }
-    
+
                     if(!empty($request->department))
                     {
-                        $employee->where('department_id', $request->department);
+                        $employee = $employee->where('department_id', $request->department);
                     }
     
                     $employee = $employee->pluck('id');
