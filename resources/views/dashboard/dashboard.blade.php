@@ -144,7 +144,7 @@
                     <div class="col-xxl-6">
                         <div class="card">
                             <div class="card-header">
-                                <h4>{{__('Mark Attandance')}}</h4>
+                                <h4>{{__('Mark Attendance')}}</h4>
                             </div>
                             <div class="card-body dash-card-body">
                                 <p class="text-muted pb-0-5">{{__('My Office Time: '.$officeTime['startTime'].' to '.$officeTime['endTime'])}}</p>
@@ -269,7 +269,7 @@
             <div class="col-xxl-12">
             <div class="card">
                             <div class="card-header">
-                                <h4>{{__('Mark Attandance')}}</h4>
+                                <h4>{{__('Mark Attendance')}}</h4>
                             </div>
                             <div class="card-body dash-card-body">
                                 <p class="text-muted pb-0-5">{{__('My Office Time: '.$officeTime['startTime'].' to '.$officeTime['endTime'])}}</p>
