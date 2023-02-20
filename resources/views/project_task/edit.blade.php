@@ -112,7 +112,7 @@
                 </div>
             </div> -->
         </div>
-        <!-- <div class="form-group">
+        <div class="form-group">
             <label class="form-label">{{__('Task members')}}</label>
             <small class="form-text text-muted mb-2 mt-0">{{__('Below users are assigned in your project.')}}</small>
         </div>
@@ -148,7 +148,7 @@
                 @endforeach
             </div>
             {{ Form::hidden('assign_to', null) }}
-        </div> -->
+        </div>
     </div>
     <div class="modal-footer">
         <input type="button" value="{{__('Cancel')}}" class="btn  btn-light" data-bs-dismiss="modal">
