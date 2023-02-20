@@ -179,6 +179,7 @@ class ProjectController extends Controller
             $project->estimated_hrs = $count;
             $project->book_year = $request->book_year;
             $project->tags = $request->tag;
+            $project->label = $request->label;
             $project->created_by = \Auth::user()->creatorId();
             $project->save();
 
@@ -207,8 +208,37 @@ class ProjectController extends Controller
                         'user_id' => $value,
                     ]
                 );
-                $data = User::where('id', $value)->pluck('email');
-                Mail::to($data)->send(new ProjectNotification($project));
+
+                $firebaseToken = User::where('id', $value)->whereNotNull('device_token')->pluck('device_token');
+                $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
+
+                $data = [
+                    "registration_ids" => $firebaseToken,
+                    "notification" => [
+                        "title" => 'AUP-APPS',
+                        "body" => $authuser->name . ' inviting you into the project ' . $project->project_name,  
+                        "icon" => 'https://i.postimg.cc/QxRSybfG/Logo-TGS-Global.png',
+                        "content_available" => true,
+                        "priority" => "high",
+                    ]
+                ];
+                $dataString = json_encode($data);
+            
+                $headers = [
+                    'Authorization: key=' . $SERVER_API_KEY,
+                    'Content-Type: application/json',
+                ];
+            
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
+
+                $response = curl_exec($ch);
+                // Mail::to($data)->send(new ProjectNotification($project));
               }
             }
 
@@ -638,6 +668,7 @@ class ProjectController extends Controller
             $project->estimated_hrs = $count;
             $project->book_year = $request->book_year;
             $project->tags = $request->tag;
+            $project->label = $request->label;
             $project->save();
 
             ActivityLog::create(
@@ -826,18 +857,20 @@ class ProjectController extends Controller
 
         $users = User::where('id', $request->user_id)->pluck('name');
 
-        $member = User::where('id', $request->user_id)->pluck('email');
-        Mail::to($member)->send(new InviteMemberNotification($inviteuser));
+        // $member = User::where('id', $request->user_id)->pluck('email');
+        // Mail::to($member)->send(new InviteMemberNotification($inviteuser));
 
-        $firebaseToken = User::where('id', $request->user_id)->whereNotNull('device_token')->pluck('device_token');
+        $project = $inviteuser->project;
+
+        $firebaseToken = User::whereIn('id', [$request->user_id])->whereNotNull('device_token')->pluck('device_token');
         $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
 
         $data = [
             "registration_ids" => $firebaseToken,
             "notification" => [
                 "title" => 'AUP-APPS',
-                "body" => $authuser->name . ' menginvite anda kedalam project baru',  
-                "icon" => 'https://i.postimg.cc/NfFPWKS8/logo-tgs.png',
+                "body" => $authuser->name . '  inviting you into the project' . $project->project_name,  
+                "icon" => 'https://i.postimg.cc/QxRSybfG/Logo-TGS-Global.png',
                 "content_available" => true,
                 "priority" => "high",
             ]
@@ -891,17 +924,19 @@ class ProjectController extends Controller
             ]
         );
 
+        $project = $request->project_i->project;
+
         $users = User::where('id', $request->user_id)->pluck('name');
 
-        $firebaseToken = User::where('id', $request->user_id)->whereNotNull('device_token')->pluck('device_token');
+        $firebaseToken = User::whereIn('id', [$request->user_id])->whereNotNull('device_token')->pluck('device_token');
         $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
 
         $data = [
             "registration_ids" => $firebaseToken,
             "notification" => [
                 "title" => 'AUP-APPS',
-                "body" => $authuser->name . ' menginvite anda kedalam project baru',  
-                "icon" => 'https://i.postimg.cc/NfFPWKS8/logo-tgs.png',
+                "body" => $authuser->name . ' inviting you into the project' . $project->project_name,  
+                "icon" => 'https://i.postimg.cc/QxRSybfG/Logo-TGS-Global.png',
                 "content_available" => true,
                 "priority" => "high",
             ]

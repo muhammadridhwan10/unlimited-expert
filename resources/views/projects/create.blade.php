@@ -60,6 +60,16 @@
                 {{ Form::number('budget', null, ['class' => 'form-control']) }}
             </div>
         </div>
+        <div class="col-sm-6 col-md-6">
+            <div class="form-group">
+                {{ Form::label('label', __('Label'), ['class' => 'form-label']) }}
+                <select name="label" id="label" class="form-control main-element">
+                    @foreach(\App\Models\Project::$label as $k => $v)
+                        <option value="{{$k}}">{{__($v)}}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
         <!-- <div class="col-6 col-md-6">
             <div class="form-group">
                 {{ Form::label('estimated_hrs', __('Estimated Hours'),['class' => 'form-label']) }}
@@ -79,7 +89,11 @@
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
                 {{ Form::label('tag', __('Tag'), ['class' => 'form-label']) }}
-                {{ Form::text('tag', null, ['class' => 'form-control', 'data-toggle' => 'tags']) }}
+                <select name="tag" id="tag" class="form-control main-element">
+                    @foreach(\App\Models\Project::$tags as $k => $v)
+                        <option value="{{$k}}">{{__($v)}}</option>
+                    @endforeach
+                </select>
             </div>
         </div>
         <div class="col-sm-6 col-md-6">

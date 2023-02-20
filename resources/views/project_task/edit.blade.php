@@ -75,14 +75,14 @@
                     {{ Form::textarea('description', null, ['class' => 'form-control','rows'=>'1','data-toggle' => 'autosize']) }}
                 </div>
             </div>
-            <div class="col-6">
+            <div class="col-12">
                 <div class="form-group">
                     {{ Form::label('estimated_hrs', __('Estimated Hours'),['class' => 'form-label']) }}<span class="text-danger">*</span>
                     <small class="form-text text-muted mb-2 mt-0">{{__('allocated total ').$hrs['allocated'].__(' hrs in other tasks')}}</small>
                     {{ Form::number('estimated_hrs', null, ['class' => 'form-control','readonly' => 'true']) }}
                 </div>
             </div>
-            <div class="col-6">
+            <!-- <div class="col-6">
                 <div class="form-group">
                     {{ Form::label('priority', __('Priority'),['class' => 'form-label']) }}
                     <small class="form-text text-muted mb-2 mt-0">{{__('Set Priority of your task')}}</small>
@@ -92,8 +92,8 @@
                         @endforeach
                     </select>
                 </div>
-            </div>
-            <div class="col-6">
+            </div> -->
+            <!-- <div class="col-6">
                 <div class="form-group">
                     {{ Form::label('start_date', __('Start Date'),['class' => 'form-label']) }}
                     {{ Form::date('start_date', null, ['class' => 'form-control']) }}
@@ -104,15 +104,15 @@
                     {{ Form::label('end_date', __('End Date'),['class' => 'form-label']) }}
                     {{ Form::date('end_date', null, ['class' => 'form-control']) }}
                 </div>
-            </div>
-            <div class="col-6">
+            </div> -->
+            <!-- <div class="col-6">
                 <div class="form-group">
                     {{ Form::label('stage_id', __('Stage'),['class' => 'form-label']) }}
                     {{ Form::select('stage_id', $taskstage, null, ['class' => 'form-control']) }}
                 </div>
-            </div>
+            </div> -->
         </div>
-        <div class="form-group">
+        <!-- <div class="form-group">
             <label class="form-label">{{__('Task members')}}</label>
             <small class="form-text text-muted mb-2 mt-0">{{__('Below users are assigned in your project.')}}</small>
         </div>
@@ -148,7 +148,7 @@
                 @endforeach
             </div>
             {{ Form::hidden('assign_to', null) }}
-        </div>
+        </div> -->
     </div>
     <div class="modal-footer">
         <input type="button" value="{{__('Cancel')}}" class="btn  btn-light" data-bs-dismiss="modal">

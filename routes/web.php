@@ -2696,6 +2696,17 @@ Route::get(
         'XSS',
     ]
 );
+Route::get(
+    '/projects/{pid}/task/invite', [
+    'as' => 'projects.tasks.invite',
+    'uses' => 'ProjectTaskController@invite',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
 Route::post(
     '/projects/{pid}/task', [
     'as' => 'projects.tasks.store',
@@ -2711,6 +2722,17 @@ Route::get(
     '/projects/{id}/task/{tid}/show', [
     'as' => 'projects.tasks.show',
     'uses' => 'ProjectTaskController@show',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get(
+    '/projects/{id}/task/{tid}/comment', [
+    'as' => 'projects.tasks.comment',
+    'uses' => 'ProjectTaskController@showcomment',
 ]
 )->middleware(
     [

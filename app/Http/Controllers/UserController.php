@@ -6,6 +6,8 @@ use App\Models\CustomField;
 use App\Models\Employee;
 use App\Models\Mail\UserCreate;
 use App\Models\User;
+use App\Models\ProjectUser;
+use App\Models\ProjectTask;
 use App\Models\UserCompany;
 use Auth;
 use File;
@@ -274,10 +276,17 @@ class UserController extends Controller
     public function profile()
     {
         $userDetail              = \Auth::user();
+        $user_projects           = $userDetail->projects()->pluck('project_id','project_id')->toArray();
+        $project                 = ProjectUser::with('project')->whereIn('project_id', $user_projects)->where('user_id', $userDetail->id);
+        $get_project             = $project->get();
+        $total_project           = $project->get()->count();
+        $task                    = ProjectTask::whereRaw("FIND_IN_SET(?,  assign_to) > 0", [$userDetail->id]);
+        $get_task                = $task->get();
+        $total_user_task         = $task->get()->count();
         $userDetail->customField = CustomField::getData($userDetail, 'user');
         $customFields            = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'user')->get();
 
-        return view('user.profile', compact('userDetail', 'customFields'));
+        return view('user.profile', compact('get_project', 'total_project', 'get_task', 'total_user_task', 'userDetail', 'customFields'));
     }
 
     public function editprofile(Request $request)

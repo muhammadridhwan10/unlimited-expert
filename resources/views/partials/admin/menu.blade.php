@@ -863,10 +863,19 @@
 
 
                         @if(Auth::user()->type !== 'staff_client')
-                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'translate')?'active':''}}">
-                                <a href="{{route('translate.index')}}" class="dash-link">
-                                    <span class="dash-micon"><i class="ti ti-book"></i></span><span class="dash-mtext">{{__('TGS Translate')}}</span>
-                                </a>
+                            <li class="dash-item dash-hasmenu">
+                                <a href="#!" class="dash-link {{ (Request::segment(1) == 'translate')?' active dash-trigger':''}}"
+                                ><span class="dash-micon"><i class="ti ti-grid-dots"></i></span
+                                    ><span class="dash-mtext">{{__('New Features')}}</span
+                                    ><span class="dash-arrow"><i data-feather="chevron-right"></i></span
+                                    ></a>
+                                <ul class="dash-submenu">
+                                    <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'translate')?'active':''}}">
+                                        <a href="{{route('translate.index')}}" class="dash-link">
+                                            {{__('Translator')}}
+                                        </a>
+                                    </li>
+                                </ul>
                             </li>
                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'support')?'active':''}}">
                                 <a href="{{route('support.index')}}" class="dash-link">

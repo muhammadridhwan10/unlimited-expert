@@ -264,6 +264,82 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>{{__('Projects Remaining In 2 Weeks')}}</h5>
+                </div>
+                <div class="card-body project_table">
+                    <div class="table-responsive ">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                            <tr>
+                                <th>{{__('Name')}}</th>
+                                <th>{{__('End Date')}}</th>
+                                <th class="text-end">{{__('Status')}}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @if($home_data['project']->count() > 0)
+                                @foreach($home_data['project'] as $project)
+                                    <?php
+                                        $harisekarang =   date('Y-m-d');
+                                    
+                                        $date_now = strtotime($harisekarang . "+1 days");
+                                        $date_end = strtotime($project->end_date);
+                    
+                                        $jarak = $date_end - $date_now;
+                                        $hari = $jarak / 60 / 60 / 24;
+                    
+                                        $jml_hari = array();
+                                        $sabtuminggu = array();
+                                        
+                                        for ($i = $date_now; $i <= $date_end; $i += (60 * 60 * 24)) {
+                                            if (date('w', $i) !== '0' && date('w', $i) !== '6') {
+                                                $jml_hari[] = $i;
+                                            } else {
+                                                $sabtuminggu[] = $i;
+                                            }
+                                        
+                                        }
+
+                                        $jumlah_hari = count($jml_hari);
+                                    ?>
+                                    @if ($jumlah_hari == 14)
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="{{asset(Storage::url('/'.$project->project_image ))}}"
+                                                        class="wid-40 rounded-circle me-3" alt="avatar image">
+                                                    <div>
+                                                        <h6 class="mb-0">{{ $project->project_name }}</h6>
+                                                        <!-- <p class="mb-0"><span class="text-success">{{ \Auth::user()->priceFormat($due_project->budget) }}</p> -->
+
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td >{{  Utility::getDateFormated($project->end_date) }}</td>
+                                            <td class="text-end">
+                                                <span class="status_badge p-2 px-3 rounded badge bg-{{\App\Models\Project::$status_color[$project->status]}}">{{ __(\App\Models\Project::$project_status[$project->status]) }}</span>
+
+                                            </td>
+                                        </tr>
+                                    @endif
+                                @endforeach
+                            @else
+                                <div class="py-5">
+                                    <h5 class="text-center mb-0">{{__('No Project Remaining In 2 Weeks Found.')}}</h5>
+                                </div>
+                            @endif
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
@@ -310,6 +386,75 @@
                                         <h6 class="m-0 h6 text-sm">{{ $due_task->taskProgress()['percentage'] }}</h6>
                                     </td>
                                 </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>{{__('Tasks Remaining In 2 Weeks')}}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <tbody>
+                            @foreach($home_data['due_tasks'] as $due_task)
+                                <?php
+                                    $harisekarang =   date('Y-m-d');
+                                
+                                    $date_now = strtotime($harisekarang . "+1 days");
+                                    $date_end = strtotime($due_task->end_date);
+                
+                                    $jarak = $date_end - $date_now;
+                                    $hari = $jarak / 60 / 60 / 24;
+                
+                                    $jml_hari = array();
+                                    $sabtuminggu = array();
+                                    
+                                    for ($i = $date_now; $i <= $date_end; $i += (60 * 60 * 24)) {
+                                        if (date('w', $i) !== '0' && date('w', $i) !== '6') {
+                                            $jml_hari[] = $i;
+                                        } else {
+                                            $sabtuminggu[] = $i;
+                                        }
+                                    
+                                    }
+
+                                    $jumlah_hari = count($jml_hari);
+                                ?>
+                                @if ($jumlah_hari == 14)
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="">
+                                                    <small class="text-muted">{{__('Task')}}:</small>
+                                                    <h6 class="m-0"><a href="{{ route('projects.tasks.index',$due_task->project->id) }}" class="name mb-0 h6 text-sm">{{ $due_task->name }}</a></h6>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{__('Project')}}:</small>
+                                            <h6 class="m-0 h6 text-sm">{{$due_task->project->project_name}}</h6>
+                                        </td>
+                                        <td>
+
+                                            <small class="text-muted">{{__('Stage')}}:</small>
+                                            <div class="d-flex align-items-center h6 text-sm mt-2">
+                                                <span class="full-circle bg-{{ \App\Models\ProjectTask::$priority_color[$due_task->priority] }}"></span>
+                                                <span class="ms-1">{{ \App\Models\ProjectTask::$priority[$due_task->priority] }}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{__('Completion')}}:</small>
+                                            <h6 class="m-0 h6 text-sm">{{ $due_task->taskProgress()['percentage'] }}</h6>
+                                        </td>
+                                    </tr>
+                                @endif
                             @endforeach
                             </tbody>
                         </table>

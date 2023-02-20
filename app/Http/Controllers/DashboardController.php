@@ -386,6 +386,9 @@ class DashboardController extends Controller
                 // Top Due Project
                 $home_data['due_project'] = $user->projects()->orderBy('end_date', 'DESC')->limit(5)->get();
 
+                $harisekarang =   date('Y-m-d');
+                $home_data['project'] = $user->projects()->where('status', '!=', 'complete')->get();
+
                 // Top Due Tasks
                 $home_data['due_tasks'] = ProjectTask::where('is_complete', '=', 0)->whereIn('project_id', $user_projects)->orderBy('end_date', 'DESC')->limit(5)->get();
 

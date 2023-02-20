@@ -1,5 +1,6 @@
 @extends('layouts.admin')
 @section('page-title')
+    {{__('Translator')}}
 @endsection
 @push('css-page')
     <link rel="stylesheet" href="{{asset('css/summernote/summernote-bs4.css')}}">
@@ -10,7 +11,7 @@
 @endpush
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Home') }}</a></li>
-    <li class="breadcrumb-item active" aria-current="page">{{ __('TGS Translate') }}</li>
+    <li class="breadcrumb-item active" aria-current="page">{{ __('Translator') }}</li>
 @endsection
 @section('action-btn')
 
@@ -31,7 +32,7 @@
                     <div class="row">
 
                         <div class="form-group">
-                            <h1 style = 'text-align: center'>TGS Translate</h1>
+                            <h1 style = 'text-align: center'>Translator</h1>
                         </div>
                         
                         <div class="col-sm-6 col-md-6">

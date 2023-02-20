@@ -158,7 +158,7 @@
             </div>
         </div>
     </div>
-    <div class="card">
+    <!-- <div class="card">
         <div class="card-body">
             <div class="row mb-4 align-items-center">
                 <div class="col-6">
@@ -213,7 +213,7 @@
                 @endforeach
             </div>
         </div>
-    </div>
+    </div> -->
     <div class="card">
         <div class="card-body">
             <div class="row mb-4 align-items-center">

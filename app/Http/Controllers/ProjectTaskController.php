@@ -104,6 +104,22 @@ class ProjectTaskController extends Controller
         }
     }
 
+    public function invite($project_id)
+    {
+        if(\Auth::user()->can('create project task'))
+        {
+            $category_template_id   = CategoryTemplate::all()->pluck('name', 'id');
+            $project = Project::find($project_id);
+            $user = ProjectUser::where('project_id', $project_id)->get();
+
+            return view('project_task.invite', compact('project_id', 'category_template_id', 'project', 'user'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
     public function store(Request $request, $project_id)
     {
 
@@ -388,6 +404,23 @@ class ProjectTaskController extends Controller
         }
     }
 
+    public function showcomment($project_id, $task_id)
+    {
+
+        if(\Auth::user()->can('view project task'))
+        {
+            $allow_progress = Project::find($project_id)->task_progress;
+            $task           = ProjectTask::find($task_id);
+            $subtask        = TaskChecklist::where('task_id', $task_id)->where('parent_id', 0)->get();
+
+            return view('project_task.comment', compact('task','subtask', 'allow_progress'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
     public function edit($project_id, $task_id)
     {
         if(\Auth::user()->can('edit project task'))
@@ -423,6 +456,8 @@ class ProjectTaskController extends Controller
                 return redirect()->back()->with('error', Utility::errorFormat($validator->getMessageBag()));
             }
 
+            $authuser = Auth::user();
+
             $post = $request->all();
             $task = ProjectTask::find($task_id);
             $task->update($post);
@@ -433,6 +468,36 @@ class ProjectTaskController extends Controller
             }
 
             $task->save();
+
+            $firebaseToken = User::whereIn('id', [$task->assign_to])->whereNotNull('device_token')->pluck('device_token');
+            $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
+
+            $data = [
+                "registration_ids" => $firebaseToken,
+                "notification" => [
+                    "title" => 'AUP-APPS',
+                    "body" => $authuser->name . ' menginvite anda kedalam task ' . $task->name,  
+                    "icon" => 'https://i.postimg.cc/QxRSybfG/Logo-TGS-Global.png',
+                    "content_available" => true,
+                    "priority" => "high",
+                ]
+            ];
+            $dataString = json_encode($data);
+        
+            $headers = [
+                'Authorization: key=' . $SERVER_API_KEY,
+                'Content-Type: application/json',
+            ];
+        
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
+
+            $response = curl_exec($ch);
 
             return redirect()->back()->with('success', __('Task Updated successfully.'));
         }
@@ -1425,7 +1490,7 @@ class ProjectTaskController extends Controller
             //     ]
             // );
 
-            return redirect()->back()->with('success', __(' Sub Task Updated successfully.'));
+            return redirect()->back()->with('success', __(' Sub Task Updated ssuccessfully.'));
         }
         else
         {

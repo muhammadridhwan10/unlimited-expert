@@ -29,6 +29,7 @@ class Project extends Model
         'status',
         'book_year',
         'tags',
+        'label',
         'created_by'
     ];
 
@@ -43,6 +44,30 @@ class Project extends Model
         'PUSAT' => 'PUSAT',
         'BEKASI' => 'BEKASI',
         'MALANG' => 'MALANG',
+    ];
+
+    public static $label=[
+        'Audit' => 'Audit',
+        'Accounting' => 'Accounting',
+        'Tax' => 'Tax',
+        'IT' => 'IT',
+        'Management' => 'Management',
+        'Sales' => 'Sales',
+        'Marketing' => 'Marketing',
+        'HR' => 'HR',
+        'Quality' => 'Quality',
+    ];
+
+    public static $label_color = [
+        'Audit' => 'info',
+        'Accounting' => 'warning',
+        'Tax' => 'success',
+        'IT' => 'danger',
+        'Management' => 'secondary',
+        'Sales' => 'dark',
+        'Marketing' => 'muted',
+        'HR' => 'brown',
+        'Quality' => 'orange',
     ];
 
     public static $status_color = [

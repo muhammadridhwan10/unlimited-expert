@@ -79,7 +79,11 @@
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
                 {{ Form::label('tag', __('Tag'), ['class' => 'form-label']) }}
-                {{ Form::text('tag', isset($project->tags) ? $project->tags: '', ['class' => 'form-control', 'data-toggle' => 'tags']) }}
+                <select name="tag" id="tag" class="form-control main-element">
+                    @foreach(\App\Models\Project::$tags as $k => $v)
+                        <option value="{{$k}}">{{__($v)}}</option>
+                    @endforeach
+                </select>
             </div>
         </div>
         <div class="col-sm-6 col-md-6">
@@ -90,7 +94,17 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-sm-12 col-md-12">
+        <div class="col-sm-6 col-md-6">
+            <div class="form-group">
+                {{ Form::label('label', __('Label'), ['class' => 'form-label']) }}
+                <select name="label" id="label" class="form-control main-element select2" >
+                    @foreach(\App\Models\Project::$label as $k => $v)
+                        <option value="{{$k}}" {{ ($project->status == $k) ? 'selected' : ''}}>{{__($v)}}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-6">
             <div class="form-group">
                 {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
                 <select name="status" id="status" class="form-control main-element select2" >

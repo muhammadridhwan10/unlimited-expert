@@ -536,6 +536,9 @@
 @section('action-btn')
     <div class="float-end">
             @can('create project task')
+                <a href="#" data-size="lg" data-url="{{ route('projects.tasks.invite',$project->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Add Task')}}" class="btn btn-sm btn-primary">
+                    <i class="ti ti-user"></i>
+                </a>
                 <a href="#" data-size="lg" data-url="{{ route('projects.tasks.create',$project->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Add Task')}}" class="btn btn-sm btn-primary">
                     <i class="ti ti-plus"></i>
                 </a>
@@ -619,9 +622,9 @@
                                                 <span class="badge-xs badge bg-dark  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
                                                 @endif
                                                 </p>
-                                                <span class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.show',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}}">{{$task->name}}</a></span>
+                                                <p class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.show',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}}">{{$task->name}}</a></p>
                                                 <span class="d-flex text-sm text-muted justify-content-between">
-                                            <p class="m-0">{{ $task->project->project_name }}</p>
+                                                <span style="font-size: 10px" class="m-0">{{ $task->project->project_name }}</span>
                                                 @if ($task->stage_id == 1)
                                                 <span class="me-5 badge bg-primary p-2 px-3 rounded">{{ $task->stage->name }}</span>
                                                 @elseif ($task->stage_id == 2)
@@ -665,6 +668,20 @@
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <span class="completion mr-2">{{ $task->taskProgress()['percentage'] }}</span>
+                                                        <?php
+                                                            if($task->taskProgress()['percentage'] == "100%")
+                                                            {
+                                                                $task->update([
+                                                                    'stage_id' => 3
+                                                                ]);
+                                                            }
+                                                            elseif($task->taskProgress()['percentage'] !== "100%")
+                                                            {
+                                                                $task->update([
+                                                                    'stage_id' => 2
+                                                                ]);
+                                                            }          
+                                                        ?>
                                                     {{--<div>
                                                         <div class="progress" style="width: 100px;">
                                                             <div class="progress-bar bg-{{ $task->taskProgress()['color'] }}" role="progressbar" aria-valuenow="{{ $task->taskProgress()['percentage'] }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ $task->taskProgress()['percentage'] }};"></div>
@@ -677,7 +694,7 @@
                                                     <a class="action-item px-1" data-bs-toggle="tooltip" title="{{__('Attachment')}}" data-original-title="{{__('Attachment')}}">
                                                         <i class="ti ti-paperclip mr-2"></i>{{ count($task->taskFiles) }}
                                                     </a>
-                                                    <a class="action-item px-1" data-bs-toggle="tooltip" title="{{__('Comment')}}" data-original-title="{{__('Comment')}}">
+                                                    <a href="#" data-url="{{ route('projects.tasks.comment',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}} class="action-item px-1" data-bs-toggle="tooltip" title="{{__('Comment')}}" data-original-title="{{__('Comment')}}">
                                                         <i class="ti ti-brand-hipchat mr-2"></i>{{ count($task->comments) }}
                                                     </a>
                                                     <a class="action-item px-1" data-bs-toggle="tooltip" title="{{__('Checklist')}}" data-original-title="{{__('Checklist')}}">

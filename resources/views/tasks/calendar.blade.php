@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{__('Task Calendar')}}
+    {{__('Project Calendar')}}
 @endsection
 @push('css-page')
     <link rel="stylesheet" href="{{ asset('assets/libs/fullcalendar/dist/fullcalendar.min.css') }}">
@@ -9,7 +9,7 @@
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('Task Calendar')}}</li>
+    <li class="breadcrumb-item">{{__('Project Calendar')}}</li>
 @endsection
 
 @section('content')
@@ -29,10 +29,10 @@
         <div class="col-lg-4">
             <div class="card">
                 <div class="card-body">
-                    <h4 class="mb-4">Tasks</h4>
+                    <h4 class="mb-4">Project</h4>
                     <ul class="event-cards list-group list-group-flush mt-3 w-100">
 
-                        @foreach($arrTasks as $task)
+                        @foreach($arrTasks as $project)
                             <li class="list-group-item card mb-3">
                                 <div class="row align-items-center justify-content-between">
                                     <div class="col-auto mb-3 mb-sm-0">
@@ -41,9 +41,8 @@
                                                 <i class="ti ti-calendar-event"></i>
                                             </div>
                                             <div class="ms-3 fc-event-title-container">
-                                                <h6 class="m-0 text-sm fc-event-title text-black">{{$task['project']}}</h6>
-                                                <h6 class="m-0 text-sm fc-event-title text-primary">{{$task['title']}}</h6>
-                                                <small class="text-muted">{{$task['start']}}  to {{$task['end']}}</small>
+                                                <h6 class="m-0 text-sm fc-event-title text-primary">{{$project['title']}}</h6>
+                                                <small class="text-muted">{{$project['start']}}  to {{$project['end']}}</small>
                                             </div>
                                         </div>
                                     </div>
