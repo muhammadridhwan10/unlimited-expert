@@ -467,6 +467,8 @@ class ProjectTaskController extends Controller
 
             $task->save();
 
+            $project = Project::where('id', $project_id)->get();
+
             $firebaseToken = User::whereIn('id', [$task->assign_to])->whereNotNull('device_token')->pluck('device_token');
             $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
 
@@ -474,7 +476,7 @@ class ProjectTaskController extends Controller
                 "registration_ids" => $firebaseToken,
                 "notification" => [
                     "title" => 'AUP-APPS',
-                    "body" => $authuser->name . ' menginvite anda kedalam task ' . $task->name,  
+                    "body" => $authuser->name . ' inviting you into the task ' . $task->name . 'in project' . $project->project_name,  
                     "icon" => 'https://i.postimg.cc/8z1vzXPV/logo-tgs-fix.png',
                     "content_available" => true,
                     "priority" => "high",
