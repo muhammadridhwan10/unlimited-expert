@@ -477,7 +477,7 @@ class ProjectTaskController extends Controller
                 "notification" => [
                     "title" => 'AUP-APPS',
                     "body" => $authuser->name . ' menginvite anda kedalam task ' . $task->name,  
-                    "icon" => 'https://i.postimg.cc/QxRSybfG/Logo-TGS-Global.png',
+                    "icon" => 'https://i.postimg.cc/8z1vzXPV/logo-tgs-fix.png',
                     "content_available" => true,
                     "priority" => "high",
                 ]
@@ -937,6 +937,7 @@ class ProjectTaskController extends Controller
 
         if(\Auth::user()->can('view project task'))
         {
+            $authuser = Auth::user();
             $post               = [];
             $post['task_id']    = $taskID;
             $post['user_id']    = \Auth::user()->id;
@@ -975,24 +976,56 @@ class ProjectTaskController extends Controller
                 Utility::send_slack_msg($msg);
             }
 
-                //Email Notification
+                //Desktop Notification
+            $project = Project::where('id', $projectID)->get();
+            $task = ProjectTask::where('project_id', $projectID)->where('id', $taskID)->get();
             $users = ProjectUser::where('project_id', $projectID)->whereNotIn('user_id',[\Auth::user()->id])->get();
-            $response = array();
-            foreach($users as $data)
-            {
-                $response[] = array("email"=> $data->user->email);
-                foreach ($response as $recipient) {
-                    Mail::to($recipient)->send(new CommentNotification($comment));
-                }
-            }
+            $firebaseToken = User::whereIn('id', [$users->user_id])->whereNotNull('device_token')->pluck('device_token');
+            $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
 
-                //Email Notification Client
-            $client = Project::where('id', $projectID)->where('client_id',!\Auth::user()->id)->get();
-            foreach($client as $data)
-            {
-                $email = $data->user->email;
-                Mail::to($email)->send(new CommentNotification($comment));
-            }
+            $data = [
+                "registration_ids" => $firebaseToken,
+                "notification" => [
+                    "title" => $authuser->name,
+                    "body" => $comments->name . ' on the' . $project->project_name . ' project in the' . $task->name . ' task',  
+                    "icon" => 'https://i.postimg.cc/8z1vzXPV/logo-tgs-fix.png',
+                    "content_available" => true,
+                    "priority" => "high",
+                ]
+            ];
+            $dataString = json_encode($data);
+        
+            $headers = [
+                'Authorization: key=' . $SERVER_API_KEY,
+                'Content-Type: application/json',
+            ];
+        
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
+
+            $response = curl_exec($ch);
+
+            // $response = array();
+            // foreach($users as $data)
+            // {
+            //     $response[] = array("email"=> $data->user->email);
+            //     foreach ($response as $recipient) {
+            //         Mail::to($recipient)->send(new CommentNotification($comment));
+            //     }
+            // }
+
+            //     //Email Notification Client
+            // $client = Project::where('id', $projectID)->where('client_id',!\Auth::user()->id)->get();
+            // foreach($client as $data)
+            // {
+            //     $email = $data->user->email;
+            //     Mail::to($email)->send(new CommentNotification($comment));
+            // }
 
             //Telegram Notification
             $setting  = Utility::settings(\Auth::user()->creatorId());

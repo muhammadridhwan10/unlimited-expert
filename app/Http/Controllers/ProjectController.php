@@ -217,7 +217,7 @@ class ProjectController extends Controller
                     "notification" => [
                         "title" => 'AUP-APPS',
                         "body" => $authuser->name . ' inviting you into the project ' . $project->project_name,  
-                        "icon" => 'https://i.postimg.cc/QxRSybfG/Logo-TGS-Global.png',
+                        "icon" => 'https://i.postimg.cc/8z1vzXPV/logo-tgs-fix.png',
                         "content_available" => true,
                         "priority" => "high",
                     ]
@@ -869,8 +869,8 @@ class ProjectController extends Controller
             "registration_ids" => $firebaseToken,
             "notification" => [
                 "title" => 'AUP-APPS',
-                "body" => $authuser->name . '  inviting you into the project' . $project->project_name,  
-                "icon" => 'https://i.postimg.cc/QxRSybfG/Logo-TGS-Global.png',
+                "body" => $authuser->name . '  inviting you into the project ' . $project->project_name,  
+                "icon" => 'https://i.postimg.cc/8z1vzXPV/logo-tgs-fix.png',
                 "content_available" => true,
                 "priority" => "high",
             ]
@@ -935,8 +935,8 @@ class ProjectController extends Controller
             "registration_ids" => $firebaseToken,
             "notification" => [
                 "title" => 'AUP-APPS',
-                "body" => $authuser->name . ' inviting you into the project' . $project->project_name,  
-                "icon" => 'https://i.postimg.cc/QxRSybfG/Logo-TGS-Global.png',
+                "body" => $authuser->name . ' inviting you into the project ' . $project->project_name,  
+                "icon" => 'https://i.postimg.cc/8z1vzXPV/logo-tgs-fix.png',
                 "content_available" => true,
                 "priority" => "high",
             ]
