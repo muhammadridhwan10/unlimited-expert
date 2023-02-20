@@ -977,38 +977,48 @@ class ProjectTaskController extends Controller
             }
 
                 //Desktop Notification
-            $project = Project::where('id', $projectID)->get();
-            $task = ProjectTask::where('project_id', $projectID)->where('id', $taskID)->get();
+            
             $users = ProjectUser::where('project_id', $projectID)->whereNotIn('user_id',[\Auth::user()->id])->get();
-            $firebaseToken = User::whereIn('id', [$users->user_id])->whereNotNull('device_token')->pluck('device_token');
-            $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
+            
+            $response = array();
+            foreach($users as $data)
+            {
+                $response[] = array("id"=> $data->user->id);
+                foreach ($response as $recipient) 
+                {
+                    $project = Project::where('id', $projectID)->pluck('project_name')->first();
+                    $task = ProjectTask::where('project_id', $projectID)->where('id', $taskID)->pluck('name')->first();
+                    $firebaseToken = User::whereIn('id', [$recipient])->whereNotNull('device_token')->pluck('device_token');
+                    $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
 
-            $data = [
-                "registration_ids" => $firebaseToken,
-                "notification" => [
-                    "title" => $authuser->name,
-                    "body" => $comments->name . ' on the' . $project->project_name . ' project in the' . $task->name . ' task',  
-                    "icon" => 'https://i.postimg.cc/8z1vzXPV/logo-tgs-fix.png',
-                    "content_available" => true,
-                    "priority" => "high",
-                ]
-            ];
-            $dataString = json_encode($data);
-        
-            $headers = [
-                'Authorization: key=' . $SERVER_API_KEY,
-                'Content-Type: application/json',
-            ];
-        
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
+                    $data = [
+                        "registration_ids" => $firebaseToken,
+                        "notification" => [
+                            "title" => $authuser->name,
+                            "body" => $comments->name . ' on the' . $project . ' project in the' . $task . ' task',  
+                            "icon" => 'https://i.postimg.cc/8z1vzXPV/logo-tgs-fix.png',
+                            "content_available" => true,
+                            "priority" => "high",
+                        ]
+                    ];
+                    $dataString = json_encode($data);
+                
+                    $headers = [
+                        'Authorization: key=' . $SERVER_API_KEY,
+                        'Content-Type: application/json',
+                    ];
+                
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
 
-            $response = curl_exec($ch);
+                    $response = curl_exec($ch);
+                }
+            }
 
             // $response = array();
             // foreach($users as $data)
