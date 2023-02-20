@@ -445,9 +445,7 @@ class ProjectTaskController extends Controller
         {
             $validator = Validator::make(
                 $request->all(), [
-                                'name' => 'required',
-                                'estimated_hrs' => 'required',
-                                'priority' => 'required',
+                                'name' => 'required'
                             ]
             );
 
