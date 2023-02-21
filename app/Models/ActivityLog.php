@@ -73,6 +73,18 @@ class ActivityLog extends Model
             {
                 return $user_name . ' ' . __('Create new Task') . " <b>" . $remark['title'] . "</b>";
             }
+            elseif($this->log_type == 'Update Task')
+            {
+                return $user_name . ' ' . __('Update Task') . " <b>" . $remark['title'] . "</b>";
+            }
+            elseif($this->log_type == 'Update Priority')
+            {
+                return $user_name . ' ' . __('Update Priority') . " <b>" . $remark['title'] . "</b>";
+            }
+            elseif($this->log_type == 'Update Status')
+            {
+                return $user_name . ' ' . __('Update Status') . " <b>" . $remark['title'] . "</b>";
+            }
             elseif($this->log_type == 'Move Task')
             {
                 return $user_name . ' ' . __('Moved the Task') . " <b>" . $remark['title'] . "</b> " . __('from') . " " . __(ucwords($remark['old_stage'])) . " " . __('to') . " " . __(ucwords($remark['new_stage']));
@@ -181,6 +193,18 @@ class ActivityLog extends Model
             else if($type == 'Create Task')
             {
                 $icon = 'list';
+            }
+            else if($type == 'Update Task')
+            {
+                $icon = 'edit';
+            }
+            else if($type == 'Update Priority')
+            {
+                $icon = 'edit';
+            }
+            else if($type == 'Update Status')
+            {
+                $icon = 'edit';
             }
             else if($type == 'Create Project')
             {

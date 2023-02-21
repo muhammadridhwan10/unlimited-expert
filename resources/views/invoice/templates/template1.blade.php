@@ -563,7 +563,7 @@
                                             </tbody>
                                         </table>
                                         <div data-v-f2a183a6="" class="break-25"></div>
-                                        <p data-v-f2a183a6="">@if($settings['company_name']){{$settings['company_name']}}@endif</p>
+                                        <!-- <p data-v-f2a183a6="">@if($settings['company_name']){{$settings['company_name']}}@endif</p>
                                         <p data-v-f2a183a6="">
                                             @if($settings['company_email']){{$settings['company_email']}}@endif<br>
                                             @if($settings['company_telephone']){{$settings['company_telephone']}}@endif<br>
@@ -573,7 +573,7 @@
                                             @if(!empty($settings['registration_number'])){{__('Registration Number')}} : {{$settings['registration_number']}} @endif<br>
                                             @if(!empty($settings['tax_type']) && !empty($settings['vat_number'])){{$settings['tax_type'].' '. __('Number')}} : {{$settings['vat_number']}} <br>@endif
 
-                                        </p>
+                                        </p> -->
                                     </div>
 
                                     <div data-v-f2a183a6="" class="d-header-50 d-right">

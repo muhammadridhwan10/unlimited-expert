@@ -501,6 +501,16 @@ class ProjectTaskController extends Controller
 
             $response = curl_exec($ch);
 
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $project_id,
+                    'task_id' => $task_id,
+                    'log_type' => 'Update Task',
+                    'remark' => json_encode(['title' => $task->name]),
+                ]
+            );
+
             return redirect()->back()->with('success', __('Task Updated successfully.'));
         }
         else
@@ -521,6 +531,16 @@ class ProjectTaskController extends Controller
             $data = ProjectTask::find($task_id);
             $data->priority = $priority;
             $data->save();
+
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $data->project_id,
+                    'task_id' => $data->id,
+                    'log_type' => 'Update Priority',
+                    'remark' => json_encode(['title' => $data->name]),
+                ]
+            );
 
             return response()->json(['success' => __('Task Updated successfully.')], 200);
             
@@ -543,6 +563,16 @@ class ProjectTaskController extends Controller
             $data = ProjectTask::find($task_id);
             $data->stage_id = $stage_id;
             $data->save();
+
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $data->project_id,
+                    'task_id' => $data->id,
+                    'log_type' => 'Update Status',
+                    'remark' => json_encode(['title' => $data->name]),
+                ]
+            );
         
             return response()->json(['success' => __('Task Updated successfully.')], 200);
             
