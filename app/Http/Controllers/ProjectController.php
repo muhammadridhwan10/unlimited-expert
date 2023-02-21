@@ -200,6 +200,8 @@ class ProjectController extends Controller
                 ]
             );
 
+            $authuser = Auth::user();
+
             if($request->user){
               foreach($request->user as $key => $value) {
                 ProjectUser::create(
