@@ -3,6 +3,8 @@
 use App\Models\Utility;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectReportController;
+use Illuminate\Http\Request;
+use App\Models\ProjectTask;
 
 /*
 |--------------------------------------------------------------------------
@@ -2678,6 +2680,28 @@ Route::get(
     '/projects/{id}/task', [
     'as' => 'projects.tasks.index',
     'uses' => 'ProjectTaskController@index',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::post(
+    '/update-priority', [
+    'as' => 'update-priority',
+    'uses' => 'ProjectTaskController@updatedropdown',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::post(
+    '/update-stage', [
+    'as' => 'update-stage',
+    'uses' => 'ProjectTaskController@updatedropdownstage',
 ]
 )->middleware(
     [

@@ -536,9 +536,9 @@
 @section('action-btn')
     <div class="float-end">
             @can('create project task')
-                <a href="#" data-size="lg" data-url="{{ route('projects.tasks.invite',$project->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Add Task')}}" class="btn btn-sm btn-primary">
+                <!-- <a href="#" data-size="lg" data-url="{{ route('projects.tasks.invite',$project->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Add Task')}}" class="btn btn-sm btn-primary">
                     <i class="ti ti-user"></i>
-                </a>
+                </a> -->
                 <a href="#" data-size="lg" data-url="{{ route('projects.tasks.create',$project->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Add Task')}}" class="btn btn-sm btn-primary">
                     <i class="ti ti-plus"></i>
                 </a>
@@ -600,6 +600,7 @@
                                     {{ __('from sub task') }}
                                     </div>
                                     </th>
+                                    <th scope="col">{{__('Status')}}</th>
                                     <th scope="col"></th>
                                     <th scope="col">{{ __('Action') }}</th>
                                 </tr>
@@ -625,7 +626,8 @@
                                                 <p class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.show',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}}">{{$task->name}}</a></p>
                                                 <span class="d-flex text-sm text-muted justify-content-between">
                                                 <span style="font-size: 10px" class="m-0">{{ $task->project->project_name }}</span>
-                                                @if ($task->stage_id == 1)
+                                                
+                                                <!-- @if ($task->stage_id == 1)
                                                 <span class="me-5 badge bg-primary p-2 px-3 rounded">{{ $task->stage->name }}</span>
                                                 @elseif ($task->stage_id == 2)
                                                 <span class="me-5 badge bg-info p-2 px-3 rounded">{{ $task->stage->name }}</span>
@@ -633,7 +635,7 @@
                                                 <span class="me-5 badge bg-warning p-2 px-3 rounded">{{ $task->stage->name }}</span>
                                                 @elseif ($task->stage_id == 4)
                                                 <span class="me-5 badge bg-success p-2 px-3 rounded">{{ $task->stage->name }}</span>
-                                                @endif
+                                                @endif -->
                                             </td>
                                             <td class="{{ (strtotime($task->end_date) < time()) ? 'text-danger' : '' }}">{{ Utility::getDateFormated($task->end_date) }}</td>
                                             <td>
@@ -663,7 +665,11 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <span class="status_badge badge p-2 px-3 rounded bg-{{__(\App\Models\ProjectTask::$priority_color[$task->priority])}}">{{ __(\App\Models\ProjectTask::$priority[$task->priority]) }}</span>
+                                            <select class="form-control select" name="priority" id="priority" onchange="updateStatus(this.value, {{ $task->id }})">
+                                                @foreach(\App\Models\ProjectTask::$priority as $key => $val)
+                                                    <option value="{{ $key }}" {{ ($key == $task->priority) ? 'selected' : '' }} >{{ __($val) }}</option>
+                                                @endforeach
+                                            </select>
                                             </td>
                                             <td>
                                                 <div class="d-flex align-items-center">
@@ -688,6 +694,14 @@
                                                         </div>
                                                     </div>--}}
                                                 </div>
+                                            </td>
+                                            <td>
+                                            <select class="form-control select" name="stage_id" id="stage_id" onchange="updateStage(this.value, {{ $task->id }})">
+                                                <option value="0" hidden>{{$task->stage->name}}</option>
+                                                @foreach($taskstage as $stage)
+                                                    <option value="{{ $stage->id }}">{{ $stage->name }}</option>
+                                                @endforeach
+                                            </select>
                                             </td>
                                             <td class="text-end w-15">
                                                 <div class="actions">
@@ -747,6 +761,42 @@
                                 @endif
                                 </tbody>
                             </table>
+
+                            <script>
+                                function updateStatus(priority, id) {
+                                    // Kirim request POST ke server dengan nilai status dan id data yang dipilih
+                                    $.ajax({
+                                        url: "{{route("update-priority")}}",
+                                        type: "POST",
+                                        data: { 
+                                            id: id,
+                                            priority: priority,
+                                            // Add the CSRF token to the request data
+                                            _token: "{{ csrf_token() }}"
+                                        },
+                                        success: function (data) {
+                                            console.log(data);
+                                        },
+                                    });
+                                }
+
+                                function updateStage(stage_id, id) {
+                                    // Kirim request POST ke server dengan nilai status dan id data yang dipilih
+                                    $.ajax({
+                                        url: "{{route("update-stage")}}",
+                                        type: "POST",
+                                        data: { 
+                                            id: id,
+                                            stage_id: stage_id,
+                                            // Add the CSRF token to the request data
+                                            _token: "{{ csrf_token() }}"
+                                        },
+                                        success: function (data) {
+                                            console.log(data);
+                                        },
+                                    });
+                                }
+                            </script>
                         </div>
                     </div>
                 </div>

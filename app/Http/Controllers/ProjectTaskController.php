@@ -36,6 +36,7 @@ class ProjectTaskController extends Controller
                 $category_template_id       = CategoryTemplate::all()->pluck('name', 'id');
                 $category_template_id->prepend('All', '');
                 $project    = Project::find($project_id);
+                $taskstage   = TaskStage::all();
                 $taskss      = ProjectTask::where('project_id', '=', $project_id)->get();
                 if(!empty($request->category_template_id))
                 {
@@ -45,13 +46,14 @@ class ProjectTaskController extends Controller
                     $tasks = ProjectTask::where('project_id', '=', $project_id)->get();
                 }
 
-                return view('project_task.index', compact('tasks','category_template_id','project'));
+                return view('project_task.index', compact('tasks','taskstage','category_template_id','project'));
             }
             elseif($usr->type == 'company')
             {
                 $category_template_id       = CategoryTemplate::all()->pluck('name', 'id');
                 $category_template_id->prepend('All', '');
                 $project    = Project::find($project_id);
+                $taskstage   = TaskStage::all();
                 $taskss      = ProjectTask::where('project_id', '=', $project_id)->get();
                 if(!empty($request->category_template_id))
                 {
@@ -61,13 +63,14 @@ class ProjectTaskController extends Controller
                     $tasks = ProjectTask::where('project_id', '=', $project_id)->get();
                 }
 
-                return view('project_task.index', compact('tasks','category_template_id','project'));
+                return view('project_task.index', compact('tasks','taskstage','category_template_id','project'));
             }
             else
             {
                 $category_template_id       = CategoryTemplate::all()->pluck('name', 'id');
                 $category_template_id->prepend('All', '');
                 $project    = Project::find($project_id);
+                $taskstage   = TaskStage::all();
                 $taskss      = ProjectTask::where('project_id', '=', $project_id)->get();
                 if(!empty($request->category_template_id))
                 {
@@ -77,7 +80,7 @@ class ProjectTaskController extends Controller
                     $tasks = ProjectTask::where('project_id', '=', $project_id)->get();
                 }
                 
-                return view('project_task.index', compact('tasks','category_template_id','project'));
+                return view('project_task.index', compact('tasks','taskstage','category_template_id','project'));
             }
 
             
@@ -499,6 +502,50 @@ class ProjectTaskController extends Controller
             $response = curl_exec($ch);
 
             return redirect()->back()->with('success', __('Task Updated successfully.'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function updatedropdown(Request $request)
+    {
+
+        if(\Auth::user()->can('edit project task'))
+        {
+
+            $task_id = $request->get('id');
+            $priority = $request->get('priority');
+        
+            $data = ProjectTask::find($task_id);
+            $data->priority = $priority;
+            $data->save();
+
+            return response()->json(['success' => __('Task Updated successfully.')], 200);
+            
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function updatedropdownstage(Request $request)
+    {
+
+        if(\Auth::user()->can('edit project task'))
+        {
+
+            $task_id = $request->get('id');
+            $stage_id = $request->get('stage_id');
+        
+            $data = ProjectTask::find($task_id);
+            $data->stage_id = $stage_id;
+            $data->save();
+        
+            return response()->json(['success' => __('Task Updated successfully.')], 200);
+            
         }
         else
         {
