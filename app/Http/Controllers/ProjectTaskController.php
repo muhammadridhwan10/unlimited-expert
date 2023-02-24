@@ -567,6 +567,10 @@ class ProjectTaskController extends Controller
             {
                 $data->is_complete = 1;
             }
+            elseif($data->stage_id !== 4)
+            {
+                $data->is_complete = 0;
+            }
 
             $data->save();
 
