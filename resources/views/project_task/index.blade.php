@@ -674,20 +674,6 @@
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <span class="completion mr-2">{{ $task->taskProgress()['percentage'] }}</span>
-                                                        <?php
-                                                            if($task->taskProgress()['percentage'] == "100%")
-                                                            {
-                                                                $task->update([
-                                                                    'stage_id' => 3
-                                                                ]);
-                                                            }
-                                                            elseif($task->taskProgress()['percentage'] !== "100%")
-                                                            {
-                                                                $task->update([
-                                                                    'stage_id' => 2
-                                                                ]);
-                                                            }          
-                                                        ?>
                                                     {{--<div>
                                                         <div class="progress" style="width: 100px;">
                                                             <div class="progress-bar bg-{{ $task->taskProgress()['color'] }}" role="progressbar" aria-valuenow="{{ $task->taskProgress()['percentage'] }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ $task->taskProgress()['percentage'] }};"></div>

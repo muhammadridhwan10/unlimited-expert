@@ -562,6 +562,12 @@ class ProjectTaskController extends Controller
         
             $data = ProjectTask::find($task_id);
             $data->stage_id = $stage_id;
+
+            if($data->stage_id == 4)
+            {
+                $data->is_complete = 1;
+            }
+
             $data->save();
 
             ActivityLog::create(
