@@ -346,7 +346,7 @@
                                                 </div>
                                                 <div class="ms-2">
                                                     <p class="text-muted text-sm mb-0">{{__('Total Staff')}}</p>
-                                                    <h4 class="mb-0 text-success">{{ $countUser +   $countClient}}</h4>
+                                                    <h4 class="mb-0 text-success">{{ $countUser + $countIntern}}</h4>
 
                                                 </div>
                                             </div>
@@ -371,6 +371,18 @@
                                                 <div class="ms-2">
                                                     <p class="text-muted text-sm mb-0">{{__('Client')}}</p>
                                                     <h4 class="mb-0 text-danger">{{$countClient}}</h4>
+
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 col-sm-6">
+                                            <div class="d-flex align-items-start mb-3">
+                                                <div class="theme-avtar bg-primary">
+                                                    <i class="ti ti-users"></i>
+                                                </div>
+                                                <div class="ms-2">
+                                                    <p class="text-muted text-sm mb-0">{{__('Intern')}}</p>
+                                                    <h4 class="mb-0 text-success">{{ $countIntern}}</h4>
 
                                                 </div>
                                             </div>

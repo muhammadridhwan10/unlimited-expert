@@ -41,7 +41,7 @@
                             <a href="#!" class="dash-link "><span class="dash-micon"><i class="ti ti-home"></i></span><span class="dash-mtext">{{__('Dashboard')}}</span>
                                 <span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                             <ul class="dash-submenu">
-                                @if(\Auth::user()->show_account() == 1 && Gate::check('show account dashboard'))
+                                <!-- @if(\Auth::user()->show_account() == 1 && Gate::check('show account dashboard'))
                                     <li class="dash-item dash-hasmenu {{ ( Request::segment(1) == null   || Request::segment(1) == 'report') ? ' active dash-trigger' : ''}}">
                                         <a class="dash-link" href="#">{{__('Accounting ')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                         <ul class="dash-submenu">
@@ -115,9 +115,25 @@
                                             @endif
                                         </ul>
                                     </li>
+                                @endif -->
+
+                                @if(\Auth::user()->show_account() == 1)
+                                    @can('show account dashboard')
+                                        <li class="dash-item {{ (Request::route()->getName() == 'dashboard') ? ' active' : '' }}">
+                                            <a class="dash-link" href="{{route('dashboard')}}">{{__('Accounting ')}}</a>
+                                        </li>
+                                    @endcan
                                 @endif
 
                                 @if(\Auth::user()->show_hrm() == 1)
+                                    @can('show hrm dashboard')
+                                        <li class="dash-item {{ (Request::route()->getName() == 'hrm.dashboard') ? ' active' : '' }}">
+                                            <a class="dash-link" href="{{route('hrm.dashboard')}}">{{__('HRM ')}}</a>
+                                        </li>
+                                    @endcan
+                                @endif
+
+                                <!-- @if(\Auth::user()->show_hrm() == 1)
                                     <li class="dash-item dash-hasmenu">
                                         <a class="dash-link" href="#">{{__('HRM ')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                         <ul class="dash-submenu">
@@ -145,7 +161,7 @@
                                             @endcan
                                         </ul>
                                     </li>
-                                @endif
+                                @endif -->
 
                                 @if(\Auth::user()->show_project() == 1)
                                     @can('show project dashboard')
@@ -417,6 +433,24 @@
                                         </li>
                                     @endcan
 
+                                    @can('manage report')
+                                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'reports-monthly-attendance' || Request::segment(1) == 'reports-leave' || Request::segment(1) == 'reports-payroll') ? 'active dash-trigger' : ''}}" href="#hr-report" data-toggle="collapse" role="button" aria-expanded="{{(Request::segment(1) == 'reports-monthly-attendance' || Request::segment(1) == 'reports-leave' || Request::segment(1) == 'reports-payroll') ? 'true' : 'false'}}">
+                                            <a class="dash-link" href="#">{{__('Reports')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
+                                            <ul class="dash-submenu">
+                                                <li class="dash-item {{ request()->is('reports-payroll') ? 'active' : '' }}">
+                                                    <a class="dash-link" href="{{ route('report.payroll') }}">{{__('Payroll')}}</a>
+                                                </li>
+                                                <li class="dash-item {{ request()->is('reports-leave') ? 'active' : '' }}">
+                                                    <a class="dash-link" href="{{ route('report.leave') }}">{{__('Leave')}}</a>
+                                                </li>
+                                                <li class="dash-item {{ request()->is('reports-monthly-attendance') ? 'active' : '' }}">
+                                                    <a class="dash-link" href="{{ route('report.monthly.attendance') }}">{{ __('Monthly Attendance') }}</a>
+                                                </li>
+
+                                            </ul>
+                                        </li>
+                                    @endcan
+
                                     <li class="dash-item {{ (Request::segment(1) == 'leavetype' || Request::segment(1) == 'document' || Request::segment(1) == 'performanceType' || Request::segment(1) == 'branch' || Request::segment(1) == 'department'
                                                                     || Request::segment(1) == 'designation' || Request::segment(1) == 'job-stage'|| Request::segment(1) == 'performanceType'  || Request::segment(1) == 'job-category' || Request::segment(1) == 'terminationtype' ||
                                                                 Request::segment(1) == 'awardtype' || Request::segment(1) == 'trainingtype' || Request::segment(1) == 'goaltype' || Request::segment(1) == 'paysliptype' ||
@@ -535,6 +569,69 @@
                                     @if(Gate::check('manage goal'))
                                         <li class="dash-item {{ (Request::segment(1) == 'goal')?'active':''}}">
                                             <a class="dash-link" href="{{ route('goal.index') }}">{{__('Financial Goal')}}</a>
+                                        </li>
+                                    @endif
+                                    @if( Gate::check('income report') || Gate::check('expense report') || Gate::check('income vs expense report') ||
+                                        Gate::check('tax report')  || Gate::check('loss & profit report') || Gate::check('invoice report') ||
+                                        Gate::check('bill report') || Gate::check('stock report') || Gate::check('invoice report') ||
+                                        Gate::check('manage transaction')||  Gate::check('statement report'))
+                                        <li class="dash-item dash-hasmenu
+                                                    {{(Request::segment(1) == 'report')? 'active dash-trigger ' :''}}">
+
+                                            <a class="dash-link" href="#">{{__('Reports')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
+                                            <ul class="dash-submenu">
+                                                @can('expense report')
+                                                    <li class="dash-item {{ (Request::route()->getName() == 'report.expense.summary' ) ? ' active' : '' }}">
+                                                        <a class="dash-link" href="{{route('report.expense.summary')}}">{{__('Expense Summary')}}</a>
+                                                    </li>
+                                                @endcan
+                                                @can('income vs expense report')
+                                                    <li class="dash-item {{ (Request::route()->getName() == 'report.income.vs.expense.summary' ) ? ' active' : '' }}">
+                                                        <a class="dash-link" href="{{route('report.income.vs.expense.summary')}}">{{__('Income VS Expense')}}</a>
+                                                    </li>
+                                                @endcan
+                                                @can('statement report')
+                                                    <li class="dash-item {{ (Request::route()->getName() == 'report.account.statement') ? ' active' : '' }}">
+                                                        <a class="dash-link" href="{{route('report.account.statement')}}">{{__('Account Statement')}}</a>
+                                                    </li>
+                                                @endcan
+                                                @can('invoice report')
+                                                    <li class="dash-item {{ (Request::route()->getName() == 'report.invoice.summary' ) ? ' active' : '' }}">
+                                                        <a class="dash-link" href="{{route('report.invoice.summary')}}">{{__('Invoice Summary')}}</a>
+                                                    </li>
+                                                @endcan
+                                                @can('bill report')
+                                                    <li class="dash-item {{ (Request::route()->getName() == 'report.bill.summary' ) ? ' active' : '' }}">
+                                                        <a class="dash-link" href="{{route('report.bill.summary')}}">{{__('Bill Summary')}}</a>
+                                                    </li>
+                                                @endcan
+
+                                                    @can('stock report')
+                                                        <li class="dash-item {{ (Request::route()->getName() == 'report.product.stock.report' ) ? ' active' : '' }}">
+                                                            <a href="{{route('report.product.stock.report')}}" class="dash-link">{{ __('Product Stock') }}</a>
+                                                        </li>
+                                                    @endcan
+                                                @can('loss & profit report')
+                                                    <li class="dash-item {{ (Request::route()->getName() == 'report.profit.loss.summary' ) ? ' active' : '' }}">
+                                                        <a class="dash-link" href="{{route('report.profit.loss.summary')}}">{{__('Profit & Loss')}}</a>
+                                                    </li>
+                                                @endcan
+                                                @can('manage transaction')
+                                                    <li class="dash-item {{ (Request::route()->getName() == 'transaction.index' || Request::route()->getName() == 'transfer.create' || Request::route()->getName() == 'transaction.edit') ? ' active' : '' }}">
+                                                        <a class="dash-link" href="{{ route('transaction.index') }}">{{__('Transaction')}}</a>
+                                                    </li>
+                                                @endcan
+                                                @can('income report')
+                                                    <li class="dash-item {{ (Request::route()->getName() == 'report.income.summary' ) ? ' active' : '' }}">
+                                                        <a class="dash-link" href="{{route('report.income.summary')}}">{{__('Income Summary')}}</a>
+                                                    </li>
+                                                @endcan
+                                                @can('tax report')
+                                                    <li class="dash-item {{ (Request::route()->getName() == 'report.tax.summary' ) ? ' active' : '' }}">
+                                                        <a class="dash-link" href="{{route('report.tax.summary')}}">{{__('Tax Summary')}}</a>
+                                                    </li>
+                                                @endcan
+                                            </ul>
                                         </li>
                                     @endif
                                     @if(Gate::check('manage constant tax') || Gate::check('manage constant category') ||Gate::check('manage constant unit') ||Gate::check('manage constant payment method') ||Gate::check('manage constant custom field') )

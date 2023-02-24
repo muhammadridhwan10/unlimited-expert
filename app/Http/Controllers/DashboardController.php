@@ -26,6 +26,7 @@ use App\Models\Payment;
 use App\Models\ProductServiceCategory;
 use App\Models\ProductServiceUnit;
 use App\Models\Project;
+use App\Models\ProjectUser;
 use App\Models\ProjectTask;
 use App\Models\Revenue;
 use App\Models\Tax;
@@ -308,6 +309,10 @@ class DashboardController extends Controller
                 // Top Due Project
                 $home_data['due_project'] = Project::orderBy('end_date', 'DESC')->limit(5)->get();
 
+                $harisekarang =   date('Y-m-d');
+                $home_data['project'] = $user->projects()->where('status', '!=', 'complete')->get();
+                $home_data['project_user'] = ProjectUser::all();
+
                 // Top Due Tasks
                 $home_data['due_tasks'] = ProjectTask::where('is_complete', '=', 0)->whereIn('project_id', $user_projects)->orderBy('end_date', 'DESC')->limit(5)->get();
 
@@ -388,6 +393,7 @@ class DashboardController extends Controller
 
                 $harisekarang =   date('Y-m-d');
                 $home_data['project'] = $user->projects()->where('status', '!=', 'complete')->get();
+                $home_data['project_user'] = ProjectUser::where('user_id','=', $user->id)->get();
 
                 // Top Due Tasks
                 $home_data['due_tasks'] = ProjectTask::where('is_complete', '=', 0)->whereIn('project_id', $user_projects)->orderBy('end_date', 'DESC')->limit(5)->get();
@@ -504,9 +510,11 @@ class DashboardController extends Controller
                     $emp           = User::where('type', '!=', 'client')->get();
                     $countEmployee = count($emp);
 
-                    $user      = User::where('type', '!=', 'client')->get();
+                    $user      = User::where('type', '!=', 'client')->where('type', '!=', 'intern')->get();
                     $countUser = count($user);
 
+                    $intern     = User::where('type', '!=', 'client')->where('type', '=', 'intern')->get();
+                    $countIntern = count($intern);
 
                     $countTrainer    = Trainer::all()->count();
                     $onGoingTraining = Training::where('status', '=', 1)->count();
@@ -527,7 +535,7 @@ class DashboardController extends Controller
                     $officeTime['startTime'] = Utility::getValByName('company_start_time');
                     $officeTime['endTime']   = Utility::getValByName('company_end_time');
 
-                    return view('dashboard.dashboard', compact('arrEvents', 'officeTime', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
+                    return view('dashboard.dashboard', compact('countIntern','arrEvents', 'officeTime', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
                 }
                 elseif($user->type = 'company')
                 {
@@ -556,9 +564,11 @@ class DashboardController extends Controller
                     $emp           = User::where('type', '!=', 'client')->get();
                     $countEmployee = count($emp);
 
-                    $user      = User::where('type', '!=', 'client')->get();
+                    $user      = User::where('type', '!=', 'client')->where('type', '!=', 'intern')->get();
                     $countUser = count($user);
 
+                    $intern     = User::where('type', '!=', 'client')->where('type', '=', 'intern')->get();
+                    $countIntern = count($intern);
 
                     $countTrainer    = Trainer::all()->count();
                     $onGoingTraining = Training::where('status', '=', 1)->count();
@@ -579,7 +589,7 @@ class DashboardController extends Controller
                     $officeTime['startTime'] = Utility::getValByName('company_start_time');
                     $officeTime['endTime']   = Utility::getValByName('company_end_time');
 
-                    return view('dashboard.dashboard', compact('arrEvents', 'officeTime', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
+                    return view('dashboard.dashboard', compact('countIntern','arrEvents', 'officeTime', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
                 }
 
                 else

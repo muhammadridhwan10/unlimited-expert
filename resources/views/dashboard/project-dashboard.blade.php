@@ -350,6 +350,68 @@
                 </div>
             </div>
         </div>
+
+        <div class="col-sm-12 mt-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{ __('Project Quality Control') }}</h5>
+                    </div>
+                    <div class="card-body mt-3 mx-2">
+                        <div class="row mt-2">
+                            <div class="table-responsive">
+                                <table class="table datatable">
+                                    <thead>
+                                        <tr>
+                                            <th>{{ __('Employee Name') }}</th>
+                                            <th>{{ __('Role') }}</th>
+                                            <th>{{ __('Project Name') }}</th>                                        
+                                            <th>{{ __('Estimated Hours') }}</th>
+                                            <th>{{ __('Budget') }}</th>
+                                            <th>{{ __('Logged Hours') }}</th>
+                                        </tr>
+                                    </thead>
+                                        <tbody class="list">
+                                        @foreach($home_data['project_user'] as $projects)
+                                            @php
+                                                    $hours_format_number = 0;
+                                                    $total_hours = 0;
+                                                    $hourdiff_late = 0;
+                                                    $esti_late_hour =0;
+                                                    $esti_late_hour_chart=0;
+
+                                                    $logged_hours = 0;
+                                                    $timesheets = App\Models\Timesheet::where('project_id', $projects->project_id)->where('created_by', $projects->user_id)->get();
+                                            @endphp
+                                            @foreach($timesheets as $timesheet)
+
+                                                    @php
+
+                                                        $hours =  date('H', strtotime($timesheet->time));
+                                                        $minutes =  date('i', strtotime($timesheet->time));
+                                                        $total_hours = $hours + ($minutes/60) ;
+                                                        $logged_hours += $total_hours ;
+                                                        $hours_format_number = number_format($logged_hours, 2, '.', '');
+                                                    @endphp
+                                            @endforeach
+                                            <tr>
+                                                <td>{{!empty($projects->user->name) ? $projects->user->name: ''}}</td>
+                                                <td>{{!empty($projects->user->type) ? $projects->user->type: ''}}</td>
+                                                <td>{{!empty($projects->project->project_name) ? $projects->project->project_name: '' }}</td>
+                                                <td>{{!empty($projects->project->estimated_hrs) ? $projects->project->estimated_hrs: '0'}}</td>
+                                                <td>{{!empty($projects->project->budget) ? $projects->project->budget: 'Rp. 0'}}</td>
+                                                <td>{{$hours_format_number . ' H'}}</td>
+                                            </tr>
+                                        @endforeach
+                                        </tbody>
+                                </table>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">

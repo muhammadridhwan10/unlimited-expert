@@ -338,6 +338,7 @@ class UserController extends Controller
             $user['avatar'] = $fileNameToStore;
         }
         $user['name']  = $request['name'];
+        $user['personal_description']  = $request['personal_description'];
         $user['email'] = $request['email'];
         $user->save();
         CustomField::saveData($user, $request->customField);

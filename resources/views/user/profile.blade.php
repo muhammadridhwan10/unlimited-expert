@@ -157,6 +157,12 @@
                                     @enderror
                                 </div>
                             </div>
+                            <div class="col-lg-12 col-sm-12">
+                                <div class="form-group">
+                                {{Form::label('personal_description',__('Personal Description'),['class'=>'form-label'])}}
+                                {{Form::textarea('personal_description',null,array('class'=>'form-control','placeholder'=>__('Enter Description')))}}
+                                </div>
+                            </div>
                             <div class="col-lg-6 col-md-6">
                                 <div class="form-group">
                                     <div class="choose-files">

@@ -47,6 +47,7 @@ class User extends Authenticatable
         'auditing_standard',
         'client_accounting_standard_id',
         'client_id',
+        'personal_description',
     ];
 
     protected $hidden = [
