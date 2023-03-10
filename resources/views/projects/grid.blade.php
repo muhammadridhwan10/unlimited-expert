@@ -6,7 +6,7 @@
                     <div class="card-header border-0 pb-0">
                         <div class="d-flex align-items-center">
                             <img {{ $project->img_image }} class="img-fluid wid-30 me-2" alt="">
-                            <h5 class="mb-0"><a class="text-dark" href="{{ route('projects.show',$project) }}">{{ $project->project_name }} {{$project->book_year}}</a></h5>
+                            <h5 class="mb-0"><a class="text-dark" href="{{ route('projects.show',$project) }}">{{ $project->project_name }}</a></h5>
                         </div>
                         <div class="card-header-right">
                             <div class="btn-group card-option">
