@@ -2494,6 +2494,44 @@ Route::post(
     ]
 );
 
+Route::get(
+    'list-users', [
+    'as' => 'project.listUsers',
+    'uses' => 'ProjectController@listUsers',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::get(
+    '/list-users/{id}/assign', [
+    'as' => 'list.users.edit',
+    'uses' => 'ProjectController@assignUsers',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post(
+    '/list-users/{id}/assignproject', [
+    'as' => 'list.users.update',
+    'uses' => 'ProjectController@assignUsersProject',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::any('/assignuser/projects/select/{bid}', 'ProjectController@gettask')->name('assignuser.gettask');
+
 Route::post(
     'invite-project-client-member', [
     'as' => 'invite.project.client.member',
@@ -2702,6 +2740,28 @@ Route::post(
     '/update-stage', [
     'as' => 'update-stage',
     'uses' => 'ProjectTaskController@updatedropdownstage',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get(
+    '/projects/{pid}/member_client/create', [
+    'as' => 'projects.member_client.create',
+    'uses' => 'ProjectController@inviteclientmember',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::post(
+    '/projects/{pid}/member_client', [
+    'as' => 'projects.member_client.store',
+    'uses' => 'ProjectController@storeclientmember',
 ]
 )->middleware(
     [
@@ -3737,3 +3797,40 @@ Route::get('export/task_report/{id}', 'ProjectReportController@export')->name('p
 
 Route::resource('translate', 'TranslationController');
 Route::post('/translate', 'TranslationController@translate')->name('translate.text');
+
+
+Route::get(
+    '/wp', [
+    'as' => 'projects.tasks.wp',
+    'uses' => 'ProjectTaskController@wp',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::get(
+    '/projects/{id}/auditplanning', [
+    'as' => 'projects.auditplanning',
+    'uses' => 'ProjectController@auditPlanning',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post(
+    '/projects/{id}/auditplanning/create', [
+    'as' => 'projects.auditplanning.create',
+    'uses' => 'ProjectController@createAuditPlanning',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);

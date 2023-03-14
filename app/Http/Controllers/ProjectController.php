@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\TimeTracker;
 use App\Models\User;
+use App\Models\AuditPlan;
 use App\Models\Project;
 use App\Models\Utility;
 use App\Models\Bug;
@@ -28,6 +29,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Mail\InviteMemberNotification;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Hash;
 
 class ProjectController extends Controller
 {
@@ -239,8 +242,10 @@ class ProjectController extends Controller
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
 
+                
                 $response = curl_exec($ch);
-                // Mail::to($data)->send(new ProjectNotification($project));
+                $datas = User::where('id', $value)->pluck('email');
+                Mail::to($datas)->send(new ProjectNotification($project));
               }
             }
 
@@ -515,8 +520,10 @@ class ProjectController extends Controller
 
                 // end chart
 
+                $auditplan = AuditPlan::where('project_id', $project->id)->get();
 
-                return view('projects.view',compact('project','project_data'));
+
+                return view('projects.view',compact('project','project_data','auditplan'));
             }
             else
             {
@@ -859,8 +866,8 @@ class ProjectController extends Controller
 
         $users = User::where('id', $request->user_id)->pluck('name');
 
-        // $member = User::where('id', $request->user_id)->pluck('email');
-        // Mail::to($member)->send(new InviteMemberNotification($inviteuser));
+        $member = User::where('id', $request->user_id)->pluck('email');
+        Mail::to($member)->send(new InviteMemberNotification($inviteuser));
 
         $project = $inviteuser->project;
 
@@ -1786,6 +1793,213 @@ class ProjectController extends Controller
         $arrTask['stages'] = $stages->pluck('name', 'id')->toArray();
 
         return $arrTask;
+    }
+
+    public function inviteclientmember($project_id)
+    {
+        if(\Auth::user()->can('create project task'))
+        {
+            $user  = \Auth::user();
+            $project = Project::find($project_id);
+            $roles = Role::where('name','=','staff_client')->get()->pluck('name', 'id');
+
+            return view('projects.inviteclient', compact('project_id', 'user', 'project', 'roles'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function storeclientmember(Request $request, $project_id)
+    {
+        if(\Auth::user()->can('create project task'))
+        {
+            $validator = \Validator::make(
+                $request->all(), [
+                                   'name' => 'required|max:120',
+                                   'email' => 'required|email|unique:users',
+                                   'role' => 'required',
+                               ]
+            );
+            if($validator->fails())
+            {
+                $messages = $validator->getMessageBag();
+                return redirect()->back()->with('error', $messages->first());
+            }
+
+
+            $objUser               = \Auth::user();
+            $role_r                = Role::findById($request->role);
+            $psw                   = 'clienttgsau23';
+            $request['password']   = Hash::make('clienttgsau23');
+            $request['type']       = $role_r->name;
+            $request['created_by'] = \Auth::user()->id;
+
+            $user = User::create($request->all());
+            $user->assignRole($role_r);
+
+            if($request['type'] != 'client' || $request['type'] != 'staff_client')
+                \App\Models\Utility::employeeDetails($user->id,\Auth::user()->creatorId());
+
+            //Send Email
+
+            $user->password = $psw;
+            $user->type     = $role_r->name;
+
+            ProjectUser::create(
+                [
+                    'project_id' => $project_id,
+                    'user_id' => $user->id,
+                ]
+            );
+
+            $userArr = [
+                'email' => $user->email,
+                'password' =>  $user->password,
+            ];
+            $resp = Utility::sendEmailTemplate('create_user', [$user->id => $user->email], $userArr);
+            return redirect()->route('projects.index')->with('success', __('User successfully created.') . ((!empty($resp) && $resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
+
+        }
+        else
+        {
+            return response()->json(['error' => __('Permission denied.')], 401);
+        }
+
+    }
+
+    public function listUsers()
+    {
+
+        $user = \Auth::user();
+        
+        $users = User::where('type', '!=', 'client')->where('type', '!=', 'staff_client')->orderBy('name', 'ASC')->get();
+        return view('projects.listUsers', compact('users'));
+
+    }
+
+    public function assignUsers($id)
+    {
+
+        $project           = Project::get()->pluck('project_name', 'id');
+        $task              = ProjectTask::get()->pluck('name', 'id');
+        $user              = User::findOrFail($id);
+
+        return view('projects.assignUser', compact('user', 'project', 'task'));
+
+    }
+
+    public function gettask($id, Request $request)
+    {
+        $task = ProjectTask::select('id', 'name')->where('project_id', $id)->get();
+        return \Response::json($task);
+
+        // $task = ProjectTask::where('project_id', $request->project_id)->get()->pluck('name', 'id')->toArray();
+        // return response()->json($task);
+
+    }
+
+    public function assignUsersProject($id, Request $request)
+    {
+        $user = User::findOrFail($id);
+
+        $project                  = new ProjectUser();
+        $project->project_id      = $request->project_id;
+        $project->user_id         = $user->id;
+
+        $gettask    = $request->task_id;
+        $task       = ProjectTask::whereIn('id', $gettask)->get();
+
+        for($i = 0; $i < count($task); $i++)
+        {
+
+            ProjectTask::where(['id' => $task[$i]['id']])->update([
+                'assign_to' => $user->id,
+            ]);
+
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $project->project_id,
+                    'task_id' => $task[$i]['id'],
+                    'log_type' => 'Update Task',
+                    'remark' => json_encode(['title' => $task[$i]['name']]),
+                ]
+            );
+
+
+        }
+
+        return redirect()->route('project.listUsers')->with(
+            'success', 'User successfully Assigned.'
+        );
+
+    }
+
+    public function auditPlanning($project_id)
+    {
+        $project = Project::findOrfail($project_id);
+        $task = ProjectTask::where('project_id', $project_id)->get()->pluck('name', 'id');
+        $user = User::where('type', '!=', 'client')->where('type', '!=', 'staff_client')->get()->pluck('name', 'id');
+
+        return view('projects.auditplanning', compact('task','user','project'));
+    }
+
+    public function createAuditPlanning(Request $request, $project_id)
+    {
+        if(\Auth::user()->can('edit project'))
+        {
+            $project = Project::find($project_id);
+            $auditplanning = new AuditPlan;
+            $auditplanning->project_id = $project_id;
+            $auditplanning->start_date = date("Y-m-d H:i:s", strtotime($request->start_date));
+            $auditplanning->task_id = !empty($request->task_id) ? implode(',', $request->task_id) : '';
+            $auditplanning->user_id = !empty($request->user_id) ? implode(',', $request->user_id) : '';
+            
+            $gettask    = $request->task_id;
+            $task       = ProjectTask::whereIn('id', $gettask)->get();
+
+            for($i = 0; $i < count($task); $i++)
+            {
+                $project = Project::find($project_id);
+                
+                ProjectTask::where(['id' => $task[$i]['id']])->update([
+                    'assign_to' => $auditplanning->user_id,
+                    'start_date' => $auditplanning->start_date,
+                ]);
+
+                ActivityLog::create(
+                    [
+                        'user_id' => \Auth::user()->id,
+                        'project_id' => $project_id,
+                        'task_id' => $task[$i]['id'],
+                        'log_type' => 'Update Task',
+                        'remark' => json_encode(['title' => $task[$i]['name']]),
+                    ]
+                );
+
+
+            }
+            
+            $auditplanning->save();
+
+            // ActivityLog::create(
+            //     [
+            //         'user_id' => \Auth::user()->id,
+            //         'project_id' => $project->id,
+            //         'task_id' => 0,
+            //         'log_type' => 'Update Project',
+            //         'remark' => json_encode(['title' => $project->project_name]),
+            //     ]
+            // );
+
+            return redirect()->route('projects.index')->with('success', __('Audit Planning Create Successfully'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
     }
 
 }

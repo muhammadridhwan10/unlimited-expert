@@ -33,6 +33,12 @@
 
             </div>
         @endif
+        <p class="text-black">
+            Users Don't exist?
+            <a href="#" class="text-primary text-sm" data-size="lg" data-url="{{ route('projects.member_client.create', $project_id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Add Members Client')}}">
+                {{ 'Add Members Client' }}
+            </a>
+        </p>
     </div>
     {{ Form::hidden('project_id', $project_id,['id'=>'project_id']) }}
 </div>

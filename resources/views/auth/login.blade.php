@@ -29,6 +29,11 @@
 @section('content')
     <div class="">
         <h2 class="mb-3 f-w-600">{{__('Login')}}</h2>
+        <p class="text-black">
+                        Teamwork is so important that it is virtually impossible for you to reach the heights 
+                        of your capabilities or make the money 
+                        that you want without becoming very good at it
+                        </p>
     </div>
     {{Form::open(array('route'=>'login','method'=>'post','id'=>'loginForm' ))}}
     @csrf

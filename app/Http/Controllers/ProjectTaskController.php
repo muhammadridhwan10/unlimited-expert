@@ -1106,22 +1106,22 @@ class ProjectTaskController extends Controller
                 }
             }
 
-            // $response = array();
-            // foreach($users as $data)
-            // {
-            //     $response[] = array("email"=> $data->user->email);
-            //     foreach ($response as $recipient) {
-            //         Mail::to($recipient)->send(new CommentNotification($comment));
-            //     }
-            // }
+            $response = array();
+            foreach($users as $data)
+            {
+                $response[] = array("email"=> $data->user->email);
+                foreach ($response as $recipient) {
+                    Mail::to($recipient)->send(new CommentNotification($comment));
+                }
+            }
 
-            //     //Email Notification Client
-            // $client = Project::where('id', $projectID)->where('client_id',!\Auth::user()->id)->get();
-            // foreach($client as $data)
-            // {
-            //     $email = $data->user->email;
-            //     Mail::to($email)->send(new CommentNotification($comment));
-            // }
+                //Email Notification Client
+            $client = Project::where('id', $projectID)->where('client_id',!\Auth::user()->id)->get();
+            foreach($client as $data)
+            {
+                $email = $data->user->email;
+                Mail::to($email)->send(new CommentNotification($comment));
+            }
 
             //Telegram Notification
             $setting  = Utility::settings(\Auth::user()->creatorId());
@@ -1761,4 +1761,9 @@ class ProjectTaskController extends Controller
     //         return redirect()->back()->with('error', __('Employee are not allow multiple time clock in & clock for every day.'));
     //     }
     // }
+
+    public function wp()
+    {
+        return view('project_task.wp');
+    }
 }

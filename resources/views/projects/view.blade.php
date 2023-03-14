@@ -224,11 +224,14 @@
                 {{__('Bug Report')}}
             </a>
         @endcan -->
-        @can('edit project task')
-            <a href="{{ route('projects.tasks.index',$project->id) }}" class="btn btn-sm btn-primary">
-                {{__('Task')}}
-            </a>
-        @endcan
+        @if (\Auth::user()->type != 'client' && \Auth::user()->type != 'staff_client')
+            @can('edit project task')
+                <a href="{{ route('projects.tasks.index',$project->id) }}" class="btn btn-sm btn-primary">
+                    {{__('Task')}}
+                </a>
+            @endcan
+        @endif
+        
         @can('edit project')
             <a href="#" data-size="lg" data-url="{{ route('projects.edit', $project->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Edit Project')}}" class="btn btn-sm btn-primary">
                 <i class="ti ti-pencil"></i>
@@ -514,6 +517,73 @@
                 </div>
             </div>
         </div>
+
+
+            <div class="col-lg-6 col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <h5>{{__('Audit Planning')}}</h5>
+                            @can('edit project')
+                                <div class="float-end">
+                                    <a href="#" data-size="lg" data-url="{{ route('projects.auditplanning', $project->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="" class="btn btn-sm btn-primary" data-bs-original-title="{{__('Create Audit Planning')}}">
+                                        <i class="ti ti-plus"></i>
+                                    </a>
+                                </div>
+                            @endcan
+                        </div>
+                    </div>
+                    <div class="card-body mt-3 mx-2">
+                        <div class="row mt-2">
+                            <div class="table-responsive">
+                                <table class="table datatable">
+                                    <thead>
+                                        <tr>
+                                            <th>{{ __('Start Date') }}</th>                                  
+                                            <th>{{ __('Task') }}</th>
+                                            <th>{{ __('User') }}</th>
+                                        </tr>
+                                    </thead>
+                                        <tbody class="list">
+                                        @foreach ($auditplan as $audit)
+                                            <tr class="font-style">
+                                                <td>{{ $audit->start_date}}</td>
+                                                <td>
+                                                    @if(!empty($audit->task_id))
+                                                        @php
+                                                            $tasks =\Utility::task($audit->task_id);
+                                                        @endphp
+
+                                                        @foreach($tasks as $task)
+                                                            {{ !empty($task)?$task->name:''  }}<br>
+                                                        @endforeach
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if(!empty($audit->user_id))
+                                                        @php
+                                                            $users =\Utility::user($audit->user_id);
+                                                        @endphp
+
+                                                        @foreach($users as $user)
+                                                            {{ !empty($user)?$user->name:''  }}<br>
+                                                        @endforeach
+                                                    @else
+                                                        -
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                        </tbody>
+                                </table>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         <!-- <div class="col-lg-6 col-md-6">
             <div class="card">
                 <div class="card-header">

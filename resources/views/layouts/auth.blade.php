@@ -49,7 +49,13 @@
 
 <body class="{{ $color }}">
 <div class="auth-wrapper auth-v3">
-    <div class="bg-auth-side bg-primary"></div>
+    <div class="bg-auth-side bg-primary">
+    <img
+                            src="{{ asset('assets/images/auth/background-working.png') }}"
+                            alt=""
+                            class="img-fluid"
+                        />
+    </div>
     <div class="auth-content">
         <nav class="navbar navbar-expand-md navbar-light default">
             <div class="container-fluid pe-2">
@@ -95,23 +101,6 @@
                 <div class="col-xl-6">
                     <div class="card-body">
                         @yield('content')
-                    </div>
-                </div>
-                <div class="col-xl-6 img-card-side">
-                    <div class="auth-img-content">
-                        <img
-                            src="{{ asset('assets/images/auth/tgs.png') }}"
-                            alt=""
-                            class="img-fluid"
-                        />
-                        <h3 class="text-white mb-4 mt-5">
-                            “Attention is the new currency”
-                        </h3>
-                        <p class="text-white">
-                        Teamwork is so important that it is virtually impossible for you to reach the heights 
-                        of your capabilities or make the money 
-                        that you want without becoming very good at it
-                        </p>
                     </div>
                 </div>
             </div>

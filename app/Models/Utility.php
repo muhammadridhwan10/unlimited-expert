@@ -449,6 +449,32 @@ class Utility extends Model
         return $taxes;
     }
 
+    public static function task($tasks)
+    {
+
+        $taxArr = explode(',', $tasks);
+        $tasks  = [];
+        foreach($taxArr as $task)
+        {
+            $tasks[] = ProjectTask::find($task);
+        }
+
+        return $tasks;
+    }
+
+    public static function user($users)
+    {
+
+        $taxArr = explode(',', $users);
+        $users  = [];
+        foreach($taxArr as $user)
+        {
+            $users[] = User::find($user);
+        }
+
+        return $users;
+    }
+
     public static function taxRate($taxRate, $price, $quantity)
     {
 
