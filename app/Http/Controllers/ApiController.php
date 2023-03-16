@@ -59,8 +59,8 @@ class ApiController extends Controller
         $user = auth()->user();
         $status = ["in_progress", "on_hold"];
 
-        if($user->isUser())
-        {
+        // if($user->isUser())
+        // {
             $assign_pro_ids = ProjectUser::whereIn('user_id', [$user->id])->pluck('project_id');
             $project_s      = Project::with(['tasks' => function($query)
             {
@@ -76,20 +76,20 @@ class ApiController extends Controller
                 ]
             )->where('status', $status)->whereIn('id', $assign_pro_ids)->get()->toArray();
 
-        }
-        else
+        // }
+        // else
 
-        {
-            $project_s = Project::with('tasks')->select(
-                [
-                    'project_name',
-                    'id',
-                    'client_id',
-                    'status',
-                ]
-            )->where('status', $status)->where('created_by', $user->id)->get()->toArray();
+        // {
+        //     $project_s = Project::with('tasks')->select(
+        //         [
+        //             'project_name',
+        //             'id',
+        //             'client_id',
+        //             'status',
+        //         ]
+        //     )->where('status', $status)->where('created_by', $user->id)->get()->toArray();
 
-        }
+        // }
         return $this->success([
             'projects' => $project_s,
         ],'Get Project List successfully.');
