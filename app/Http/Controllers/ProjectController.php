@@ -258,38 +258,39 @@ class ProjectController extends Controller
             {
                 $details = $templates->details;
             }
-            
 
-            $category = $request->items;
-            $category_id = $request->category_id;
-
-
-            for($i = 0; $i < count($details); $i++)
+            if($project->template_task_id !== NULL)
             {
-                // dd($details);
-                $tasks                 = new ProjectTask();
-                $tasks->project_id     = $project->id;
-                $tasks->assign_to      = 0;
-                $tasks->stage_id       =  $details[$i]['stage_id'];
-                $tasks->name           = $details[$i]['name'];
-                $tasks->category_template_id      =  $details[$i]['category_template_id'];
-                $tasks->start_date     = $project->start_date;
-                $tasks->end_date       = $project->end_date;
-                $tasks->estimated_hrs  = $details[$i]['estimated_hrs'];
-                $tasks->description    = $details[$i]['description'];
-                $tasks->created_by     = \Auth::user()->creatorId();
-                $tasks->save();
+                $category = $request->items;
+                $category_id = $request->category_id;
 
-                ActivityLog::create(
-                    [
-                        'user_id' => \Auth::user()->id,
-                        'project_id' => $project->id,
-                        'task_id' => $tasks->id,
-                        'log_type' => 'Create Task',
-                        'remark' => json_encode(['title' => $tasks->name]),
-                    ]
-                );
-            }
+
+                for($i = 0; $i < count($details); $i++)
+                {
+                    // dd($details);
+                    $tasks                 = new ProjectTask();
+                    $tasks->project_id     = $project->id;
+                    $tasks->assign_to      = 0;
+                    $tasks->stage_id       =  $details[$i]['stage_id'];
+                    $tasks->name           = $details[$i]['name'];
+                    $tasks->category_template_id      =  $details[$i]['category_template_id'];
+                    $tasks->start_date     = $project->start_date;
+                    $tasks->end_date       = $project->end_date;
+                    $tasks->estimated_hrs  = $details[$i]['estimated_hrs'];
+                    $tasks->description    = $details[$i]['description'];
+                    $tasks->created_by     = \Auth::user()->creatorId();
+                    $tasks->save();
+
+                    ActivityLog::create(
+                        [
+                            'user_id' => \Auth::user()->id,
+                            'project_id' => $project->id,
+                            'task_id' => $tasks->id,
+                            'log_type' => 'Create Task',
+                            'remark' => json_encode(['title' => $tasks->name]),
+                        ]
+                    );
+                }
 
                 $category = Project::category_progress($count, $project->id); 
 
@@ -329,6 +330,18 @@ class ProjectController extends Controller
 
     
                 }
+            }
+            else
+            {
+                $project = Project::find($project->id);
+
+                $project->update(
+                    [
+                        'is_template' => 0,
+                    ]
+                );
+            }
+            
 
             //Slack Notification
             $setting  = Utility::settings(\Auth::user()->creatorId());
@@ -696,65 +709,81 @@ class ProjectController extends Controller
                 $details = $templates->details;
             }
 
-            $category = $request->items;
-            $category_id = $request->category_id;
-
-            for($i = 0; $i < count($details); $i++)
+            if($project->template_task_id !== NULL)
             {
-                // dd($details);
-                $tasks                 = new ProjectTask();
-                $tasks->project_id     = $project->id;
-                $tasks->assign_to      = 0;
-                $tasks->stage_id       =  $details[$i]['stage_id'];
-                $tasks->name           = $details[$i]['name'];
-                $tasks->category_template_id      =  $details[$i]['category_template_id'];
-                $tasks->start_date     = $project->start_date;
-                $tasks->end_date       = $project->end_date;
-                $tasks->estimated_hrs  = $details[$i]['estimated_hrs'];
-                $tasks->description    = $details[$i]['description'];
-                $tasks->created_by     = \Auth::user()->creatorId();
-                $tasks->update();
+                $category = $request->items;
+                $category_id = $request->category_id;
+    
+                for($i = 0; $i < count($details); $i++)
+                {
+                    // dd($details);
+                    $tasks                 = new ProjectTask();
+                    $tasks->project_id     = $project->id;
+                    $tasks->assign_to      = 0;
+                    $tasks->stage_id       =  $details[$i]['stage_id'];
+                    $tasks->name           = $details[$i]['name'];
+                    $tasks->category_template_id      =  $details[$i]['category_template_id'];
+                    $tasks->start_date     = $project->start_date;
+                    $tasks->end_date       = $project->end_date;
+                    $tasks->estimated_hrs  = $details[$i]['estimated_hrs'];
+                    $tasks->description    = $details[$i]['description'];
+                    $tasks->created_by     = \Auth::user()->creatorId();
+                    $tasks->update();
+    
+                }
+    
+                $category = Project::category_progress($count, $project->id); 
+    
+                $Preengagement = $category['TotalPreengagement'];
+                $Riskassessment = $category['TotalRiskassessment'];
+                $Riskresponse = $category['TotalRiskresponse'];
+                $Conclutioncompletion = $category['TotalConclutioncompletion'];
+    
+                $task = ProjectTask::where('project_id','=', $project->id)->get();
+    
+                for($i = 0; $i < count($task); $i++)
+                {
+                    if($task[$i]['category_template_id'] == 1)
+                    {
+                        $estimated_hrs = 0;
+                    }
+                    elseif($task[$i]['category_template_id'] == 2)
+                    {
+                        $estimated_hrs = $Preengagement;
+                    }
+                    elseif($task[$i]['category_template_id'] == 3)
+                    {
+                        $estimated_hrs = $Riskassessment;
+                    }
+                    elseif($task[$i]['category_template_id'] == 4)
+                    {
+                        $estimated_hrs = $Riskresponse;
+                    }
+                    elseif($task[$i]['category_template_id'] == 5)
+                    {
+                        $estimated_hrs = $Conclutioncompletion;
+                    }
+    
+                    ProjectTask::where(['id' => $task[$i]['id']])->update([
+                        'estimated_hrs' => $estimated_hrs,
+                    ]);
+    
+    
+                }
 
             }
-
-            $category = Project::category_progress($count, $project->id); 
-
-            $Preengagement = $category['TotalPreengagement'];
-            $Riskassessment = $category['TotalRiskassessment'];
-            $Riskresponse = $category['TotalRiskresponse'];
-            $Conclutioncompletion = $category['TotalConclutioncompletion'];
-
-            $task = ProjectTask::where('project_id','=', $project->id)->get();
-
-            for($i = 0; $i < count($task); $i++)
+            else
             {
-                if($task[$i]['category_template_id'] == 1)
-                {
-                    $estimated_hrs = 0;
-                }
-                elseif($task[$i]['category_template_id'] == 2)
-                {
-                    $estimated_hrs = $Preengagement;
-                }
-                elseif($task[$i]['category_template_id'] == 3)
-                {
-                    $estimated_hrs = $Riskassessment;
-                }
-                elseif($task[$i]['category_template_id'] == 4)
-                {
-                    $estimated_hrs = $Riskresponse;
-                }
-                elseif($task[$i]['category_template_id'] == 5)
-                {
-                    $estimated_hrs = $Conclutioncompletion;
-                }
+                $project = Project::find($project->id);
 
-                ProjectTask::where(['id' => $task[$i]['id']])->update([
-                    'estimated_hrs' => $estimated_hrs,
-                ]);
-
-
+                $project->update(
+                    [
+                        'is_template' => 0,
+                    ]
+                );
             }
+
+            
 
             return redirect()->route('projects.index')->with('success', __('Project Updated Successfully'));
         }

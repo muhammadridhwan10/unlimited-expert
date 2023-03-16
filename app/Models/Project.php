@@ -30,7 +30,8 @@ class Project extends Model
         'book_year',
         'tags',
         'label',
-        'created_by'
+        'created_by',
+        'is_template'
     ];
 
     public static $project_status=[

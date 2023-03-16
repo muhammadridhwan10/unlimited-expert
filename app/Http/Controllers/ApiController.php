@@ -61,7 +61,7 @@ class ApiController extends Controller
 
         if($user->isUser())
         {
-            $assign_pro_ids = ProjectUser::where('user_id',$user->id)->pluck('project_id');
+            $assign_pro_ids = ProjectUser::whereIn('user_id', [$user->id])->pluck('project_id');
             $project_s      = Project::with(['tasks' => function($query)
             {
                 $user = auth()->user();

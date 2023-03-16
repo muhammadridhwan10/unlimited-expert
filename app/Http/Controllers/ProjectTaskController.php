@@ -182,10 +182,7 @@ class ProjectTaskController extends Controller
             }
             $jumlah_hari = count($jml_hari);
 
-            $get_task = ProjectTask::where('project_id', $project_id)->get();
-            $count_task = $get_task->count();
-
-            if($count_task > 53)
+            if($project->is_template !== 0)
             {
                 $category = ProjectTask::category_progress($jumlah_hari, $project->id); 
 
