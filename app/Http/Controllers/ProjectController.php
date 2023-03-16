@@ -1839,9 +1839,6 @@ class ProjectController extends Controller
             $user = User::create($request->all());
             $user->assignRole($role_r);
 
-            if($request['type'] != 'client' || $request['type'] != 'staff_client')
-                \App\Models\Utility::employeeDetails($user->id,\Auth::user()->creatorId());
-
             //Send Email
 
             $user->password = $psw;

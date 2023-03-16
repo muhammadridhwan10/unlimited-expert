@@ -610,19 +610,21 @@
                                     @foreach($tasks as $task)
                                         <tr>
                                             <td>
+                                                @if (count($tasks) > 53)
                                                 <p>
-                                                @if ($task->category_templates->name === "00. Client Data")
-                                                <span class="badge-xs badge bg-info  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
-                                                @elseif ($task->category_templates->name === "A. Pre engagement")
-                                                <span class="badge-xs badge bg-warning  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
-                                                @elseif ($task->category_templates->name === "B. Risk Assessment")
-                                                <span class="badge-xs badge bg-danger  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
-                                                @elseif ($task->category_templates->name === "C. Risk Response")
-                                                <span class="badge-xs badge bg-success  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
-                                                @elseif ($task->category_templates->name === "D. Conclution and Completion")
-                                                <span class="badge-xs badge bg-dark  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
-                                                @endif
+                                                    @if ($task->category_templates->name === "00. Client Data")
+                                                    <span class="badge-xs badge bg-info  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
+                                                    @elseif ($task->category_templates->name === "A. Pre engagement")
+                                                    <span class="badge-xs badge bg-warning  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
+                                                    @elseif ($task->category_templates->name === "B. Risk Assessment")
+                                                    <span class="badge-xs badge bg-danger  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
+                                                    @elseif ($task->category_templates->name === "C. Risk Response")
+                                                    <span class="badge-xs badge bg-success  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
+                                                    @elseif ($task->category_templates->name === "D. Conclution and Completion")
+                                                    <span class="badge-xs badge bg-dark  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
+                                                    @endif
                                                 </p>
+                                                @endif 
                                                 <p class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.show',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}}">{{$task->name}}</a></p>
                                                 <span class="d-flex text-sm text-muted justify-content-between">
                                                 <span style="font-size: 10px" class="m-0">{{ $task->project->project_name }}</span>

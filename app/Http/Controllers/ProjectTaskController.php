@@ -182,42 +182,48 @@ class ProjectTaskController extends Controller
             }
             $jumlah_hari = count($jml_hari);
 
-            $category = ProjectTask::category_progress($jumlah_hari, $project->id); 
+            $get_task = ProjectTask::where('project_id', $project_id)->get();
+            $count_task = $get_task->count();
 
-            $Preengagement = $category['TotalPreengagement'];
-            $Riskassessment = $category['TotalRiskassessment'];
-            $Riskresponse = $category['TotalRiskresponse'];
-            $Conclutioncompletion = $category['TotalConclutioncompletion'];
-
-            $task = ProjectTask::where('project_id','=', $project->id)->get();
-
-            for($i = 0; $i < count($task); $i++)
+            if($count_task > 53)
             {
-                if($task[$i]['category_template_id'] == 1)
-                {
-                    $estimated_hrs = 0;
-                }
-                elseif($task[$i]['category_template_id'] == 2)
-                {
-                    $estimated_hrs = $Preengagement;
-                }
-                elseif($task[$i]['category_template_id'] == 3)
-                {
-                    $estimated_hrs = $Riskassessment;
-                }
-                elseif($task[$i]['category_template_id'] == 4)
-                {
-                    $estimated_hrs = $Riskresponse;
-                }
-                elseif($task[$i]['category_template_id'] == 5)
-                {
-                    $estimated_hrs = $Conclutioncompletion;
-                }
+                $category = ProjectTask::category_progress($jumlah_hari, $project->id); 
 
-                ProjectTask::where(['id' => $task[$i]['id']])->update([
-                    'estimated_hrs' => $estimated_hrs,
-                ]);
+                $Preengagement = $category['TotalPreengagement'];
+                $Riskassessment = $category['TotalRiskassessment'];
+                $Riskresponse = $category['TotalRiskresponse'];
+                $Conclutioncompletion = $category['TotalConclutioncompletion'];
 
+                $task = ProjectTask::where('project_id','=', $project->id)->get();
+
+                for($i = 0; $i < count($task); $i++)
+                {
+                    if($task[$i]['category_template_id'] == 1)
+                    {
+                        $estimated_hrs = 0;
+                    }
+                    elseif($task[$i]['category_template_id'] == 2)
+                    {
+                        $estimated_hrs = $Preengagement;
+                    }
+                    elseif($task[$i]['category_template_id'] == 3)
+                    {
+                        $estimated_hrs = $Riskassessment;
+                    }
+                    elseif($task[$i]['category_template_id'] == 4)
+                    {
+                        $estimated_hrs = $Riskresponse;
+                    }
+                    elseif($task[$i]['category_template_id'] == 5)
+                    {
+                        $estimated_hrs = $Conclutioncompletion;
+                    }
+
+                    ProjectTask::where(['id' => $task[$i]['id']])->update([
+                        'estimated_hrs' => $estimated_hrs,
+                    ]);
+
+                }
             }
 
 
