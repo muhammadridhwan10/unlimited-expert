@@ -610,7 +610,7 @@
                                     @foreach($tasks as $task)
                                         <tr>
                                             <td>
-                                                @if (count($tasks) > 53)
+                                                @if ($task->project->is_template !== 0)
                                                 <p>
                                                     @if ($task->category_templates->name === "00. Client Data")
                                                     <span class="badge-xs badge bg-info  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>

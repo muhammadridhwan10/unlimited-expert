@@ -96,16 +96,17 @@ class IndicatorController extends Controller
 
             $indicator->rating      = json_encode($request->rating, true);
 
-            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
-            {
-                $indicator->created_user = \Auth::user()->creatorId();
-            }
-            else
-            {
-                $indicator->created_user = \Auth::user()->id;
-            }
+            // if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+            // {
+            //     $indicator->created_user = \Auth::user()->creatorId();
+            // }
+            // else
+            // {
+            //     $indicator->created_user = \Auth::user()->id;
+            // }
 
-            $indicator->created_by = \Auth::user()->creatorId();
+            $indicator->created_user = \Auth::user()->id;
+            $indicator->created_by = \Auth::user()->id;
             $indicator->save();
 
             return redirect()->route('indicator.index')->with('success', __('Indicator successfully created.'));

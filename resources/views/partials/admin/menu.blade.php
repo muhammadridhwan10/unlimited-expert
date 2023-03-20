@@ -207,7 +207,7 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                 </a>
                                 @endif
                             </li>
-                            @if( Gate::check('manage set salary') || Gate::check('manage pay slip'))
+                            <!-- @if( Gate::check('manage set salary') || Gate::check('manage pay slip'))
                             <li class="dash-item dash-hasmenu  {{ (Request::segment(1) == 'setsalary' || Request::segment(1) == 'payslip') ? 'active dash-trigger' : ''}}">
                                 <a class="dash-link" href="#">{{__('Payroll Setup')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                 <ul class="dash-submenu">
@@ -223,7 +223,7 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                     @endcan
                                 </ul>
                             </li>
-                            @endif
+                            @endif -->
 
                             @if( Gate::check('manage leave') || Gate::check('manage attendance'))
                             <li class="dash-item dash-hasmenu  {{ (Request::segment(1) == 'leave' || Request::segment(1) == 'attendanceemployee') ? 'active dash-trigger' :''}}">
@@ -267,11 +267,11 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                         <a class="dash-link" href="{{route('appraisal.index')}}">{{__('Appraisal')}}</a>
                                     </li>
                                     @endcan
-                                    @can('manage goal tracking')
+                                    <!-- @can('manage goal tracking')
                                     <li class="dash-item  {{ (request()->is('goaltracking*') ? 'active' : '')}}">
                                         <a class="dash-link" href="{{route('goaltracking.index')}}">{{__('Goal Tracking')}}</a>
                                     </li>
-                                    @endcan
+                                    @endcan -->
                                 </ul>
                             </li>
                             @endif
