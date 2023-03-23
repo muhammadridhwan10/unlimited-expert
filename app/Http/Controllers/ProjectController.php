@@ -549,14 +549,24 @@ class ProjectController extends Controller
                 // end chart
 
                 $auditplan = AuditPlan::where('project_id', $project->id)->get();
-                $project_offerings = ProjectOfferings::where('project_id', $project->id)->get();
-                
-                $co_partners = $project_offerings[0]['als_partners'] * $project_offerings[0]['rate_partners'];
-                $co_manager = $project_offerings[0]['als_manager'] * $project_offerings[0]['rate_manager'];
-                $co_senior_associate = $project_offerings[0]['als_senior_associate'] * $project_offerings[0]['rate_senior_associate'];
-                $co_associate = $project_offerings[0]['als_associate'] * $project_offerings[0]['rate_associate'];
-                $co_intern = $project_offerings[0]['als_intern'] * $project_offerings[0]['rate_intern'];
-                
+                $project_offerings = ProjectOfferings::where('project_id', $project->id)->get()->toArray();
+
+                if(!empty($project_offerings))
+                {
+                    $co_partners = $project_offerings[0]['als_partners'] * $project_offerings[0]['rate_partners'];
+                    $co_manager = $project_offerings[0]['als_manager'] * $project_offerings[0]['rate_manager'];
+                    $co_senior_associate = $project_offerings[0]['als_senior_associate'] * $project_offerings[0]['rate_senior_associate'];
+                    $co_associate = $project_offerings[0]['als_associate'] * $project_offerings[0]['rate_associate'];
+                    $co_intern = $project_offerings[0]['als_intern'] * $project_offerings[0]['rate_intern'];
+                }
+                else
+                {
+                    $co_partners = 0;
+                    $co_manager = 0;
+                    $co_senior_associate = 0;
+                    $co_associate = 0;
+                    $co_intern = 0;
+                }
 
                 return view('projects.view',compact('project','project_offerings','co_partners','co_manager','co_senior_associate','co_associate','co_intern','project_data','auditplan'));
             }
