@@ -78,6 +78,11 @@ class Project extends Model
         'canceled' => 'danger',
     ];
 
+    public function project_offerings()
+    {
+        return $this->hasOne('App\Models\ProjectOfferings', 'project_id', 'id');
+    }
+
     public function details(){
         return $this->hasMany('App\Models\ProjectTaskTemplate', 'category_id', 'template_task_id');
     }

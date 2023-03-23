@@ -517,8 +517,74 @@
                 </div>
             </div>
         </div>
-
-
+            @if(Auth::user()->type == "admin" || Auth::user()->type == "company")
+            <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>{{ __('Project Offerings')}}</h5>
+                        </div>
+                        <div class="card-body" style="min-height: 280px;">
+                            <div class="row align-items-center">
+                                <div class="col-7">
+                                    <table class="table" >
+                                        <tbody>
+                                            <tr class="border-0" >
+                                                <th class="border-0" >{{ __('Charge-out Partners')}}:</th>
+                                                <td class="border-0"> {{\Auth::user()->priceFormat($co_partners)}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Charge-out Manager')}}:</th>
+                                                <td class="border-0"> {{\Auth::user()->priceFormat($co_manager)}}</td>
+                                            </tr>
+                                            <tr class="border-0" >
+                                                <th class="border-0" >{{ __('Charge-out Senior Associate')}}:</th>
+                                                <td class="border-0"> {{\Auth::user()->priceFormat($co_senior_associate)}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Charge-out Associate')}}:</th>
+                                                <td class="border-0"> {{\Auth::user()->priceFormat($co_associate)}}</td>
+                                            </tr>
+                                            <tr class="border-0" >
+                                                <th class="border-0" >{{ __('Charge-out Intern')}}:</th>
+                                                <td class="border-0"> {{\Auth::user()->priceFormat($co_intern)}}</td>
+                                            </tr>
+                                            <tr class="border-0" >
+                                                <th class="border-0" >{{ __('Total Charge-out')}}:</th>
+                                                <td class="border-0"> {{\Auth::user()->priceFormat($co_partners + $co_manager + $co_senior_associate + $co_associate + $co_intern)}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <!-- <div class="col-5 ">
+                                            @php
+                                                $task_percentage = $project->project_progress()['percentage'];
+                                                $data =trim($task_percentage,'%');
+                                                $status = $data > 0 && $data <= 25 ? 'red' : ($data > 25 && $data <= 50 ? 'orange' : ($data > 50 && $data <= 75 ? 'blue' : ($data > 75 && $data <= 100 ? 'green' : '')));
+                                            @endphp
+                                    <div class="circular-progressbar p-0">
+                                        <div class="flex-wrapper">
+                                            <div class="single-chart">
+                                                <svg viewBox="0 0 36 36"
+                                                    class="circular-chart orange  {{$status}}">
+                                                    <path class="circle-bg" d="M18 2.0845
+                                                                a 15.9155 15.9155 0 0 1 0 31.831
+                                                                a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                                    <path class="circle"
+                                                        stroke-dasharray="{{ $data }}, 100" d="M18 2.0845
+                                                                a 15.9155 15.9155 0 0 1 0 31.831
+                                                                a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                                    <text x="18" y="20.35"
+                                                        class="percentage">{{ $data }}%</text>
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div> -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
             <div class="col-lg-6 col-md-6">
                 <div class="card">
                     <div class="card-header">

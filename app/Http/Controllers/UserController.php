@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CustomField;
 use App\Models\Employee;
+use App\Models\Training;
 use App\Models\Mail\UserCreate;
 use App\Models\User;
 use App\Models\ProjectUser;
@@ -280,13 +281,16 @@ class UserController extends Controller
         $project                 = ProjectUser::with('project')->whereIn('project_id', $user_projects)->where('user_id', $userDetail->id);
         $get_project             = $project->get();
         $total_project           = $project->get()->count();
+        $training                = Training::where('employee','=', $userDetail->employee->id);
+        $get_training            = $training->get();
+        $total_training          = $training->get()->count();
         $task                    = ProjectTask::whereRaw("FIND_IN_SET(?,  assign_to) > 0", [$userDetail->id]);
         $get_task                = $task->get();
         $total_user_task         = $task->get()->count();
         $userDetail->customField = CustomField::getData($userDetail, 'user');
         $customFields            = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'user')->get();
 
-        return view('user.profile', compact('get_project', 'total_project', 'get_task', 'total_user_task', 'userDetail', 'customFields'));
+        return view('user.profile', compact('get_training','total_training','get_project', 'total_project', 'get_task', 'total_user_task', 'userDetail', 'customFields'));
     }
 
     public function editprofile(Request $request)

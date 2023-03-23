@@ -29,12 +29,13 @@
             <div class="card sticky-top" style="top:30px">
                 <div class="list-group list-group-flush" id="useradd-sidenav">
                     <a href="#project_and_task_info" class="list-group-item list-group-item-action border-0">{{__('Project and Task Info')}} <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
+                    <a href="#employee_record" class="list-group-item list-group-item-action border-0">{{__('Employee Record')}} <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
                     <a href="#personal_info" class="list-group-item list-group-item-action border-0">{{__('Personal Info')}} <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
                 </div>
             </div>
         </div>
         <div class="col-xl-9">
-        <div id="project_and_task_info" class="card">
+            <div id="project_and_task_info" class="card">
                 <div class="card-header">
                     <h5>{{('Project and Task Info')}}</h5>
                 </div>
@@ -128,6 +129,76 @@
                             </div>
                         </div>
                     </div>
+                </div>
+
+            </div>
+            <div id="employee_record" class="card">
+                <div class="card-header">
+                    <h5>{{('Employee Record')}}</h5>
+                </div>
+                <div class="card-body">
+                    {{Form::model($userDetail,array('route' => array('update.account'), 'method' => 'post', 'enctype' => "multipart/form-data"))}}
+                        @csrf
+                        <div class="row">
+                            <div class="col-md-12 col-xxl-12">
+                                <div class="card">
+                                    <div class="card-header border-0 pb-0">
+                                        <div class="d-flex align-items-center">
+                                            <h5 class="col-12 text-center"><a class="text-dark"><i style="font-size: 45px" class="ti ti-star"></i></a></h5>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">                      
+                                        <div class="card mb-0 mt-3">
+                                            <div class="card-body p-3">
+                                                <div class="row">
+                                                    <div class="col-12 text-center">
+                                                        <h6 class="mb-0" style="font-size: 40px">{{ $total_training }}</h6>
+                                                        <p class="mb-0" style="font-size: 20px">{{__('Total Training or Sertifikasi')}}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-sm-12 mt-3">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>{{('Training or Sertifikasi Info')}}</h5>
+                                </div>
+                                <div class="card-body mt-3 mx-2">
+                                    <div class="row mt-2">
+                                        <div class="table-responsive">
+                                            <table class="table datatables">
+                                                <thead>
+                                                    <tr>
+                                                        <th>{{ __('Training Description') }}</th>
+                                                        <th>{{ __('Training Type') }}</th>                                        
+                                                        <th>{{ __('Employee') }}</th>
+                                                        <th>{{ __('Trainer') }}</th>
+                                                        <th>{{ __('Training Duration') }}</th>
+                                                    </tr>
+                                                </thead>
+                                                    <tbody class="list">
+                                                    @foreach($get_training as $training)
+                                                        <tr>
+                                                            <td>{{$training->description}}</td>
+                                                            <td>{{ !empty($training->types)?$training->types->name:'' }}
+                                                            <td>{{ !empty($training->employees)?$training->employees->name:'' }} </td>
+                                                            <td>{{ !empty($training->trainers)?$training->trainers->firstname:'' }}</td>
+                                                            <td>{{\Auth::user()->dateFormat($training->start_date) .' to '.\Auth::user()->dateFormat($training->end_date)}}</td>
+                                                        </tr>
+                                                    @endforeach
+                                                    </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </form>
+
                 </div>
 
             </div>

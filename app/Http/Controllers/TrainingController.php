@@ -115,7 +115,7 @@ class TrainingController extends Controller
             $training->training_type  = $request->training_type;
             $training->trainer        = $request->trainer;
             $training->training_cost  = $request->training_cost;
-            $training->employee       = $request->employee;
+            $training->employee       = !empty($request->employee) ? implode(',', $request->employee) : '';
             $training->start_date     = $request->start_date;
             $training->end_date       = $request->end_date;
             $training->description    = $request->description;
@@ -207,7 +207,7 @@ class TrainingController extends Controller
             $training->training_type  = $request->training_type;
             $training->trainer        = $request->trainer;
             $training->training_cost  = $request->training_cost;
-            $training->employee       = $request->employee;
+            $training->employee       = !empty($request->employee) ? implode(',', $request->employee) : '';
             $training->start_date     = $request->start_date;
             $training->end_date       = $request->end_date;
             $training->description    = $request->description;

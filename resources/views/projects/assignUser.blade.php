@@ -5,7 +5,7 @@
     <div class="row">
         <div class="form-group col-md-12">
         {{ Form::label('projects', __('Project'),['class'=>'form-label'])}}
-        {{ Form::select('project_id', $project, null, ['class' => 'form-control select project_select', 'placeholder' => __('Select Project'), 'id' => 'project_select', 'data-toggle' => 'select']) }}
+        {{ Form::select('project_id', $project, null, ['class' => 'form-control select2 project_select', 'placeholder' => __('Select Project'), 'id' => 'project_select', 'data-toggle' => 'select']) }}
         </div>
         <div class="form-group col-md-12" id="task_div">
         {{ Form::label('task', __('Task'),['class'=>'form-label'])}}

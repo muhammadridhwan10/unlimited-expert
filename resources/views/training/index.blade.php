@@ -63,12 +63,12 @@
                                         <td>
 
 
-                                            <div class="action-btn bg-info ms-2">
+                                            <!-- <div class="action-btn bg-info ms-2">
                                                 <a href="{{ route('training.show',\Illuminate\Support\Facades\Crypt::encrypt($training->id)) }}" class="mx-3 btn btn-sm  align-items-center" data-bs-toggle="tooltip" title="{{__('View')}}" data-original-title="{{__('View Detail')}}">
                                                     <i class="ti ti-eye text-white"></i>
                                                 </a>
 
-                                            </div>
+                                            </div> -->
 
                                             @can('edit training')
                                                 <div class="action-btn bg-primary ms-2">

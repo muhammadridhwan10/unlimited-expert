@@ -31,6 +31,19 @@ $(document).ready(function () {
 
 
 });
+
+$(document).ready(function () {
+    if ($(".datatables").length > 0) {
+        new simpleDatatables.DataTable(".datatables");
+    }
+
+   // loadConfirm();
+    select2();
+    summernote();
+    daterange();
+
+
+});
 function daterange() {
     if ($("#pc-daterangepicker-1").length > 0) {
         document.querySelector("#pc-daterangepicker-1").flatpickr({

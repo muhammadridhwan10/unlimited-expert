@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TimeTracker;
 use App\Models\User;
 use App\Models\AuditPlan;
+use App\Models\ProjectOfferings;
 use App\Models\Project;
 use App\Models\Utility;
 use App\Models\Bug;
@@ -185,6 +186,20 @@ class ProjectController extends Controller
             $project->label = $request->label;
             $project->created_by = \Auth::user()->creatorId();
             $project->save();
+
+            $project_offerings = new ProjectOfferings();
+            $project_offerings->project_id = $project->id;
+            $project_offerings->als_partners = $request->als_partners;
+            $project_offerings->rate_partners = $request->rate_partners;
+            $project_offerings->als_manager = $request->als_manager;
+            $project_offerings->rate_manager = $request->rate_manager;
+            $project_offerings->als_senior_associate = $request->als_senior_associate;
+            $project_offerings->rate_senior_associate = $request->rate_senior_associate;
+            $project_offerings->als_associate = $request->als_associate;
+            $project_offerings->rate_associate = $request->rate_associate;
+            $project_offerings->als_intern = $request->als_intern;
+            $project_offerings->rate_intern = $request->rate_intern;
+            $project_offerings->save();
 
             ActivityLog::create(
                 [
@@ -534,9 +549,16 @@ class ProjectController extends Controller
                 // end chart
 
                 $auditplan = AuditPlan::where('project_id', $project->id)->get();
+                $project_offerings = ProjectOfferings::where('project_id', $project->id)->get();
+                
+                $co_partners = $project_offerings[0]['als_partners'] * $project_offerings[0]['rate_partners'];
+                $co_manager = $project_offerings[0]['als_manager'] * $project_offerings[0]['rate_manager'];
+                $co_senior_associate = $project_offerings[0]['als_senior_associate'] * $project_offerings[0]['rate_senior_associate'];
+                $co_associate = $project_offerings[0]['als_associate'] * $project_offerings[0]['rate_associate'];
+                $co_intern = $project_offerings[0]['als_intern'] * $project_offerings[0]['rate_intern'];
+                
 
-
-                return view('projects.view',compact('project','project_data','auditplan'));
+                return view('projects.view',compact('project','project_offerings','co_partners','co_manager','co_senior_associate','co_associate','co_intern','project_data','auditplan'));
             }
             else
             {
@@ -692,6 +714,42 @@ class ProjectController extends Controller
             $project->tags = $request->tag;
             $project->label = $request->label;
             $project->save();
+
+            $project_offerings = ProjectOfferings::where('project_id','=', $project->id)->first();
+            
+            if($project_offerings !== NULL)
+            {
+                $project_offerings->update(
+                    [
+                        'als_partners' => $request->als_partners,
+                        'rate_partners' => $request->rate_partners,
+                        'als_manager' => $request->als_manager,
+                        'rate_manager' => $request->rate_manager,
+                        'als_senior_associate' => $request->als_senior_associate,
+                        'rate_senior_associate' => $request->rate_senior_associate,
+                        'als_associate' => $request->als_associate,
+                        'rate_associate' => $request->rate_associate,
+                        'als_intern' => $request->als_intern,
+                        'rate_intern' => $request->rate_intern,
+                    ]
+                );
+            }else
+            {
+                $project_offerings = new ProjectOfferings();
+                $project_offerings->project_id = $project->id;
+                $project_offerings->als_partners = $request->als_partners;
+                $project_offerings->rate_partners = $request->rate_partners;
+                $project_offerings->als_manager = $request->als_manager;
+                $project_offerings->rate_manager = $request->rate_manager;
+                $project_offerings->als_senior_associate = $request->als_senior_associate;
+                $project_offerings->rate_senior_associate = $request->rate_senior_associate;
+                $project_offerings->als_associate = $request->als_associate;
+                $project_offerings->rate_associate = $request->rate_associate;
+                $project_offerings->als_intern = $request->als_intern;
+                $project_offerings->rate_intern = $request->rate_intern;
+                $project_offerings->save();
+            }
+            
 
             ActivityLog::create(
                 [
