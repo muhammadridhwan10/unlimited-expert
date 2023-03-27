@@ -28,13 +28,75 @@
         <div class="col-xl-3">
             <div class="card sticky-top" style="top:30px">
                 <div class="list-group list-group-flush" id="useradd-sidenav">
+                    <a href="#about_me" class="list-group-item list-group-item-action border-0">{{__('About Me')}} <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
                     <a href="#project_and_task_info" class="list-group-item list-group-item-action border-0">{{__('Project and Task Info')}} <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
-                    <a href="#employee_record" class="list-group-item list-group-item-action border-0">{{__('Employee Record')}} <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
+                    <a href="#employee_record" class="list-group-item list-group-item-action border-0">{{__('Training Record')}} <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
                     <a href="#personal_info" class="list-group-item list-group-item-action border-0">{{__('Personal Info')}} <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
                 </div>
             </div>
         </div>
         <div class="col-xl-9">
+            <div id="about_me" class="card">
+                <div class="card-header">
+                    <h5>{{('About Me')}}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 col-xxl-6">
+                            <div class="card">
+                                <div class="card-header border-0 pb-0 img-fluid rounded-circle">
+                                    <div class="d-flex align-items-center">
+                                        <img src="{{(!empty($userDetail->avatar))? asset(Storage::url("uploads/avatar/".$userDetail->avatar)): asset(Storage::url("uploads/avatar/avatar.png"))}}"  class="img-user wid-200 rounded-circle">
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-xxl-6">
+                            <div class="card">
+                                <div class="card-body">                      
+                                    <div class="card mb-0 mt-3">
+                                    <table class="table" >
+                                        <tbody>
+                                            <tr class="border-0" >
+                                                <p style="font-size: 20px;">Name: {{ !empty($userDetail->name)?$userDetail->name:'-' }}</p>
+                                            </tr>
+                                            @foreach ($employee as $data_employee)
+                                            <tr class="border-0" >
+                                                <p style="font-size: 20px;">DOB: {{ !empty($data_employee->dob)?$data_employee->dob:'-' }}</p>
+                                            </tr>
+                                            <tr class="border-0" >
+                                                <p style="font-size: 20px;">Phone: {{ !empty($data_employee->phone)?$data_employee->phone:'-' }}</p>
+                                            </tr>
+                                            <tr class="border-0" >
+                                                <p style="font-size: 20px;">Email: {{ !empty($data_employee->email)?$data_employee->email:'-' }}</p>
+                                            </tr>
+                                            <tr class="border-0" >
+                                                <p style="font-size: 20px;">Address: {{ !empty($data_employee->address)?$data_employee->address:'-' }}</p>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-12 mt-3">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>{{('Personal Detail')}}</h5>
+                                </div>
+                                <div class="card-body mt-3 mx-2">
+                                    <div class="row mt-2">
+                                        <p style="font-size: 25px;">{{ !empty($userDetail->personal_description)?$userDetail->personal_description:'-' }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
             <div id="project_and_task_info" class="card">
                 <div class="card-header">
                     <h5>{{('Project and Task Info')}}</h5>
@@ -134,7 +196,7 @@
             </div>
             <div id="employee_record" class="card">
                 <div class="card-header">
-                    <h5>{{('Employee Record')}}</h5>
+                    <h5>{{('Training Record')}}</h5>
                 </div>
                 <div class="card-body">
                     {{Form::model($userDetail,array('route' => array('update.account'), 'method' => 'post', 'enctype' => "multipart/form-data"))}}

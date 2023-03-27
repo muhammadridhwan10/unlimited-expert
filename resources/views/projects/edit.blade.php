@@ -42,7 +42,7 @@
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
                 {{ Form::label('template_task', __('Task Template'),['class'=>'form-label']) }}<span class="text-danger"></span>
-                {!! Form::select('template_task', $tasktemplate, null,array('class' => 'form-control')) !!}
+                {!! Form::select('template_task', $tasktemplate, $project->template_task_id,array('class' => 'form-control')) !!}
             </div>
         </div>
         <div class="col-sm-6 col-md-6">

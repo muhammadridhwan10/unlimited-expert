@@ -277,6 +277,7 @@ class UserController extends Controller
     public function profile()
     {
         $userDetail              = \Auth::user();
+        $employee                = Employee::where('user_id', $userDetail->id)->get();
         $user_projects           = $userDetail->projects()->pluck('project_id','project_id')->toArray();
         $project                 = ProjectUser::with('project')->whereIn('project_id', $user_projects)->where('user_id', $userDetail->id);
         $get_project             = $project->get();
@@ -290,7 +291,7 @@ class UserController extends Controller
         $userDetail->customField = CustomField::getData($userDetail, 'user');
         $customFields            = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'user')->get();
 
-        return view('user.profile', compact('get_training','total_training','get_project', 'total_project', 'get_task', 'total_user_task', 'userDetail', 'customFields'));
+        return view('user.profile', compact('employee','get_training','total_training','get_project', 'total_project', 'get_task', 'total_user_task', 'userDetail', 'customFields'));
     }
 
     public function editprofile(Request $request)
