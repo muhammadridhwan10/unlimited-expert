@@ -41,7 +41,7 @@
                         aria-expanded="false"
                     >
                         <span class="theme-avtar">
-                             <img src="{{(!empty(\Auth::user()->avatar))? asset(Storage::url("uploads/avatar/".\Auth::user()->avatar)): asset(Storage::url("uploads/avatar/avatar.png"))}}" class="img-fluid rounded-circle">
+                             <img src="{{(!empty(\Auth::user()->avatar))? asset(Storage::url("uploads/avatar/".\Auth::user()->avatar)): asset(Storage::url(\Auth::user()->name . ".png"))}}" class="img-fluid rounded-circle">
                            </span>
                         <span class="hide-mob ms-2">{{__('Hi, ')}}{{\Auth::user()->name }}!</span>
                         <i class="ti ti-chevron-down drp-arrow nocolor hide-mob"></i>

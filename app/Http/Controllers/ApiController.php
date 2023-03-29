@@ -65,7 +65,7 @@ class ApiController extends Controller
             $project_s      = Project::with(['tasks' => function($query)
             {
                 $user = auth()->user();
-                $query->whereRaw("find_in_set('" . $user->id . "',assign_to)")->get();
+                $query->with('category_templates')->whereRaw("find_in_set('" . $user->id . "',assign_to)")->get();
     
             }])->select(
                 [

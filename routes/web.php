@@ -2530,7 +2530,7 @@ Route::post(
     ]
 );
 
-Route::any('/assignuser/projects/select/{bid}', 'ProjectController@gettask')->name('assignuser.gettask');
+Route::any('/assignuser/projects/select/{bid}/{cid}', 'ProjectController@gettask')->name('assignuser.gettask');
 
 Route::post(
     'invite-project-client-member', [

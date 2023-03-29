@@ -7,6 +7,10 @@
         {{ Form::label('projects', __('Project'),['class'=>'form-label'])}}
         {{ Form::select('project_id', $project, null, ['class' => 'form-control select2 project_select', 'placeholder' => __('Select Project'), 'id' => 'project_select', 'data-toggle' => 'select']) }}
         </div>
+        <div class="form-group col-md-12">
+        {{ Form::label('category_template_id', __('Category'),['class'=>'form-label'])}}
+        {{ Form::select('category_template_id', $category, null, ['class' => 'form-control category_select', 'placeholder' => __('Select Category'), 'id' => 'category_select', 'data-toggle' => 'select']) }}
+        </div>
         <div class="form-group col-md-12" id="task_div">
         {{ Form::label('task', __('Task'),['class'=>'form-label'])}}
             <select class="form-control select" id="task_id" name="task_id[]" placeholder="Select Task" >
@@ -24,16 +28,17 @@
 
 
 <script type="text/javascript">
-        $(document).on('change', '.project_select', function () {
+        $(document).on('change', '.category_select', function () {
 
-            var project_id = $(this).val();
+            var project_id = $('#project_select').val();
+            var category_template_id = $(this).val();
 
-            getparent(project_id);
+            getparent(project_id, category_template_id);
         });
-        function getparent(bid) {
+        function getparent(bid, cid) {
 
             $.ajax({
-                url: `{{ url('assignuser/projects/select')}}/${bid}`,
+                url: `{{ url('assignuser/projects/select')}}/${bid}/${cid}`,
                 type: 'GET',
                 success: function (data) {
                     $("#task_div").html('');

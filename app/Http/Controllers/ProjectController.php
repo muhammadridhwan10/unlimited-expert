@@ -12,6 +12,7 @@ use App\Models\Bug;
 use App\Models\BugStatus;
 use App\Models\BugFile;
 use App\Models\BugComment;
+use App\Models\CategoryTemplate;
 use App\Models\Milestone;
 use App\Models\ProjectTaskTemplate;
 use App\Models\PublicAccountant;
@@ -1978,15 +1979,16 @@ class ProjectController extends Controller
 
         $project           = Project::get()->pluck('project_name', 'id');
         $task              = ProjectTask::get()->pluck('name', 'id');
+        $category          = CategoryTemplate::get()->pluck('name', 'id');
         $user              = User::findOrFail($id);
 
-        return view('projects.assignUser', compact('user', 'project', 'task'));
+        return view('projects.assignUser', compact('user','category', 'project', 'task'));
 
     }
 
-    public function gettask($id, Request $request)
+    public function gettask($id, $category_template_id, Request $request)
     {
-        $task = ProjectTask::select('id', 'name')->where('project_id', $id)->get();
+        $task = ProjectTask::select('id', 'name')->where('project_id', $id)->where('category_template_id', $category_template_id)->get();
         return \Response::json($task);
 
         // $task = ProjectTask::where('project_id', $request->project_id)->get()->pluck('name', 'id')->toArray();
@@ -2051,30 +2053,30 @@ class ProjectController extends Controller
             $auditplanning->task_id = !empty($request->task_id) ? implode(',', $request->task_id) : '';
             $auditplanning->user_id = !empty($request->user_id) ? implode(',', $request->user_id) : '';
             
-            $gettask    = $request->task_id;
-            $task       = ProjectTask::whereIn('id', $gettask)->get();
+            // $gettask    = $request->task_id;
+            // $task       = ProjectTask::whereIn('id', $gettask)->get();
 
-            for($i = 0; $i < count($task); $i++)
-            {
-                $project = Project::find($project_id);
+            // for($i = 0; $i < count($task); $i++)
+            // {
+            //     $project = Project::find($project_id);
                 
-                ProjectTask::where(['id' => $task[$i]['id']])->update([
-                    'assign_to' => $auditplanning->user_id,
-                    'start_date' => $auditplanning->start_date,
-                ]);
+            //     ProjectTask::where(['id' => $task[$i]['id']])->update([
+            //         'assign_to' => $auditplanning->user_id,
+            //         'start_date' => $auditplanning->start_date,
+            //     ]);
 
-                ActivityLog::create(
-                    [
-                        'user_id' => \Auth::user()->id,
-                        'project_id' => $project_id,
-                        'task_id' => $task[$i]['id'],
-                        'log_type' => 'Update Task',
-                        'remark' => json_encode(['title' => $task[$i]['name']]),
-                    ]
-                );
+            //     ActivityLog::create(
+            //         [
+            //             'user_id' => \Auth::user()->id,
+            //             'project_id' => $project_id,
+            //             'task_id' => $task[$i]['id'],
+            //             'log_type' => 'Update Task',
+            //             'remark' => json_encode(['title' => $task[$i]['name']]),
+            //         ]
+            //     );
 
 
-            }
+            // }
             
             $auditplanning->save();
 

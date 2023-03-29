@@ -429,6 +429,9 @@ class DashboardController extends Controller
                 if($user->type != 'client' && $user->type != 'staff_client' && $user->type != 'company' && $user->type != 'admin')
                 {
                     $emp = Employee::where('user_id', '=', $user->id)->first();
+                    $get_name                = $user->name;
+                    $img                     = \DefaultProfileImage::create($get_name);
+                    $profile                 = \Storage::put($get_name . '.png', $img->encode());
 
                     $announcements = Announcement::orderBy('announcements.id', 'desc')->take(5)->leftjoin('announcement_employees', 'announcements.id', '=', 'announcement_employees.announcement_id')->where('announcement_employees.employee_id', '=', $emp->id)->orWhere(
                         function ($q){
@@ -482,7 +485,7 @@ class DashboardController extends Controller
                         $officeTime['endTime']      = "17:00";
                     }
 
-                    return view('dashboard.dashboard', compact('arrEvents', 'announcements', 'employees', 'meetings', 'employeeAttendance', 'officeTime'));
+                    return view('dashboard.dashboard', compact('profile','arrEvents', 'announcements', 'employees', 'meetings', 'employeeAttendance', 'officeTime'));
                 }elseif($user->type = 'admin')
                 {
                     $events    = Event::all();
@@ -510,6 +513,10 @@ class DashboardController extends Controller
                     $emp           = User::where('type', '!=', 'client')->get();
                     $countEmployee = count($emp);
 
+                    $get_name                = $user->name;
+                    $img                     = \DefaultProfileImage::create($get_name);
+                    $profile                 = \Storage::put($get_name . '.png', $img->encode());
+
                     $user      = User::where('type', '!=', 'client')->where('type', '!=', 'intern')->get();
                     $countUser = count($user);
 
@@ -535,7 +542,7 @@ class DashboardController extends Controller
                     $officeTime['startTime'] = Utility::getValByName('company_start_time');
                     $officeTime['endTime']   = Utility::getValByName('company_end_time');
 
-                    return view('dashboard.dashboard', compact('countIntern','arrEvents', 'officeTime', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
+                    return view('dashboard.dashboard', compact('profile','countIntern','arrEvents', 'officeTime', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
                 }
                 elseif($user->type = 'company')
                 {
@@ -564,6 +571,10 @@ class DashboardController extends Controller
                     $emp           = User::where('type', '!=', 'client')->get();
                     $countEmployee = count($emp);
 
+                    $get_name                = $user->name;
+                    $img                     = \DefaultProfileImage::create($get_name);
+                    $profile                 = \Storage::put($get_name . '.png', $img->encode());
+
                     $user      = User::where('type', '!=', 'client')->where('type', '!=', 'intern')->get();
                     $countUser = count($user);
 
@@ -589,7 +600,7 @@ class DashboardController extends Controller
                     $officeTime['startTime'] = Utility::getValByName('company_start_time');
                     $officeTime['endTime']   = Utility::getValByName('company_end_time');
 
-                    return view('dashboard.dashboard', compact('countIntern','arrEvents', 'officeTime', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
+                    return view('dashboard.dashboard', compact('profile','countIntern','arrEvents', 'officeTime', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
                 }
 
                 else
@@ -619,6 +630,10 @@ class DashboardController extends Controller
                     $emp           = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
                     $countEmployee = count($emp);
 
+                    $get_name                = $user->name;
+                    $img                     = \DefaultProfileImage::create($get_name);
+                    $profile                 = \Storage::put($get_name . '.png', $img->encode());
+
                     $user      = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
                     $countUser = count($user);
 
@@ -640,7 +655,7 @@ class DashboardController extends Controller
 
                     $meetings = Meeting::where('created_by', '=', \Auth::user()->creatorId())->limit(5)->get();
 
-                    return view('dashboard.dashboard', compact('arrEvents', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
+                    return view('dashboard.dashboard', compact('profile','arrEvents', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
                 }
             }
             else

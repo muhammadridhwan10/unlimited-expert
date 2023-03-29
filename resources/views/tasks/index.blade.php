@@ -91,7 +91,7 @@
                                                             @foreach($users as $key => $user)
                                                                 @if($key<3)
                                                                     <a href="#" class="avatar rounded-circle avatar-sm">
-                                                                        <img data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset('/storage/uploads/avatar/avatar.png')}}" @endif style="height:36px;width:36px;">
+                                                                        <img data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset(Storage::url($user->name . '.png'))}}" @endif style="height:36px;width:36px;">
                                                                     </a>
                                                                 @else
                                                                     @break
@@ -99,7 +99,7 @@
                                                             @endforeach
                                                             @if(count($users) > 3)
                                                                 <a href="#" class="avatar rounded-circle avatar-sm">
-                                                                    <img data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset('/storage/uploads/avatar/avatar.png')}}" @endif>
+                                                                    <img data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset(Storage::url($user->name . '.png'))}}" @endif>
                                                                 </a>
                                                             @endif
                                                         </div>

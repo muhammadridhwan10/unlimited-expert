@@ -43,41 +43,37 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 col-xxl-6">
-                            <div class="card">
                                 <div class="card-header border-0 pb-0 img-fluid rounded-circle">
                                     <div class="d-flex align-items-center">
-                                        <img src="{{(!empty($userDetail->avatar))? asset(Storage::url("uploads/avatar/".$userDetail->avatar)): asset(Storage::url("uploads/avatar/avatar.png"))}}"  class="img-user wid-200 rounded-circle">
+                                        <img src="{{(!empty($userDetail->avatar))? asset(Storage::url("uploads/avatar/".$userDetail->avatar)): asset(Storage::url($userDetail->name . ".png"))}}"  class="img-user wid-150 rounded-circle">
                                     </div>
                                     
                                 </div>
-                            </div>
                         </div>
                         <div class="col-md-6 col-xxl-6">
                             <div class="card">
                                 <div class="card-body">                      
-                                    <div class="card mb-0 mt-3">
-                                    <table class="table" >
-                                        <tbody>
-                                            <tr class="border-0" >
-                                                <p style="font-size: 20px;">Name: {{ !empty($userDetail->name)?$userDetail->name:'-' }}</p>
-                                            </tr>
-                                            @foreach ($employee as $data_employee)
-                                            <tr class="border-0" >
-                                                <p style="font-size: 20px;">DOB: {{ !empty($data_employee->dob)?$data_employee->dob:'-' }}</p>
-                                            </tr>
-                                            <tr class="border-0" >
-                                                <p style="font-size: 20px;">Phone: {{ !empty($data_employee->phone)?$data_employee->phone:'-' }}</p>
-                                            </tr>
-                                            <tr class="border-0" >
-                                                <p style="font-size: 20px;">Email: {{ !empty($data_employee->email)?$data_employee->email:'-' }}</p>
-                                            </tr>
-                                            <tr class="border-0" >
-                                                <p style="font-size: 20px;">Address: {{ !empty($data_employee->address)?$data_employee->address:'-' }}</p>
-                                            </tr>
-                                            @endforeach
-                                        </tbody>
-                                    </table>
-                                    </div>
+                                        <table class="table" >
+                                            <tbody>
+                                                <tr class="border-0" >
+                                                    <p style="font-size: 20px;">Name: {{ !empty($userDetail->name)?$userDetail->name:'-' }}</p>
+                                                </tr>
+                                                @foreach ($employee as $data_employee)
+                                                <tr class="border-0" >
+                                                    <p style="font-size: 20px;">DOB: {{ !empty($data_employee->dob)?$data_employee->dob:'-' }}</p>
+                                                </tr>
+                                                <tr class="border-0" >
+                                                    <p style="font-size: 20px;">Phone: {{ !empty($data_employee->phone)?$data_employee->phone:'-' }}</p>
+                                                </tr>
+                                                <tr class="border-0" >
+                                                    <p style="font-size: 20px;">Email: {{ !empty($data_employee->email)?$data_employee->email:'-' }}</p>
+                                                </tr>
+                                                <tr class="border-0" >
+                                                    <p style="font-size: 20px;">Address: {{ !empty($data_employee->address)?$data_employee->address:'-' }}</p>
+                                                </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
                                 </div>
                             </div>
                         </div>

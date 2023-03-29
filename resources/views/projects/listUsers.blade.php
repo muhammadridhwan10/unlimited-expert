@@ -16,57 +16,60 @@
 @endsection
 @section('content')
     <div class="row">
-        <div class="col-xxl-12">
-            <div class="row">
-                @foreach($users as $user)
-                    <div class="col-md-3">
-                        <div class="card text-center">
-                            <div class="card-header border-0 pb-0">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h6 class="mb-0">
-                                        <div class=" badge bg-primary p-2 px-3 rounded">
-                                            {{ ucfirst($user->type) }}
-                                        </div>
-                                    </h6>
-
-                                </div>
-
-                                <!-- <div class="card-header-right">
-                                    <div class="btn-group card-option">
-                                        <button type="button" class="btn dropdown-toggle"
-                                                data-bs-toggle="dropdown" aria-haspopup="true"
-                                                aria-expanded="false">
-                                            <i class="ti ti-dots-vertical"></i>
-                                        </button>
-
-                                        <div class="dropdown-menu dropdown-menu-end">
-                                            @can('edit project task')
-                                                <a href="#!" data-size="lg" data-url="{{ route('list.users.edit',$user->id) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Assigned User To Project and Task')}}">
-                                                    <i class="ti ti-eye"></i>
-                                                    <span>{{__('Detail')}}</span>
-                                                </a>
-                                            @endcan
-                                        </div>
-                                    </div>
-                                </div> -->
-                            </div>
-                            <div class="card-body full-card">
-                                <div class="img-fluid rounded-circle card-avatar">
-                                    <img src="{{(!empty($user->avatar))? asset(Storage::url("uploads/avatar/".$user->avatar)): asset(Storage::url("uploads/avatar/avatar.png"))}}"  class="img-user wid-80 rounded-circle">
-                                </div>
-                                <h4 class=" mt-2 text-primary">{{ $user->name }}</h4>
-                                <small class="text-primary">{{ $user->email }}</small>
-                                <p></p>
-
-                                <div class="col text-center d-block h6 mb-0" data-bs-toggle="tooltip" title="{{__('Assign User')}}">
-                                    <a href="#!" data-size="lg" data-url="{{ route('list.users.edit',$user->id) }}" data-ajax-popup="true" data-bs-original-title="{{__('Assigned User To Project and Task')}}">
-                                        <input type="button" value="{{__('Assign')}}"  class="btn  btn-info">
-                                    </a>                       
-                                </div>
-                            </div>
+        <div class="col-md-12">
+            <div class="card">
+                <div class="col-12">
+                    <div class="card-body table-border-style">
+                        <div class="table-responsive">
+                            <table class="table datatable">
+                                <thead>
+                                <tr>
+                                    <th scope="col">{{__('Name')}}</th>
+                                    <th scope="col">{{__('Email')}}</th>
+                                    <th scope="col">{{__('Role')}}</th>
+                                    <th scope="col">{{ __('Action') }}</th>
+                                </tr>
+                                </thead>
+                                <tbody class="list">
+                                @if(count($users) > 0)
+                                    @foreach($users as $user)
+                                        <tr>
+                                            <td>
+                                                <div class="avatar-group">
+                                                    <a href="#" class="avatar rounded-circle avatar-sm">
+                                                        <img data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset(Storage::url($user->name . ".png"))}}" @endif title="{{ $user->name }}" class="hweb">
+                                                    </a>
+                                                        {{ $user->name }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                {{$user->email}}
+                                            </td>
+                                            <td>
+                                                {{$user->type}}
+                                            </td>
+                                            <td class="Action">
+                                                <span>
+                                                    <div class="action-btn bg-primary ms-2">
+                                                        <a href="#!" data-size="lg" data-url="{{ route('list.users.edit',$user->id) }}" data-ajax-popup="true" data-bs-original-title="{{__('Assigned User To Project and Task')}}"
+                                                        class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="Assigned User" data-original-title="{{ __('Assigned User') }}">
+                                                            <i class="ti ti-send text-white"></i>
+                                                        </a>  
+                                                    </div>
+                                                </span>
+                                        </td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr>
+                                        <th scope="col" colspan="7"><h6 class="text-center">{{__('No Users found')}}</h6></th>
+                                    </tr>
+                                @endif
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                @endforeach
+                </div>
             </div>
         </div>
     </div>

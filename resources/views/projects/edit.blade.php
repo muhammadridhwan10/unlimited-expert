@@ -26,8 +26,8 @@
     <div class="row">
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
-                {{ Form::label('public_accountant_id', __('Public Accountant'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                {!! Form::select('public_accountant_id', $public_accountant, null,array('class' => 'form-control','required'=>'required')) !!}
+                {{ Form::label('public_accountant_id', __('Public Accountant'),['class'=>'form-label']) }}
+                {!! Form::select('public_accountant_id', $public_accountant, null,array('class' => 'form-control')) !!}
             </div>
         </div>
         <div class="col-sm-6 col-md-6">

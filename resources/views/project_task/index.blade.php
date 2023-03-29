@@ -647,7 +647,7 @@
                                                             @foreach($users as $key => $user)
                                                                 @if($key< 3)
                                                                     <a href="#" class="avatar rounded-circle avatar-sm">
-                                                                        <img data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset('/storage/uploads/avatar/avatar.png')}}" @endif title="{{ $user->name }}" class="hweb">
+                                                                        <img data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset(Storage::url($user->name . ".png"))}}" @endif title="{{ $user->name }}" class="hweb">
                                                                     </a>
                                                                     {{ $user->name }}
                                                                 @else
@@ -657,7 +657,7 @@
                                                         @endif
                                                         @if(count($users) > 3)
                                                             <a href="#" class="avatar rounded-circle avatar-sm">
-                                                                <img  data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset('/storage/uploads/avatar/avatar.png')}}" @endif class="hweb">
+                                                                <img  data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset(Storage::url($user->name . ".png"))}}" @endif class="hweb">
                                                             </a>
                                                             {{ $user->name }}
                                                         @endif
