@@ -139,8 +139,15 @@ class ProjectController extends Controller
             }
             $project = new Project();
             $project->project_name = $request->project_name;
-            $project->start_date = date("Y-m-d H:i:s", strtotime($request->start_date));
-            
+
+            if($request->start_date == null)
+            {
+                $project->start_date = \Carbon\Carbon::now();
+            }
+            else
+            {
+                $project->start_date = date("Y-m-d H:i:s", strtotime($request->start_date));
+            }   
 
             $tanggal_mulai = $project->start_date;
             $tanggal_akhir = $request->total_days;
