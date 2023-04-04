@@ -510,8 +510,30 @@ class DashboardController extends Controller
                     $announcements = Announcement::orderBy('announcements.id', 'desc')->take(5)->get();
 
 
-                    $emp           = User::where('type', '!=', 'client')->get();
-                    $countEmployee = count($emp);
+                    $employees           = User::where('type', '!=', 'client')->get();
+                    $countEmployee = count($employees);
+
+                    $emp = Employee::where('user_id', '=', Auth::user()->id)->first();
+
+                    $date               = date("Y-m-d");
+                    $time               = date("H:i:s");
+                    $employeeAttendance = AttendanceEmployee::orderBy('id', 'desc')->where('employee_id', '=', !empty(\Auth::user()->employee) ? \Auth::user()->employee->id : 0)->where('date', '=', $date)->first();
+
+                    if($emp->branch_id == 1)
+                    {
+                        $officeTime['startTime']    = Utility::getValByName('company_start_time');
+                        $officeTime['endTime']      = Utility::getValByName('company_end_time');
+                    }
+                    elseif($emp->branch_id == 2)
+                    {
+                        $officeTime['startTime']    = "08:30";
+                        $officeTime['endTime']      = "17:30";
+                    }
+                    elseif($emp->branch_id == 3)
+                    {
+                        $officeTime['startTime']    = "08:00";
+                        $officeTime['endTime']      = "17:00";
+                    }
 
                     $get_name                = $user->name;
                     $img                     = \DefaultProfileImage::create($get_name);
@@ -542,7 +564,7 @@ class DashboardController extends Controller
                     $officeTime['startTime'] = Utility::getValByName('company_start_time');
                     $officeTime['endTime']   = Utility::getValByName('company_end_time');
 
-                    return view('dashboard.dashboard', compact('profile','countIntern','arrEvents', 'officeTime', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
+                    return view('dashboard.dashboard', compact('profile','countIntern','arrEvents', 'officeTime', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee', 'employeeAttendance'));
                 }
                 elseif($user->type = 'company')
                 {
@@ -568,8 +590,30 @@ class DashboardController extends Controller
                     $announcements = Announcement::orderBy('announcements.id', 'desc')->take(5)->get();
 
 
-                    $emp           = User::where('type', '!=', 'client')->get();
-                    $countEmployee = count($emp);
+                    $employees           = User::where('type', '!=', 'client')->get();
+                    $countEmployee = count($employees);
+
+                    $emp = Employee::where('user_id', '=', Auth::user()->id)->first();
+
+                    $date               = date("Y-m-d");
+                    $time               = date("H:i:s");
+                    $employeeAttendance = AttendanceEmployee::orderBy('id', 'desc')->where('employee_id', '=', !empty(\Auth::user()->employee) ? \Auth::user()->employee->id : 0)->where('date', '=', $date)->first();
+
+                    if($emp->branch_id == 1)
+                    {
+                        $officeTime['startTime']    = Utility::getValByName('company_start_time');
+                        $officeTime['endTime']      = Utility::getValByName('company_end_time');
+                    }
+                    elseif($emp->branch_id == 2)
+                    {
+                        $officeTime['startTime']    = "08:30";
+                        $officeTime['endTime']      = "17:30";
+                    }
+                    elseif($emp->branch_id == 3)
+                    {
+                        $officeTime['startTime']    = "08:00";
+                        $officeTime['endTime']      = "17:00";
+                    }
 
                     $get_name                = $user->name;
                     $img                     = \DefaultProfileImage::create($get_name);
@@ -600,7 +644,7 @@ class DashboardController extends Controller
                     $officeTime['startTime'] = Utility::getValByName('company_start_time');
                     $officeTime['endTime']   = Utility::getValByName('company_end_time');
 
-                    return view('dashboard.dashboard', compact('profile','countIntern','arrEvents', 'officeTime', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
+                    return view('dashboard.dashboard', compact('profile','countIntern','arrEvents', 'officeTime', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee', 'employeeAttendance'));
                 }
 
                 else
@@ -627,8 +671,31 @@ class DashboardController extends Controller
                     $announcements = Announcement::orderBy('announcements.id', 'desc')->take(5)->where('created_by', '=', \Auth::user()->creatorId())->get();
 
 
-                    $emp           = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
-                    $countEmployee = count($emp);
+                    $employees           = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
+                    $countEmployee = count($employees);
+
+                    $emp = Employee::where('user_id', '=', Auth::user()->id)->first();
+
+
+                    $date               = date("Y-m-d");
+                    $time               = date("H:i:s");
+                    $employeeAttendance = AttendanceEmployee::orderBy('id', 'desc')->where('employee_id', '=', !empty(\Auth::user()->employee) ? \Auth::user()->employee->id : 0)->where('date', '=', $date)->first();
+
+                    if($emp->branch_id == 1)
+                    {
+                        $officeTime['startTime']    = Utility::getValByName('company_start_time');
+                        $officeTime['endTime']      = Utility::getValByName('company_end_time');
+                    }
+                    elseif($emp->branch_id == 2)
+                    {
+                        $officeTime['startTime']    = "08:30";
+                        $officeTime['endTime']      = "17:30";
+                    }
+                    elseif($emp->branch_id == 3)
+                    {
+                        $officeTime['startTime']    = "08:00";
+                        $officeTime['endTime']      = "17:00";
+                    }
 
                     $get_name                = $user->name;
                     $img                     = \DefaultProfileImage::create($get_name);
@@ -655,7 +722,7 @@ class DashboardController extends Controller
 
                     $meetings = Meeting::where('created_by', '=', \Auth::user()->creatorId())->limit(5)->get();
 
-                    return view('dashboard.dashboard', compact('profile','arrEvents', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee'));
+                    return view('dashboard.dashboard', compact('profile','arrEvents', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee', 'employeeAttendance'));
                 }
             }
             else

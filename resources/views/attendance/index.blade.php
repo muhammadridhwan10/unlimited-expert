@@ -133,6 +133,7 @@
                                 <th>{{__('Clock In')}}</th>
                                 <th>{{__('Clock Out')}}</th>
                                 <!-- <th>{{__('Location')}}</th> -->
+                                <th>{{__('Total Work')}}</th>
                                 <th>{{__('Late')}}</th>
                                 <th>{{__('Early Leaving')}}</th>
                                 <th>{{__('Overtime')}}</th>
@@ -154,6 +155,25 @@
                                     <td>{{ ($attendance->clock_in !='00:00:00') ?\Auth::user()->timeFormat( $attendance->clock_in):'00:00' }} </td>
                                     <td>{{ ($attendance->clock_out !='00:00:00') ?\Auth::user()->timeFormat( $attendance->clock_out):'00:00' }}</td>
                                     <!-- <td>{{ $attendance->location }}</td> -->
+                                    <?php
+                                        
+                                        // Waktu awal
+                                        $startTime = Carbon\Carbon::parse($attendance->clock_in);
+
+                                        // Waktu akhir
+                                        $endTime = Carbon\Carbon::parse($attendance->clock_out);
+
+                                        // Menghitung selisih waktu
+                                        $diff = $endTime->diff($startTime);
+
+                                        // Mengambil selisih jam dan menit
+                                        $hours = $startTime->diffInHours($endTime) - 1;
+                                        $minutes = $startTime->diffInMinutes($endTime) % 60;
+
+                                        $total_work = $hours . ' Jam ' . $minutes . ' Menit'
+                                    ?>
+                                    <td>{{ $total_work }}</td>
+                                    <td>{{ $attendance->late }}</td>
                                     <td>{{ $attendance->late }}</td>
                                     <td>{{ $attendance->early_leaving }}</td>
                                     <td>{{ $attendance->overtime }}</td>
