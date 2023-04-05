@@ -22,6 +22,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\DataImport;
+use App\Models\FinancialStatement;
+use Illuminate\Support\Facades\Crypt;
 use App\Mail\CommentNotification;
 
 class ProjectTaskController extends Controller
@@ -1768,5 +1772,30 @@ class ProjectTaskController extends Controller
     public function wp()
     {
         return view('project_task.wp');
+    }
+
+    public function financialStatement($project_id, $task_id)
+    {
+        if(\Auth::user()->can('manage project task'))
+        {  
+            $id                            = Crypt::decrypt($task_id);
+            $project                       = Project::find($project_id);
+            $task                          = ProjectTask::find($id);
+            $financial_statement           = FinancialStatement::where('project_id', $project_id)->get();
+            return view('project_task.financialStatement', compact('task','project','financial_statement'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function import(Request $request, $project_id)
+    {
+        $file = $request->file('file');
+        $projectId = $project_id;
+        Excel::import(new DataImport($projectId), $file);
+
+        return redirect()->back()->with('success', __('Financial Statement added successfully.'));
     }
 }

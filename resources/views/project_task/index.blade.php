@@ -625,7 +625,11 @@
                                                     @endif
                                                 </p>
                                                 @endif 
-                                                <p class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.show',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}}">{{$task->name}}</a></p>
+                                                @if($task->name == 'financial statement input')
+                                                    <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.financial.statement',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>
+                                                @else
+                                                    <p class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.show',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}}">{{$task->name}}</a></p>
+                                                @endif
                                                 <span class="d-flex text-sm text-muted justify-content-between">
                                                 <span style="font-size: 10px" class="m-0">{{ $task->project->project_name }}</span>
                                                 

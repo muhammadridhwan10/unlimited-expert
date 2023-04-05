@@ -3834,3 +3834,16 @@ Route::post(
         'XSS',
     ]
 );
+Route::get(
+    '/projects/{id}/task/{tid}/financial-statement', [
+    'as' => 'projects.tasks.financial.statement',
+    'uses' => 'ProjectTaskController@financialStatement',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post('/import/project-financial-statement/{pid}', 'ProjectTaskController@import')->name('import');
