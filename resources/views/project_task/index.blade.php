@@ -625,7 +625,7 @@
                                                     @endif
                                                 </p>
                                                 @endif 
-                                                @if($task->name == 'financial statement input')
+                                                @if($task->name == 'INPUT LAPORAN KEUANGAN')
                                                     <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.financial.statement',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>
                                                 @else
                                                     <p class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.show',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}}">{{$task->name}}</a></p>
