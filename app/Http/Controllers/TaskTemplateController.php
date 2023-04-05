@@ -202,7 +202,7 @@ class TaskTemplateController extends Controller
             $id           = Crypt::decrypt($ids);
             $tasktemplate = ProjectTaskTemplate::find($id);
 
-            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'partners')
             {
                 $category       = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
                 $category_template = CategoryTemplate::get()->pluck('name', 'id');
