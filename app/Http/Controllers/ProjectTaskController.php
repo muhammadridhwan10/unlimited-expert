@@ -1087,7 +1087,7 @@ class ProjectTaskController extends Controller
                     $data = [
                         "registration_ids" => $firebaseToken,
                         "notification" => [
-                            "title" => $project . ' in task ' . $task->name,
+                            "title" => $project . ' in task ' . $task,
                             "body" =>  $authuser->name . ' : ' . $comment->comment,  
                             "icon" => 'https://i.postimg.cc/8z1vzXPV/logo-tgs-fix.png',
                             "content_available" => true,
