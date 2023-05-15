@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 @section('page-title')
-    {{__('Manage Monthly Attendance')}}
+    {{__('Manage Report Overtime')}}
 @endsection
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('Monthly Attendance')}}</li>
+    <li class="breadcrumb-item">{{__('Report Overtime')}}</li>
 @endsection
 @push('script-page')
     <script type="text/javascript" src="{{ asset('js/html2pdf.bundle.min.js') }}"></script>
@@ -123,7 +123,7 @@
             <div class=" mt-2 " id="multiCollapseExample1">
                 <div class="card">
                     <div class="card-body">
-                        {{ Form::open(array('route' => array('report.monthly.attendance'),'method'=>'get','id'=>'report_monthly_attendance')) }}
+                        {{ Form::open(array('route' => array('report.overtime'),'method'=>'get','id'=>'report_overtime')) }}
                         <div class="row align-items-center justify-content-end">
                             <div class="col-xl-10">
                                 <div class="row">
@@ -167,7 +167,7 @@
                             <div class="col-auto">
                                 <div class="row">
                                     <div class="col-auto mt-4">
-                                        <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_monthly_attendance').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
+                                        <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_overtime').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
                                             <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
                                         </a>
                                         <a href="{{route('report.monthly.attendance')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
@@ -185,41 +185,10 @@
     </div>
 
     <div id="printableArea">
+
+
         {{-- <div class="row">
-            <div class="col">
-                <input type="hidden" value="{{  $data['branch'] .' '.__('Branch') .' '.$data['curMonth'].' '.__('Attendance Report of').' '. $data['department'].' '.'Department'}}" id="filename">
-                <div class="card p-4 mb-4">
-                    <h6 class="mb-0">{{__('Report')}} :</h6>
-                    <h7 class="text-sm mb-0">{{__('Attendance Summary')}}</h7>
-                </div>
-            </div>
-            @if($data['branch']!='All')
-                <div class="col">
-                    <div class="card p-4 mb-4">
-                        <h6 class=" mb-0">{{__('Branch')}} :</h6>
-                        <h7 class="text-sm mb-0">{{$data['branch']}}</h7>
-                    </div>
-                </div>
-            @endif
-            @if($data['department']!='All')
-                <div class="col">
-                    <div class="card p-4 mb-4">
-                        <h6 class=" mb-0">{{__('Department')}} :</h6>
-                        <h7 class="text-sm mb-0">{{$data['department']}}</h7>
-                    </div>
-                </div>
-            @endif
-            <div class="col">
-                <div class="card p-4 mb-4">
-                    <h6 class=" mb-0">{{__('Duration')}} :</h6>
-                    <h7 class="text-sm mb-0">{{$data['curMonth']}}</h7>
-                </div>
-            </div>
-        </div> --}}
-
-
-        <div class="row">
-            <div class="col">
+            <div class="col-xl-3 col-md-6 col-lg-3">
                 <div class="card p-4 mb-4 ">
                     <div class="float-left">
                         <h6 class=" mb-0">{{__('Attendance')}}</h6>
@@ -229,7 +198,7 @@
 
                 </div>
             </div>
-            {{-- <div class="col-xl-3 col-md-6 col-lg-3">
+            <div class="col-xl-3 col-md-6 col-lg-3">
                 <div class="card p-4 mb-4">
                     <h6 class=" mb-0">{{__('Overtime')}}</h6>
                     <h7 class="text-sm mb-0">{{__('Total overtime in hours')}} : {{number_format($data['totalOvertime'],2)}}</h7>
@@ -246,8 +215,8 @@
                     <h6 class=" mb-0">{{__('Employee late')}}</h6>
                     <h7 class="text-sm mb-0">{{__('Total late in hours')}} : {{number_format($data['totalLate'],2)}}</h7>
                 </div>
-            </div> --}}
-        </div>
+            </div>
+        </div> --}}
 
 
         <div class="row">
@@ -258,30 +227,24 @@
                             <table class="table">
                                 <thead>
                                 <tr>
-                                    <th class="active">{{__('Name')}}</th>
-                                    @foreach($dates as $date)
-                                        <th>{{$date}}</th>
-                                    @endforeach
+                                    <th class="active">{{__('Name Employee')}}</th>
+                                    <th class="active">{{__('Total Working Days')}}</th>
+                                    <th class="active">{{__('Total Overtime Days')}}</th>
+                                    <th class="active">{{__('Total Hours Overtime')}}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
 
-                                @foreach($employeesAttendance as $attendance)
+                                    @foreach($employeesAttendance as $attendance)
+                                    
 
-                                    <tr>
-                                        <td>{{$attendance['name']}}</td>
-                                        @foreach($attendance['status'] as $status)
-                                            <td>
-                                                @if($status=='P')
-{{--                                                    <i class="custom-badge badge-success ap">{{__('P')}}</i>--}}
-                                                    <i class="badge bg-success p-2 rounded">{{__('P')}}</i>
-                                                @elseif($status=='A')
-                                                    <i class="badge bg-danger p-2 rounded">{{__('A')}}</i>
-                                                @endif
-                                            </td>
-                                        @endforeach
-                                    </tr>
-                                @endforeach
+                                        <tr>
+                                            <td>{{$attendance['name']}}</td>
+                                            <td>{{$attendance['present']}}</td>
+                                            <td>{{$attendance['overtime']}}</td>
+                                            <td>{{$attendance['total_overtime']}}</td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>

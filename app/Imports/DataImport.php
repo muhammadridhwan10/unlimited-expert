@@ -18,7 +18,11 @@ class DataImport implements ToModel, WithHeadingRow
     public function model(array $row)
     {
         return FinancialStatement::updateOrCreate(
-            ['coa' => $row['coa']], // Kolom yang menjadi kunci utama data
+            [
+                'coa' => $row['coa'],
+                'project_id' => $this->projectId,
+        
+            ], // Kolom yang menjadi kunci utama data
             [
                 'project_id' => $this->projectId,
                 'm' => $row['m'],
@@ -29,12 +33,12 @@ class DataImport implements ToModel, WithHeadingRow
                 'add2' => $row['add2'],
                 'add3' => $row['add3'],
                 'account' => $row['account'],
-                'unaudited2020' => $row['unaudited2020'],
-                'audited2021' => $row['audited2021'],
-                'inhouse2022' => $row['inhouse2022'],
+                'prior_period2' => $row['prior_period2'],
+                'prior_period' => $row['prior_period'],
+                'inhouse' => $row['inhouse'],
                 'dr' => $row['dr'],
                 'cr' => $row['cr'],
-                'audited2022' => $row['audited2022'],
+                'audited' => $row['audited'],
                 'jan' => $row['jan'],
                 'feb' => $row['feb'],
                 'mar' => $row['mar'],

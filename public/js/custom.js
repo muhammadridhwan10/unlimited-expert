@@ -44,6 +44,85 @@ $(document).ready(function () {
 
 
 });
+
+$(document).ready(function () {
+    if ($(".datatabless").length > 0) {
+        new simpleDatatables.DataTable(".datatabless");
+    }
+
+   // loadConfirm();
+    select2();
+    summernote();
+    daterange();
+
+
+});
+
+$(document).ready(function () {
+    if ($(".datatablesss").length > 0) {
+        new simpleDatatables.DataTable(".datatablesss");
+    }
+
+   // loadConfirm();
+    select2();
+    summernote();
+    daterange();
+
+
+});
+
+$(document).ready(function () {
+    if ($(".datatablessss").length > 0) {
+        new simpleDatatables.DataTable(".datatablessss");
+    }
+
+   // loadConfirm();
+    select2();
+    summernote();
+    daterange();
+
+
+});
+
+$(document).ready(function () {
+    if ($(".datatablesssss").length > 0) {
+        new simpleDatatables.DataTable(".datatablesssss");
+    }
+
+   // loadConfirm();
+    select2();
+    summernote();
+    daterange();
+
+
+});
+
+$(document).ready(function () {
+    if ($(".datatablessssss").length > 0) {
+        new simpleDatatables.DataTable(".datatablessssss");
+    }
+
+   // loadConfirm();
+    select2();
+    summernote();
+    daterange();
+
+
+});
+
+$(document).ready(function () {
+    if ($(".datatablesssssss").length > 0) {
+        new simpleDatatables.DataTable(".datatablesssssss");
+    }
+
+   // loadConfirm();
+    select2();
+    summernote();
+    daterange();
+
+
+});
+
 function daterange() {
     if ($("#pc-daterangepicker-1").length > 0) {
         document.querySelector("#pc-daterangepicker-1").flatpickr({

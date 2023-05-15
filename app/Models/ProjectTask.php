@@ -41,6 +41,84 @@ class ProjectTask extends Model
         'D. Conclution and Completion' => 'Conclution and Completion',
     ];
 
+    public static $financial_statement=[
+        'LK.1' => 'KAS DAN SETARA KAS',
+        'LK.2' => 'ASET KEUANGAN LAINNYA',
+        'LK.3' => 'PIUTANG USAHA - PIHAK BERELASI',
+        'LK.4' => 'PIUTANG USAHA - PIHAK KETIGA',
+        'LK.5' => 'PIUTANG LAIN-LAIN - PIHAK BERELASI',
+        'LK.6' => 'PIUTANG LAIN-LAIN - PIHAK KETIGA',
+        'LK.7' => 'PERSEDIAAN',
+        'LK.8' => 'BIAYA DIBAYAR DIMUKA',
+        'LK.9' => 'UANG MUKA',
+        'LK.10' => 'PAJAK DIBAYAR DIMUKA',
+        'LK.11' => 'INVESTASI',
+        'LK.12' => 'ASET TETAP',
+        'LK.13' => 'ASET TAKBERWUJUD',
+        'LK.14' => 'ASET HAK GUNA',
+        'LK.15' => 'ASET LAIN-LAIN',
+        'LK.16' => 'UTANG USAHA - PIHAK BERELASI',
+        'LK.17' => 'UTANG USAHA - PIHAK KETIGA',
+        'LK.18' => 'UTANG LAIN-LAIN - PIHAK BERELASI',
+        'LK.19' => 'UTANG LAIN-LAIN - PIHAK KETIGA',
+        'LK.20' => 'UTANG PAJAK',
+        'LK.21' => 'PINJAMAN BANK',
+        'LK.22' => 'UTANG SEWA PEMBIAYAAN',
+        'LK.23' => 'LIABILITAS SEWA',
+        'LK.24' => 'LIABILITAS IMBALAN KERJA',
+        'LK.25' => 'UTANG KONVERSI',
+        'LK.26' => 'MODAL SAHAM',
+        'LK.27' => 'SALDO LABA',
+        'LK.28' => 'EKUITAS LAINNYA',
+        'LK.29' => 'PENGHASILAN KOMPREHENSIF LAIN',
+        'LK.30' => 'PENDAPATAN',
+        'LK.31' => 'BEBAN POKOK PENDAPATAN',
+        'LK.32' => 'BEBAN USAHA',
+        'LK.33' => 'PENDAPATAN / BEBAN LAIN-LAIN',
+        'LK.34' => 'PENDAPATAN / BEBAN KEUANGAN',
+        'LK.35' => 'BEBAN PAJAK',
+    ];
+
+    public static $summary = [
+        '00' => 'TOTAL ASET',
+        '000' => 'TOTAL LIABILITAS',
+        '0000' => 'TOTAL EKUITAS',
+        '00000' => 'LABA KOTOR',
+        '000000' => 'LABA BERSIH SEBELUM PAJAK',
+        '0000000' => 'LABA BERSIH SETELAH PAJAK',
+    ];
+
+    public static $cn = [
+        'CA' => 'ASET LANCAR',
+        'NCA' => 'ASET TIDAK LANCAR',
+        'CL' => 'LIABILITAS LANCAR',
+        'NCL' => 'LIABILITAS JANGKA PANJANG',
+    ];
+
+    public static $rasio_keuangan = [
+        'CURA' => 'CURRENT RATIO',
+        'QURA' => 'QUICK RATIO',
+        'CARA' => 'CASH RATIO',
+        'DETARA' => 'DEBT TO ASSET RATIO',
+        'DETERA' => 'DEBT TO EQUITY RATIO',
+        'TATURA' => 'TOTAL ASSET TURNOVER RATIO',
+        'RETURA' => 'RECEIVABLE TURNOVER RATIO',
+        'RETURAH' => 'RECEIVABLE TURNOVER RATIO (HARI)',
+        'INTURA' => 'INVENTORY TURNOVER RATIO',
+        'GPM' => 'GROSS PROFIT MARGIN',
+        'OPM' => 'OPERATING PROFIT MARGIN',
+        'NPM' => 'NET PROFIT MARGIN',
+        'ROA' => 'RETURN ON ASSET',
+        'ROE' => 'RETURN ON EQUITY',
+    ];
+
+    public static $lancar = [
+        'CA' => 'Aset lancar',
+        'NCA' => 'Aset tidak lancar',
+        'CL' => 'Liabilitas lancar',
+        'NCL' => 'Liabilitas jangka panjang',
+    ];
+
     public static $priority = [
         'critical' => 'Critical',
         'high' => 'High',
@@ -90,6 +168,19 @@ class ProjectTask extends Model
         if($total_checklist > 0)
         {
             $percentage = intval(($completed_checklist / $total_checklist) * 100);
+        }
+
+        if($this->name == "Materialitas (SA 320)")
+        {
+            $percentage = 100;
+        }
+        elseif($this->name == "INPUT LAPORAN KEUANGAN")
+        {
+            $percentage = 100;
+        }
+        elseif($this->name == "Adjustment / Reclassification Journal Entries")
+        {
+            $percentage = 100;
         }
 
         $color = Utility::getProgressColor($percentage);

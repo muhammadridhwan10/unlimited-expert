@@ -620,13 +620,19 @@
                                                     <span class="badge-xs badge bg-danger  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
                                                     @elseif ($task->category_templates->name === "C. Risk Response")
                                                     <span class="badge-xs badge bg-success  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
-                                                    @elseif ($task->category_templates->name === "D. Conclution and Completion")
+                                                    @elseif ($task->category_templates->name === "D. Conclusion and Completion")
                                                     <span class="badge-xs badge bg-dark  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
                                                     @endif
                                                 </p>
                                                 @endif 
                                                 @if($task->name == 'INPUT LAPORAN KEUANGAN')
                                                     <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.financial.statement',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>
+                                                @elseif($task->name == 'Materialitas (SA 320)')
+                                                    <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.materialitas',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>
+                                                @elseif($task->name == 'Adjustment / Reclassification Journal Entries')
+                                                    <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.journal.entries',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>
+                                                @elseif($task->name == 'Prosedur Analitis')
+                                                    <p class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.showproseduranalisis',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}}">{{$task->name}}</a></p>
                                                 @else
                                                     <p class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.show',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}}">{{$task->name}}</a></p>
                                                 @endif

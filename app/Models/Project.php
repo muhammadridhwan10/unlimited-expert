@@ -167,10 +167,10 @@ class Project extends Model
         $Riskresponse = (70 / 100) * $count;
         $Conclutioncompletion = (10 / 100) * $count;
 
-        $totalpreengagement = number_format($Preengagement / $Preengagements, 2, '.', '');
-        $totalriskassessments = number_format($Riskassessment / $Riskassessments, 2, '.', '');
-        $totalriskresponse = number_format($Riskresponse / $Riskresponses, 2, '.', '');
-        $totalconclutioncompletion = number_format($Conclutioncompletion / $Conclutioncompletions, 2, '.', '');
+        $totalpreengagement = number_format(($Preengagements != 0) ? $Preengagement / $Preengagements : 0, 2, '.', '');
+        $totalriskassessments = number_format(($Riskassessments != 0) ? $Riskassessment / $Riskassessments : 0, 2, '.', '');
+        $totalriskresponse = number_format(($Riskresponses != 0) ? $Conclutioncompletion / $Riskresponses : 0, 2, '.', '');
+        $totalconclutioncompletion = number_format(($Conclutioncompletions != 0) ? $Conclutioncompletion / $Conclutioncompletions : 0, 2, '.', '');
 
         return [
             'Preengagement' => $Preengagement,

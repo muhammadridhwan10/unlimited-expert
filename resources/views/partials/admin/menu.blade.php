@@ -442,6 +442,12 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                     <li class="dash-item {{ request()->is('reports-monthly-attendance') ? 'active' : '' }}">
                                         <a class="dash-link" href="{{ route('report.monthly.attendance') }}">{{ __('Monthly Attendance') }}</a>
                                     </li>
+                                    <li class="dash-item {{ request()->is('reports-overtime') ? 'active' : '' }}">
+                                        <a class="dash-link" href="{{ route('report.overtime') }}">{{ __('Overtime') }}</a>
+                                    </li>
+                                    <li class="dash-item {{ request()->is('reports-projects') ? 'active' : '' }}">
+                                        <a class="dash-link" href="{{ route('report.projects') }}">{{ __('Projects') }}</a>
+                                    </li>
 
                                 </ul>
                             </li>
@@ -790,6 +796,11 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                             @can('manage timesheet')
                             <li class="dash-item {{ (request()->is('timesheet-list*') ? 'active' : '')}}">
                                 <a class="dash-link" href="{{route('timesheet.list')}}">{{__('Timesheet')}}</a>
+                            </li>
+                            @endcan
+                            @can('manage project task')
+                            <li class="dash-item {{ (Request::route()->getName() == 'overtime.index') ? ' active' : '' }}">
+                                <a class="dash-link" href="{{ route('overtime.index') }}">{{__('Overtime')}}</a>
                             </li>
                             @endcan
                             @can('manage bug report')

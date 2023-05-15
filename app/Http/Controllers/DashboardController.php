@@ -431,7 +431,7 @@ class DashboardController extends Controller
                     $emp = Employee::where('user_id', '=', $user->id)->first();
                     $get_name                = $user->name;
                     $img                     = \DefaultProfileImage::create($get_name);
-                    $profile                 = \Storage::put($get_name . '.png', $img->encode());
+                    $profile                 = \Storage::put($get_name . '.jpg', $img->encode());
 
                     $announcements = Announcement::orderBy('announcements.id', 'desc')->take(5)->leftjoin('announcement_employees', 'announcements.id', '=', 'announcement_employees.announcement_id')->where('announcement_employees.employee_id', '=', $emp->id)->orWhere(
                         function ($q){
@@ -537,7 +537,7 @@ class DashboardController extends Controller
 
                     $get_name                = $user->name;
                     $img                     = \DefaultProfileImage::create($get_name);
-                    $profile                 = \Storage::put($get_name . '.png', $img->encode());
+                    $profile                 = \Storage::put($get_name . '.jpg', $img->encode());
 
                     $user      = User::where('type', '!=', 'client')->where('type', '!=', 'intern')->get();
                     $countUser = count($user);
@@ -617,7 +617,7 @@ class DashboardController extends Controller
 
                     $get_name                = $user->name;
                     $img                     = \DefaultProfileImage::create($get_name);
-                    $profile                 = \Storage::put($get_name . '.png', $img->encode());
+                    $profile                 = \Storage::put($get_name . '.jpg', $img->encode());
 
                     $user      = User::where('type', '!=', 'client')->where('type', '!=', 'intern')->get();
                     $countUser = count($user);
@@ -699,7 +699,7 @@ class DashboardController extends Controller
 
                     $get_name                = $user->name;
                     $img                     = \DefaultProfileImage::create($get_name);
-                    $profile                 = \Storage::put($get_name . '.png', $img->encode());
+                    $profile                 = \Storage::put($get_name . '.jpg', $img->encode());
 
                     $user      = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
                     $countUser = count($user);

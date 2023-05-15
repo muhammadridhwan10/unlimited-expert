@@ -25,12 +25,12 @@ class CreateFinancialStatementTable extends Migration
             $table->string('add3')->nullable();
             $table->string('coa')->nullable();
             $table->string('account')->nullable();
-            $table->string('unaudited2020')->nullable();
-            $table->string('audited2021')->nullable();
-            $table->string('inhouse2022')->nullable();
+            $table->string('prior_period2')->nullable();
+            $table->string('prior_period')->nullable();
+            $table->string('inhouse')->nullable();
             $table->string('dr')->nullable();
             $table->string('cr')->nullable();
-            $table->string('audited2022')->nullable();
+            $table->string('audited')->nullable();
             $table->string('jan')->nullable();
             $table->string('feb')->nullable();
             $table->string('mar')->nullable();

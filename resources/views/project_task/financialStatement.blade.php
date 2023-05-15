@@ -23,6 +23,14 @@
 @push('script-page')
 @endpush
 @section('action-btn')
+    <div class="float-end">
+            @can('create project task')
+                <a href="#" data-size="lg" data-url="{{ route('projects.tasks.create.financial.statement',[$project->id, $task->id]) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Add Financial Statement')}}" class="btn btn-sm btn-primary">
+                    <i class="ti ti-plus"></i>
+                </a>
+            @endcan
+    </div>
+
 @endsection
 
 @section('content')
@@ -51,80 +59,130 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="col-12">
-                    <div class="card-header"><h6 class="mb-0">{{__('Financial Data')}}</h6></div>
+                    <div class="card-header"><h6 class="mb-0">{{__('Financial Data Tahunan')}}</h6></div>
                     <div class="card-body table-border-style">
                         <div class="table-responsive">
                             <table class="table datatable">
                                 <thead>
                                 <tr>
-                                    <th scope="col">{{'M'}}</th>
-                                    <th scope="col">{{'LK'}}</th>
-                                    <th scope="col">{{'C/N'}}</th>
-                                    <th scope="col">{{'RP'}}</th>
-                                    <th scope="col">{{'Add.1'}}</th>
-                                    <th scope="col">{{'Add.2'}}</th>
-                                    <th scope="col">{{'Add.3'}}</th>
-                                    <th scope="col">{{'CoA'}}</th>
-                                    <th scope="col">{{'Account'}}</th>
-                                    <th scope="col">{{'UNAUDITED 2021'}}</th>
-                                    <th scope="col">{{'AUDITED 2021'}}</th>
-                                    <th scope="col">{{'INHOUSE 2022'}}</th>
-                                    <th scope="col">{{'Dr.'}}</th>
-                                    <th scope="col">{{'Cr.'}}</th>
-                                    <th scope="col">{{'Audited 2022'}}</th>
-                                    <th scope="col">{{'Jan'}}</th>
-                                    <th scope="col">{{'Feb'}}</th>
-                                    <th scope="col">{{'Mar'}}</th>
-                                    <th scope="col">{{'Apr'}}</th>
-                                    <th scope="col">{{'May'}}</th>
-                                    <th scope="col">{{'Jun'}}</th>
-                                    <th scope="col">{{'Jul'}}</th>
-                                    <th scope="col">{{'Aug'}}</th>
-                                    <th scope="col">{{'Sep'}}</th>
-                                    <th scope="col">{{'Oct'}}</th>
-                                    <th scope="col">{{'Nov'}}</th>
-                                    <th scope="col">{{'Dec'}}</th>
-                                    <th scope="col">{{'Triwulan 1'}}</th>
-                                    <th scope="col">{{'Triwulan 2'}}</th>
-                                    <th scope="col">{{'Triwulan 3'}}</th>
-                                    <th scope="col">{{'Triwulan 4'}}</th>
+                                    <th style="text-align: center;"scope="col">{{'M'}}</th>
+                                    <th style="text-align: center;"scope="col">{{'LK'}}</th>
+                                    <th style="text-align: center;"scope="col">{{'C/N'}}</th>
+                                    <th style="text-align: center;"scope="col">{{'RP'}}</th>
+                                    <th style="text-align: center;"scope="col">{{'Add.1'}}</th>
+                                    <th style="text-align: center;"scope="col">{{'Add.2'}}</th>
+                                    <th style="text-align: center;"scope="col">{{'Add.3'}}</th>
+                                    <th style="text-align: center;"scope="col">{{'CoA'}}</th>
+                                    <th style="text-align: center;"scope="col">{{'Account'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Unaudited' . date(' Y', strtotime('-2 year', strtotime($project->book_year)))}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Audited' . date(' Y', strtotime('-1 year', strtotime($project->book_year)))}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Inhouse ' . $project->book_year}}</th>
+                                    <th style="text-align: center;"scope="col">{{'Dr.'}}</th>
+                                    <th style="text-align: center;"scope="col">{{'Cr.'}}</th>
+                                    <th style="text-align: center;"style="text-align: center;" scope="col">{{'Audited ' . $project->book_year}}</th>
                                 </tr>
                                 </thead>
                                 <tbody class="list">
                                 @if(count(array($financial_statement)) > 0)
                                     @foreach($financial_statement as $financial_statements)
                                         <tr>
-                                            <td>{{ $financial_statements->m }}</td>
-                                            <td>{{ $financial_statements->lk }}</td>
-                                            <td>{{ $financial_statements->cn }}</td>
-                                            <td>{{ $financial_statements->rp }}</td>
-                                            <td>{{ $financial_statements->add1 }}</td>
-                                            <td>{{ $financial_statements->add2 }}</td>
-                                            <td>{{ $financial_statements->add3 }}</td>
-                                            <td>{{ $financial_statements->coa }}</td>
-                                            <td>{{ $financial_statements->account }}</td>
-                                            <td>{{ number_format($financial_statements->unaudited2020) }}</td>
-                                            <td>{{ number_format($financial_statements->audited2021) }}</td>
-                                            <td>{{ number_format($financial_statements->inhouse2022) }}</td>
-                                            <td>{{ number_format($financial_statements->dr) }}</td>
-                                            <td>{{ number_format($financial_statements->cr) }}</td>
-                                            <td>{{ number_format($financial_statements->audited2022) }}</td>
-                                            <td>{{ number_format($financial_statements->jan) }}</td>
-                                            <td>{{ number_format($financial_statements->feb) }}</td>
-                                            <td>{{ number_format($financial_statements->mar) }}</td>
-                                            <td>{{ number_format($financial_statements->apr) }}</td>
-                                            <td>{{ number_format($financial_statements->may) }}</td>
-                                            <td>{{ number_format($financial_statements->jun) }}</td>
-                                            <td>{{ number_format($financial_statements->jul) }}</td>
-                                            <td>{{ number_format($financial_statements->aug) }}</td>
-                                            <td>{{ number_format($financial_statements->sep) }}</td>
-                                            <td>{{ number_format($financial_statements->oct) }}</td>
-                                            <td>{{ number_format($financial_statements->nov) }}</td>
-                                            <td>{{ number_format($financial_statements->dec) }}</td>
-                                            <td>{{ number_format($financial_statements->triwulan1) }}</td>
-                                            <td>{{ number_format($financial_statements->triwulan2) }}</td>
-                                            <td>{{ number_format($financial_statements->triwulan3) }}</td>
-                                            <td>{{ number_format($financial_statements->triwulan4) }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->m }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->lk }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->cn }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->rp }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->add1 }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->add2 }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->add3 }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->coa }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->account }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->prior_period2))? number_format($financial_statements->prior_period2):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->prior_period))? number_format($financial_statements->prior_period):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->inhouse))? number_format($financial_statements->inhouse):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->dr))? number_format($financial_statements->dr):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->cr))? number_format($financial_statements->cr):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->audited))? number_format($financial_statements->audited): number_format($financial_statements->inhouse) }}</td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr>
+                                        <th scope="col" colspan="7"><h6 class="text-center">{{__('No Financial Data Found')}}</h6></th>
+                                    </tr>
+                                @endif
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="col-12">
+                    <div class="card-header"><h6 class="mb-0">{{__('Financial Data Bulanan')}}</h6></div>
+                    <div class="card-body table-border-style">
+                        <div class="table-responsive">
+                            <table class="table datatables">
+                                <thead>
+                                <tr>
+                                    <th style="text-align: center;" scope="col">{{'M'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'LK'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'C/N'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'RP'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Add.1'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Add.2'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Add.3'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'CoA'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Account'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Jan'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Feb'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Mar'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Apr'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'May'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Jun'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Jul'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Aug'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Sep'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Oct'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Nov'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Dec'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Triwulan 1'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Triwulan 2'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Triwulan 3'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Triwulan 4'}}</th>
+                                </tr>
+                                </thead>
+                                <tbody class="list">
+                                @if(count(array($financial_statement)) > 0)
+                                    @foreach($financial_statement as $financial_statements)
+                                        <tr>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->m }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->lk }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->cn }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->rp }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->add1 }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->add2 }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->add3 }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->coa }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->account }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->jan))? number_format($financial_statements->jan):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->feb))? number_format($financial_statements->feb):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->mar))? number_format($financial_statements->mar):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->apr))? number_format($financial_statements->apr):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->may))? number_format($financial_statements->may):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->jun))? number_format($financial_statements->jun):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->jul))? number_format($financial_statements->jul):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->aug))? number_format($financial_statements->aug):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->sep))? number_format($financial_statements->sep):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->oct))? number_format($financial_statements->oct):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->nov))? number_format($financial_statements->nov):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->dec))? number_format($financial_statements->dec):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->triwulan1))? number_format($financial_statements->triwulan1):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->triwulan2))? number_format($financial_statements->triwulan2):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->triwulan3))? number_format($financial_statements->triwulan3):'-' }}</td>
+                                            <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->triwulan4))? number_format($financial_statements->triwulan4):'-' }}</td>
                                         </tr>
                                     @endforeach
                                 @else

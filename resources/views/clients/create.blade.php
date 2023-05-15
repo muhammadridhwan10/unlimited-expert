@@ -46,13 +46,13 @@
         <div class="col-6">
             <div class="form-group">
                 {{ Form::label('client_business_sector_id', __('Client Business Sector'),['class'=>'form-label']) }}
-                {{ Form::select('client_business_sector_id', $businesssector,null, array('class' => 'form-control select','required'=>'required')) }}
+                {{ Form::select('client_business_sector_id', $businesssector,null, array('class' => 'form-control select')) }}
             </div>
         </div>
         <div class="col-6">
             <div class="form-group">
                 {{ Form::label('client_ownership_status_id', __('Client Ownership Status'),['class'=>'form-label']) }}
-                {{ Form::select('client_ownership_status_id', $ownershipstatus,null, array('class' => 'form-control select','required'=>'required')) }}
+                {{ Form::select('client_ownership_status_id', $ownershipstatus,null, array('class' => 'form-control select')) }}
             </div>
         </div>
         <div class="col-6">
@@ -88,7 +88,7 @@
         <div class="col-6">
             <div class="form-group">
                 {{ Form::label('client_accounting_standard_id', __('Client Accounting Standard'),['class'=>'form-label']) }}
-                {{ Form::select('client_accounting_standard_id', $accountingstandard,null, array('class' => 'form-control select','required'=>'required')) }}
+                {{ Form::select('client_accounting_standard_id', $accountingstandard,null, array('class' => 'form-control select')) }}
             </div>
         </div>
         @if(!$customFields->isEmpty())

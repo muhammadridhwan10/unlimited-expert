@@ -38,14 +38,14 @@ class ApiController extends Controller
             return $this->error('Credentials not match', 401);
         }
 
-        $settings              = Utility::settings(auth()->user()->id);
+        $settings              = Utility::settings(1);
 
         $settings = [
             'shot_time'=> isset($settings['interval_time'])?$settings['interval_time']:0.5,
         ];
         return $this->success([
             'token' => auth()->user()->createToken('API Token')->plainTextToken,
-            'user'=>auth()->user(),
+            'user'=>auth()->user()->id,
             'settings' =>$settings,
         ],'Login successfully.');
     }

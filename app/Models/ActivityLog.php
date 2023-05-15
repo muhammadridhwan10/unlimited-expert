@@ -153,6 +153,22 @@ class ActivityLog extends Model
             {
                 return $user_name . ' ' . __('Delete Comment') . " <b>" . $remark['title'] . "</b>";
             }
+            elseif($this->log_type == 'Create Audit Memorandum')
+            {
+                return $user_name . ' ' . __('Create Audit Memorandum') . " <b>" . $remark['title'] . "</b>";
+            }
+            elseif($this->log_type == 'Create Journal Data')
+            {
+                return $user_name . ' ' . __('Create Journal Data') . " <b>" . $remark['title'] . "</b>";
+            }
+            elseif($this->log_type == 'Create Financial Statment')
+            {
+                return $user_name . ' ' . __('Create Financial Statment') . " <b>" . $remark['title'] . "</b>";
+            }
+            elseif($this->log_type == 'Create Summary Materiality')
+            {
+                return $user_name . ' ' . __('Create Summary Materiality') . " <b>" . $remark['title'] . "</b>";
+            }
         }
         else
         {
@@ -289,6 +305,22 @@ class ActivityLog extends Model
             else if($type == 'Delete Comment')
             {
                 $icon = 'x-circle';
+            }
+            else if($type == 'Create Audit Memorandum')
+            {
+                $icon = 'file-text';
+            }
+            else if($type == 'Create Journal Data')
+            {
+                $icon = 'pencil';
+            }
+            else if($type == 'Create Financial Statment')
+            {
+                $icon = 'pencil';
+            }
+            else if($type == 'Create Summary Materiality')
+            {
+                $icon = 'pencil';
             }
             else if($type == 'Create Attachment')
             {

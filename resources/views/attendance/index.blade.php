@@ -154,7 +154,6 @@
                                     <td>{{ $attendance->status }}</td>
                                     <td>{{ ($attendance->clock_in !='00:00:00') ?\Auth::user()->timeFormat( $attendance->clock_in):'00:00' }} </td>
                                     <td>{{ ($attendance->clock_out !='00:00:00') ?\Auth::user()->timeFormat( $attendance->clock_out):'00:00' }}</td>
-                                    <!-- <td>{{ $attendance->location }}</td> -->
                                     <?php
                                         
                                         // Waktu awal
@@ -167,13 +166,12 @@
                                         $diff = $endTime->diff($startTime);
 
                                         // Mengambil selisih jam dan menit
-                                        $hours = $startTime->diffInHours($endTime) - 1;
+                                        $hours = $startTime->diffInHours($endTime);
                                         $minutes = $startTime->diffInMinutes($endTime) % 60;
 
-                                        $total_work = $hours . ' Jam ' . $minutes . ' Menit'
+                                        $total_work = $hours . ' Jam ' . $minutes . ' Menit';
                                     ?>
                                     <td>{{ $total_work }}</td>
-                                    <td>{{ $attendance->late }}</td>
                                     <td>{{ $attendance->late }}</td>
                                     <td>{{ $attendance->early_leaving }}</td>
                                     <td>{{ $attendance->overtime }}</td>

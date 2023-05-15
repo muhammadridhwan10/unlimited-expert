@@ -588,6 +588,12 @@
                                     @enderror
                                 </div>
 
+                                <div class="form-group col-md-6">
+                                    <label class="form-label mb-0">{{__('Tracking Interval')}}</label> <br>
+                                    <small>{{__("Image Screenshot Take Interval time ( 1 = 1 min)")}}</small>
+                                    {{ Form::number('interval_time',isset($settings['interval_time'])?$settings['interval_time']:'10', ['class' => 'form-control', 'placeholder' => __('Enter Tracking Interval')]) }}
+                                </div>
+
 
                                 <div class="form-group col-md-6">
                                     {{Form::label('shipping_display',__('Shipping Display in Proposal / Invoice / Bill ?'),array('class'=>'form-label')) }}

@@ -2,11 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\AccountStatementExport;
+use App\Exports\LeaveReportExport;
+use App\Exports\PayrollExport;
+use App\Exports\ProductStockExport;
+use App\Exports\Overtime;
 use App\Models\BankAccount;
 use App\Models\Bill;
 use App\Models\Branch;
+use App\Models\ClientDeal;
+use App\Models\Deal;
+use App\Models\UserOvertime;
 use App\Models\Department;
+use App\Models\ProjectUser;
 use App\Models\Employee;
+use App\Models\Lead;
 use App\Models\Leave;
 use App\Models\PaySlip;
 use App\Models\AttendanceEmployee;
@@ -19,16 +29,22 @@ use App\Models\Invoice;
 use App\Models\InvoiceProduct;
 use App\Models\JournalItem;
 use App\Models\Payment;
+use App\Models\Pipeline;
 use App\Models\ProductServiceCategory;
 use App\Models\Revenue;
+use App\Models\Source;
 use App\Models\StockReport;
+use App\Models\User;
+use App\Models\UserDeal;
 use App\Models\Utility;
 use App\Models\Tax;
 use App\Models\LeaveType;
 use App\Models\BankTransfer;
 use App\Models\Vender;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ReportController extends Controller
 {
@@ -4189,330 +4205,115 @@ class ReportController extends Controller
     }
     public function leave(Request $request)
     {
-        $user = Auth::user();
+
         if(\Auth::user()->can('manage report'))
         {
-            if($user->type = 'admin'){
-                $branch = Branch::all()->pluck('name', 'id');
-                $branch->prepend('Select Branch', '');
-    
-                $department = Department::all()->pluck('name', 'id');
-                $department->prepend('Select Department', '');
-    
-                $filterYear['branch']        = __('All');
-                $filterYear['department']    = __('All');
-                $filterYear['type']          = __('Monthly');
-                $filterYear['dateYearRange'] = date('M-Y');
-                $employees                   = Employee::all();
-                if(!empty($request->branch))
-                {
-                    $employees->where('branch_id', $request->branch);
-                    $filterYear['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
-                }
-                if(!empty($request->department))
-                {
-                    $employees->where('department_id', $request->department);
-                    $filterYear['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
-                }
-    
-    
-                $employees = $employees;
-    
-                $leaves        = [];
-                $totalApproved = $totalReject = $totalPending = 0;
-                foreach($employees as $employee)
-                {
-    
-                    $employeeLeave['id']          = $employee->id;
-                    $employeeLeave['employee_id'] = $employee->employee_id;
-                    $employeeLeave['employee']    = $employee->name;
-    
-                    $approved = Leave::where('employee_id', $employee->id)->where('status', 'Approve');
-                    $reject   = Leave::where('employee_id', $employee->id)->where('status', 'Reject');
-                    $pending  = Leave::where('employee_id', $employee->id)->where('status', 'Pending');
-    
-                    if($request->type == 'monthly' && !empty($request->month))
-                    {
-                        $month = date('m', strtotime($request->month));
-                        $year  = date('Y', strtotime($request->month));
-    
-                        $approved->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-                        $reject->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-                        $pending->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-    
-                        $filterYear['dateYearRange'] = date('M-Y', strtotime($request->month));
-                        $filterYear['type']          = __('Monthly');
-    
-                    }
-                    elseif(!isset($request->type))
-                    {
-                        $month     = date('m');
-                        $year      = date('Y');
-                        $monthYear = date('Y-m');
-    
-                        $approved->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-                        $reject->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-                        $pending->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-    
-                        $filterYear['dateYearRange'] = date('M-Y', strtotime($monthYear));
-                        $filterYear['type']          = __('Monthly');
-                    }
-    
-    
-                    if($request->type == 'yearly' && !empty($request->year))
-                    {
-                        $approved->whereYear('applied_on', $request->year);
-                        $reject->whereYear('applied_on', $request->year);
-                        $pending->whereYear('applied_on', $request->year);
-    
-    
-                        $filterYear['dateYearRange'] = $request->year;
-                        $filterYear['type']          = __('Yearly');
-                    }
-    
-                    $approved = $approved->count();
-                    $reject   = $reject->count();
-                    $pending  = $pending->count();
-    
-                    $totalApproved += $approved;
-                    $totalReject   += $reject;
-                    $totalPending  += $pending;
-    
-                    $employeeLeave['approved'] = $approved;
-                    $employeeLeave['reject']   = $reject;
-                    $employeeLeave['pending']  = $pending;
-    
-    
-                    $leaves[] = $employeeLeave;
-                }
-    
-                $starting_year = date('Y', strtotime('-5 year'));
-                $ending_year   = date('Y', strtotime('+5 year'));
-    
-                $filterYear['starting_year'] = $starting_year;
-                $filterYear['ending_year']   = $ending_year;
-    
-                $filter['totalApproved'] = $totalApproved;
-                $filter['totalReject']   = $totalReject;
-                $filter['totalPending']  = $totalPending;
-    
-    
-                return view('report.leave', compact('department', 'branch', 'leaves', 'filterYear', 'filter'));
+
+            $branch = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $branch->prepend('Select Branch', '');
+
+            $department = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $department->prepend('Select Department', '');
+
+            $filterYear['branch']        = __('All');
+            $filterYear['department']    = __('All');
+            $filterYear['type']          = __('Monthly');
+            $filterYear['dateYearRange'] = date('M-Y');
+            $employees                   = Employee::where('created_by', \Auth::user()->creatorId());
+            if(!empty($request->branch))
+            {
+                $employees->where('branch_id', $request->branch);
+                $filterYear['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
             }
-            elseif($user->type = 'company'){
-                $branch = Branch::all()->pluck('name', 'id');
-                $branch->prepend('Select Branch', '');
-    
-                $department = Department::all()->pluck('name', 'id');
-                $department->prepend('Select Department', '');
-    
-                $filterYear['branch']        = __('All');
-                $filterYear['department']    = __('All');
-                $filterYear['type']          = __('Monthly');
-                $filterYear['dateYearRange'] = date('M-Y');
-                $employees                   = Employee::all();
-                if(!empty($request->branch))
-                {
-                    $employees->where('branch_id', $request->branch);
-                    $filterYear['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
-                }
-                if(!empty($request->department))
-                {
-                    $employees->where('department_id', $request->department);
-                    $filterYear['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
-                }
-    
-    
-                $employees = $employees;
-    
-                $leaves        = [];
-                $totalApproved = $totalReject = $totalPending = 0;
-                foreach($employees as $employee)
-                {
-    
-                    $employeeLeave['id']          = $employee->id;
-                    $employeeLeave['employee_id'] = $employee->employee_id;
-                    $employeeLeave['employee']    = $employee->name;
-    
-                    $approved = Leave::where('employee_id', $employee->id)->where('status', 'Approve');
-                    $reject   = Leave::where('employee_id', $employee->id)->where('status', 'Reject');
-                    $pending  = Leave::where('employee_id', $employee->id)->where('status', 'Pending');
-    
-                    if($request->type == 'monthly' && !empty($request->month))
-                    {
-                        $month = date('m', strtotime($request->month));
-                        $year  = date('Y', strtotime($request->month));
-    
-                        $approved->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-                        $reject->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-                        $pending->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-    
-                        $filterYear['dateYearRange'] = date('M-Y', strtotime($request->month));
-                        $filterYear['type']          = __('Monthly');
-    
-                    }
-                    elseif(!isset($request->type))
-                    {
-                        $month     = date('m');
-                        $year      = date('Y');
-                        $monthYear = date('Y-m');
-    
-                        $approved->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-                        $reject->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-                        $pending->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-    
-                        $filterYear['dateYearRange'] = date('M-Y', strtotime($monthYear));
-                        $filterYear['type']          = __('Monthly');
-                    }
-    
-    
-                    if($request->type == 'yearly' && !empty($request->year))
-                    {
-                        $approved->whereYear('applied_on', $request->year);
-                        $reject->whereYear('applied_on', $request->year);
-                        $pending->whereYear('applied_on', $request->year);
-    
-    
-                        $filterYear['dateYearRange'] = $request->year;
-                        $filterYear['type']          = __('Yearly');
-                    }
-    
-                    $approved = $approved->count();
-                    $reject   = $reject->count();
-                    $pending  = $pending->count();
-    
-                    $totalApproved += $approved;
-                    $totalReject   += $reject;
-                    $totalPending  += $pending;
-    
-                    $employeeLeave['approved'] = $approved;
-                    $employeeLeave['reject']   = $reject;
-                    $employeeLeave['pending']  = $pending;
-    
-    
-                    $leaves[] = $employeeLeave;
-                }
-    
-                $starting_year = date('Y', strtotime('-5 year'));
-                $ending_year   = date('Y', strtotime('+5 year'));
-    
-                $filterYear['starting_year'] = $starting_year;
-                $filterYear['ending_year']   = $ending_year;
-    
-                $filter['totalApproved'] = $totalApproved;
-                $filter['totalReject']   = $totalReject;
-                $filter['totalPending']  = $totalPending;
-    
-    
-                return view('report.leave', compact('department', 'branch', 'leaves', 'filterYear', 'filter'));
+            if(!empty($request->department))
+            {
+                $employees->where('department_id', $request->department);
+                $filterYear['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
             }
-            else{
-                $branch = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                $branch->prepend('Select Branch', '');
-    
-                $department = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                $department->prepend('Select Department', '');
-    
-                $filterYear['branch']        = __('All');
-                $filterYear['department']    = __('All');
-                $filterYear['type']          = __('Monthly');
-                $filterYear['dateYearRange'] = date('M-Y');
-                $employees                   = Employee::where('created_by', \Auth::user()->creatorId());
-                if(!empty($request->branch))
+
+
+            $employees = $employees->get();
+
+            $leaves        = [];
+            $totalApproved = $totalReject = $totalPending = 0;
+            foreach($employees as $employee)
+            {
+
+                $employeeLeave['id']          = $employee->id;
+                $employeeLeave['employee_id'] = $employee->employee_id;
+                $employeeLeave['employee']    = $employee->name;
+
+                $approved = Leave::where('employee_id', $employee->id)->where('status', 'Approved');
+                $reject   = Leave::where('employee_id', $employee->id)->where('status', 'Reject');
+                $pending  = Leave::where('employee_id', $employee->id)->where('status', 'Pending');
+
+                if($request->type == 'monthly' && !empty($request->month))
                 {
-                    $employees->where('branch_id', $request->branch);
-                    $filterYear['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
+                    $month = date('m', strtotime($request->month));
+                    $year  = date('Y', strtotime($request->month));
+
+                    $approved->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
+                    $reject->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
+                    $pending->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
+
+                    $filterYear['dateYearRange'] = date('M-Y', strtotime($request->month));
+                    $filterYear['type']          = __('Monthly');
+
                 }
-                if(!empty($request->department))
+                elseif(!isset($request->type))
                 {
-                    $employees->where('department_id', $request->department);
-                    $filterYear['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
+                    $month     = date('m');
+                    $year      = date('Y');
+                    $monthYear = date('Y-m');
+
+                    $approved->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
+                    $reject->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
+                    $pending->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
+
+                    $filterYear['dateYearRange'] = date('M-Y', strtotime($monthYear));
+                    $filterYear['type']          = __('Monthly');
                 }
-    
-    
-                $employees = $employees->get();
-    
-                $leaves        = [];
-                $totalApproved = $totalReject = $totalPending = 0;
-                foreach($employees as $employee)
+
+
+                if($request->type == 'yearly' && !empty($request->year))
                 {
-    
-                    $employeeLeave['id']          = $employee->id;
-                    $employeeLeave['employee_id'] = $employee->employee_id;
-                    $employeeLeave['employee']    = $employee->name;
-    
-                    $approved = Leave::where('employee_id', $employee->id)->where('status', 'Approve');
-                    $reject   = Leave::where('employee_id', $employee->id)->where('status', 'Reject');
-                    $pending  = Leave::where('employee_id', $employee->id)->where('status', 'Pending');
-    
-                    if($request->type == 'monthly' && !empty($request->month))
-                    {
-                        $month = date('m', strtotime($request->month));
-                        $year  = date('Y', strtotime($request->month));
-    
-                        $approved->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-                        $reject->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-                        $pending->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-    
-                        $filterYear['dateYearRange'] = date('M-Y', strtotime($request->month));
-                        $filterYear['type']          = __('Monthly');
-    
-                    }
-                    elseif(!isset($request->type))
-                    {
-                        $month     = date('m');
-                        $year      = date('Y');
-                        $monthYear = date('Y-m');
-    
-                        $approved->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-                        $reject->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-                        $pending->whereMonth('applied_on', $month)->whereYear('applied_on', $year);
-    
-                        $filterYear['dateYearRange'] = date('M-Y', strtotime($monthYear));
-                        $filterYear['type']          = __('Monthly');
-                    }
-    
-    
-                    if($request->type == 'yearly' && !empty($request->year))
-                    {
-                        $approved->whereYear('applied_on', $request->year);
-                        $reject->whereYear('applied_on', $request->year);
-                        $pending->whereYear('applied_on', $request->year);
-    
-    
-                        $filterYear['dateYearRange'] = $request->year;
-                        $filterYear['type']          = __('Yearly');
-                    }
-    
-                    $approved = $approved->count();
-                    $reject   = $reject->count();
-                    $pending  = $pending->count();
-    
-                    $totalApproved += $approved;
-                    $totalReject   += $reject;
-                    $totalPending  += $pending;
-    
-                    $employeeLeave['approved'] = $approved;
-                    $employeeLeave['reject']   = $reject;
-                    $employeeLeave['pending']  = $pending;
-    
-    
-                    $leaves[] = $employeeLeave;
+                    $approved->whereYear('applied_on', $request->year);
+                    $reject->whereYear('applied_on', $request->year);
+                    $pending->whereYear('applied_on', $request->year);
+
+
+                    $filterYear['dateYearRange'] = $request->year;
+                    $filterYear['type']          = __('Yearly');
                 }
-    
-                $starting_year = date('Y', strtotime('-5 year'));
-                $ending_year   = date('Y', strtotime('+5 year'));
-    
-                $filterYear['starting_year'] = $starting_year;
-                $filterYear['ending_year']   = $ending_year;
-    
-                $filter['totalApproved'] = $totalApproved;
-                $filter['totalReject']   = $totalReject;
-                $filter['totalPending']  = $totalPending;
-    
-    
-                return view('report.leave', compact('department', 'branch', 'leaves', 'filterYear', 'filter'));
+
+                $approved = $approved->count();
+                $reject   = $reject->count();
+                $pending  = $pending->count();
+
+                $totalApproved += $approved;
+                $totalReject   += $reject;
+                $totalPending  += $pending;
+
+                $employeeLeave['approved'] = $approved;
+                $employeeLeave['reject']   = $reject;
+                $employeeLeave['pending']  = $pending;
+
+
+                $leaves[] = $employeeLeave;
             }
+
+            $starting_year = date('Y', strtotime('-5 year'));
+            $ending_year   = date('Y', strtotime('+5 year'));
+
+            $filterYear['starting_year'] = $starting_year;
+            $filterYear['ending_year']   = $ending_year;
+
+            $filter['totalApproved'] = $totalApproved;
+            $filter['totalReject']   = $totalReject;
+            $filter['totalPending']  = $totalPending;
+
+
+            return view('report.leave', compact('department', 'branch', 'leaves', 'filterYear', 'filter'));
         }
         else
         {
@@ -4670,369 +4471,129 @@ class ReportController extends Controller
         $user = Auth::user();
         if(\Auth::user()->can('manage report'))
         {
-            if($user->type = 'admin'){
-                $branch = Branch::all()->pluck('name', 'id');
-                $branch->prepend('Select Branch', '');
-    
-                $department = Department::all()->pluck('name', 'id');
-                $department->prepend('Select Department', '');
-    
-                $data['branch']     = __('All');
-                $data['department'] = __('All');
-    
-                $employees = Employee::select('id', 'name');
-                if(!empty($request->branch))
+            $branch      = Branch::get();
+            $department = Department::get();
+
+            $data['branch']     = __('All');
+            $data['department'] = __('All');
+
+
+            $employees = Employee::select('id', 'name');
+            if(!empty($request->employee_id) && $request->employee_id[0]!=0){
+                $employees->whereIn('id', $request->employee_id);
+            }
+            $employees=$employees;
+
+            if(!empty($request->branch))
+            {
+                $employees->where('branch_id', $request->branch);
+                $data['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
+            }
+
+            if(!empty($request->department))
+            {
+                $employees->where('department_id', $request->department);
+                $data['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
+            }
+
+            $employees = $employees->get()->pluck('name', 'id');
+
+            if(!empty($request->month))
+            {
+                $currentdate = strtotime($request->month);
+                $month       = date('m', $currentdate);
+                $year        = date('Y', $currentdate);
+                $curMonth    = date('M-Y', strtotime($request->month));
+
+            }
+            else
+            {
+                $month    = date('m');
+                $year     = date('Y');
+                $curMonth = date('M-Y', strtotime($year . '-' . $month));
+            }
+
+
+            $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
+            for($i = 1; $i <= $num_of_days; $i++)
+            {
+                $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
+            }
+
+            $employeesAttendance = [];
+            $totalPresent        = $totalLeave = $totalEarlyLeave = 0;
+            $ovetimeHours        = $overtimeMins = $earlyleaveHours = $earlyleaveMins = $lateHours = $lateMins = 0;
+            foreach($employees as $id => $employee)
+            {
+                $attendances['name'] = $employee;
+                // $employee     = Employee::where('employee_id', '=', $id)->first();
+                // $overtime     = UserOvertime::where('user_id', $employee->user_id)->where('start_date', '=', '2023-05')->get();
+
+                foreach($dates as $date)
                 {
-                    $employees->where('branch_id', $request->branch);
-                    $data['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
-                }
-    
-                if(!empty($request->department))
-                {
-                    $employees->where('department_id', $request->department);
-                    $data['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
-                }
-    
-                $employees = $employees->get()->pluck('name', 'id');
-    
-    
-                if(!empty($request->month))
-                {
-                    $currentdate = strtotime($request->month);
-                    $month       = date('m', $currentdate);
-                    $year        = date('Y', $currentdate);
-                    $curMonth    = date('M-Y', strtotime($request->month));
-    
-                }
-                else
-                {
-                    $month    = date('m');
-                    $year     = date('Y');
-                    $curMonth = date('M-Y', strtotime($year . '-' . $month));
-                }
-    
-    
-                $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
-                for($i = 1; $i <= $num_of_days; $i++)
-                {
-                    $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
-                }
-    
-                $employeesAttendance = [];
-                $totalPresent        = $totalLeave = $totalEarlyLeave = 0;
-                $ovetimeHours        = $overtimeMins = $earlyleaveHours = $earlyleaveMins = $lateHours = $lateMins = 0;
-                foreach($employees as $id => $employee)
-                {
-                    $attendances['name'] = $employee;
-    
-                    foreach($dates as $date)
+                    $dateFormat = $year . '-' . $month . '-' . $date;
+
+                    if($dateFormat <= date('Y-m-d'))
                     {
-                        $dateFormat = $year . '-' . $month . '-' . $date;
-    
-                        if($dateFormat <= date('Y-m-d'))
+                        $employeeAttendance = AttendanceEmployee::where('employee_id', $id)->where('date', $dateFormat)->first();
+
+                        if(!empty($employeeAttendance) && $employeeAttendance->status == 'Present')
                         {
-                            $employeeAttendance = AttendanceEmployee::where('employee_id', $id)->where('date', $dateFormat)->first();
-    
-                            if(!empty($employeeAttendance) && $employeeAttendance->status == 'Present')
+                            $attendanceStatus[$date] = 'P';
+                            $totalPresent            += 1;
+
+                            if($employeeAttendance->overtime > 0)
                             {
-                                $attendanceStatus[$date] = 'P';
-                                $totalPresent            += 1;
-    
-                                if($employeeAttendance->overtime > 0)
-                                {
-                                    $ovetimeHours += date('h', strtotime($employeeAttendance->overtime));
-                                    $overtimeMins += date('i', strtotime($employeeAttendance->overtime));
-                                }
-    
-                                if($employeeAttendance->early_leaving > 0)
-                                {
-                                    $earlyleaveHours += date('h', strtotime($employeeAttendance->early_leaving));
-                                    $earlyleaveMins  += date('i', strtotime($employeeAttendance->early_leaving));
-                                }
-    
-                                if($employeeAttendance->late > 0)
-                                {
-                                    $lateHours += date('h', strtotime($employeeAttendance->late));
-                                    $lateMins  += date('i', strtotime($employeeAttendance->late));
-                                }
-    
-    
+                                $ovetimeHours += date('h', strtotime($employeeAttendance->overtime));
+                                $overtimeMins += date('i', strtotime($employeeAttendance->overtime));
                             }
-                            elseif(!empty($employeeAttendance) && $employeeAttendance->status == 'Leave')
+
+                            if($employeeAttendance->early_leaving > 0)
                             {
-                                $attendanceStatus[$date] = 'A';
-                                $totalLeave              += 1;
+                                $earlyleaveHours += date('h', strtotime($employeeAttendance->early_leaving));
+                                $earlyleaveMins  += date('i', strtotime($employeeAttendance->early_leaving));
                             }
-                            else
+
+                            if($employeeAttendance->late > 0)
                             {
-                                $attendanceStatus[$date] = '';
+                                $lateHours += date('h', strtotime($employeeAttendance->late));
+                                $lateMins  += date('i', strtotime($employeeAttendance->late));
                             }
+
+
+                        }
+                        elseif(!empty($employeeAttendance) && $employeeAttendance->status == 'Leave')
+                        {
+                            $attendanceStatus[$date] = 'A';
+                            $totalLeave              += 1;
                         }
                         else
                         {
                             $attendanceStatus[$date] = '';
                         }
-    
                     }
-                    $attendances['status'] = $attendanceStatus;
-                    $employeesAttendance[] = $attendances;
-                }
-    
-                $totalOverTime   = $ovetimeHours + ($overtimeMins / 60);
-                $totalEarlyleave = $earlyleaveHours + ($earlyleaveMins / 60);
-                $totalLate       = $lateHours + ($lateMins / 60);
-    
-                $data['totalOvertime']   = $totalOverTime;
-                $data['totalEarlyLeave'] = $totalEarlyleave;
-                $data['totalLate']       = $totalLate;
-                $data['totalPresent']    = $totalPresent;
-                $data['totalLeave']      = $totalLeave;
-                $data['curMonth']        = $curMonth;
-    
-                return view('report.monthlyAttendance', compact('employeesAttendance', 'branch', 'department', 'dates', 'data'));
-            }
-            elseif($user->type = 'company'){
-                $branch = Branch::all()->pluck('name', 'id');
-                $branch->prepend('Select Branch', '');
-    
-                $department = Department::all()->pluck('name', 'id');
-                $department->prepend('Select Department', '');
-    
-                $data['branch']     = __('All');
-                $data['department'] = __('All');
-    
-                $employees = Employee::select('id', 'name');
-                if(!empty($request->branch))
-                {
-                    $employees->where('branch_id', $request->branch);
-                    $data['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
-                }
-    
-                if(!empty($request->department))
-                {
-                    $employees->where('department_id', $request->department);
-                    $data['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
-                }
-    
-                $employees = $employees->get()->pluck('name', 'id');
-    
-    
-                if(!empty($request->month))
-                {
-                    $currentdate = strtotime($request->month);
-                    $month       = date('m', $currentdate);
-                    $year        = date('Y', $currentdate);
-                    $curMonth    = date('M-Y', strtotime($request->month));
-    
-                }
-                else
-                {
-                    $month    = date('m');
-                    $year     = date('Y');
-                    $curMonth = date('M-Y', strtotime($year . '-' . $month));
-                }
-    
-    
-                $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
-                for($i = 1; $i <= $num_of_days; $i++)
-                {
-                    $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
-                }
-    
-                $employeesAttendance = [];
-                $totalPresent        = $totalLeave = $totalEarlyLeave = 0;
-                $ovetimeHours        = $overtimeMins = $earlyleaveHours = $earlyleaveMins = $lateHours = $lateMins = 0;
-                foreach($employees as $id => $employee)
-                {
-                    $attendances['name'] = $employee;
-    
-                    foreach($dates as $date)
+                    else
                     {
-                        $dateFormat = $year . '-' . $month . '-' . $date;
-    
-                        if($dateFormat <= date('Y-m-d'))
-                        {
-                            $employeeAttendance = AttendanceEmployee::where('employee_id', $id)->where('date', $dateFormat)->first();
-    
-                            if(!empty($employeeAttendance) && $employeeAttendance->status == 'Present')
-                            {
-                                $attendanceStatus[$date] = 'P';
-                                $totalPresent            += 1;
-    
-                                if($employeeAttendance->overtime > 0)
-                                {
-                                    $ovetimeHours += date('h', strtotime($employeeAttendance->overtime));
-                                    $overtimeMins += date('i', strtotime($employeeAttendance->overtime));
-                                }
-    
-                                if($employeeAttendance->early_leaving > 0)
-                                {
-                                    $earlyleaveHours += date('h', strtotime($employeeAttendance->early_leaving));
-                                    $earlyleaveMins  += date('i', strtotime($employeeAttendance->early_leaving));
-                                }
-    
-                                if($employeeAttendance->late > 0)
-                                {
-                                    $lateHours += date('h', strtotime($employeeAttendance->late));
-                                    $lateMins  += date('i', strtotime($employeeAttendance->late));
-                                }
-    
-    
-                            }
-                            elseif(!empty($employeeAttendance) && $employeeAttendance->status == 'Leave')
-                            {
-                                $attendanceStatus[$date] = 'A';
-                                $totalLeave              += 1;
-                            }
-                            else
-                            {
-                                $attendanceStatus[$date] = '';
-                            }
-                        }
-                        else
-                        {
-                            $attendanceStatus[$date] = '';
-                        }
-    
+                        $attendanceStatus[$date] = '';
                     }
-                    $attendances['status'] = $attendanceStatus;
-                    $employeesAttendance[] = $attendances;
+
                 }
-    
-                $totalOverTime   = $ovetimeHours + ($overtimeMins / 60);
-                $totalEarlyleave = $earlyleaveHours + ($earlyleaveMins / 60);
-                $totalLate       = $lateHours + ($lateMins / 60);
-    
-                $data['totalOvertime']   = $totalOverTime;
-                $data['totalEarlyLeave'] = $totalEarlyleave;
-                $data['totalLate']       = $totalLate;
-                $data['totalPresent']    = $totalPresent;
-                $data['totalLeave']      = $totalLeave;
-                $data['curMonth']        = $curMonth;
-    
-                return view('report.monthlyAttendance', compact('employeesAttendance', 'branch', 'department', 'dates', 'data'));
+                $attendances['status'] = $attendanceStatus;
+                $employeesAttendance[] = $attendances;
             }
-            else{
-                $branch = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                $branch->prepend('Select Branch', '');
-    
-                $department = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                $department->prepend('Select Department', '');
-    
-                $data['branch']     = __('All');
-                $data['department'] = __('All');
-    
-                $employees = Employee::select('id', 'name')->where('created_by', \Auth::user()->creatorId());
-                if(!empty($request->branch))
-                {
-                    $employees->where('branch_id', $request->branch);
-                    $data['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
-                }
-    
-                if(!empty($request->department))
-                {
-                    $employees->where('department_id', $request->department);
-                    $data['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
-                }
-    
-                $employees = $employees->get()->pluck('name', 'id');
-    
-    
-                if(!empty($request->month))
-                {
-                    $currentdate = strtotime($request->month);
-                    $month       = date('m', $currentdate);
-                    $year        = date('Y', $currentdate);
-                    $curMonth    = date('M-Y', strtotime($request->month));
-    
-                }
-                else
-                {
-                    $month    = date('m');
-                    $year     = date('Y');
-                    $curMonth = date('M-Y', strtotime($year . '-' . $month));
-                }
-    
-    
-                $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
-                for($i = 1; $i <= $num_of_days; $i++)
-                {
-                    $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
-                }
-    
-                $employeesAttendance = [];
-                $totalPresent        = $totalLeave = $totalEarlyLeave = 0;
-                $ovetimeHours        = $overtimeMins = $earlyleaveHours = $earlyleaveMins = $lateHours = $lateMins = 0;
-                foreach($employees as $id => $employee)
-                {
-                    $attendances['name'] = $employee;
-    
-                    foreach($dates as $date)
-                    {
-                        $dateFormat = $year . '-' . $month . '-' . $date;
-    
-                        if($dateFormat <= date('Y-m-d'))
-                        {
-                            $employeeAttendance = AttendanceEmployee::where('employee_id', $id)->where('date', $dateFormat)->first();
-    
-                            if(!empty($employeeAttendance) && $employeeAttendance->status == 'Present')
-                            {
-                                $attendanceStatus[$date] = 'P';
-                                $totalPresent            += 1;
-    
-                                if($employeeAttendance->overtime > 0)
-                                {
-                                    $ovetimeHours += date('h', strtotime($employeeAttendance->overtime));
-                                    $overtimeMins += date('i', strtotime($employeeAttendance->overtime));
-                                }
-    
-                                if($employeeAttendance->early_leaving > 0)
-                                {
-                                    $earlyleaveHours += date('h', strtotime($employeeAttendance->early_leaving));
-                                    $earlyleaveMins  += date('i', strtotime($employeeAttendance->early_leaving));
-                                }
-    
-                                if($employeeAttendance->late > 0)
-                                {
-                                    $lateHours += date('h', strtotime($employeeAttendance->late));
-                                    $lateMins  += date('i', strtotime($employeeAttendance->late));
-                                }
-    
-    
-                            }
-                            elseif(!empty($employeeAttendance) && $employeeAttendance->status == 'Leave')
-                            {
-                                $attendanceStatus[$date] = 'A';
-                                $totalLeave              += 1;
-                            }
-                            else
-                            {
-                                $attendanceStatus[$date] = '';
-                            }
-                        }
-                        else
-                        {
-                            $attendanceStatus[$date] = '';
-                        }
-    
-                    }
-                    $attendances['status'] = $attendanceStatus;
-                    $employeesAttendance[] = $attendances;
-                }
-    
-                $totalOverTime   = $ovetimeHours + ($overtimeMins / 60);
-                $totalEarlyleave = $earlyleaveHours + ($earlyleaveMins / 60);
-                $totalLate       = $lateHours + ($lateMins / 60);
-    
-                $data['totalOvertime']   = $totalOverTime;
-                $data['totalEarlyLeave'] = $totalEarlyleave;
-                $data['totalLate']       = $totalLate;
-                $data['totalPresent']    = $totalPresent;
-                $data['totalLeave']      = $totalLeave;
-                $data['curMonth']        = $curMonth;
-    
-                return view('report.monthlyAttendance', compact('employeesAttendance', 'branch', 'department', 'dates', 'data'));
-            }
+
+            $totalOverTime   = $ovetimeHours + ($overtimeMins / 60);
+            $totalEarlyleave = $earlyleaveHours + ($earlyleaveMins / 60);
+            $totalLate       = $lateHours + ($lateMins / 60);
+
+            $data['totalOvertime']   = $totalOverTime;
+            $data['totalEarlyLeave'] = $totalEarlyleave;
+            $data['totalLate']       = $totalLate;
+            $data['totalPresent']    = $totalPresent;
+            $data['totalLeave']      = $totalLeave;
+            $data['curMonth']        = $curMonth;
+
+            return view('report.monthlyAttendance', compact('employeesAttendance', 'branch', 'department', 'dates', 'data'));
         }
         else
         {
@@ -5040,6 +4601,7 @@ class ReportController extends Controller
         }
 
     }
+
     public function payroll(Request $request)
     {
         $user = Auth::user();
@@ -5567,6 +5129,695 @@ class ReportController extends Controller
         {
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
+
+    }
+
+    //for export in account statement report
+    public function export()
+    {
+        $name = 'account_statement' . date('Y-m-d i:h:s');
+        $data = Excel::download(new AccountStatementExport(), $name . '.xlsx');
+
+        return $data;
+    }
+    // for export in product stock report
+    public function stock_export()
+    {
+        $name = 'Product_Stock' . date('Y-m-d i:h:s');
+        $data = Excel::download(new ProductStockExport(), $name . '.xlsx');
+
+        return $data;
+    }
+
+    // for export in payroll report
+    public function PayrollReportExport(Request $request)
+    {
+        $name = 'Payroll_' . date('Y-m-d i:h:s');
+        $data = \Excel::download(new PayrollExport(), $name . '.xlsx');
+
+        return $data;
+    }
+
+    // for export in leave report
+    public function LeaveReportExport()
+    {
+        $name = 'leave_' . date('Y-m-d i:h:s');
+        $data = \Excel::download(new LeaveReportExport(), $name . '.xlsx');
+
+        return $data;
+    }
+
+
+    //branch wise department get in monthly-attendance report
+    public function getdepartment(Request $request)
+    {
+        if($request->branch_id == 0)
+        {
+            $departments = Department::get()->pluck('name', 'id')->toArray();
+        }
+        else
+        {
+            $departments = Department::where('branch_id', $request->branch_id)->get()->pluck('name', 'id')->toArray();
+        }
+
+        return response()->json($departments);
+    }
+
+    public function getemployee(Request $request)
+    {
+        if(!$request->department_id )
+        {
+            $employees = Employee::get()->pluck('name', 'id')->toArray();
+        }
+        else
+        {
+            $employees = Employee::where('department_id', $request->department_id)->get()->pluck('name', 'id')->toArray();
+        }
+        return response()->json($employees);
+    }
+
+    public function leadreport(Request $request)
+    {
+        $user      = \Auth::user();
+        $leads = Lead::orderBy('id');
+        $leads->where('created_by', \Auth::user()->creatorId());
+
+        $user_week_lead = Lead::orderBy('created_at')->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->get()->groupBy(function ($item) {
+            return $item->created_at->format('Y-m-d');
+        });
+        $carbaoDay = Carbon::now()->startOfWeek();
+
+        $weeks = [];
+        for ($i = 0; $i < 7; $i++) {
+            $weeks[$carbaoDay->startOfWeek()->addDay($i)->format('Y-m-d')] = 0;
+        }
+        foreach ($user_week_lead as $name => $leads) {
+            $weeks[$name] = $leads->count();
+        }
+
+        $devicearray          = [];
+        $devicearray['label'] = [];
+        $devicearray['data']  = [];
+
+        foreach ($weeks as $name => $leads) {
+            $devicearray['label'][] = Carbon::parse($name)->format('l');
+            $devicearray['data'][] = $leads;
+        }
+        $leads = Lead::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+        $lead_source = Source::where('created_by', \Auth::user()->id)->get();
+
+        $leadsourceName = [];
+        $leadsourceeData = [];
+        foreach ($lead_source as $lead_source_data) {
+            $lead_source = lead::where('created_by', \Auth::user()->id)->where('sources', $lead_source_data->id)->count();
+            $leadsourceName[] = $lead_source_data->name;
+            $leadsourceeData[] = $lead_source;
+        }
+
+
+        // monthly report
+
+        $labels = [];
+        $data   = [];
+
+        if (!empty($request->start_month) && !empty($request->end_month)) {
+            $start = strtotime($request->start_month);
+            $end   = strtotime($request->end_month);
+        } else {
+            $start = strtotime(date('Y-01'));
+            $end   = strtotime(date('Y-12'));
+        }
+
+        $leads = Lead::orderBy('id');
+        $leads->where('date', '>=', date('Y-m-01', $start))->where('date', '<=', date('Y-m-t', $end));
+        $leads->where('created_by', \Auth::user()->creatorId());
+        $leads = $leads->get();
+
+        $currentdate = $start;
+        while ($currentdate <= $end) {
+            $month = date('m', $currentdate);
+            $year  = date('Y');
+
+            if (!empty($request->start_month)) {
+                $leadFilter = Lead::where('created_by', \Auth::user()->creatorId())->whereMonth('date', $request->start_month)->whereYear('date', $year)->get();
+
+            } else {
+                $leadFilter = Lead::where('created_by', \Auth::user()->creatorId())->whereMonth('date', $month)->whereYear('date', $year)->get();
+                // dd($request->leadFilter);
+            }
+
+            $data[]      = count($leadFilter);
+            $labels[]    = date('M Y', $currentdate);
+            $currentdate = strtotime('+1 month', $currentdate);
+
+
+            if (!empty($request->start_month)) {
+                $cdate = '01-' . $request->start_month . '-' . $year;
+                $mstart = strtotime($cdate);
+                $labelss[]    = date('M Y', $mstart);
+
+                return response()->json(['data' => $data, 'name' => $labelss]);
+            }
+        }
+
+        if(empty($request->start_month) && !empty($request->all())){
+            return response()->json(['data' => $data, 'name' => $labels]);
+        }
+        $filter['startDateRange'] = date('M-Y', $start);
+        $filter['endDateRange']   = date('M-Y', $end);
+
+        $monthList = $month = $this->yearMonth();
+
+        //staff report
+        $leads = Lead::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+        if ($request->type == "staff_repport") {
+            $form_date = date('Y-m-d H:i:s', strtotime($request->From_Date));
+            $to_date = date('Y-m-d H:i:s', strtotime($request->To_Date));
+
+            if (!empty($request->From_Date) && !empty($request->To_Date)) {
+
+                $lead_user = User::where('created_by', \Auth::user()->id)->get();
+                $leaduserName = [];
+                $leadusereData = [];
+                foreach ($lead_user as $lead_user_data) {
+                    $lead_user = Lead::where('created_by', \Auth::user()->id)->where('user_id', $lead_user_data->id)->whereBetween('created_at', [$form_date, $to_date])->count();
+                    $leaduserName[] = $lead_user_data->name;
+                    $leadusereData[] = $lead_user;
+                }
+                return response()->json(['data' => $leadusereData, 'name' => $leaduserName]);
+            }
+        } else {
+            $lead_user = User::where('created_by', \Auth::user()->id)->get();
+            $leaduserName = [];
+            $leadusereData = [];
+            foreach ($lead_user as $lead_user_data) {
+                $lead_user = Lead::where('created_by', \Auth::user()->id)->where('user_id', $lead_user_data->id)->count();
+                $leaduserName[] = $lead_user_data->name;
+                $leadusereData[] = $lead_user;
+            }
+        }
+
+        $leads = Lead::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+        $lead_pipeline = Pipeline::where('created_by', \Auth::user()->id)->get();
+
+        $leadpipelineName = [];
+        $leadpipelineeData = [];
+        foreach ($lead_pipeline as $lead_pipeline_data) {
+            $lead_pipeline = lead::where('created_by', \Auth::user()->id)->where('pipeline_id', $lead_pipeline_data->id)->count();
+            $leadpipelineName[] = $lead_pipeline_data->name;
+            $leadpipelineeData[] = $lead_pipeline;
+        }
+
+
+        return view('report.lead', compact('devicearray', 'leadsourceName', 'leadsourceeData', 'labels', 'data', 'filter', 'monthList','leads', 'leaduserName', 'leadusereData', 'user', 'leadpipelineName', 'leadpipelineeData'));
+    }
+
+    public function dealreport(Request $request)
+    {
+        $user      = \Auth::user();
+        $deals = Deal::orderBy('id');
+        $deals->where('created_by', \Auth::user()->creatorId());
+
+        $user_week_deal = Deal::orderBy('created_at')->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()])->get()->groupBy(function ($item) {
+            return $item->created_at->format('Y-m-d');
+        });
+
+        $carbaoDay = Carbon::now()->startOfWeek();
+        $weeks = [];
+        for ($i = 0; $i < 7; $i++) {
+            $weeks[$carbaoDay->startOfWeek()->addDay($i)->format('Y-m-d')] = 0;
+        }
+        foreach ($user_week_deal as $name => $deals) {
+            $weeks[$name] = $deals->count();
+        }
+
+        $devicearray          = [];
+        $devicearray['label'] = [];
+        $devicearray['data']  = [];
+        foreach ($weeks as $name => $deals) {
+            $devicearray['label'][] = Carbon::parse($name)->format('l');
+            $devicearray['data'][] = $deals;
+        }
+        $deals = Deal::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+        $deals_source = Source::where('created_by', \Auth::user()->id)->get();
+
+        $dealsourceName = [];
+        $dealsourceeData = [];
+        foreach ($deals_source as $deals_source_data) {
+            $deals_source = Deal::where('created_by', \Auth::user()->id)->where('sources', $deals_source_data->id)->count();
+            $dealsourceName[] = $deals_source_data->name;
+            $dealsourceeData[] = $deals_source;
+        }
+        if ($request->type == "deal_staff_repport") {
+            $from_date = date('Y-m-d H:i:s', strtotime($request->From_Date));
+            $to_date = date('Y-m-d H:i:s', strtotime($request->To_Date));
+
+            if (!empty($request->From_Date) && !empty($request->To_Date)) {
+                $user_deal = User::where('created_by', \Auth::user()->creatorId())->get();
+                $dealUserData = [];
+                $dealUserName = [];
+                foreach ($user_deal as $user_deal_data) {
+
+                    $user_deals = UserDeal::where('user_id', $user_deal_data->id)->whereBetween('created_at', [$from_date, $to_date])->count();
+                    $dealUserName[] = $user_deal_data->name;
+                    $dealUserData[] = $user_deals;
+                }
+                return response()->json(['data' => $dealUserData, 'name' => $dealUserName]);
+            }
+        } else {
+            $user_deal = User::where('created_by', \Auth::user()->creatorId())->get();
+            $dealUserData = [];
+            $dealUserName = [];
+            foreach ($user_deal as $user_deal_data) {
+                $user_deals = UserDeal::where('user_id', $user_deal_data->id)->count();
+
+                $dealUserName[] = $user_deal_data->name;
+                $dealUserData[] = $user_deals;
+            }
+        }
+
+        $deals = Deal::where('created_by', '=', \Auth::user()->creatorId())->get();
+
+        $deal_pipeline = Pipeline::where('created_by', \Auth::user()->id)->get();
+
+        $dealpipelineName = [];
+        $dealpipelineeData = [];
+        foreach ($deal_pipeline as $deal_pipeline_data) {
+            $deal_pipeline = Deal::where('created_by', \Auth::user()->id)->where('pipeline_id', $deal_pipeline_data->id)->count();
+            $dealpipelineName[] = $deal_pipeline_data->name;
+            $dealpipelineeData[] = $deal_pipeline;
+        }
+
+        if ($request->type == "client_repport") {
+
+            $from_date1 = date('Y-m-d H:i:s', strtotime($request->from_date));
+            $to_date1 = date('Y-m-d H:i:s', strtotime($request->to_date));
+            if (!empty($request->from_date) && !empty($request->to_date)) {
+                $client_deal = User::where('created_by', \Auth::user()->creatorId())->get();
+                $dealClientData = [];
+                $dealClientName = [];
+                foreach ($client_deal as $client_deal_data) {
+
+                    $deals_client = ClientDeal::where('client_id', $client_deal_data->id)->whereBetween('created_at', [$from_date1, $to_date1])->count();
+                    $dealClientName[] = $client_deal_data->name;
+                    $dealClientData[] = $deals_client;
+                }
+                return response()->json(['data' => $dealClientData, 'name' =>  $dealClientName]);
+            }
+        } else {
+            $client_deal = User::where('created_by', \Auth::user()->creatorId())->get();
+            $dealClientName = [];
+            $dealClientData = [];
+            foreach ($client_deal as $client_deal_data) {
+                $deals_client = ClientDeal::where('client_id', $client_deal_data->id)->count();
+                $dealClientName[] = $client_deal_data->name;
+                $dealClientData[] = $deals_client;
+            }
+        }
+        $labels = [];
+        $data   = [];
+
+        if (!empty($request->start_month) && !empty($request->end_month)) {
+            $start = strtotime($request->start_month);
+            $end   = strtotime($request->end_month);
+        } else {
+            $start = strtotime(date('Y-01'));
+            $end   = strtotime(date('Y-12'));
+        }
+
+        $deals = Deal::orderBy('id');
+        $deals->where('created_at', '>=', date('Y-m-01', $start))->where('created_at', '<=', date('Y-m-t', $end));
+        $deals->where('created_by', \Auth::user()->creatorId());
+        $deals = $deals->get();
+
+        $currentdate = $start;
+        while ($currentdate <= $end) {
+            $month = date('m', $currentdate);
+
+            $year  = date('Y');
+
+            if (!empty($request->start_month)) {
+                $dealFilter = Deal::where('created_by', \Auth::user()->creatorId())->whereMonth('created_at', $request->start_month)->whereYear('created_at', $year)->get();
+            } else {
+                $dealFilter = Deal::where('created_by', \Auth::user()->creatorId())->whereMonth('created_at', $month)->whereYear('created_at', $year)->get();
+            }
+
+            $data[]      = count($dealFilter);
+            $labels[]    = date('M Y', $currentdate);
+            $currentdate = strtotime('+1 month', $currentdate);
+
+            if (!empty($request->start_month)) {
+                $cdate = '01-' . $request->start_month . '-' . $year;
+                $mstart = strtotime($cdate);
+                $labelss[]    = date('M Y', $mstart);
+
+                return response()->json(['data' => $data, 'name' => $labelss]);
+            }
+        }
+        if(empty($request->start_month) && !empty($request->all())){
+            return response()->json(['data' => $data, 'name' => $labels]);
+        }
+        $filter['startDateRange'] = date('M-Y', $start);
+        $filter['endDateRange']   = date('M-Y', $end);
+
+        $monthList = $month = $this->yearMonth();
+        return view('report.deal', compact('devicearray', 'dealsourceName', 'dealsourceeData', 'dealUserData', 'dealUserName', 'dealpipelineName', 'dealpipelineeData', 'data', 'labels', 'dealClientName', 'dealClientData','monthList'));
+    }
+
+
+    public function overtime(Request $request)
+    {
+        $user = Auth::user();
+        if(\Auth::user()->can('manage report'))
+        {
+            $branch      = Branch::get();
+            $department = Department::get();
+
+            $data['branch']     = __('All');
+            $data['department'] = __('All');
+
+
+            $employees = Employee::select('id', 'name');
+            if(!empty($request->employee_id) && $request->employee_id[0]!=0){
+                $employees->whereIn('id', $request->employee_id);
+            }
+            $employees=$employees;
+
+            if(!empty($request->branch))
+            {
+                $employees->where('branch_id', $request->branch);
+                $data['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
+            }
+
+            if(!empty($request->department))
+            {
+                $employees->where('department_id', $request->department);
+                $data['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
+            }
+
+            $employees = $employees->get()->pluck('name', 'id');
+
+            if(!empty($request->month))
+            {
+                $currentdate = strtotime($request->month);
+                $month       = date('m', $currentdate);
+                $year        = date('Y', $currentdate);
+                $curMonth    = date('M-Y', strtotime($request->month));
+
+            }
+            else
+            {
+                $month    = date('m');
+                $year     = date('Y');
+                $curMonth = date('M-Y', strtotime($year . '-' . $month));
+            }
+
+
+            $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
+            for($i = 1; $i <= $num_of_days; $i++)
+            {
+                $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
+            }
+
+            $employeesAttendance = [];
+            $totalPresent        = $totalLeave = $totalEarlyLeave = 0;
+            $ovetimeHours        = $overtimeMins = $earlyleaveHours = $earlyleaveMins = $lateHours = $lateMins = 0;
+            
+            foreach($employees as $id => $employee)
+            {
+                $attendances['name'] = $employee;
+                $totalOvertimeDays = 0;
+                $totalOverTime = 0;
+                $overtimeHours = 0;
+                $overtimeMins = 0;
+
+                foreach($dates as $date)
+                {
+                    $dateFormat = $year . '-' . $month . '-' . $date;
+
+                    if($dateFormat <= date('Y-m-d'))
+                    {
+                        $employeeAttendance = AttendanceEmployee::where('employee_id', $id)->where('date', $dateFormat)->first();
+                        $overtimes = UserOvertime::where('user_id', '=', $id)->where('start_date', $dateFormat)->get();
+
+                        if(!empty($employeeAttendance) && $employeeAttendance->status == 'Present')
+                        {
+                            $attendanceStatus[$date] = 'P';
+                            $totalPresent            += 1;
+
+                            // if($employeeAttendance->overtime > 0)
+                            // {
+                            //     $ovetimeHours += date('h', strtotime($employeeAttendance->overtime));
+                            //     $overtimeMins += date('i', strtotime($employeeAttendance->overtime));
+                            // }
+
+                            foreach($overtimes as $overtime)
+                            {
+                                $totalOvertimeHours += (int)date('H', strtotime($overtime->total_time));
+                                $totalOvertimeMins  += (int)date('i', strtotime($overtime->total_time));
+                            }
+
+                            if($employeeAttendance->early_leaving > 0)
+                            {
+                                $earlyleaveHours += date('h', strtotime($employeeAttendance->early_leaving));
+                                $earlyleaveMins  += date('i', strtotime($employeeAttendance->early_leaving));
+                            }
+
+                            if($employeeAttendance->late > 0)
+                            {
+                                $lateHours += date('h', strtotime($employeeAttendance->late));
+                                $lateMins  += date('i', strtotime($employeeAttendance->late));
+                            }
+
+                        }
+                        elseif(!empty($employeeAttendance) && $employeeAttendance->status == 'Leave')
+                        {
+                            $attendanceStatus[$date] = 'A';
+                            $totalLeave              += 1;
+                        }
+                        else
+                        {
+                            $attendanceStatus[$date] = '';
+                        }
+
+                        // Hitung jumlah hari lembur berdasarkan start_date
+
+                        foreach ($overtimes as $overtime) {
+                            if ($overtime->start_date == $dateFormat) {
+                                $totalOvertimeDays += 1;
+                                $totalOverTime += strtotime($overtime->total_time) - strtotime('00:00:00');
+                                $overtimeHours += (int)date('H', strtotime($overtime->total_time));
+                                $overtimeMins  += (int)date('i', strtotime($overtime->total_time));
+                            }
+
+                            
+                        }
+
+                        
+                        
+                        
+                    }
+                    else
+                    {
+                        $attendanceStatus[$date] = '';
+                    }
+   
+                }
+
+                $totalOvertimeDuration = sprintf("%02d:%02d:%02d", $overtimeHours, $overtimeMins, 0);
+                $attendances['status'] = $attendanceStatus;
+                $attendances['overtime'] = $totalOvertimeDays;
+                $attendances['total_overtime'] = $totalOvertimeDuration;
+                $attendanceCounts = array_count_values($attendanceStatus);
+                $totalPresents = isset($attendanceCounts['P']) ? $attendanceCounts['P'] : 0;
+                $attendances['present'] = $totalPresents;
+                $employeesAttendance[] = $attendances;
+
+                
+            }
+
+            
+
+            $totalOverTime   = $ovetimeHours + ($overtimeMins / 60);
+            $totalEarlyleave = $earlyleaveHours + ($earlyleaveMins / 60);
+            $totalLate       = $lateHours + ($lateMins / 60);
+
+            $data['totalOvertime']   = $totalOverTime;
+            $data['totalEarlyLeave'] = $totalEarlyleave;
+            $data['totalLate']       = $totalLate;
+            $data['totalPresent']    = $totalPresent;
+            $data['totalLeave']      = $totalLeave;
+            $data['curMonth']        = $curMonth;
+
+            return view('report.overtime', compact('employeesAttendance', 'branch', 'department', 'dates', 'data'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
+
+    public function projects(Request $request)
+    {
+        if(\Auth::user()->can('manage report'))
+        {
+
+            $branch = Branch::get()->pluck('name', 'id');
+            $branch->prepend('Select Branch', '');
+
+            $department = Department::get()->pluck('name', 'id');
+            $department->prepend('Select Department', '');
+
+            $filterYear['branch']        = __('All');
+            $filterYear['department']    = __('All');
+            $filterYear['type']          = __('Monthly');
+            $filterYear['dateYearRange'] = date('M-Y');
+            $employees                   = Employee::where('is_active', 1);
+            if(!empty($request->branch))
+            {
+                $employees->where('branch_id', $request->branch);
+                $filterYear['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
+            }
+            if(!empty($request->department))
+            {
+                $employees->where('department_id', $request->department);
+                $filterYear['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
+            }
+
+
+            $employees = $employees->get();
+
+            $projects        = [];
+            $totalProject  = 0;
+            foreach($employees as $employee)
+            {
+
+                $employeeProjects['id']          = $employee->id;
+                $employeeProjects['employee_id'] = $employee->employee_id;
+                $employeeProjects['employee']    = $employee->name;
+
+                $userDetail              = \Auth::user();
+                $user_projects           = $employee->projects()->pluck('project_id','project_id')->toArray();
+                $project                 = ProjectUser::with('project');
+
+                if($request->type == 'monthly' && !empty($request->month))
+                {
+                    $month = date('m', strtotime($request->month));
+                    $year  = date('Y', strtotime($request->month));
+
+                    $project
+                    ->where('user_id', $employee->user_id)
+                    ->whereHas('project', function ($query) use ($month, $year) {
+                        $query->whereMonth('start_date', $month)->whereYear('start_date', $year);
+                    });
+
+                    $filterYear['dateYearRange'] = date('M-Y', strtotime($request->month));
+                    $filterYear['type']          = __('Monthly');
+
+                }
+                elseif(!isset($request->type))
+                {
+                    $month     = date('m');
+                    $year      = date('Y');
+                    $monthYear = date('Y-m');
+
+                    $project
+                    ->where('user_id', $employee->user_id)
+                    ->whereHas('project', function ($query) use ($month, $year) {
+                        $query->whereMonth('start_date', $month)->whereYear('start_date', $year);
+                    });
+
+                    $filterYear['dateYearRange'] = date('M-Y', strtotime($monthYear));
+                    $filterYear['type']          = __('Monthly');
+                }
+
+
+                if($request->type == 'yearly' && !empty($request->year))
+                {
+                    $year      = date('Y');
+                    $project
+                    ->where('user_id', $employee->user_id)
+                    ->whereHas('project', function ($query) use ($year) {
+                        $query->whereYear('start_date', $year);
+                    });
+
+                    $filterYear['dateYearRange'] = $request->year;
+                    $filterYear['type']          = __('Yearly');
+                }
+
+                $project = $project->count();
+
+                $totalProject += $project;
+
+                $employeeProjects['project'] = $project;
+
+
+                $projects[] = $employeeProjects;
+            }
+
+            $starting_year = date('Y', strtotime('-5 year'));
+            $ending_year   = date('Y', strtotime('+5 year'));
+
+            $filterYear['starting_year'] = $starting_year;
+            $filterYear['ending_year']   = $ending_year;
+
+            $filter['totalProject'] = $totalProject;
+
+
+            return view('report.projects', compact('department', 'branch', 'projects', 'filterYear', 'filter'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+
+    }
+
+    public function employeeProjects(Request $request, $employee_id, $type, $month, $year)
+    {
+        if(\Auth::user()->can('manage report'))
+        {
+            $projects                = [];
+            $employee                = Employee::where('employee_id', $employee_id)->first();
+            $userDetail              = \Auth::user();
+            $user_projects           = $employee->projects()->pluck('project_id','project_id')->toArray();
+            $project                 = ProjectUser::with('project');
+
+            if($type == 'yearly')
+            {
+                $project
+                    ->where('user_id', $employee->user_id)
+                    ->whereHas('project', function ($query) use ($month, $year) {
+                        $query->whereYear('start_date', $year);
+                    });
+            }
+            else
+            {
+                $m = date('m', strtotime($month));
+                $y = date('Y', strtotime($month));
+
+                $project
+                    ->where('user_id', $employee->user_id)
+                    ->whereHas('project', function ($query) use ($m, $y) {
+                        $query->whereMonth('start_date', $m)->whereYear('start_date', $y);
+                    });
+            }
+
+
+            $project = $project->get();
+
+
+            return view('report.projectsShow', compact('projects', 'project'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+
 
     }
 

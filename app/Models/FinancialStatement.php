@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\SummaryJournalData;
 
 class FinancialStatement extends Model
 {
@@ -14,11 +15,20 @@ class FinancialStatement extends Model
     protected $fillable = [
         'project_id', 'm', 'lk', 'cn', 'rp',
         'add1', 'add2', 'add3', 'coa',
-        'account', 'unaudited2020', 'audited2021', 'inhouse2022',
-        'dr', 'cr', 'audited2022', 'jan',
+        'account', 'prior_period2', 'prior_period', 'inhouse',
+        'dr', 'cr', 'audited', 'jan',
         'feb', 'mar', 'apr', 'may',
         'jun', 'jul', 'aug', 'sep',
         'oct', 'nov', 'dec', 'triwulan1',
-        'triwulan2', 'triwulan3', 'triwulan4'
+        'triwulan2', 'triwulan3', 'triwulan4','notes'
     ];
+
+    public function materiality(){
+        return $this->belongsTo('App\Models\Materialitas', 'm', 'code');
+    }
+
+    public function summary()
+    {
+        return SummaryJournalData::whereIn('coa', explode(',', $this->id))->get();
+    }
 }

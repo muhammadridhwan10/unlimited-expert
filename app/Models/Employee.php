@@ -289,6 +289,11 @@ class Employee extends Model
         return AttendanceEmployee::where('employee_id', $employee_id)->where('date', $data)->first();
     }
 
+    public function projects()
+    {
+        return $this->belongsToMany('App\Models\Project', 'project_users', 'user_id', 'project_id')->withTimestamps();
+    }
+
 
 
 

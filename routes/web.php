@@ -1647,6 +1647,20 @@ Route::resource('overtime', 'OvertimeController')->middleware(
     ]
 );
 
+Route::get('overtime/{id}/action', 'OvertimeController@action')->name('overtime.action')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post('overtime/changeaction', 'OvertimeController@changeaction')->name('overtime.changeaction')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
 Route::get('employee/salary/{eid}', 'SetSalaryController@employeeBasicSalary')->name('employee.basic.salary')->middleware(
     [
         'auth',
@@ -2256,6 +2270,12 @@ Route::get('employee/{id}/leave/{status}/{type}/{month}/{year}', 'ReportControll
         'XSS',
     ]
 );
+Route::get('employee/{id}/projects/{type}/{month}/{year}', 'ReportController@employeeProjects')->name('report.employee.projects')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
 Route::get('reports-payroll', 'ReportController@payroll')->name('report.payroll')->middleware(
     [
         'auth',
@@ -2263,6 +2283,18 @@ Route::get('reports-payroll', 'ReportController@payroll')->name('report.payroll'
     ]
 );
 Route::get('reports-monthly-attendance', 'ReportController@monthlyAttendance')->name('report.monthly.attendance')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('reports-overtime', 'ReportController@overtime')->name('report.overtime')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('reports-projects', 'ReportController@projects')->name('report.projects')->middleware(
     [
         'auth',
         'XSS',
@@ -2780,6 +2812,31 @@ Route::get(
         'XSS',
     ]
 );
+
+Route::get(
+    '/projects/{pid}/task/{tid}/create-financial-statement', [
+    'as' => 'projects.tasks.create.financial.statement',
+    'uses' => 'ProjectTaskController@createFinancialStatement',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::get(
+    '/projects/{pid}/task/{tid}/create-journal-data', [
+    'as' => 'projects.tasks.create.journal.data',
+    'uses' => 'ProjectTaskController@createJournalData',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
 Route::get(
     '/projects/{pid}/task/invite', [
     'as' => 'projects.tasks.invite',
@@ -2795,6 +2852,17 @@ Route::post(
     '/projects/{pid}/task', [
     'as' => 'projects.tasks.store',
     'uses' => 'ProjectTaskController@store',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::post(
+    '/projects/{pid}/task/{tid}', [
+    'as' => 'projects.tasks.store.financial.statement',
+    'uses' => 'ProjectTaskController@storeFinancialStatement',
 ]
 )->middleware(
     [
@@ -2896,6 +2964,19 @@ Route::post(
     '/projects/{id}/comment/{tid}', [
     'as' => 'comment.store',
     'uses' => 'ProjectTaskController@commentStore',
+]
+);
+Route::post(
+    '/save-summary-materiality', [
+    'as' => 'summary.materialitas',
+    'uses' => 'ProjectTaskController@summaryMaterialitas',
+]
+);
+
+Route::post(
+    '/projects/{pid}/task/{tid}/save-journal-data', [
+    'as' => 'save-journal-data',
+    'uses' => 'ProjectTaskController@saveJournalData',
 ]
 );
 Route::post(
@@ -3845,5 +3926,83 @@ Route::get(
         'XSS',
     ]
 );
+Route::get(
+    '/projects/{id}/task/{tid}/materialitas', [
+    'as' => 'projects.tasks.materialitas',
+    'uses' => 'ProjectTaskController@getMaterialitas',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
 
+Route::get(
+    '/projects/{id}/task/{tid}/journal-entries', [
+    'as' => 'projects.tasks.journal.entries',
+    'uses' => 'ProjectTaskController@getJournalEntries',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::get(
+    '/projects/{id}/task/{tid}/keuangan-ringkas', [
+    'as' => 'projects.tasks.keuangan.ringkas',
+    'uses' => 'ProjectTaskController@getKeuanganRingkas',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::get(
+    '/projects/{id}/task/{tid}/audit-memorandum', [
+    'as' => 'projects.tasks.audit.memorandum',
+    'uses' => 'ProjectTaskController@getAuditMemorandum',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::get(
+    '/projects/{id}/task/{tid}/rasio-keuangan', [
+    'as' => 'projects.tasks.rasio.keuangan',
+    'uses' => 'ProjectTaskController@getRasioKeuangan',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post('auditmemorandum/{pid}', 'ProjectTaskController@storeAuditMemorandum')->name('store.audit.memorandum')->middleware(['auth']);
+
+Route::get(
+    '/projects/{id}/task/{tid}/showproseduranalisis', [
+    'as' => 'projects.tasks.showproseduranalisis',
+    'uses' => 'ProjectTaskController@showproseduranalisis',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post('tasks/materialitas', 'ProjectTaskController@materialitas')->name('tasks.materialitas');
+Route::post('tasks/journaldata', 'ProjectTaskController@journaldata')->name('journal.data');
 Route::post('/import/project-financial-statement/{pid}', 'ProjectTaskController@import')->name('import');
+
+Route::post('reports-monthly-attendance/getdepartment', 'ReportController@getdepartment')->name('report.attendance.getdepartment')->middleware(['auth', 'XSS']);
+Route::post('reports-monthly-attendance/getemployee', 'ReportController@getemployee')->name('report.attendance.getemployee')->middleware(['auth', 'XSS']);

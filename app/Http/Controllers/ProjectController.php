@@ -2105,4 +2105,13 @@ class ProjectController extends Controller
         }
     }
 
+    //manage overtime
+    public function listOvertime(Request $request)
+    {
+        $user = \Auth::user();
+        
+        $users = User::where('type', '!=', 'client')->where('type', '!=', 'staff_client')->orderBy('name', 'ASC')->get();
+        return view('projects.overtime', compact('users'));
+    }
+
 }

@@ -220,6 +220,13 @@ class ProjectReportController extends Controller
 
                     $tasks = ProjectTask::where('project_id',$id)->get();
                     $data = [];
+                    $rataratalink = 0;
+                    $rataratacomment = 0;
+                    $jumlahhari = 0;
+                    $countsubtask = 0;
+                    $counttasklink = 0;
+                    $counttaskcomment = 0;
+                    $totalchecked = 0;
                     foreach ($tasks as $task)
                     {
                         $projects = $task->project;
@@ -260,17 +267,17 @@ class ProjectReportController extends Controller
                         $timesheets_task = Timesheet::where('task_id',$task->id)->where('project_id',$id)->get();
                         $totalchecked = $countchecked . '/' .  $countsubtask;
 
-                    foreach($timesheets_task as $timesheet)
-                    {
+                        foreach($timesheets_task as $timesheet)
+                        {
 
-                        $hours =  date('H', strtotime($timesheet->time));
-                        $minutes =  date('i', strtotime($timesheet->time));
-                        $total_hour = $hours + ($minutes/60) ;
-                        $logged_hour += $total_hour ;
-                        $logged_hour_chart = number_format($logged_hour, 2, '.', '');
+                            $hours =  date('H', strtotime($timesheet->time));
+                            $minutes =  date('i', strtotime($timesheet->time));
+                            $total_hour = $hours + ($minutes/60) ;
+                            $logged_hour += $total_hour ;
+                            $logged_hour_chart = number_format($logged_hour, 2, '.', '');
 
+                        }
                     }
-                }
 
 
                 //Estimated Hours

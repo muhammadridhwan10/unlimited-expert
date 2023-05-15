@@ -62,8 +62,8 @@
         </div>
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
-                {{ Form::label('label', __('Label'), ['class' => 'form-label']) }}
-                <select name="label" id="label" class="form-control main-element">
+                {{ Form::label('label', __('Label'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                <select name="label" id="label" class="form-control main-element" required>
                     @foreach(\App\Models\Project::$label as $k => $v)
                         <option value="{{$k}}">{{__($v)}}</option>
                     @endforeach
