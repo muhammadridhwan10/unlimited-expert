@@ -5749,6 +5749,21 @@ class ReportController extends Controller
                     $filterYear['type']          = __('Yearly');
                 }
 
+                if($request->type == 'weekly' && !empty($request->week))
+                {
+                    $startOfWeek = date('Y-m-d', strtotime($request->week));
+                    $endOfWeek = date('Y-m-d', strtotime('+6 days', strtotime($startOfWeek)));
+
+                    $project
+                    ->where('user_id', $employee->user_id)
+                    ->whereHas('project', function ($query) use ($startOfWeek, $endOfWeek) {
+                        $query->whereBetween('start_date', [$startOfWeek, $endOfWeek]);
+                    });
+
+                    $filterYear['dateYearRange'] = date('M-Y', strtotime($startOfWeek)).' - '.date('M-Y', strtotime($endOfWeek));
+                    $filterYear['type']          = __('Weekly');
+                }
+
                 $project = $project->count();
 
                 $totalProject += $project;
@@ -5777,7 +5792,7 @@ class ReportController extends Controller
 
     }
 
-    public function employeeProjects(Request $request, $employee_id, $type, $month, $year)
+    public function employeeProjects(Request $request, $employee_id, $type, $month, $year, $week)
     {
         if(\Auth::user()->can('manage report'))
         {
@@ -5793,6 +5808,17 @@ class ReportController extends Controller
                     ->where('user_id', $employee->user_id)
                     ->whereHas('project', function ($query) use ($month, $year) {
                         $query->whereYear('start_date', $year);
+                    });
+            }
+            elseif ($type == 'weekly')
+            {
+                $startOfWeek = date('Y-m-d', strtotime($week));
+                $endOfWeek = date('Y-m-d', strtotime('+6 days', strtotime($startOfWeek)));
+
+                $project
+                    ->where('user_id', $employee->user_id)
+                    ->whereHas('project', function ($query) use ($startOfWeek, $endOfWeek) {
+                        $query->whereBetween('start_date', [$startOfWeek, $endOfWeek]);
                     });
             }
             else

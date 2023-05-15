@@ -2270,7 +2270,7 @@ Route::get('employee/{id}/leave/{status}/{type}/{month}/{year}', 'ReportControll
         'XSS',
     ]
 );
-Route::get('employee/{id}/projects/{type}/{month}/{year}', 'ReportController@employeeProjects')->name('report.employee.projects')->middleware(
+Route::get('employee/{id}/projects/{type}/{month}/{year}/{week}', 'ReportController@employeeProjects')->name('report.employee.projects')->middleware(
     [
         'auth',
         'XSS',
