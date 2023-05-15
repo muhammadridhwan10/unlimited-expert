@@ -13,7 +13,7 @@ class ValueMaterialitas extends Model
 
     protected $fillable = [
         'project_id', 'materialitas_id','prior_period2','prior_period','inhouse',
-        'audited2022'
+        'audited'
     ];
 
     public function materiality()

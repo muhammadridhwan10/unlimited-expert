@@ -55,39 +55,57 @@ class ProjectTaskController extends Controller
                     $tasks = ProjectTask::where('project_id', '=', $project_id)->get();
                 }
 
-                $data_task = ProjectTask::where('project_id', '=', $project_id)->where('name','=','Prosedur Analitis')->first();
-                
+                $data_task = ProjectTask::where('project_id', $project_id)->where('name', 'Prosedur Analitis')->first();
+
                 if(!empty($data_task))
                 {
-                    $createSubTask = [
-                        [
+                    $existingSubTasks = TaskChecklist::whereIn('name', ['Data Keuangan Ringkas', 'Rasio Keuangan', 'Audit Memorandum'])
+                        ->where('task_id', $data_task->id)
+                        ->where('project_id', $project_id)
+                        ->pluck('name')
+                        ->toArray();
+
+                    $createSubTask = [];
+
+                    if (!in_array('Data Keuangan Ringkas', $existingSubTasks)) {
+                        $createSubTask[] = [
                             'name' => 'Data Keuangan Ringkas',
                             'task_id' => $data_task->id,
                             'project_id' => $project_id,
                             'created_by' => 1,
                             'user_type' => 'User',
                             'status' => 0,
-                        ],
-                        [
+                        ];
+                    }
+
+                    if (!in_array('Rasio Keuangan', $existingSubTasks)) {
+                        $createSubTask[] = [
                             'name' => 'Rasio Keuangan',
                             'task_id' => $data_task->id,
                             'project_id' => $project_id,
                             'created_by' => 1,
                             'user_type' => 'User',
                             'status' => 0,
-                        ],
-                        [
+                        ];
+                    }
+
+                    if (!in_array('Audit Memorandum', $existingSubTasks)) {
+                        $createSubTask[] = [
                             'name' => 'Audit Memorandum',
                             'task_id' => $data_task->id,
                             'project_id' => $project_id,
                             'created_by' => 1,
                             'user_type' => 'User',
                             'status' => 0,
-                        ],
-                    ];
-        
-                    $checklist = TaskChecklist::create($createSubTask);
+                        ];
+                    }
+
+                    if (!empty($createSubTask)) {
+                        $checklist = TaskChecklist::insert($createSubTask);
+                    }
                 }
+
+
 
                 return view('project_task.index', compact('tasks','taskstage','category_template_id','project'));
             }

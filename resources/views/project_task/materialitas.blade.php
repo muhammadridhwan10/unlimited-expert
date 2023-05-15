@@ -31,7 +31,7 @@
                 cache: false,
                 success: function (data) {
                     var item = JSON.parse(data);
-                    console.log(item)
+                    //console.log(item)
                     $('.rate').val(0);
                     $('.pmrate').val(0);
                     $('.terate').val(0);
