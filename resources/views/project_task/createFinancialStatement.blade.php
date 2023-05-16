@@ -71,19 +71,19 @@
     <div class="row">
         <div class="col-sm-4 col-md-4">
             <div class="form-group">
-                {{ Form::label('prior_period2', __('Unaudited 2020'),['class' => 'form-label']) }}
+                {{ Form::label('prior_period2', __(date(' Y', strtotime('-3 year', strtotime($project->book_year)))),['class' => 'form-label']) }}
                 {{ Form::text('prior_period2', null, ['class' => 'form-control','required'=>'required']) }}
             </div>
         </div>
         <div class="col-sm-4 col-md-4">
             <div class="form-group">
-                {{ Form::label('prior_period', __('Audited 2021'),['class' => 'form-label']) }}
+                {{ Form::label('prior_period', __(date(' Y', strtotime('-2 year', strtotime($project->book_year)))),['class' => 'form-label']) }}
                 {{ Form::text('prior_period', null, ['class' => 'form-control','required'=>'required']) }}
             </div>
         </div>
         <div class="col-sm-4 col-md-4">
             <div class="form-group">
-                {{ Form::label('inhouse', __('Inhouse 2022'),['class' => 'form-label']) }}
+                {{ Form::label('inhouse', __('Inhouse ' . $project->book_year),['class' => 'form-label']) }}
                 {{ Form::text('inhouse', null, ['class' => 'form-control','required'=>'required']) }}
             </div>
         </div>

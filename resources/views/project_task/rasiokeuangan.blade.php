@@ -39,8 +39,8 @@
                             <thead>
                                 <tr>
                                     <th style="text-align: center;" scope="col">Rasio Keuangan</th>
-                                    <th style="text-align: center;" scope="col">{{'Unaudited' . date(' Y', strtotime('-3 year', strtotime($project->book_year)))}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Audited' . date(' Y', strtotime('-2 year', strtotime($project->book_year)))}}</th>
+                                    <th style="text-align: center;" scope="col">{{date(' Y', strtotime('-3 year', strtotime($project->book_year)))}}</th>
+                                    <th style="text-align: center;" scope="col">{{date(' Y', strtotime('-2 year', strtotime($project->book_year)))}}</th>
                                     <th style="text-align: center;" scope="col">{{'Inhouse ' . $project->book_year}}</th>
                                     <th style="text-align: center;" scope="col">{{'Audited ' . $project->book_year}}</th>
                                 </tr>
@@ -49,10 +49,10 @@
                                 @foreach($summary_rasio_keuangan as $data)
                                     <tr>
                                         <td style="border: 1px solid black;">{{$data['akun']}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($data['data_2020']))? number_format($data['data_2020']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($data['data_2021']))? number_format($data['data_2021']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($data['data_in_2022']))? number_format($data['data_in_2022']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($data['data_au_2022']))? number_format($data['data_au_2022']):'-'}}</td>
+                                        <td style="border: 1px solid black; width:150px;">{{!empty($data['data_2020'])? ($data['data_2020'] != '0.00' ? $data['data_2020'] : '-') : '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px;">{{!empty($data['data_2021'])? ($data['data_2021'] != '0.00' ? $data['data_2021'] : '-') : '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px;">{{!empty($data['data_in_2022'])? ($data['data_in_2022'] != '0.00' ? $data['data_in_2022'] : '-') : '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px;">{{!empty($data['data_au_2022'])? ($data['data_au_2022'] != '0.00' ? $data['data_au_2022'] : '-') : '-'}}</td>
                                     </tr>
                                 @endforeach  
                             </tbody>

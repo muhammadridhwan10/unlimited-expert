@@ -194,7 +194,7 @@
                                 </div>
                                 <div class="col-sm-3 col-md-2">
                                     <div class="form-group">
-                                        <p style= 'text-align:center'><b>{{'Unaudited' . date(' Y', strtotime('-3 year', strtotime($project->book_year)))}}</b></p>
+                                        <p style= 'text-align:center'><b>{{date(' Y', strtotime('-3 year', strtotime($project->book_year)))}}</b></p>
                                         @foreach($data_array_2020 as $key => $data_2020)
                                         @if($key == '8' || $key == '9' || $key == '10')
                                             <div class="col-sm-3 col-md-12">    
@@ -214,7 +214,7 @@
                                 </div>
                                 <div class="col-sm-3 col-md-2">
                                     <div class="form-group">
-                                        <p style= 'text-align:center'><b>{{'Audited' . date(' Y', strtotime('-2 year', strtotime($project->book_year)))}}</b></p>
+                                        <p style= 'text-align:center'><b>{{date(' Y', strtotime('-2 year', strtotime($project->book_year)))}}</b></p>
                                         @foreach($data_array_2021 as $key => $data_2021)
                                             @if($key == '8' || $key == '9' || $key == '10')
                                             <div class="col-sm-3 col-md-12">
