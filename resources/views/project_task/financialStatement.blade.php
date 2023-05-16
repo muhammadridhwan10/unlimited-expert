@@ -65,13 +65,6 @@
                             <table class="table datatable">
                                 <thead>
                                 <tr>
-                                    <th style="text-align: center;"scope="col">{{'M'}}</th>
-                                    <th style="text-align: center;"scope="col">{{'LK'}}</th>
-                                    <th style="text-align: center;"scope="col">{{'C/N'}}</th>
-                                    <th style="text-align: center;"scope="col">{{'RP'}}</th>
-                                    <th style="text-align: center;"scope="col">{{'Add.1'}}</th>
-                                    <th style="text-align: center;"scope="col">{{'Add.2'}}</th>
-                                    <th style="text-align: center;"scope="col">{{'Add.3'}}</th>
                                     <th style="text-align: center;"scope="col">{{'CoA'}}</th>
                                     <th style="text-align: center;"scope="col">{{'Account'}}</th>
                                     <th style="text-align: center;" scope="col">{{'Unaudited' . date(' Y', strtotime('-3 year', strtotime($project->book_year)))}}</th>
@@ -86,13 +79,6 @@
                                 @if(count(array($financial_statement)) > 0)
                                     @foreach($financial_statement as $financial_statements)
                                         <tr>
-                                            <td style="border: 1px solid black;">{{ $financial_statements->m }}</td>
-                                            <td style="border: 1px solid black;">{{ $financial_statements->lk }}</td>
-                                            <td style="border: 1px solid black;">{{ $financial_statements->cn }}</td>
-                                            <td style="border: 1px solid black;">{{ $financial_statements->rp }}</td>
-                                            <td style="border: 1px solid black;">{{ $financial_statements->add1 }}</td>
-                                            <td style="border: 1px solid black;">{{ $financial_statements->add2 }}</td>
-                                            <td style="border: 1px solid black;">{{ $financial_statements->add3 }}</td>
                                             <td style="border: 1px solid black;">{{ $financial_statements->coa }}</td>
                                             <td style="border: 1px solid black;">{{ $financial_statements->account }}</td>
                                             <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->prior_period2))? number_format($financial_statements->prior_period2):'-' }}</td>
@@ -127,13 +113,6 @@
                             <table class="table datatables">
                                 <thead>
                                 <tr>
-                                    <th style="text-align: center;" scope="col">{{'M'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'LK'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'C/N'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'RP'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Add.1'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Add.2'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Add.3'}}</th>
                                     <th style="text-align: center;" scope="col">{{'CoA'}}</th>
                                     <th style="text-align: center;" scope="col">{{'Account'}}</th>
                                     <th style="text-align: center;" scope="col">{{'Jan'}}</th>
@@ -158,13 +137,6 @@
                                 @if(count(array($financial_statement)) > 0)
                                     @foreach($financial_statement as $financial_statements)
                                         <tr>
-                                            <td style="border: 1px solid black;">{{ $financial_statements->m }}</td>
-                                            <td style="border: 1px solid black;">{{ $financial_statements->lk }}</td>
-                                            <td style="border: 1px solid black;">{{ $financial_statements->cn }}</td>
-                                            <td style="border: 1px solid black;">{{ $financial_statements->rp }}</td>
-                                            <td style="border: 1px solid black;">{{ $financial_statements->add1 }}</td>
-                                            <td style="border: 1px solid black;">{{ $financial_statements->add2 }}</td>
-                                            <td style="border: 1px solid black;">{{ $financial_statements->add3 }}</td>
                                             <td style="border: 1px solid black;">{{ $financial_statements->coa }}</td>
                                             <td style="border: 1px solid black;">{{ $financial_statements->account }}</td>
                                             <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->jan))? number_format($financial_statements->jan):'-' }}</td>

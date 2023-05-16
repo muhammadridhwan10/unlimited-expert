@@ -2336,7 +2336,7 @@ class ProjectTaskController extends Controller
     public function saveJournalData(Request $request, $project_id, $task_id)
     {
 
-        if(\Auth::user()->can('create task'))
+        if(\Auth::user()->can('create project task'))
         {
 
             $id                            = Crypt::decrypt($task_id);
