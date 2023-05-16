@@ -114,8 +114,8 @@
                                 <tr>
                                     <th style="text-align: center;" scope="col">Kode</th>
                                     <th style="text-align: center;" scope="col">Akun</th>
-                                    <th style="text-align: center;" scope="col">{{'Unaudited' . date(' Y', strtotime('-2 year', strtotime($project->book_year)))}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Audited' . date(' Y', strtotime('-1 year', strtotime($project->book_year)))}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Unaudited' . date(' Y', strtotime('-3 year', strtotime($project->book_year)))}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Audited' . date(' Y', strtotime('-2 year', strtotime($project->book_year)))}}</th>
                                     <th style="text-align: center;" scope="col">{{'Inhouse ' . $project->book_year}}</th>
                                     <th style="text-align: center;" scope="col">{{'Audited ' . $project->book_year}}</th>
                                 </tr>
@@ -139,8 +139,8 @@
                                 <tr>
                                     <th style="text-align: center;" scope="col">Kode</th>
                                     <th style="text-align: center;" scope="col">Akun</th>
-                                    <th style="text-align: center;" scope="col">{{'Unaudited' . date(' Y', strtotime('-2 year', strtotime($project->book_year)))}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Audited' . date(' Y', strtotime('-1 year', strtotime($project->book_year)))}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Unaudited' . date(' Y', strtotime('-3 year', strtotime($project->book_year)))}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Audited' . date(' Y', strtotime('-2 year', strtotime($project->book_year)))}}</th>
                                     <th style="text-align: center;" scope="col">{{'Inhouse ' . $project->book_year}}</th>
                                     <th style="text-align: center;" scope="col">{{'Audited ' . $project->book_year}}</th>
                                 </tr>
@@ -176,8 +176,8 @@
                             <thead>
                                 <tr>
                                     <th style="text-align: center;" scope="col">Akun</th>
-                                    <th style="text-align: center;" scope="col">{{'Unaudited' . date(' Y', strtotime('-2 year', strtotime($project->book_year)))}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Audited' . date(' Y', strtotime('-1 year', strtotime($project->book_year)))}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Unaudited' . date(' Y', strtotime('-3 year', strtotime($project->book_year)))}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Audited' . date(' Y', strtotime('-2 year', strtotime($project->book_year)))}}</th>
                                     <th style="text-align: center;" scope="col">{{'Inhouse ' . $project->book_year}}</th>
                                     <th style="text-align: center;" scope="col">{{'Audited ' . $project->book_year}}</th>
                                 </tr>

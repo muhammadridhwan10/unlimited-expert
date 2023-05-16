@@ -32,12 +32,11 @@ class OvertimeController extends Controller
             $employee     = Employee::where('user_id', '=', $users->id)->first();
             $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
         }
-        elseif(\Auth::user()->type == 'senior_audit' || \Auth::user()->type == 'senior_accounting')
+        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting')
         {
-            $overtimes   = UserOvertime::where('user_id', '=', \Auth::user()->id)->get();
-
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
+            $overtimes    = UserOvertime::where('user_id', '=', $employee->id)->get();
             $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
         }
         else
@@ -152,33 +151,31 @@ class OvertimeController extends Controller
     {
 
         $overtime     = UserOvertime::find($id);
-        $user         = User::find($overtime->user_id);
+        $employee     = Employee::where('id', $overtime->user_id)->first();
+        $user         = User::find($employee->user_id);
         $project      = Project::find($overtime->project_id);
 
         return view('overtime.action', compact('overtime', 'user','project'));
     }
 
-    public function edit($overtime)
+    public function edit(UserOvertime $overtime)
     {
-        $overtime = Overtime::find($overtime);
         if(\Auth::user()->can('edit overtime'))
         {
-            if($overtime->created_by == \Auth::user()->creatorId())
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
-                return view('overtime.edit', compact('overtime'));
-            }
-            elseif(\Auth::user()->type = 'admin')
-            {
-                return view('overtime.edit', compact('overtime'));
-            }
-            elseif(\Auth::user()->type = 'company')
-            {
-                return view('overtime.edit', compact('overtime'));
+                $employees         = Employee::get()->pluck('name', 'id');
+                $approval          = Employee::get()->pluck('name', 'id');
+                $project           = Project::get()->pluck('project_name', 'id');
             }
             else
             {
-                return response()->json(['error' => __('Permission denied.')], 401);
+                $employees    = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
+                $approval     = Employee::get()->pluck('name', 'id');
+                $project      = Project::get()->pluck('project_name', 'id');
             }
+
+            return view('overtime.edit', compact('overtime', 'employees', 'project', 'approval'));
         }
         else
         {
@@ -188,94 +185,156 @@ class OvertimeController extends Controller
 
     public function update(Request $request, $overtime)
     {
-        $overtime = Overtime::find($overtime);
+
+        $overtime = UserOvertime::find($overtime);
         if(\Auth::user()->can('edit overtime'))
         {
-            if($overtime->created_by == \Auth::user()->creatorId())
+            $user                     = \Auth::user();
+            $employees                = Employee::where('user_id', '=', $user->id)->first();
+            if(\Auth::user()->type == "admin" || \Auth::user()->type == "company" )
             {
-                $validator = \Validator::make(
-                    $request->all(), [
-                                       'title' => 'required',
-                                       'number_of_days' => 'required',
-                                       'hours' => 'required',
-                                       'rate' => 'required',
-                                   ]
-                );
-                if($validator->fails())
-                {
-                    $messages = $validator->getMessageBag();
-
-                    return redirect()->back()->with('error', $messages->first());
-                }
-
-                $overtime->title          = $request->title;
-                $overtime->number_of_days = $request->number_of_days;
-                $overtime->hours          = $request->hours;
-                $overtime->rate           = $request->rate;
-                $overtime->save();
-
-                return redirect()->back()->with('success', __('Overtime successfully updated.'));
-            }
-            elseif(\Auth::user()->type = 'admin')
-            {
-                $validator = \Validator::make(
-                    $request->all(), [
-                                       'title' => 'required',
-                                       'number_of_days' => 'required',
-                                       'hours' => 'required',
-                                       'rate' => 'required',
-                                   ]
-                );
-                if($validator->fails())
-                {
-                    $messages = $validator->getMessageBag();
-
-                    return redirect()->back()->with('error', $messages->first());
-                }
-
-                $overtime->title          = $request->title;
-                $overtime->number_of_days = $request->number_of_days;
-                $overtime->hours          = $request->hours;
-                $overtime->rate           = $request->rate;
-                $overtime->save();
-
-                return redirect()->back()->with('success', __('Overtime successfully updated.'));
-            }
-            elseif(\Auth::user()->type = 'company')
-            {
-                $validator = \Validator::make(
-                    $request->all(), [
-                                       'title' => 'required',
-                                       'number_of_days' => 'required',
-                                       'hours' => 'required',
-                                       'rate' => 'required',
-                                   ]
-                );
-                if($validator->fails())
-                {
-                    $messages = $validator->getMessageBag();
-
-                    return redirect()->back()->with('error', $messages->first());
-                }
-
-                $overtime->title          = $request->title;
-                $overtime->number_of_days = $request->number_of_days;
-                $overtime->hours          = $request->hours;
-                $overtime->rate           = $request->rate;
-                $overtime->save();
-
-                return redirect()->back()->with('success', __('Overtime successfully updated.'));
+                $overtime->user_id = $request->user_id;
             }
             else
             {
-                return redirect()->back()->with('error', __('Permission denied.'));
+                $overtime->user_id = $employees->id;
             }
+            $overtime->project_id       = $request->project_id;
+            $overtime->start_time       = $request->start_time;
+            $overtime->end_time         = $request->end_time;
+            $overtime->start_date       = $request->start_date;
+            $overtime->approval         = $request->approval;
+            $overtime->status           = 'Pending';
+            $overtime->total_time       = 0;
+            $overtime->note             = $request->note;
+            $overtime->save();
+
+            return redirect()->back()->with('success', __('Overtime  successfully updated.'));
         }
         else
         {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
     }
+
+    // public function edit($overtime)
+    // {
+    //     $overtime = Overtime::find($overtime);
+    //     if(\Auth::user()->can('edit overtime'))
+    //     {
+    //         if($overtime->created_by == \Auth::user()->creatorId())
+    //         {
+    //             return view('overtime.edit', compact('overtime'));
+    //         }
+    //         elseif(\Auth::user()->type = 'admin')
+    //         {
+    //             return view('overtime.edit', compact('overtime'));
+    //         }
+    //         elseif(\Auth::user()->type = 'company')
+    //         {
+    //             return view('overtime.edit', compact('overtime'));
+    //         }
+    //         else
+    //         {
+    //             return response()->json(['error' => __('Permission denied.')], 401);
+    //         }
+    //     }
+    //     else
+    //     {
+    //         return response()->json(['error' => __('Permission denied.')], 401);
+    //     }
+    // }
+
+    // public function update(Request $request, $overtime)
+    // {
+    //     $overtime = Overtime::find($overtime);
+    //     if(\Auth::user()->can('edit overtime'))
+    //     {
+    //         if($overtime->created_by == \Auth::user()->creatorId())
+    //         {
+    //             $validator = \Validator::make(
+    //                 $request->all(), [
+    //                                    'title' => 'required',
+    //                                    'number_of_days' => 'required',
+    //                                    'hours' => 'required',
+    //                                    'rate' => 'required',
+    //                                ]
+    //             );
+    //             if($validator->fails())
+    //             {
+    //                 $messages = $validator->getMessageBag();
+
+    //                 return redirect()->back()->with('error', $messages->first());
+    //             }
+
+    //             $overtime->title          = $request->title;
+    //             $overtime->number_of_days = $request->number_of_days;
+    //             $overtime->hours          = $request->hours;
+    //             $overtime->rate           = $request->rate;
+    //             $overtime->save();
+
+    //             return redirect()->back()->with('success', __('Overtime successfully updated.'));
+    //         }
+    //         elseif(\Auth::user()->type = 'admin')
+    //         {
+    //             $validator = \Validator::make(
+    //                 $request->all(), [
+    //                                    'title' => 'required',
+    //                                    'number_of_days' => 'required',
+    //                                    'hours' => 'required',
+    //                                    'rate' => 'required',
+    //                                ]
+    //             );
+    //             if($validator->fails())
+    //             {
+    //                 $messages = $validator->getMessageBag();
+
+    //                 return redirect()->back()->with('error', $messages->first());
+    //             }
+
+    //             $overtime->title          = $request->title;
+    //             $overtime->number_of_days = $request->number_of_days;
+    //             $overtime->hours          = $request->hours;
+    //             $overtime->rate           = $request->rate;
+    //             $overtime->save();
+
+    //             return redirect()->back()->with('success', __('Overtime successfully updated.'));
+    //         }
+    //         elseif(\Auth::user()->type = 'company')
+    //         {
+    //             $validator = \Validator::make(
+    //                 $request->all(), [
+    //                                    'title' => 'required',
+    //                                    'number_of_days' => 'required',
+    //                                    'hours' => 'required',
+    //                                    'rate' => 'required',
+    //                                ]
+    //             );
+    //             if($validator->fails())
+    //             {
+    //                 $messages = $validator->getMessageBag();
+
+    //                 return redirect()->back()->with('error', $messages->first());
+    //             }
+
+    //             $overtime->title          = $request->title;
+    //             $overtime->number_of_days = $request->number_of_days;
+    //             $overtime->hours          = $request->hours;
+    //             $overtime->rate           = $request->rate;
+    //             $overtime->save();
+
+    //             return redirect()->back()->with('success', __('Overtime successfully updated.'));
+    //         }
+    //         else
+    //         {
+    //             return redirect()->back()->with('error', __('Permission denied.'));
+    //         }
+    //     }
+    //     else
+    //     {
+    //         return redirect()->back()->with('error', __('Permission denied.'));
+    //     }
+    // }
 
     public function destroy(Overtime $overtime)
     {

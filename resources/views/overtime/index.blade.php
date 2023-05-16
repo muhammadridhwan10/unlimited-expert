@@ -36,6 +36,7 @@
                                 <th>{{__('Total Time')}}</th>
                                 <th width="200px">{{__('Note')}}</th>
                                 <th>{{__('Status')}}</th>
+                                <th width="200px">{{__('Action')}}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -61,6 +62,15 @@
                                             <div class="status_badge badge bg-danger p-2 px-3 rounded">{{ $overtime->status }}</div>
                                         @endif
                                     </td>
+                                    <td>
+                                        @if($overtime->status == "Pending")
+                                            @can('edit overtime')
+                                            <div class="action-btn bg-primary ms-2">
+                                                <a href="#" data-url="{{ URL::to('overtime/'.$overtime->id.'/edit') }}" data-size="lg" data-ajax-popup="true" data-title="{{__('Edit Overtime')}}" class="mx-3 btn btn-sm  align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-original-title="{{__('Edit')}}"><i class="ti ti-pencil text-white"></i></a>
+                                            </div>
+                                            @endcan
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                             </tbody>
@@ -71,7 +81,7 @@
         </div>
     </div>
 
-    @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior_audit' || \Auth::user()->type == 'senior_accounting')
+    @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting')
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">
@@ -81,7 +91,7 @@
                         <table class="table datatables">
                                 <thead>
                                 <tr>
-                                    @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior_audit' || \Auth::user()->type == 'senior_accounting')
+                                    @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting')
                                         <th>{{__('Employee')}}</th>
                                     @endif
                                     <th>{{__('Project Name')}}</th>
@@ -95,7 +105,7 @@
                                 <tbody>
                                 @foreach ($approval as $approvals)
                                     <tr>
-                                        @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'client' || \Auth::user()->type == 'staff_client')
+                                        @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'staff_client')
                                             <td>{{!empty($approvals->employee->name)?$approvals->employee->name:'-'}}</td>
                                         @endif
                                         <td>{{!empty($approvals->project->project_name)?$approvals->project->project_name:'-'}}</td>

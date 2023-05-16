@@ -74,8 +74,8 @@
                                     <th style="text-align: center;"scope="col">{{'Add.3'}}</th>
                                     <th style="text-align: center;"scope="col">{{'CoA'}}</th>
                                     <th style="text-align: center;"scope="col">{{'Account'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Unaudited' . date(' Y', strtotime('-2 year', strtotime($project->book_year)))}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Audited' . date(' Y', strtotime('-1 year', strtotime($project->book_year)))}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Unaudited' . date(' Y', strtotime('-3 year', strtotime($project->book_year)))}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Audited' . date(' Y', strtotime('-2 year', strtotime($project->book_year)))}}</th>
                                     <th style="text-align: center;" scope="col">{{'Inhouse ' . $project->book_year}}</th>
                                     <th style="text-align: center;"scope="col">{{'Dr.'}}</th>
                                     <th style="text-align: center;"scope="col">{{'Cr.'}}</th>
@@ -148,10 +148,6 @@
                                     <th style="text-align: center;" scope="col">{{'Oct'}}</th>
                                     <th style="text-align: center;" scope="col">{{'Nov'}}</th>
                                     <th style="text-align: center;" scope="col">{{'Dec'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Triwulan 1'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Triwulan 2'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Triwulan 3'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Triwulan 4'}}</th>
                                 </tr>
                                 </thead>
                                 <tbody class="list">
@@ -179,6 +175,60 @@
                                             <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->oct))? number_format($financial_statements->oct):'-' }}</td>
                                             <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->nov))? number_format($financial_statements->nov):'-' }}</td>
                                             <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->dec))? number_format($financial_statements->dec):'-' }}</td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr>
+                                        <th scope="col" colspan="7"><h6 class="text-center">{{__('No Financial Data Found')}}</h6></th>
+                                    </tr>
+                                @endif
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="col-12">
+                    <div class="card-header"><h6 class="mb-0">{{__('Financial Data Interim')}}</h6></div>
+                    <div class="card-body table-border-style">
+                        <div class="table-responsive">
+                            <table class="table datatabless">
+                                <thead>
+                                <tr>
+                                    <th style="text-align: center;" scope="col">{{'M'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'LK'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'C/N'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'RP'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Add.1'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Add.2'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Add.3'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'CoA'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Account'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Triwulan 1'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Triwulan 2'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Triwulan 3'}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Triwulan 4'}}</th>
+                                </tr>
+                                </thead>
+                                <tbody class="list">
+                                @if(count(array($financial_statement)) > 0)
+                                    @foreach($financial_statement as $financial_statements)
+                                        <tr>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->m }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->lk }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->cn }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->rp }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->add1 }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->add2 }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->add3 }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->coa }}</td>
+                                            <td style="border: 1px solid black;">{{ $financial_statements->account }}</td>
                                             <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->triwulan1))? number_format($financial_statements->triwulan1):'-' }}</td>
                                             <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->triwulan2))? number_format($financial_statements->triwulan2):'-' }}</td>
                                             <td style="border: 1px solid black;">{{ !empty(number_format($financial_statements->triwulan3))? number_format($financial_statements->triwulan3):'-' }}</td>
