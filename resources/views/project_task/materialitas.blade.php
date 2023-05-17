@@ -554,10 +554,8 @@
             </div>
         </div>
     </div>
-    @if(empty($valuemateriality))
-        <div class="modal-footer">
-            <input type="submit" value="{{__('Save')}}" class="btn btn-simpan  btn-primary">
-        </div>
-    @endif
+    <div class="modal-footer">
+        <input type="submit" value="{{__('Save')}}" class="btn btn-simpan  btn-primary">
+    </div>
 {{ Form::close() }}
 @endsection

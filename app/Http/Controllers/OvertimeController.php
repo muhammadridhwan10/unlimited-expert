@@ -9,6 +9,8 @@ use App\Models\ProjectUser;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Mail\OvertimeNotification;
+use Illuminate\Support\Facades\Mail;
 
 class OvertimeController extends Controller
 {
@@ -32,7 +34,7 @@ class OvertimeController extends Controller
             $employee     = Employee::where('user_id', '=', $users->id)->first();
             $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
         }
-        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting')
+        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit')
         {
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
@@ -113,6 +115,11 @@ class OvertimeController extends Controller
             $overtime->total_time       = 0;
             $overtime->note             = $request->note;
             $overtime->save();
+
+            //Email Notification Client
+            $user = Employee::where('id', $overtime->approval)->first();
+            $email = $user->email;
+            Mail::to($email)->send(new OvertimeNotification($overtime));
 
             return redirect()->back()->with('success', __('Overtime  successfully created.'));
         }

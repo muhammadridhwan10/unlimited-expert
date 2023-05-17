@@ -1944,7 +1944,7 @@ class ProjectTaskController extends Controller
             $financial_statement                = FinancialStatement::where('project_id', $project_id)->get();
             $materialitas                       = Materialitas::get();
             $get_data_materialitas              = ValueMaterialitas::where('project_id', $project_id)->get();
-            $valuemateriality                   = SummaryMateriality::where('project_id', $project_id)->first();
+            $valuemateriality                   = SummaryMateriality::where('project_id', $project_id)->orderBy('id', 'DESC')->first();
 
             //data
             $data_m1 = FinancialStatement::where('project_id', $project_id)->where('m', '=', 'M.1')->get();
@@ -2023,65 +2023,65 @@ class ProjectTaskController extends Controller
             $data_array_2020 = 
             [
                 '1' => $total_m1_2020,
-                '2' => $total_m2_2020,
-                '3' => $total_m3_2020,
-                '4' => $total_m4_2020,
+                '2' => $total_m2_2020 * -1,
+                '3' => $total_m3_2020 * -1,
+                '4' => $total_m4_2020 * -1,
                 '5' => $total_m5_2020,
                 '6' => $total_m6_2020,
-                '7' => $total_m7_2020,
+                '7' => $total_m7_2020 * -1,
             ];
 
-            $data_array_2020['8'] = $total_m4_2020 + $total_m5_2020;
+            $data_array_2020['8'] = ($total_m4_2020 * -1) + $total_m5_2020;
             $data_array_2020['9'] = $total_m6_2020 + $data_array_2020['8'];
-            $data_array_2020['10'] = $total_m7_2020 + $data_array_2020['9'];
+            $data_array_2020['10'] = ($total_m7_2020 * -1) + $data_array_2020['9'];
 
             //data array audited 2021
             $data_array_2021 = 
             [
                 '1' => $total_m1_2021,
-                '2' => $total_m2_2021,
-                '3' => $total_m3_2021,
-                '4' => $total_m4_2021,
+                '2' => $total_m2_2021 * -1,
+                '3' => $total_m3_2021 * -1,
+                '4' => $total_m4_2021 * -1,
                 '5' => $total_m5_2021,
                 '6' => $total_m6_2021,
-                '7' => $total_m7_2021,
+                '7' => $total_m7_2021 * -1,
             ];
 
-            $data_array_2021['8'] = $total_m4_2021 + $total_m5_2021;
+            $data_array_2021['8'] = ($total_m4_2021 * -1) + $total_m5_2021;
             $data_array_2021['9'] = $total_m6_2021 + $data_array_2021['8'];
-            $data_array_2021['10'] = $total_m7_2021 + $data_array_2021['9'];
+            $data_array_2021['10'] = ($total_m7_2021 * -1) + $data_array_2021['9'];
 
             //data array inhouse 2022
             $data_array_in_2022 = 
             [
                 '1' => $total_m1_in_2022,
-                '2' => $total_m2_in_2022,
-                '3' => $total_m3_in_2022,
-                '4' => $total_m4_in_2022,
+                '2' => $total_m2_in_2022 * -1,
+                '3' => $total_m3_in_2022 * -1,
+                '4' => $total_m4_in_2022 * -1,
                 '5' => $total_m5_in_2022,
                 '6' => $total_m6_in_2022,
-                '7' => $total_m7_in_2022,
+                '7' => $total_m7_in_2022 * -1,
             ];
 
-            $data_array_in_2022['8'] = $total_m4_in_2022 + $total_m5_in_2022;
+            $data_array_in_2022['8'] = ($total_m4_in_2022 * -1) + $total_m5_in_2022;
             $data_array_in_2022['9'] = $total_m6_in_2022 + $data_array_in_2022['8'];
-            $data_array_in_2022['10'] = $total_m7_in_2022 + $data_array_in_2022['9'];
+            $data_array_in_2022['10'] = ($total_m7_in_2022 * -1) + $data_array_in_2022['9'];
 
             //data array audited 2022
             $data_array_au_2022 = 
             [
                 '1' => $total_m1_au_2022,
-                '2' => $total_m2_au_2022,
-                '3' => $total_m3_au_2022,
-                '4' => $total_m4_au_2022,
+                '2' => $total_m2_au_2022 * -1,
+                '3' => $total_m3_au_2022 * -1,
+                '4' => $total_m4_au_2022 * -1,
                 '5' => $total_m5_au_2022,
                 '6' => $total_m6_au_2022,
-                '7' => $total_m7_au_2022,
+                '7' => $total_m7_au_2022 * -1,
             ];
 
-            $data_array_au_2022['8'] = $total_m4_au_2022 + $total_m5_au_2022;
+            $data_array_au_2022['8'] = ($total_m4_au_2022 * -1) + $total_m5_au_2022;
             $data_array_au_2022['9'] = $total_m6_au_2022 + $data_array_au_2022['8'];
-            $data_array_au_2022['10'] = $total_m7_au_2022 + $data_array_au_2022['9'];
+            $data_array_au_2022['10'] = ($total_m7_au_2022 * -1) + $data_array_au_2022['9'];
 
             $savematerialitas = Materialitas::get();
 
@@ -3868,10 +3868,10 @@ class ProjectTaskController extends Controller
             $detara_au_2022 = ($total_aset_au_2022 != 0) ? ($total_liabilitas_au_2022 * -1) / $total_aset_au_2022 : 0;
 
             //perhitungan debt to equity ratio
-            $detera_2020 = ($total_ekuitas_2020 != 0) ? ($total_liabilitas_2020 / $total_ekuitas_2020) * -1 : 0;
-            $detera_2021 = ($total_ekuitas_2021 != 0) ? ($total_liabilitas_2021 / $total_ekuitas_2021 * -1) : 0;
-            $detera_in_2022 = ($total_ekuitas_in_2022 != 0) ? ($total_liabilitas_in_2022 / $total_ekuitas_in_2022) * -1 : 0;
-            $detera_au_2022 = ($total_ekuitas_au_2022 != 0) ? ($total_liabilitas_au_2022 / $total_ekuitas_au_2022) * -1 : 0;
+            $detera_2020 = ($total_ekuitas_2020 != 0) ? $total_liabilitas_2020 / $total_ekuitas_2020 : 0;
+            $detera_2021 = ($total_ekuitas_2021 != 0) ? $total_liabilitas_2021 / $total_ekuitas_2021 : 0;
+            $detera_in_2022 = ($total_ekuitas_in_2022 != 0) ? $total_liabilitas_in_2022 / $total_ekuitas_in_2022 : 0;
+            $detera_au_2022 = ($total_ekuitas_au_2022 != 0) ? $total_liabilitas_au_2022 / $total_ekuitas_au_2022 : 0;
 
             //perhitungan total asset turnover ratio
             $tatura_2020 = ($total_aset_2020 != 0) ? ($total_pendapatan_2020 * -1) / $total_aset_2020 : 0;
