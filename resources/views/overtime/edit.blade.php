@@ -15,7 +15,7 @@
         <div class="col-md-12">
             <div class="form-group">
                 {{Form::label('approval',__('Approval By') ,['class'=>'form-label'])}}
-                {{Form::select('approval',$approval,null,array('class'=>'form-control select2','id'=>'approval','placeholder'=>__('Select Approval')))}}
+                {{Form::select('approval',$approval,null,array('class'=>'form-control select2','required'=>'required','id'=>'approval','placeholder'=>__('Select Approval')))}}
             </div>
         </div>
     </div>
@@ -23,7 +23,7 @@
         <div class="col-md-12">
             <div class="form-group">
                 {{Form::label('project_id',__('Project') ,['class'=>'form-label'])}}
-                {{Form::select('project_id',$project,null,array('class'=>'form-control select2','id'=>'project_id','placeholder'=>__('Select Project')))}}
+                {{Form::select('project_id',$project,null,array('class'=>'form-control select2','required'=>'required','id'=>'project_id','placeholder'=>__('Select Project')))}}
             </div>
         </div>
     </div>
@@ -31,7 +31,7 @@
         <div class="col-md-12">
             <div class="form-group">
                 {{ Form::label('start_date', __('Start Date'),['class'=>'form-label']) }}
-                {{ Form::text('start_date',null,array('class'=>'form-control', 'id'=>'datepicker')) }}
+                {{ Form::text('start_date',null,array('class'=>'form-control','required'=>'required', 'id'=>'datepicker')) }}
             </div>
         </div>
     </div>
@@ -39,13 +39,13 @@
         <div class="col-md-6">
             <div class="form-group">
                 {{ Form::label('start_time', __('Start Time'),['class'=>'form-label']) }}
-                {{Form::time('start_time',null,array('class'=>'form-control timepicker'))}}
+                {{Form::time('start_time',null,array('class'=>'form-control timepicker','required'=>'required'))}}
             </div>
         </div>
         <div class="col-md-6">
             <div class="form-group">
                 {{ Form::label('end_time', __('End Time'),['class'=>'form-label']) }}
-                {{Form::time('end_time',null,array('class'=>'form-control timepicker'))}}
+                {{Form::time('end_time',null,array('class'=>'form-control timepicker','required'=>'required'))}}
             </div>
         </div>
     </div>

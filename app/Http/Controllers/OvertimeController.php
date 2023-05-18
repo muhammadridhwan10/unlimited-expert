@@ -84,6 +84,7 @@ class OvertimeController extends Controller
                 $request->all(), [
                                    'start_time' => 'required',
                                    'end_time' => 'required',
+                                   'start_date' => 'required',
                                    'note' => 'required',
                                    'approval' => 'required',
                                ]

@@ -5562,7 +5562,7 @@ class ReportController extends Controller
                     if($dateFormat <= date('Y-m-d'))
                     {
                         $employeeAttendance = AttendanceEmployee::where('employee_id', $id)->where('date', $dateFormat)->first();
-                        $overtimes = UserOvertime::where('user_id', '=', $id)->where('start_date', $dateFormat)->get();
+                        $overtimes = UserOvertime::where('user_id', '=', $id)->where('status', '=', 'Approved')->where('start_date', $dateFormat)->get();
 
                         if(!empty($employeeAttendance) && $employeeAttendance->status == 'Present')
                         {
