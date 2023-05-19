@@ -627,7 +627,7 @@
                                                 @endif 
                                                 @if($task->name == 'INPUT LAPORAN KEUANGAN')
                                                     <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.financial.statement',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>
-                                                @elseif($task->name == 'Materialitas (SA 320)')
+                                                @elseif($task->name == 'Materialitas')
                                                     <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.materialitas',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>
                                                 @elseif($task->name == 'Adjustment / Reclassification Journal Entries')
                                                     <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.journal.entries',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>

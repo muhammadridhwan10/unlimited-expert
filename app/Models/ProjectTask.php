@@ -170,7 +170,7 @@ class ProjectTask extends Model
             $percentage = intval(($completed_checklist / $total_checklist) * 100);
         }
 
-        if($this->name == "Materialitas (SA 320)")
+        if($this->name == "Materialitas")
         {
             $percentage = 100;
         }
