@@ -142,8 +142,8 @@ class DashboardController extends Controller
             }
             else
             {
-//                if(\Auth::user()->can('show account dashboard'))
-//                {
+               if(\Auth::user()->can('show account dashboard'))
+               {
                     $data['latestIncome']  = Revenue::where('created_by', '=', \Auth::user()->creatorId())->orderBy('id', 'desc')->limit(5)->get();
                     $data['latestExpense'] = Payment::where('created_by', '=', \Auth::user()->creatorId())->orderBy('id', 'desc')->limit(5)->get();
 
@@ -201,11 +201,11 @@ class DashboardController extends Controller
                     $data['goals']             = Goal::where('created_by', '=', \Auth::user()->creatorId())->where('is_display', 1)->get();
 
 
-//                }
-//                else
-//                {
-//                    $data = [];
-//                }
+               }
+               else
+               {
+                 return redirect()->back()->with('error', __('Permission denied.'));
+               }
 
                 return view('dashboard.account-dashboard', $data);
             }
@@ -405,7 +405,7 @@ class DashboardController extends Controller
         }
         else
         {
-
+            return redirect()->back()->with('error', __('Permission denied.'));
         }
     }
 
@@ -419,7 +419,7 @@ class DashboardController extends Controller
         return response()->json(['token saved successfully.']);
     }
 
-    public function hrm_dashboard_index()
+    public function hrm_dashboard_index(Request $request)
     {
         if(Auth::check())
         {
@@ -439,7 +439,71 @@ class DashboardController extends Controller
                         }
                     )->get();
 
-                    $employees = Employee::get();
+                    $employees = Employee::where('user_id', '=', $user->id)->get()->pluck('name', 'id');
+
+                    if(!empty($request->month))
+                    {
+                        $currentdate = strtotime($request->month);
+                        $month       = date('m', $currentdate);
+                        $year        = date('Y', $currentdate);
+                        $curMonth    = date('M-Y', strtotime($request->month));
+
+                    }
+                    else
+                    {
+                        $month    = date('m');
+                        $year     = date('Y');
+                        $curMonth = date('M-Y', strtotime($year . '-' . $month));
+                    }
+
+                    $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
+                    for($i = 1; $i <= $num_of_days; $i++)
+                    {
+                        $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
+                    }
+
+                    $employeesAttendances = [];
+                    $totalPresent        = $totalLeave = $totalEarlyLeave = 0;
+
+                    foreach($employees as $id => $employee)
+                    {
+                        $attendances['name'] = $employee;
+                        // $employee     = Employee::where('employee_id', '=', $id)->first();
+                        // $overtime     = UserOvertime::where('user_id', $employee->user_id)->where('start_date', '=', '2023-05')->get();
+
+                        foreach($dates as $date)
+                        {
+                            $dateFormat = $year . '-' . $month . '-' . $date;
+
+                            if($dateFormat <= date('Y-m-d'))
+                            {
+                                $employeeAttendance = AttendanceEmployee::where('employee_id', $id)->where('date', $dateFormat)->first();
+
+                                if(!empty($employeeAttendance) && $employeeAttendance->status == 'Present')
+                                {
+                                    $attendanceStatus[$date] = 'P';
+                                    $totalPresent            += 1;
+
+                                }
+                                else
+                                {
+                                    $attendanceStatus[$date] = '';
+                                }
+                            }
+                            else
+                            {
+                                $attendanceStatus[$date] = '';
+                            }
+
+                        }
+                        $attendances['status'] = $attendanceStatus;
+                        $employeesAttendances[] = $attendances;
+                    }
+
+                    $data['totalPresent']    = $totalPresent;
+                    $data['curMonth']        = $curMonth;
+
+
                     $meetings  = Meeting::orderBy('meetings.id', 'desc')->take(5)->leftjoin('meeting_employees', 'meetings.id', '=', 'meeting_employees.meeting_id')->where('meeting_employees.employee_id', '=', $emp->id)->orWhere(
                         function ($q){
                             $q->where('meetings.department_id', '["0"]')->where('meetings.employee_id', '["0"]');
@@ -485,8 +549,9 @@ class DashboardController extends Controller
                         $officeTime['endTime']      = "17:00";
                     }
 
-                    return view('dashboard.dashboard', compact('profile','arrEvents', 'announcements', 'employees', 'meetings', 'employeeAttendance', 'officeTime'));
-                }elseif($user->type = 'admin')
+                    return view('dashboard.dashboard', compact('employeesAttendances', 'dates', 'data', 'profile','arrEvents', 'announcements', 'employees', 'meetings', 'employeeAttendance', 'officeTime'));
+                }
+                elseif($user->type = 'admin')
                 {
                     $events    = Event::all();
                     $arrEvents = [];
@@ -646,7 +711,6 @@ class DashboardController extends Controller
 
                     return view('dashboard.dashboard', compact('profile','countIntern','arrEvents', 'officeTime', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee', 'employeeAttendance'));
                 }
-
                 else
                 {
                     $events    = Event::where('created_by', '=', \Auth::user()->creatorId())->get();
@@ -727,7 +791,7 @@ class DashboardController extends Controller
             }
             else
             {
-
+                return redirect()->back()->with('error', __('Permission denied.'));
             }
         }
         else

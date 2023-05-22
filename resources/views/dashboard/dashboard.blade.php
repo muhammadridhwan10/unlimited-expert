@@ -173,6 +173,73 @@
 
                             </div>
                         </div>
+
+                         <div class="card">
+                            <div class="card-body">
+                                {{ Form::open(array('route' => array('hrm.dashboard'),'method'=>'get','id'=>'report_monthly_attendance_user')) }}
+                                <div class="row align-items-center justify-content-end">
+                                    <div class="col-auto">
+                                        <div class="row">
+                                            <div class="col-auto">
+                                                <div class="btn-box">
+                                                    {{Form::label('month',__('Month'),['class'=>'form-label'])}}
+                                                    {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="row">
+                                            <div class="col-auto mt-4">
+                                                <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_monthly_attendance_user').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
+                                                    <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
+                                                </a>
+                                                <a href="{{route('hrm.dashboard')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
+                                                    <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {{ Form::close() }}
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body table-border-style">
+                                <div class="table-responsive py-4 attendance-table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                        <tr>
+                                            <th class="active">{{__('Name')}}</th>
+                                            @foreach($dates as $date)
+                                                <th>{{$date}}</th>
+                                            @endforeach
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+
+                                        @foreach($employeesAttendances as $attendance)
+
+                                            <tr>
+                                                <td>{{$attendance['name']}}</td>
+                                                @foreach($attendance['status'] as $status)
+                                                    <td>
+                                                        @if($status=='P')
+                                                            <i class="badge bg-success p-2 rounded">{{__('P')}}</i>
+                                                        @elseif($status=='A')
+                                                            <i class="badge bg-danger p-2 rounded">{{__('A')}}</i>
+                                                        @endif
+                                                    </td>
+                                                @endforeach
+                                            </tr>
+                                        @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="card ">
                             <div class="card-header">
                                 <h4>{{__('Event View')}}</h4>
