@@ -5,6 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\TimeTracker;
 use App\Models\TrackPhoto;
 use App\Models\Utility;
+use App\Models\Branch;
+use App\Models\Department;
+use App\Models\Employee;
+use App\Models\User;
 use App\Models\Projects;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,18 +22,40 @@ class TimeTrackerController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         if($user->type == 'admin' || $user->type == 'company')
         {
-            $treckers=TimeTracker::all();
+            $treckers = TimeTracker::all();
+            $branch      = Branch::get();
+            $department = Department::get();
+
+            $data['branch']     = __('All');
+            $data['department'] = __('All');
+
+            $employee = User::all();
+            $employee = $employee->pluck('id');
+            $employeeTimeTracker = TimeTracker::whereIn('created_by', $employee);
+
+            if (!empty($request->month)) {
+                $month = date('m', strtotime($request->month));
+                $year  = date('Y', strtotime($request->month));
+
+                $start_date = date($year . '-' . $month . '-01');
+                $end_date   = date($year . '-' . $month . '-t');
+
+                $employeeTimeTracker->whereBetween('start_time', [$start_date, $end_date]);
+            } 
+
+            $employeeTimeTracker = $employeeTimeTracker->get();
+
         }
         else
         {
-            $treckers=TimeTracker::where('created_by',\Auth::user()->id)->get();
+            $treckers = TimeTracker::where('created_by',\Auth::user()->id)->get();
         }
-        return view('time_trackers.index',compact('treckers'));
+        return view('time_trackers.index',compact('employeeTimeTracker','treckers','branch', 'department'));
 
     }
 

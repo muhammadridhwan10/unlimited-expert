@@ -46,6 +46,44 @@
 
 
 @section('content')
+
+    <div class="row">
+        <div class="col-sm-12">
+            <div class=" mt-2 " id="multiCollapseExample1">
+                <div class="card">
+                    <div class="card-body">
+                        {{ Form::open(array('route' => array('time.tracker'),'method'=>'get','id'=>'report_monthly_tracker')) }}
+                        <div class="row align-items-center justify-content-end">
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <div class="btn-box">
+                                            {{Form::label('month',__('Month'),['class'=>'form-label'])}}
+                                            {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col-auto mt-4">
+                                        <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_monthly_tracker').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
+                                            <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
+                                        </a>
+                                        <a href="{{route('time.tracker')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
+                                            <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{ Form::close() }}
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -67,7 +105,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach ($treckers as $trecker)
+                            @foreach ($employeeTimeTracker as $trecker)
 
                                 @php
                                     $total_name = Utility::second_to_time($trecker->total_time);
