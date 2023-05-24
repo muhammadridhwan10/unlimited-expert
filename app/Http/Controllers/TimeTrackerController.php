@@ -51,11 +51,42 @@ class TimeTrackerController extends Controller
             $employeeTimeTracker = $employeeTimeTracker->get();
 
         }
+        elseif($user->type == 'partners')
+        {
+            $branch      = Branch::get();
+            $department = Department::get();
+
+            $data['branch']     = __('All');
+            $data['department'] = __('All');
+
+            $employee = Employee::where('user_id', \Auth::user()->id)->first();
+            $employeebranch = Employee::where('branch_id', $employee->branch_id);
+            $employees = $employeebranch->pluck('user_id');
+            $employeeTimeTracker = TimeTracker::whereIn('created_by', $employees);
+
+            if (!empty($request->month)) {
+                $month = date('m', strtotime($request->month));
+                $year  = date('Y', strtotime($request->month));
+
+                $start_date = date($year . '-' . $month . '-01');
+                $end_date   = date($year . '-' . $month . '-t');
+
+                $employeeTimeTracker->whereBetween('start_time', [$start_date, $end_date]);
+            } 
+
+            $employeeTimeTracker = $employeeTimeTracker->get();
+
+        }
         else
         {
-            $treckers = TimeTracker::where('created_by',\Auth::user()->id)->get();
+            $branch      = Branch::get();
+            $department = Department::get();
+
+            $data['branch']     = __('All');
+            $data['department'] = __('All');
+            $employeeTimeTracker = TimeTracker::where('created_by',\Auth::user()->id)->get();
         }
-        return view('time_trackers.index',compact('employeeTimeTracker','treckers','branch', 'department'));
+        return view('time_trackers.index',compact('employeeTimeTracker','branch', 'department'));
 
     }
 

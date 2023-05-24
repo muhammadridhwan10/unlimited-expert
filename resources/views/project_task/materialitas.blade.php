@@ -53,12 +53,12 @@
             var totalMaterialitasAwal = (rate * inhouse2022)/100;
             var totalMaterialitasAkhir = (rate * audited2022)/100;
 
-            //hasil materialitas awal overall materiality
-            var materialitasAwal = (totalMaterialitasAwal !== 0 ? totalMaterialitasAwal.toLocaleString('en-EN') : '-');
+            // Hasil materialitas awal overall materiality
+            var materialitasAwal = (totalMaterialitasAwal !== 0 ? totalMaterialitasAwal.toLocaleString('en-EN', { maximumFractionDigits: 0 }) : '-');
             $('.initialmaterialityom').val(materialitasAwal);
 
-            //hasil materialitas akhir overall materiality
-            var materialitasAkhir = (totalMaterialitasAkhir !== 0 ? totalMaterialitasAkhir.toLocaleString('en-EN') : '-');
+            // Hasil materialitas akhir overall materiality
+            var materialitasAkhir = (totalMaterialitasAkhir !== 0 ? totalMaterialitasAkhir.toLocaleString('en-EN', { maximumFractionDigits: 0 }) : '-');
             $('.finalmaterialityom').val(materialitasAkhir);
         });
 
@@ -73,11 +73,11 @@
             var totalfinalmaterialitypm = (pmrate * finalmaterialityom)/100;
 
             //hasil materialitas awal performance materiality
-            var initialmaterialitypm = (totalinitialmaterialitypm !== 0 ? totalinitialmaterialitypm.toLocaleString('en-EN') : '-');
+            var initialmaterialitypm = (totalinitialmaterialitypm !== 0 ? totalinitialmaterialitypm.toLocaleString('en-EN', { maximumFractionDigits: 0 }) : '-');
             $('.initialmaterialitypm').val(initialmaterialitypm);
 
             //hasil materialitas akhir performance materiality
-            var finalmaterialitypm = (totalfinalmaterialitypm !== 0 ? totalfinalmaterialitypm.toLocaleString('en-EN') : '-');
+            var finalmaterialitypm = (totalfinalmaterialitypm !== 0 ? totalfinalmaterialitypm.toLocaleString('en-EN', { maximumFractionDigits: 0 }) : '-');
             $('.finalmaterialitypm').val(finalmaterialitypm);
         });
 
@@ -92,11 +92,11 @@
             var totalfinalmaterialityte = (terate * finalmaterialityte)/100;
 
             //hasil materialitas awal tolerable error
-            var initialmaterialityte = (totalinitialmaterialityte !== 0 ? totalinitialmaterialityte.toLocaleString('en-EN') : '-');
+            var initialmaterialityte = (totalinitialmaterialityte !== 0 ? totalinitialmaterialityte.toLocaleString('en-EN', { maximumFractionDigits: 0 }) : '-');
             $('.initialmaterialityte').val(initialmaterialityte);
 
             //hasil materialitas akhir tolerable error
-            var finalmaterialityte = (totalfinalmaterialityte !== 0 ? totalfinalmaterialityte.toLocaleString('en-EN') : '-');
+            var finalmaterialityte = (totalfinalmaterialityte !== 0 ? totalfinalmaterialityte.toLocaleString('en-EN', { maximumFractionDigits: 0 }) : '-');
             $('.finalmaterialityte').val(finalmaterialityte);
         });
 
@@ -194,18 +194,33 @@
                                 </div>
                                 <div class="col-sm-3 col-md-2">
                                     <div class="form-group">
-                                        <p style= 'text-align:center'><b>{{date(' Y', strtotime('-3 year', strtotime($project->book_year)))}}</b></p>
+                                    <?php
+                                    $ekuitas_2020 = $data_array_2020['3'];
+                                    $liabilitas_2020 = $data_array_2020['2'];
+                                    $aset_2020 = $liabilitas_2020 + $ekuitas_2020;
+                                    ?>
+                                    @if(ceil($aset_2020) == ceil($data_array_2020['1']))
+                                        <p style='text-align:center; color:green;'> 
+                                        <i class="fas fa-check"></i>
+                                            <b>{{ date('Y', strtotime('-3 year', strtotime($project->book_year))) }}</b>
+                                        </p>
+                                    @else
+                                        <p style='text-align:center; color:red;'>
+                                        <i class="fas fa-times"></i>
+                                            <b>{{ date('Y', strtotime('-3 year', strtotime($project->book_year))) }}</b>
+                                        </p>
+                                    @endif
                                         @foreach($data_array_2020 as $key => $data_2020)
                                         @if($key == '8' || $key == '9' || $key == '10')
                                             <div class="col-sm-3 col-md-12">    
                                                 <div class="form-group">
-                                                    {{ Form::text('2020', number_format($data_2020), ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold;']) }}
+                                                    {{ Form::text('2020', number_format($data_2020), ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold; text-align: right;']) }}
                                                 </div>
                                             </div>
                                         @else
                                             <div class="col-sm-3 col-md-12">
                                                 <div class="form-group">
-                                                    {{ Form::text('2020', number_format($data_2020), ['class' => 'form-control','readonly'=>'true']) }}
+                                                    {{ Form::text('2020', number_format($data_2020), ['class' => 'form-control','readonly'=>'true', 'style' => 'text-align: right;']) }}
                                                 </div>
                                             </div>
                                         @endif
@@ -214,18 +229,33 @@
                                 </div>
                                 <div class="col-sm-3 col-md-2">
                                     <div class="form-group">
-                                        <p style= 'text-align:center'><b>{{date(' Y', strtotime('-2 year', strtotime($project->book_year)))}}</b></p>
+                                    <?php
+                                    $ekuitas_2021 = $data_array_2021['3'];
+                                    $liabilitas_2021 = $data_array_2021['2'];
+                                    $aset_2021 = $liabilitas_2021 + $ekuitas_2021;
+                                    ?>
+                                    @if(ceil($aset_2021) == ceil($data_array_2021['1']))
+                                        <p style='text-align:center; color:green;'>
+                                        <i class="fas fa-check"></i>
+                                            <b>{{ date('Y', strtotime('-2 year', strtotime($project->book_year))) }}</b>
+                                        </p>
+                                    @else
+                                        <p style='text-align:center; color:red;'>
+                                            <i class="fas fa-times"></i>
+                                            <b>{{ date('Y', strtotime('-2 year', strtotime($project->book_year))) }}</b>
+                                        </p>
+                                    @endif
                                         @foreach($data_array_2021 as $key => $data_2021)
                                             @if($key == '8' || $key == '9' || $key == '10')
                                             <div class="col-sm-3 col-md-12">
                                                 <div class="form-group">
-                                                    {{ Form::text('2021', number_format($data_2021), ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold;']) }}
+                                                    {{ Form::text('2021', number_format($data_2021), ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold; text-align: right;']) }}
                                                 </div>
                                             </div>
                                             @else
                                                 <div class="col-sm-3 col-md-12">
                                                     <div class="form-group">
-                                                        {{ Form::text('2021', number_format($data_2021), ['class' => 'form-control','readonly'=>'true']) }}
+                                                        {{ Form::text('2021', number_format($data_2021), ['class' => 'form-control','readonly'=>'true', 'style' => 'text-align: right;']) }}
                                                     </div>
                                                 </div>
                                             @endif
@@ -234,18 +264,33 @@
                                 </div>
                                 <div class="col-sm-3 col-md-2">
                                     <div class="form-group">
-                                        <p style= 'text-align:center'><b>{{'Inhouse ' . $project->book_year}}</b></p>
+                                        <?php
+                                        $ekuitas_in_2022 = $data_array_in_2022['3'];
+                                        $liabilitas_in_2022 = $data_array_in_2022['2'];
+                                        $aset_in_2022 = $liabilitas_in_2022 + $ekuitas_in_2022;
+                                        ?>
+                                        @if(ceil($aset_in_2022) == ceil($data_array_in_2022['1']))
+                                            <p style='text-align:center; color:green;'>
+                                            <i class="fas fa-check"></i>
+                                                <b>{{'Inhouse ' . $project->book_year}}</b>
+                                            </p>
+                                        @else
+                                            <p style='text-align:center; color:red;'>
+                                                <i class="fas fa-times"></i>
+                                                <b>{{'Inhouse ' . $project->book_year}}</b>
+                                            </p>
+                                        @endif
                                         @foreach($data_array_in_2022 as $key => $data_in_2022)
                                             @if($key == '8' || $key == '9' || $key == '10')
                                             <div class="col-sm-3 col-md-12">    
                                                 <div class="form-group">
-                                                    {{ Form::text('inhouse', number_format($data_in_2022), ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold;']) }}
+                                                    {{ Form::text('inhouse', number_format($data_in_2022), ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold; text-align: right;']) }}
                                                 </div>
                                             </div>
                                             @else
                                                 <div class="col-sm-3 col-md-12">
                                                     <div class="form-group">
-                                                        {{ Form::text('inhouse', number_format($data_in_2022), ['class' => 'form-control','readonly'=>'true']) }}
+                                                        {{ Form::text('inhouse', number_format($data_in_2022), ['class' => 'form-control','readonly'=>'true', 'style' => 'text-align: right;']) }}
                                                     </div>
                                                 </div>
                                             @endif
@@ -254,18 +299,33 @@
                                 </div>
                                 <div class="col-sm-3 col-md-2">
                                     <div class="form-group">
-                                        <p style= 'text-align:center'><b>{{'Audited ' . $project->book_year}}</b></p>
+                                        <?php
+                                        $ekuitas_au_2022 = $data_array_au_2022['3'];
+                                        $liabilitas_au_2022 = $data_array_au_2022['2'];
+                                        $aset_au_2022 = $liabilitas_au_2022 + $ekuitas_au_2022;
+                                        ?>
+                                        @if(ceil($aset_au_2022) == ceil($data_array_au_2022['1']))
+                                            <p style='text-align:center; color:green;'>
+                                            <i class="fas fa-check"></i>
+                                                <b>{{'Audited ' . $project->book_year}}</b>
+                                            </p>
+                                        @else
+                                            <p style='text-align:center; color:red;'>
+                                                <i class="fas fa-times"></i>
+                                                <b>{{'Audited ' . $project->book_year}}</b>
+                                            </p>
+                                        @endif
                                         @foreach($data_array_au_2022 as $key => $data_au_2022)
                                             @if($key == '8' || $key == '9' || $key == '10')
                                             <div class="col-sm-3 col-md-12">    
                                                 <div class="form-group">
-                                                    {{ Form::text('audited', number_format($data_au_2022), ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold;']) }}
+                                                    {{ Form::text('audited', number_format($data_au_2022), ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold; text-align: right;']) }}
                                                 </div>
                                             </div>
                                             @else
                                                 <div class="col-sm-3 col-md-12">
                                                     <div class="form-group">
-                                                        {{ Form::text('audited', number_format($data_au_2022), ['class' => 'form-control','readonly'=>'true']) }}
+                                                        {{ Form::text('audited', number_format($data_au_2022), ['class' => 'form-control','readonly'=>'true', 'style' => 'text-align: right;']) }}
                                                     </div>
                                                 </div>
                                             @endif
@@ -326,9 +386,9 @@
                                         <div class="col-sm-3 col-md-12">
                                                 <div class="form-group">
                                                     @if(isset($valuemateriality->rate))
-                                                        {{ Form::text('rate', $valuemateriality->rate, ['class' => 'form-control rate']) }}
+                                                        {{ Form::text('rate', $valuemateriality->rate, ['class' => 'form-control rate', 'style' => 'text-align: right;']) }}
                                                     @else
-                                                        {{ Form::text('rate', null, ['class' => 'form-control rate']) }}
+                                                        {{ Form::text('rate', null, ['class' => 'form-control rate', 'style' => 'text-align: right;']) }}
                                                     @endif
                                                 </div>
                                         </div>
@@ -338,7 +398,7 @@
                                     <div class="form-group">
                                         <div class="col-sm-3 col-md-12">
                                                 <div class="form-group inhouse">
-                                                    {{ Form::text('inhouse', '', array('class' => 'form-control inhouse', 'readonly' => true)) }}
+                                                    {{ Form::text('inhouse', '', array('class' => 'form-control inhouse', 'readonly' => true, 'style' => 'text-align: right;')) }}
                                                 </div>
                                         </div>
                                     </div>
@@ -347,7 +407,7 @@
                                     <div class="form-group">
                                         <div class="col-sm-3 col-md-12">
                                                 <div class="form-group audited">
-                                                    {{ Form::text('audited', '', array('class' => 'form-control audited', 'readonly' => true)) }}
+                                                    {{ Form::text('audited', '', array('class' => 'form-control audited', 'readonly' => true, 'style' => 'text-align: right;')) }}
                                                 </div>
                                         </div>
                                     </div>
@@ -401,9 +461,9 @@
                                         <div class="col-sm-3 col-md-12">
                                                 <div class="form-group">
                                                 @if(isset($valuemateriality->initialmaterialityom))
-                                                    {{ Form::text('initialmaterialityom', number_format($valuemateriality->initialmaterialityom), ['class' => 'form-control initialmaterialityom','readonly'=>'true']) }}
+                                                    {{ Form::text('initialmaterialityom', number_format($valuemateriality->initialmaterialityom), ['class' => 'form-control initialmaterialityom','readonly'=>'true', 'style' => 'text-align: right;']) }}
                                                 @else
-                                                    {{ Form::text('initialmaterialityom', null, ['class' => 'form-control initialmaterialityom','readonly'=>'true']) }}
+                                                    {{ Form::text('initialmaterialityom', null, ['class' => 'form-control initialmaterialityom','readonly'=>'true','style' => 'text-align: right;']) }}
                                                 @endif
                                                 </div>
                                         </div>
@@ -414,9 +474,9 @@
                                         <div class="col-sm-3 col-md-12">
                                                 <div class="form-group">
                                                 @if(isset($valuemateriality->finalmaterialityom))
-                                                    {{ Form::text('finalmaterialityom',number_format($valuemateriality->finalmaterialityom),array('class' => 'form-control finalmaterialityom','readonly'=>'true')) }}
+                                                    {{ Form::text('finalmaterialityom',number_format($valuemateriality->finalmaterialityom),array('class' => 'form-control finalmaterialityom','readonly'=>'true', 'style' => 'text-align: right;')) }}
                                                 @else
-                                                    {{ Form::text('finalmaterialityom',null,array('class' => 'form-control finalmaterialityom','readonly'=>'true')) }}
+                                                    {{ Form::text('finalmaterialityom',null,array('class' => 'form-control finalmaterialityom','readonly'=>'true', 'style' => 'text-align: right;')) }}
                                                 @endif
                                                 </div>
                                         </div>
@@ -438,9 +498,9 @@
                                         <div class="col-sm-3 col-md-12">
                                                 <div class="form-group">
                                                 @if(isset($valuemateriality->initialmaterialitypm))
-                                                    {{ Form::text('initialmaterialitypm', number_format($valuemateriality->initialmaterialitypm), ['class' => 'form-control initialmaterialitypm','readonly' => 'true']) }}
+                                                    {{ Form::text('initialmaterialitypm', number_format($valuemateriality->initialmaterialitypm), ['class' => 'form-control initialmaterialitypm','readonly' => 'true', 'style' => 'text-align: right;']) }}
                                                 @else
-                                                    {{ Form::text('initialmaterialitypm', null, ['class' => 'form-control initialmaterialitypm','readonly' => 'true']) }}
+                                                    {{ Form::text('initialmaterialitypm', null, ['class' => 'form-control initialmaterialitypm','readonly' => 'true', 'style' => 'text-align: right;']) }}
                                                 @endif
                                                 </div>
                                         </div>
@@ -451,9 +511,9 @@
                                         <div class="col-sm-3 col-md-12">
                                                 <div class="form-group">
                                                 @if(isset($valuemateriality->finalmaterialitypm))
-                                                    {{ Form::text('finalmaterialitypm', number_format($valuemateriality->finalmaterialitypm), ['class' => 'form-control finalmaterialitypm','readonly' => 'true']) }}
+                                                    {{ Form::text('finalmaterialitypm', number_format($valuemateriality->finalmaterialitypm), ['class' => 'form-control finalmaterialitypm','readonly' => 'true', 'style' => 'text-align: right;']) }}
                                                 @else
-                                                    {{ Form::text('finalmaterialitypm', null, ['class' => 'form-control finalmaterialitypm','readonly' => 'true']) }}
+                                                    {{ Form::text('finalmaterialitypm', null, ['class' => 'form-control finalmaterialitypm','readonly' => 'true', 'style' => 'text-align: right;']) }}
                                                 @endif
                                                 </div>
                                         </div>
@@ -464,9 +524,9 @@
                                         <div class="col-sm-3 col-md-12">
                                                 <div class="form-group">
                                                 @if(isset($valuemateriality->pmrate))
-                                                    {{ Form::text('pmrate', $valuemateriality->pmrate, ['class' => 'form-control pmrate']) }}
+                                                    {{ Form::text('pmrate', $valuemateriality->pmrate, ['class' => 'form-control pmrate', 'style' => 'text-align: right;']) }}
                                                 @else
-                                                    {{ Form::text('pmrate', null, ['class' => 'form-control pmrate']) }}
+                                                    {{ Form::text('pmrate', null, ['class' => 'form-control pmrate', 'style' => 'text-align: right;']) }}
                                                 @endif
                                                 </div>
                                         </div>
@@ -488,9 +548,9 @@
                                         <div class="col-sm-3 col-md-12">
                                                 <div class="form-group">
                                                 @if(isset($valuemateriality->initialmaterialityte))
-                                                    {{ Form::text('initialmaterialityte', number_format($valuemateriality->initialmaterialityte), ['class' => 'form-control initialmaterialityte','readonly' => 'true']) }}
+                                                    {{ Form::text('initialmaterialityte', number_format($valuemateriality->initialmaterialityte), ['class' => 'form-control initialmaterialityte','readonly' => 'true', 'style' => 'text-align: right;']) }}
                                                 @else
-                                                    {{ Form::text('initialmaterialityte', null, ['class' => 'form-control initialmaterialityte','readonly' => 'true']) }}
+                                                    {{ Form::text('initialmaterialityte', null, ['class' => 'form-control initialmaterialityte','readonly' => 'true', 'style' => 'text-align: right;']) }}
                                                 @endif
                                                 </div>
                                         </div>
@@ -501,9 +561,9 @@
                                         <div class="col-sm-3 col-md-12">
                                                 <div class="form-group">
                                                 @if(isset($valuemateriality->finalmaterialityte))
-                                                    {{ Form::text('finalmaterialityte', number_format($valuemateriality->finalmaterialityte), ['class' => 'form-control finalmaterialityte','readonly' => 'true']) }}
+                                                    {{ Form::text('finalmaterialityte', number_format($valuemateriality->finalmaterialityte), ['class' => 'form-control finalmaterialityte','readonly' => 'true', 'style' => 'text-align: right;']) }}
                                                 @else
-                                                    {{ Form::text('finalmaterialityte', null, ['class' => 'form-control finalmaterialityte','readonly' => 'true']) }}
+                                                    {{ Form::text('finalmaterialityte', null, ['class' => 'form-control finalmaterialityte','readonly' => 'true', 'style' => 'text-align: right;']) }}
                                                 @endif
                                                 </div>
                                         </div>
@@ -514,9 +574,9 @@
                                         <div class="col-sm-3 col-md-12">
                                                 <div class="form-group">
                                                 @if(isset($valuemateriality->terate))
-                                                    {{ Form::text('terate', $valuemateriality->terate, ['class' => 'form-control terate']) }}
+                                                    {{ Form::text('terate', $valuemateriality->terate, ['class' => 'form-control terate', 'style' => 'text-align: right;']) }}
                                                 @else
-                                                    {{ Form::text('terate', null, ['class' => 'form-control terate']) }}
+                                                    {{ Form::text('terate', null, ['class' => 'form-control terate', 'style' => 'text-align: right;']) }}
                                                 @endif
                                                 </div>
                                         </div>

@@ -125,10 +125,10 @@
                                     <tr>
                                         <td style="border: 1px solid black;">{{$indexs['kode']}}</td>
                                         <td style="border: 1px solid black;">{{$indexs['akun']}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['data_2020']))? number_format($indexs['data_2020']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['data_2021']))? number_format($indexs['data_2021']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['data_in_2022']))? number_format($indexs['data_in_2022']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['data_au_2022']))? number_format($indexs['data_au_2022']):'-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($indexs['data_2020']))? (number_format($indexs['data_2020']) < 0 ? '('.number_format(abs($indexs['data_2020'])).')' : number_format($indexs['data_2020'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($indexs['data_2021']))? (number_format($indexs['data_2021']) < 0 ? '('.number_format(abs($indexs['data_2021'])).')' : number_format($indexs['data_2021'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($indexs['data_in_2022']))? (number_format($indexs['data_in_2022']) < 0 ? '('.number_format(abs($indexs['data_in_2022'])).')' : number_format($indexs['data_in_2022'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($indexs['data_au_2022']))? (number_format($indexs['data_au_2022']) < 0 ? '('.number_format(abs($indexs['data_au_2022'])).')' : number_format($indexs['data_au_2022'])): '-'}}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -150,10 +150,10 @@
                                     <tr>
                                         <td style="border: 1px solid black;">{{$cns['kode']}}</td>
                                         <td style="border: 1px solid black;">{{$cns['akun']}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($cns['data_2020']))? number_format($cns['data_2020']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($cns['data_2021']))? number_format($cns['data_2021']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($cns['data_in_2022']))? number_format($cns['data_in_2022']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($cns['data_au_2022']))? number_format($cns['data_au_2022']):'-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($cns['data_2020']))? (number_format($cns['data_2020']) < 0 ? '('.number_format(abs($cns['data_2020'])).')' : number_format($cns['data_2020'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($cns['data_2021']))? (number_format($cns['data_2021']) < 0 ? '('.number_format(abs($cns['data_2021'])).')' : number_format($cns['data_2021'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($cns['data_in_2022']))? (number_format($cns['data_in_2022']) < 0 ? '('.number_format(abs($cns['data_in_2022'])).')' : number_format($cns['data_in_2022'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($cns['data_au_2022']))? (number_format($cns['data_au_2022']) < 0 ? '('.number_format(abs($cns['data_au_2022'])).')' : number_format($cns['data_au_2022'])): '-'}}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -186,10 +186,10 @@
                                 @foreach($result as $results)
                                     <tr>
                                         <td style="border: 1px solid black; background-color:#008b8b; color:white; font-weight: bold; width:150px;">{{$results['akun']}}</td>
-                                        <td style="border: 1px solid black; background-color:#008b8b; color:white; font-weight: bold; width:150px;">{{!empty(number_format($results['2020']))? number_format($results['2020']):'-'}}</td>
-                                        <td style="border: 1px solid black; background-color:#008b8b; color:white; font-weight: bold; width:150px;">{{!empty(number_format($results['2021']))? number_format($results['2021']):'-'}}</td>
-                                        <td style="border: 1px solid black; background-color:#008b8b; color:white; font-weight: bold; width:150px;">{{!empty(number_format($results['inhouse2022']))? number_format($results['inhouse2022']):'-'}}</td>
-                                        <td style="border: 1px solid black; background-color:#008b8b; color:white; font-weight: bold; width:150px;">{{!empty(number_format($results['audited2022']))? number_format($results['audited2022']):'-'}}</td>
+                                        <td style="border: 1px solid black; background-color:#008b8b; color:white; font-weight: bold; width:150px; text-align: right;">{{ !empty(number_format($results['2020']))? (number_format($results['2020']) < 0 ? '('.number_format(abs($results['2020'])).')' : number_format($results['2020'])): '-'}}</td>
+                                        <td style="border: 1px solid black; background-color:#008b8b; color:white; font-weight: bold; width:150px; text-align: right;">{{ !empty(number_format($results['2021']))? (number_format($results['2021']) < 0 ? '('.number_format(abs($results['2021'])).')' : number_format($results['2021'])): '-'}}</td>
+                                        <td style="border: 1px solid black; background-color:#008b8b; color:white; font-weight: bold; width:150px; text-align: right;">{{ !empty(number_format($results['inhouse2022']))? (number_format($results['inhouse2022']) < 0 ? '('.number_format(abs($results['inhouse2022'])).')' : number_format($results['inhouse2022'])): '-'}}</td>
+                                        <td style="border: 1px solid black; background-color:#008b8b; color:white; font-weight: bold; width:150px; text-align: right;">{{ !empty(number_format($results['audited2022']))? (number_format($results['audited2022']) < 0 ? '('.number_format(abs($results['audited2022'])).')' : number_format($results['audited2022'])): '-'}}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -264,18 +264,18 @@
                                     <tr>
                                         <td style="border: 1px solid black; width:150px;">{{$indexs['kode']}}</td>
                                         <td style="border: 1px solid black; width:150px;">{{$indexs['akun']}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['januari']))? number_format($indexs['januari']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['februari']))? number_format($indexs['februari']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['maret']))? number_format($indexs['maret']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['april']))? number_format($indexs['april']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['mei']))? number_format($indexs['mei']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['juni']))? number_format($indexs['juni']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['juli']))? number_format($indexs['juli']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['agustus']))? number_format($indexs['agustus']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['september']))? number_format($indexs['september']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['oktober']))? number_format($indexs['oktober']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['november']))? number_format($indexs['november']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['desember']))? number_format($indexs['desember']):'-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($indexs['januari']))? (number_format($indexs['januari']) < 0 ? '('.number_format(abs($indexs['januari'])).')' : number_format($indexs['januari'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($indexs['februari']))? (number_format($indexs['februari']) < 0 ? '('.number_format(abs($indexs['februari'])).')' : number_format($indexs['februari'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($indexs['maret']))? (number_format($indexs['maret']) < 0 ? '('.number_format(abs($indexs['maret'])).')' : number_format($indexs['maret'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($indexs['april']))? (number_format($indexs['april']) < 0 ? '('.number_format(abs($indexs['april'])).')' : number_format($indexs['april'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($indexs['mei']))? (number_format($indexs['mei']) < 0 ? '('.number_format(abs($indexs['mei'])).')' : number_format($indexs['mei'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($indexs['juni']))? (number_format($indexs['juni']) < 0 ? '('.number_format(abs($indexs['juni'])).')' : number_format($indexs['juni'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($indexs['juli']))? (number_format($indexs['juli']) < 0 ? '('.number_format(abs($indexs['juli'])).')' : number_format($indexs['juli'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($indexs['agustus']))? (number_format($indexs['agustus']) < 0 ? '('.number_format(abs($indexs['agustus'])).')' : number_format($indexs['agustus'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($indexs['september']))? (number_format($indexs['september']) < 0 ? '('.number_format(abs($indexs['september'])).')' : number_format($indexs['september'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($indexs['oktober']))? (number_format($indexs['oktober']) < 0 ? '('.number_format(abs($indexs['oktober'])).')' : number_format($indexs['oktober'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($indexs['november']))? (number_format($indexs['november']) < 0 ? '('.number_format(abs($indexs['november'])).')' : number_format($indexs['november'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($indexs['desember']))? (number_format($indexs['desember']) < 0 ? '('.number_format(abs($indexs['desember'])).')' : number_format($indexs['desember'])): '-'}}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -303,18 +303,18 @@
                                 @foreach($cn as $cns)
                                     <tr>
                                         <td style="border: 1px solid black; width:150px;">{{$cns['akun']}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($cns['januari']))? number_format($cns['januari']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($cns['februari']))? number_format($cns['februari']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($cns['maret']))? number_format($cns['maret']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($cns['april']))? number_format($cns['april']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($cns['mei']))? number_format($cns['mei']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($cns['juni']))? number_format($cns['juni']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($cns['juli']))? number_format($cns['juli']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($cns['agustus']))? number_format($cns['agustus']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($cns['september']))? number_format($cns['september']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($cns['oktober']))? number_format($cns['oktober']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($cns['november']))? number_format($cns['november']):'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($cns['desember']))? number_format($cns['desember']):'-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($cns['januari']))? (number_format($cns['januari']) < 0 ? '('.number_format(abs($cns['januari'])).')' : number_format($cns['januari'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($cns['februari']))? (number_format($cns['februari']) < 0 ? '('.number_format(abs($cns['februari'])).')' : number_format($cns['februari'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($cns['maret']))? (number_format($cns['maret']) < 0 ? '('.number_format(abs($cns['maret'])).')' : number_format($cns['maret'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($cns['april']))? (number_format($cns['april']) < 0 ? '('.number_format(abs($cns['april'])).')' : number_format($cns['april'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($cns['mei']))? (number_format($cns['mei']) < 0 ? '('.number_format(abs($cns['mei'])).')' : number_format($cns['mei'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($cns['juni']))? (number_format($cns['juni']) < 0 ? '('.number_format(abs($cns['juni'])).')' : number_format($cns['juni'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($cns['juli']))? (number_format($cns['juli']) < 0 ? '('.number_format(abs($cns['juli'])).')' : number_format($cns['juli'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($cns['agustus']))? (number_format($cns['agustus']) < 0 ? '('.number_format(abs($cns['agustus'])).')' : number_format($cns['agustus'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($cns['september']))? (number_format($cns['september']) < 0 ? '('.number_format(abs($cns['september'])).')' : number_format($cns['september'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($cns['oktober']))? (number_format($cns['oktober']) < 0 ? '('.number_format(abs($cns['oktober'])).')' : number_format($cns['oktober'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($cns['november']))? (number_format($cns['november']) < 0 ? '('.number_format(abs($cns['november'])).')' : number_format($cns['november'])): '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($cns['desember']))? (number_format($cns['desember']) < 0 ? '('.number_format(abs($cns['desember'])).')' : number_format($cns['desember'])): '-'}}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -354,18 +354,18 @@
                                 @foreach($result as $results)
                                     <tr>
                                         <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px;">{{$results['akun']}}</td>
-                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px;">{{!empty(number_format($results['januari']))? number_format($results['januari']):'-'}}</td>
-                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px;">{{!empty(number_format($results['februari']))? number_format($results['februari']):'-'}}</td>
-                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px;">{{!empty(number_format($results['maret']))? number_format($results['maret']):'-'}}</td>
-                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px;">{{!empty(number_format($results['april']))? number_format($results['april']):'-'}}</td>
-                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px;">{{!empty(number_format($results['mei']))? number_format($results['mei']):'-'}}</td>
-                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px;">{{!empty(number_format($results['juni']))? number_format($results['juni']):'-'}}</td>
-                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px;">{{!empty(number_format($results['juli']))? number_format($results['juli']):'-'}}</td>
-                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px;">{{!empty(number_format($results['agustus']))? number_format($results['agustus']):'-'}}</td>
-                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px;">{{!empty(number_format($results['september']))? number_format($results['september']):'-'}}</td>
-                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px;">{{!empty(number_format($results['oktober']))? number_format($results['oktober']):'-'}}</td>
-                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px;">{{!empty(number_format($results['november']))? number_format($results['november']):'-'}}</td>
-                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px;">{{!empty(number_format($results['desember']))? number_format($results['desember']):'-'}}</td>
+                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px; text-align: right;">{{ !empty(number_format($results['januari']))? (number_format($results['januari']) < 0 ? '('.number_format(abs($results['januari'])).')' : number_format($results['januari'])): '-'}}</td>
+                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px; text-align: right;">{{ !empty(number_format($results['februari']))? (number_format($results['februari']) < 0 ? '('.number_format(abs($results['februari'])).')' : number_format($results['februari'])): '-'}}</td>
+                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px; text-align: right;">{{ !empty(number_format($results['maret']))? (number_format($results['maret']) < 0 ? '('.number_format(abs($results['maret'])).')' : number_format($results['maret'])): '-'}}</td>
+                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px; text-align: right;">{{ !empty(number_format($results['april']))? (number_format($results['april']) < 0 ? '('.number_format(abs($results['april'])).')' : number_format($results['april'])): '-'}}</td>
+                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px; text-align: right;">{{ !empty(number_format($results['mei']))? (number_format($results['mei']) < 0 ? '('.number_format(abs($results['mei'])).')' : number_format($results['mei'])): '-'}}</td>
+                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px; text-align: right;">{{ !empty(number_format($results['juni']))? (number_format($results['juni']) < 0 ? '('.number_format(abs($results['juni'])).')' : number_format($results['juni'])): '-'}}</td>
+                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px; text-align: right;">{{ !empty(number_format($results['juli']))? (number_format($results['juli']) < 0 ? '('.number_format(abs($results['juli'])).')' : number_format($results['juli'])): '-'}}</td>
+                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px; text-align: right;">{{ !empty(number_format($results['agustus']))? (number_format($results['agustus']) < 0 ? '('.number_format(abs($results['agustus'])).')' : number_format($results['agustus'])): '-'}}</td>
+                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px; text-align: right;">{{ !empty(number_format($results['september']))? (number_format($results['september']) < 0 ? '('.number_format(abs($results['september'])).')' : number_format($results['september'])): '-'}}</td>
+                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px; text-align: right;">{{ !empty(number_format($results['oktober']))? (number_format($results['oktober']) < 0 ? '('.number_format(abs($results['oktober'])).')' : number_format($results['oktober'])): '-'}}</td>
+                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px; text-align: right;">{{ !empty(number_format($results['november']))? (number_format($results['november']) < 0 ? '('.number_format(abs($results['november'])).')' : number_format($results['november'])): '-'}}</td>
+                                        <td style="border: 1px solid black; background-color:#FFFFE0; color:#701F28; font-weight: bold; width:150px; text-align: right;">{{ !empty(number_format($results['desember']))? (number_format($results['desember']) < 0 ? '('.number_format(abs($results['desember'])).')' : number_format($results['desember'])): '-'}}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -448,18 +448,18 @@
                                 @foreach($index as $indexs)
                                     <tr>
                                         <td style="border: 1px solid black; width:150px;">{{$indexs['akun']}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty(number_format($indexs['kenaikan_2021']))? number_format($indexs['kenaikan_2021']):'-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{!empty($indexs['kenaikan_2021']) ? (($indexs['kenaikan_2021'] < 0) ? '('.number_format(abs($indexs['kenaikan_2021'])).')' : number_format($indexs['kenaikan_2021'])) : '-'}}</td>
                                         <td style="border: 1px solid black; width:150px; background-color:#ffcccb; font-weight: bold; text-align: center;">{{!empty($indexs['M/TM'])? $indexs['M/TM']:'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">
                                         <?php
                                             $persen = number_format($indexs['persen_kenaikan'], 2);
                                             $persen = ($persen == '0.00') ? '-' : $persen;
                                         ?>
                                         {{$persen}}
                                         </td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty($indexs['kenaikan_2022']) ? (($indexs['kenaikan_2022'] < 0) ? '('.number_format(abs($indexs['kenaikan_2022'])).')' : number_format($indexs['kenaikan_2022'])) : '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{!empty($indexs['kenaikan_2022']) ? (($indexs['kenaikan_2022'] < 0) ? '('.number_format(abs($indexs['kenaikan_2022'])).')' : number_format($indexs['kenaikan_2022'])) : '-'}}</td>
                                         <td style="border: 1px solid black; width:150px; background-color:#ffcccb; font-weight: bold; text-align: center;">{{!empty($indexs['M/TM_2022'])? $indexs['M/TM_2022']:'-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">
                                         <?php
                                             $persen = number_format($indexs['persen_kenaikan_2022'], 2);
                                             $persen = ($persen == '0.00') ? '-' : $persen;
@@ -496,14 +496,14 @@
                                 @foreach($result as $results)
                                     <tr>
                                         <td style="border: 1px solid black; background-color:#008b8b; color:white; font-weight: bold;">{{$results['akun']}}</td>
-                                        <td style="border: 1px solid black;">
+                                        <td style="border: 1px solid black; text-align: right;">
                                         <?php
                                             $persen = number_format($results['increase_2021'], 2);
                                             $persen = ($persen == '0.00') ? '-' : $persen;
                                         ?>
                                         {{$persen}}
                                         </td>
-                                        <td style="border: 1px solid black;">
+                                        <td style="border: 1px solid black; text-align: right;">
                                         <?php
                                             $persen_2022 = number_format($results['increase_2022'], 2);
                                             $persen_2022 = ($persen_2022 == '0.00') ? '-' : $persen_2022;

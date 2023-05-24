@@ -348,9 +348,7 @@ class UserController extends Controller
         $user->save();
         CustomField::saveData($user, $request->customField);
 
-        return redirect()->route('dashboard')->with(
-            'success', 'Profile successfully updated.'
-        );
+        return redirect()->back()->with('success', __('Profile successfully updated.'));
     }
 
     public function updatePassword(Request $request)

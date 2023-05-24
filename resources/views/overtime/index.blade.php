@@ -47,7 +47,7 @@
                                     @endif
                                     <td>{{!empty($overtime->project->project_name)?$overtime->project->project_name:'-'}}</td>
                                     <td>{{!empty($overtime->approvals->name)?$overtime->approvals->name:'-'}}</td>
-                                    <td>{{date("d-m-Y",strtotime($overtime->start_date))}}</td>
+                                    <td>{{date("l, d-m-Y",strtotime($overtime->start_date))}}</td>
                                     <td>{{ ($overtime->start_time !='00:00:00') ?\Auth::user()->timeFormat( $overtime->start_time):'00:00' }} </td>
                                     <td>{{ ($overtime->end_time !='00:00:00') ?\Auth::user()->timeFormat( $overtime->end_time):'00:00' }}</td>
                                     <td>{{!empty($overtime->total_time)?$overtime->total_time:'00:00:00'}}</td>
@@ -109,7 +109,7 @@
                                             <td>{{!empty($approvals->employee->name)?$approvals->employee->name:'-'}}</td>
                                         @endif
                                         <td>{{!empty($approvals->project->project_name)?$approvals->project->project_name:'-'}}</td>
-                                        <td>{{date("d-m-Y",strtotime($approvals->start_date))}}</td>
+                                        <td>{{date("l, d-m-Y",strtotime($approvals->start_date))}}</td>
                                         <td>{{ ($approvals->start_time !='00:00:00') ?\Auth::user()->timeFormat( $approvals->start_time):'00:00' }} </td>
                                         <td>{{ ($approvals->end_time !='00:00:00') ?\Auth::user()->timeFormat( $approvals->end_time):'00:00' }}</td>
                                         <td>{{!empty($approvals->note)?$approvals->note:'-'}}</td>

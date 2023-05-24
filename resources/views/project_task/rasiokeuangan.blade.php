@@ -49,10 +49,10 @@
                                 @foreach($summary_rasio_keuangan as $data)
                                     <tr>
                                         <td style="border: 1px solid black;">{{$data['akun']}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty($data['data_2020'])? ($data['data_2020'] != '0.00' ? $data['data_2020'] : '-') : '-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty($data['data_2021'])? ($data['data_2021'] != '0.00' ? $data['data_2021'] : '-') : '-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty($data['data_in_2022'])? ($data['data_in_2022'] != '0.00' ? $data['data_in_2022'] : '-') : '-'}}</td>
-                                        <td style="border: 1px solid black; width:150px;">{{!empty($data['data_au_2022'])? ($data['data_au_2022'] != '0.00' ? $data['data_au_2022'] : '-') : '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{!empty($data['data_2020'])? ($data['data_2020'] != '0.00' ? $data['data_2020'] : '-') : '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{!empty($data['data_2021'])? ($data['data_2021'] != '0.00' ? $data['data_2021'] : '-') : '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{!empty($data['data_in_2022'])? ($data['data_in_2022'] != '0.00' ? $data['data_in_2022'] : '-') : '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{!empty($data['data_au_2022'])? ($data['data_au_2022'] != '0.00' ? $data['data_au_2022'] : '-') : '-'}}</td>
                                     </tr>
                                 @endforeach  
                             </tbody>

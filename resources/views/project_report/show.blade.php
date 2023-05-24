@@ -87,7 +87,7 @@
 <div class="row">
     <div class="col-sm-12">
         <div class="row" id="printableArea">
-                <div class="col-md-6">
+                <div class="col-md-12">
                     <div class="card">
                         <div class="card-header">
                             <h5>{{ __('Overview')}}</h5>
@@ -192,25 +192,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-3">
-                    <div class="card">
-                        <div class="card-header">
-                            <div class="float-end">
-                                <a href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Refferals"><i class=""></i></a>
-                            </div>
-                            <h5>{{ __('Task Priority') }}</h5>
-                        </div>
-                        <div class="card-body"  style="min-height: 280px;">
-                            <div class="row align-items-center">
-                                <div class="col-12">
-                                    <div id='chart_priority'></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
                             <div class="float-end">
@@ -228,7 +210,25 @@
                     </div>
                 </div>
 
-                <div class="col-md-4">
+                <div class="col-md-5">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="float-end">
+                                <a href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Refferals"><i class=""></i></a>
+                            </div>
+                            <h5>{{ __('Task Priority') }}</h5>
+                        </div>
+                        <div class="card-body"  style="min-height: 280px;">
+                            <div class="row align-items-center">
+                                <div class="col-12">
+                                    <div id='chart_priority'></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-7">
                     <div class="card">
                         <div class="card-header">
                             <div class="float-end">
@@ -284,54 +284,95 @@
                             </div>
                         </div>
                     </div>
-                @endif
-
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5>{{ __(' Task Quality Control')}}</h5>
-                        </div>
-                        <div class="card-body" style="min-height: 280px;">
-                            <div class="row align-items-center">
-                                <div class="col-7">
-                                    <table class="table" >
-                                        <tbody>
-                                            <tr class="border-0" >
-                                                <th class="border-0" >{{ __('Total Sub Task')}}:</th>
-                                                <td class="border-0"> {{$countsubtask}}</td>
-                                            </tr>
-                                            <tr role="row">
-                                                <th class="border-0">{{ __('Total Link') }}:</th>
-                                                <td class="border-0">{{$counttasklink}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th class="border-0">{{ __('Total Comment') }}:</th>
-                                                <td class="border-0">{{$counttaskcomment}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th class="border-0">{{ __('Subtask Checked / Total Sub Task')}}:</th>
-                                                <td class="border-0">{{$totalchecked}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th class="border-0">{{ __('Minimum Link Per Tasks')}}:</th>
-                                                <td class="border-0">{{$rataratalink}} {{'Link'}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th class="border-0">{{ __('Minimum Comment Per Tasks')}}:</th>
-                                                <td class="border-0">{{$rataratacomment}} {{'Comment'}}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>{{ __(' Task Quality Control')}}</h5>
+                            </div>
+                            <div class="card-body" style="min-height: 280px;">
+                                <div class="row align-items-center">
+                                    <div class="col-7">
+                                        <table class="table" >
+                                            <tbody>
+                                                <tr class="border-0" >
+                                                    <th class="border-0" >{{ __('Total Sub Task')}}:</th>
+                                                    <td class="border-0"> {{$countsubtask}}</td>
+                                                </tr>
+                                                <tr role="row">
+                                                    <th class="border-0">{{ __('Total Link') }}:</th>
+                                                    <td class="border-0">{{$counttasklink}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="border-0">{{ __('Total Comment') }}:</th>
+                                                    <td class="border-0">{{$counttaskcomment}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="border-0">{{ __('Subtask Checked / Total Sub Task')}}:</th>
+                                                    <td class="border-0">{{$totalchecked}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="border-0">{{ __('Minimum Link Per Tasks')}}:</th>
+                                                    <td class="border-0">{{$rataratalink}} {{'Link'}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="border-0">{{ __('Minimum Comment Per Tasks')}}:</th>
+                                                    <td class="border-0">{{$rataratacomment}} {{'Comment'}}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @else
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>{{ __(' Task Quality Control')}}</h5>
+                            </div>
+                            <div class="card-body" style="min-height: 280px;">
+                                <div class="row align-items-center">
+                                    <div class="col-7">
+                                        <table class="table" >
+                                            <tbody>
+                                                <tr class="border-0" >
+                                                    <th class="border-0" >{{ __('Total Sub Task')}}:</th>
+                                                    <td class="border-0"> {{$countsubtask}}</td>
+                                                </tr>
+                                                <tr role="row">
+                                                    <th class="border-0">{{ __('Total Link') }}:</th>
+                                                    <td class="border-0">{{$counttasklink}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="border-0">{{ __('Total Comment') }}:</th>
+                                                    <td class="border-0">{{$counttaskcomment}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="border-0">{{ __('Subtask Checked / Total Sub Task')}}:</th>
+                                                    <td class="border-0">{{$totalchecked}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="border-0">{{ __('Minimum Link Per Tasks')}}:</th>
+                                                    <td class="border-0">{{$rataratalink}} {{'Link'}}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th class="border-0">{{ __('Minimum Comment Per Tasks')}}:</th>
+                                                    <td class="border-0">{{$rataratacomment}} {{'Comment'}}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
 @php
 $lastStage=\App\Models\TaskStage::where('created_by',\Auth::user()->creatorId())->orderby('id','desc')->first();
 
 @endphp
-                <div class="col-md-7">
+                <div class="col-md-12">
                     <div class="card ">
                         <div class="card-header">
                             <h5>{{ __('Users') }}</h5>
