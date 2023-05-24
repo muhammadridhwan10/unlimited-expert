@@ -84,7 +84,19 @@ class TimeTrackerController extends Controller
 
             $data['branch']     = __('All');
             $data['department'] = __('All');
-            $employeeTimeTracker = TimeTracker::where('created_by',\Auth::user()->id)->get();
+            $employeeTimeTracker = TimeTracker::where('created_by',\Auth::user()->id);
+
+            if (!empty($request->month)) {
+                $month = date('m', strtotime($request->month));
+                $year  = date('Y', strtotime($request->month));
+
+                $start_date = date($year . '-' . $month . '-01');
+                $end_date   = date($year . '-' . $month . '-t');
+
+                $employeeTimeTracker->whereBetween('start_time', [$start_date, $end_date]);
+            } 
+
+            $employeeTimeTracker = $employeeTimeTracker->get();
         }
         return view('time_trackers.index',compact('employeeTimeTracker','branch', 'department'));
 
