@@ -404,7 +404,7 @@ $lastStage=\App\Models\TaskStage::where('created_by',\Auth::user()->creatorId())
                                                 $all_task = App\Models\ProjectTask::where('project_id',$project->id)->whereRaw("FIND_IN_SET(?,  assign_to) > 0", [$user->id])->get();
 
                                                 $total_complete_task = App\Models\ProjectTask::where('project_id','=',$project->id)->where('stage_id',$lastStage->id)
-                                                ->where('assign_to','=',$user->id)->count();
+                                                ->whereRaw("find_in_set('" . $user->id . "',assign_to)")->count();
 
                                                 $logged_hours = 0;
                                                 $timesheets = App\Models\Timesheet::where('project_id',$project->id)->where('created_by' ,$user->id)->get();
