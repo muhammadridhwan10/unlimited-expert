@@ -5554,6 +5554,9 @@ class ReportController extends Controller
                 $totalOverTime = 0;
                 $overtimeHours = 0;
                 $overtimeMins = 0;
+                $totalOvertimeHours = 0;
+                $totalOvertimeMins = 0;
+
 
                 foreach($dates as $date)
                 {
