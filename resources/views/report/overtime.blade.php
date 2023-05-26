@@ -231,18 +231,32 @@
                                     <th class="active">{{__('Total Working Days')}}</th>
                                     <th class="active">{{__('Total Overtime Days')}}</th>
                                     <th class="active">{{__('Total Hours Overtime')}}</th>
+                                    <th class="active">{{__('Detail Overtime')}}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
 
                                     @foreach($employeesAttendance as $attendance)
-                                    
+                                    <?php
+                                        $totalOvertime = $attendance['total_overtime'];
+                                        // Mengubah format "08:120:00" menjadi jumlah detik
+                                        list($hours, $minutes, $seconds) = explode(':', $totalOvertime);
+                                        $totalSeconds = ($hours * 3600) + ($minutes * 60) + $seconds;
+
+                                        // Memformat kembali ke dalam "10:00:00"
+                                        $formattedTime = sprintf('%02d:%02d:%02d', floor($totalSeconds / 3600), floor(($totalSeconds % 3600) / 60), ($totalSeconds % 60));
+                                    ?>
 
                                         <tr>
                                             <td>{{$attendance['name']}}</td>
                                             <td>{{$attendance['present']}}</td>
                                             <td>{{$attendance['overtime']}}</td>
-                                            <td>{{$attendance['total_overtime']}}</td>
+                                            <td>{{$formattedTime}}</td>
+                                            <td>
+                                            <div class="m-view-btn badge bg-info p-2 px-3 rounded">{{$attendance['overtime']}}
+                                                <a href="#" class="text-white" data-url="{{ route('report.employee.overtime',[$attendance['id'],isset($_GET['month']) ? $_GET['month']:date('Y-m')]) }}" data-ajax-popup="true" data-title="{{__('Overtime List Detail')}}" data-size="lg" data-bs-toggle="tooltip" title="{{__('View')}}" data-original-title="{{__('View')}}">{{__('View')}}</a>
+                                            </div>
+                                        </td>
                                         </tr>
                                     @endforeach
                                 </tbody>

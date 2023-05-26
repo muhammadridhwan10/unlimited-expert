@@ -5549,6 +5549,7 @@ class ReportController extends Controller
             
             foreach($employees as $id => $employee)
             {
+                $attendances['id'] = $id;
                 $attendances['name'] = $employee;
                 $totalOvertimeDays = 0;
                 $totalOverTime = 0;
@@ -5841,6 +5842,28 @@ class ReportController extends Controller
 
 
             return view('report.projectsShow', compact('projects', 'project'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+
+
+    }
+
+    public function employeeOvertime(Request $request, $employee_id, $month)
+    {
+        if(\Auth::user()->can('manage report'))
+        {
+            $employee_overtime       = UserOvertime::where('user_id', $employee_id)->where('status', '=', 'Approved');
+            $m = date('m', strtotime($month));
+            $y = date('Y', strtotime($month));
+
+            $employee_overtime->whereMonth('start_date', $m)->whereYear('start_date', $y);
+            $employee_overtime = $employee_overtime->get();
+
+
+            return view('report.overtimeShow', compact('employee_overtime'));
         }
         else
         {

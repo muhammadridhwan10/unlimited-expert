@@ -765,7 +765,7 @@ class AttendanceEmployeeController extends Controller
 
                 $employeeAttendance->save();
 
-                return redirect()->route('dashboard')->with('success', __('Employee Successfully Clock In.'));
+                return redirect()->back()->with('success', __('Employee Successfully Clock In.'));
             }
             foreach($checkDb as $check)
             {
@@ -787,7 +787,7 @@ class AttendanceEmployeeController extends Controller
 
                 $employeeAttendance->save();
 
-                return redirect()->route('dashboard')->with('success', __('Employee Successfully Clock In.'));
+                return redirect()->back()->with('success', __('Employee Successfully Clock In.'));
 
             }
         }

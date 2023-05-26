@@ -2276,6 +2276,12 @@ Route::get('employee/{id}/projects/{type}/{month}/{year}/{week}', 'ReportControl
         'XSS',
     ]
 );
+Route::get('employee/{id}/overtime/{month}', 'ReportController@employeeOvertime')->name('report.employee.overtime')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
 Route::get('reports-payroll', 'ReportController@payroll')->name('report.payroll')->middleware(
     [
         'auth',

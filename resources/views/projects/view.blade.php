@@ -589,7 +589,7 @@
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex align-items-center justify-content-between">
-                            <h5>{{__('Audit Planning')}}</h5>
+                            <h5>{{__('Assign Task and Users')}}</h5>
                             @can('edit project')
                                 <div class="float-end">
                                     <a href="#" data-size="lg" data-url="{{ route('projects.auditplanning', $project->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="" class="btn btn-sm btn-primary" data-bs-original-title="{{__('Create Audit Planning')}}">
