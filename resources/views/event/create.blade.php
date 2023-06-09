@@ -1,37 +1,38 @@
 
 {{Form::open(array('url'=>'event','method'=>'post'))}}
 <div class="modal-body">
+    @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+        <div class="row">
+            <div class="col-md-4">
 
-    <div class="row">
-        <div class="col-md-4">
+                {{Form::label('branch_id',__('Branch'),['class'=>'form-label'])}}
+                <select class="form-control select" name="branch_id" id="branch_id" placeholder="{{__('Select Branch')}}">
+                    <option value="">{{__('Select Branch')}}</option>
 
-            {{Form::label('branch_id',__('Branch'),['class'=>'form-label'])}}
-            <select class="form-control select" name="branch_id" id="branch_id" placeholder="{{__('Select Branch')}}">
-                <option value="">{{__('Select Branch')}}</option>
+                    @foreach($branch as $branch)
+                        <option value="{{ $branch->id }}">{{ $branch->name }}</option>
+                    @endforeach
+                </select>
 
-                @foreach($branch as $branch)
-                    <option value="{{ $branch->id }}">{{ $branch->name }}</option>
-                @endforeach
-            </select>
+            </div>
+            <div class="col-md-4">
 
+                {{Form::label('department_id',__('Department'),['class'=>'form-label'])}}
+                <select class="form-control " name="department_id" id="department_id"  placeholder="{{__('Select Department')}}">
+                    <option value="">{{__('Select Department')}}</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+
+                {{Form::label('employee_id',__('Employee'),['class'=>'form-label'])}}
+                <select class="form-control " name="employee_id" id="employee_id" placeholder="{{__('Select Employee')}}" >
+                    <option value="">{{__('Select Employee')}}</option>
+
+                </select>
+
+            </div>
         </div>
-        <div class="col-md-4">
-
-            {{Form::label('department_id',__('Department'),['class'=>'form-label'])}}
-            <select class="form-control " name="department_id" id="department_id"  placeholder="{{__('Select Department')}}">
-                <option value="">{{__('Select Department')}}</option>
-            </select>
-        </div>
-        <div class="col-md-4">
-
-            {{Form::label('employee_id',__('Employee'),['class'=>'form-label'])}}
-            <select class="form-control " name="employee_id" id="employee_id" placeholder="{{__('Select Employee')}}" >
-                <option value="">{{__('Select Employee')}}</option>
-
-            </select>
-
-        </div>
-    </div>
+    @endif
 
 
     <div class="row mt-2">

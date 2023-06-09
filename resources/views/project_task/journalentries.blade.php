@@ -38,38 +38,72 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="col-12">
-                    <div class="card-header"><h6 class="mb-0">{{__('Journal Data')}}</h6></div>
+                    @php
+                        $prevAdjCode = null;
+                        $totalDr = 0;
+                        $totalCr = 0;
+                    @endphp
+                    @foreach($journaldata as $journaldatas)
+                        @php
+                            $totalDr += $journaldatas->dr;
+                            $totalCr += $journaldatas->cr;
+                        @endphp
+
+                    @endforeach
+                    @if ($totalDr == 0 && $totalCr == 0)
+                        <tr>
+                            <div class="card-header"><h6 class="mb-0">{{__('Journal Data')}}</h6></div>
+                        </tr>
+                    @elseif ($totalDr == $totalCr)
+                        <tr>
+                            <div class="card-header"><h6 class="mb-0" style='color:green;'>{{__('Balance')}} <i class="fas fa-check"></i></h6></div>
+                        </tr>
+                    @else
+                        <tr>
+                            <div class="card-header"><h6 class="mb-0" style='color:red;'>{{__('Not Balance')}} <i class="fas fa-times"></i></h6></div>
+                        </tr>
+                    @endif
                     <div class="card-body table-border-style">
                         <div class="table-responsive">
                             <table class="table datatable">
-                                <thead>
-                                <tr>
-                                    <th style="text-align: center;" scope="col">{{'CoA'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Account Name'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Adj Dr.'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Adj Cr.'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Notes'}}</th>
-                                </tr>
-                                </thead>
-                                <tbody class="list">
-                                @if(count(array($financial_statement)) > 0)
-                                    @foreach($financial_statement as $financial_statements)
+                                    <thead>
+                                        <tr>
+                                            <th style="text-align: center; width:80px;" scope="col">{{'Adj Code'}}</th>
+                                            <th style="text-align: center; width:250px;" scope="col">{{'Account Name'}}</th>
+                                            <th style="text-align: center; width:150px;" scope="col">{{'Adj Dr.'}}</th>
+                                            <th style="text-align: center; width:150px;" scope="col">{{'Adj Cr.'}}</th>
+                                            <th style="text-align: center;" scope="col">{{'Notes'}}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="list">
+                                        @if(count(array($journaldata)) > 0)
+                                            @foreach($journaldata as $journaldatas)
+                                                <tr>
+                                                    <td style="width:80px;">
+                                                        @if ($prevAdjCode !== $journaldatas->adj_code)
+                                                            {{ substr_replace($journaldatas->adj_code, ' ', 4, 0) }}
+                                                        @endif
+                                                    </td>
+                                                    <td style="border: 1px solid black; width:250px;">{{ $journaldatas->lk->account }}</td>
+                                                    <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($journaldatas->dr))? number_format($journaldatas->dr):'-' }}</td>
+                                                    <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($journaldatas->cr))? number_format($journaldatas->cr):'-' }}</td>
+                                                    <td style="border: 1px solid black; text-align: center;" width="50%">{{ $journaldatas->notes }}</td>
+                                                </tr>
+                                                @php
+                                                    $prevAdjCode = $journaldatas->adj_code;
+                                                @endphp
+                                            @endforeach
+                                        @else
                                             <tr>
-                                                <td>{{ $financial_statements->coa }}</td>
-                                                <td>{{ $financial_statements->account }}</td>
-                                                <td>{{ !empty(number_format($financial_statements->dr))? number_format($financial_statements->dr):'-' }}</td>
-                                                <td>{{ !empty(number_format($financial_statements->cr))? number_format($financial_statements->cr):'-' }}</td>
-                                                <td width="50%">{{ $financial_statements->notes }}</td>
-                                                
+                                                <th scope="col" colspan="7">
+                                                    <h6 class="text-center">{{__('No Financial Data Found')}}</h6>
+                                                </th>
                                             </tr>
-                                    @endforeach
-                                @else
-                                    <tr>
-                                        <th scope="col" colspan="7"><h6 class="text-center">{{__('No Financial Data Found')}}</h6></th>
-                                    </tr>
-                                @endif
-                                </tbody>
+                                        @endif
+                                    </tbody>
+
                             </table>
+
                         </div>
                     </div>
                 </div>

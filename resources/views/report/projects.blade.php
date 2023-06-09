@@ -56,11 +56,11 @@
             if (type == 'monthly') {
                 $('.month').addClass('d-block');
                 $('.month').removeClass('d-none');
-                $('.week').addClass('d-none');
-                $('.week').removeClass('d-block');
+                $('.year').addClass('d-none');
+                $('.year').removeClass('d-block');
             } else {
-                $('.week').addClass('d-block');
-                $('.week').removeClass('d-none');
+                $('.year').addClass('d-block');
+                $('.year').removeClass('d-none');
                 $('.month').addClass('d-none');
                 $('.month').removeClass('d-block');
             }
@@ -99,10 +99,10 @@
                                             <input type="radio" id="monthly" value="monthly" name="type" class="form-check-input" {{isset($_GET['type']) && $_GET['type']=='monthly' ?'checked':'checked'}}>
                                             <label class="form-check-label" for="monthly">{{__('Monthly')}}</label>
                                         </div>
-                                        <div class="form-check form-check-inline form-group">
+                                        {{-- <div class="form-check form-check-inline form-group">
                                             <input type="radio" id="weekly" value="weekly" name="type" class="form-check-input" {{isset($_GET['type']) && $_GET['type']=='weekly' ?'checked':''}}>
                                             <label class="form-check-label" for="weekly">{{__('Weekly')}}</label>
-                                        </div>
+                                        </div> --}}
                                         {{-- <div class="form-check form-check-inline form-group">
                                             <input type="radio" id="yearly" value="yearly" name="type" class="form-check-input" {{isset($_GET['type']) && $_GET['type']=='yearly' ?'checked':''}}>
                                             <label class="form-check-label" for="yearly">{{__('Yearly')}}</label>
@@ -114,12 +114,12 @@
                                             {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
                                         </div>
                                     </div>
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 week d-none">
+                                    {{-- <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 week d-none">
                                         <div class="btn-box">
                                             {{Form::label('week',__('Week'),['class'=>'form-label'])}}
                                             {{Form::week('week',isset($_GET['week'])?$_GET['week']:date('Y-W'),array('class'=>'week-btn form-control'))}}
                                         </div>
-                                    </div>
+                                    </div> --}}
 
                                     <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 year d-none">
                                         <div class="btn-box">
@@ -247,7 +247,7 @@
                                         <td>{{$project['employee']}}</td>
                                         <td>
                                             <div class="m-view-btn badge bg-info p-2 px-3 rounded">{{$project['project']}}
-                                                <a href="#" class="text-white" data-url="{{ route('report.employee.projects',[$project['id'],isset($_GET['type']) ?$_GET['type']:'no',isset($_GET['month'])?$_GET['month']:date('Y-m'),isset($_GET['year'])?$_GET['year']:date('Y'),isset($_GET['week'])?$_GET['week']:date('Y-W')]) }}" data-ajax-popup="true" data-title="{{__('Projects List Detail')}}" data-size="lg" data-bs-toggle="tooltip" title="{{__('View')}}" data-original-title="{{__('View')}}">{{__('View')}}</a>
+                                                <a href="#" class="text-white" data-url="{{ route('report.employee.projects',[$project['id'],isset($_GET['type']) ?$_GET['type']:'no',isset($_GET['month'])?$_GET['month']:date('Y-m'),isset($_GET['year'])?$_GET['year']:date('Y')]) }}" data-ajax-popup="true" data-title="{{__('Projects List Detail')}}" data-size="lg" data-bs-toggle="tooltip" title="{{__('View')}}" data-original-title="{{__('View')}}">{{__('View')}}</a>
                                             </div>
                                         </td>
                                     </tr>

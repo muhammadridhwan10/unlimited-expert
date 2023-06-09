@@ -14,6 +14,7 @@ class Leave extends Model
         'end_date',
         'total_leave_days',
         'leave_reason',
+        'approval',
         'remark',
         'status',
         'created_by',
@@ -27,5 +28,10 @@ class Leave extends Model
     public function employees()
     {
         return $this->hasOne('App\Models\Employee', 'id', 'employee_id');
+    }
+
+    public function approvals()
+    {
+        return $this->hasOne('App\Models\User', 'id', 'approval');
     }
 }

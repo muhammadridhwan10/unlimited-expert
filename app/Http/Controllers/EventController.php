@@ -43,7 +43,7 @@ class EventController extends Controller
     
                 return view('event.index', compact('arrEvents', 'employees', 'transdate','events','current_month_event'));
             }
-            if(\Auth::user()->type == 'company')
+            elseif(\Auth::user()->type == 'company')
             {
                 $employees = Employee::all();
                 $events    = Event::all();
@@ -69,8 +69,9 @@ class EventController extends Controller
             }
             else
             {
-                $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get();
-                $events    = Event::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $user      = \Auth::user();
+                $employees = Employee::where('user_id', '=', $user->id)->first();
+                $events    = Event::where('employee_id', '=', $employees->id)->get();
                 $transdate = date('Y-m-d', time());
     
                 $today_date = date('m');
@@ -102,13 +103,13 @@ class EventController extends Controller
     {
         if(\Auth::user()->can('create event'))
         {
-            if(\Auth::user()->type = 'admin')
+            if(\Auth::user()->type == 'admin')
             {
                 $employees   = Employee::all()->pluck('name', 'id');
                 $branch      = Branch::all();
                 $departments = Department::all();
             }
-            elseif(\Auth::user()->type = 'company')
+            elseif(\Auth::user()->type == 'company')
             {
                 $employees   = Employee::all()->pluck('name', 'id');
                 $branch      = Branch::all();
@@ -136,9 +137,6 @@ class EventController extends Controller
         {
 
             $validator = \Validator::make($request->all(), [
-                'branch_id' => 'required',
-                'department_id' => 'required',
-                'employee_id' => 'required',
                 'title' => 'required',
                 'start_date' => 'required',
                 'end_date' => 'required',
@@ -151,17 +149,37 @@ class EventController extends Controller
                 return redirect()->back()->with('error', $messages->first());
             }
 
-            $event                = new Event();
-            $event->branch_id     = $request->branch_id;
-            $event->department_id = json_encode($request->department_id);
-            $event->employee_id   = json_encode($request->employee_id);
-            $event->title         = $request->title;
-            $event->start_date    = $request->start_date;
-            $event->end_date      = $request->end_date;
-            $event->color         = $request->color;
-            $event->description   = $request->description;
-            $event->created_by    = \Auth::user()->creatorId();
-            $event->save();
+            if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
+            {
+                $user = \Auth::user();
+                $employee = Employee::where('user_id', $user->id)->first();
+
+                $event                = new Event();
+                $event->branch_id     = $employee->branch_id;
+                $event->department_id = 0;
+                $event->employee_id   = $employee->id;
+                $event->title         = $request->title;
+                $event->start_date    = $request->start_date;
+                $event->end_date      = $request->end_date;
+                $event->color         = $request->color;
+                $event->description   = $request->description;
+                $event->created_by    = \Auth::user()->creatorId();
+                $event->save();
+            }
+            else
+            {
+                $event                = new Event();
+                $event->branch_id     = $request->branch_id;
+                $event->department_id = json_encode($request->department_id);
+                $event->employee_id   = json_encode($request->employee_id);
+                $event->title         = $request->title;
+                $event->start_date    = $request->start_date;
+                $event->end_date      = $request->end_date;
+                $event->color         = $request->color;
+                $event->description   = $request->description;
+                $event->created_by    = \Auth::user()->creatorId();
+                $event->save();
+            }
 
             if(in_array('0', [$request->employee_id]))
             {
@@ -176,7 +194,7 @@ class EventController extends Controller
             {
                 $eventEmployee              = new EventEmployee();
                 $eventEmployee->event_id    = $event->id;
-                $eventEmployee->employee_id = $employee;
+                $eventEmployee->employee_id = $event->employee_id;
                 $eventEmployee->created_by  = Auth::user()->creatorId();
                 $eventEmployee->save();
             }
@@ -219,9 +237,11 @@ class EventController extends Controller
         if(\Auth::user()->can('edit event'))
         {
             $event = Event::find($event);
-            if($event->created_by == Auth::user()->creatorId())
+            $user      = \Auth::user();
+            $employees = Employee::where('user_id', '=', $user->id)->first();
+            if($event->employee_id == $employees->id)
             {
-                $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $employees = Employee::where('employee_id', '=', $employees->id)->get()->pluck('name', 'id');
 
                 return view('event.edit', compact('event', 'employees'));
             }
@@ -294,6 +314,29 @@ class EventController extends Controller
 
                 return redirect()->route('event.index')->with('success', __('Event successfully updated.'));
             }
+            elseif(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
+            {
+                $validator = \Validator::make($request->all(), [
+                    'title' => 'required',
+                    'start_date' => 'required',
+                    'color' => 'required',
+                ]);
+                if($validator->fails())
+                {
+                    $messages = $validator->getMessageBag();
+
+                    return redirect()->back()->with('error', $messages->first());
+                }
+
+                $event->title       = $request->title;
+                $event->start_date  = $request->start_date;
+                $event->end_date    = $request->end_date;
+                $event->color       = $request->color;
+                $event->description = $request->description;
+                $event->save();
+
+                return redirect()->route('event.index')->with('success', __('Event successfully updated.'));
+            }
             else
             {
                 return redirect()->back()->with('error', __('Permission denied.'));
@@ -316,6 +359,12 @@ class EventController extends Controller
                 return redirect()->route('event.index')->with('success', __('Event successfully deleted.'));
             }
             elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $event->delete();
+
+                return redirect()->route('event.index')->with('success', __('Event successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
             {
                 $event->delete();
 

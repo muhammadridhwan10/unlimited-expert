@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Mail;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\DataImport;
 use App\Models\FinancialStatement;
+use App\Models\MappingAccount;
 use App\Models\Materialitas;
 use App\Models\ValueMaterialitas;
 use App\Models\SummaryMateriality;
@@ -1926,7 +1927,27 @@ class ProjectTaskController extends Controller
             $project                       = Project::find($project_id);
             $task                          = ProjectTask::find($id);
             $financial_statement           = FinancialStatement::where('project_id', $project_id)->get();
-            return view('project_task.financialStatement', compact('task','project','financial_statement'));
+            $mapping_accounts              = MappingAccount::where('project_id', $project_id)->get();
+
+            $result = $mapping_accounts->map(function ($mapping_account) use ($financial_statement) {
+                $account_code = $mapping_account->account_code;
+                $name = $mapping_account->name;
+                $account_group = $mapping_account->account_group;
+            
+                $financial_data = $financial_statement->where('lk', $account_code);
+            
+                return [
+                    'account_code' => $account_code,
+                    'name' => $name,
+                    'account_group' => $account_group,
+                    'prior_period2' => $financial_data->sum('prior_period2') ?? null,
+                    'prior_period' => $financial_data->sum('prior_period') ?? null,
+                    'inhouse' => $financial_data->sum('inhouse') ?? null,
+                    'audited' => $financial_data->sum('audited') ?? null,
+                ];
+            });
+            
+            return view('project_task.financialStatement', compact('task','project','financial_statement','mapping_accounts', 'result'));
         }
         else
         {
@@ -1954,6 +1975,9 @@ class ProjectTaskController extends Controller
             $data_m5 = FinancialStatement::where('project_id', $project_id)->where('m', '=', 'M.5')->get();
             $data_m6 = FinancialStatement::where('project_id', $project_id)->where('m', '=', 'M.6')->get();
             $data_m7 = FinancialStatement::where('project_id', $project_id)->where('m', '=', 'M.7')->get();
+            $data_m8 = FinancialStatement::where('project_id', $project_id)->where('m', '=', 'M.8')->get();
+            $data_m9 = FinancialStatement::where('project_id', $project_id)->where('m', '=', 'M.9')->get();
+            $data_m10 = FinancialStatement::where('project_id', $project_id)->where('m', '=', 'M.10')->get();
 
             //data 2020
             $data_m1_2020 = $data_m1->pluck('prior_period2')->toArray();
@@ -1970,6 +1994,12 @@ class ProjectTaskController extends Controller
             $total_m6_2020 = array_sum($data_m6_2020);
             $data_m7_2020 = $data_m7->pluck('prior_period2')->toArray();
             $total_m7_2020 = array_sum($data_m7_2020);
+            $data_m8_2020 = $data_m8->pluck('prior_period2')->toArray();
+            $total_m8_2020 = array_sum($data_m8_2020);
+            $data_m9_2020 = $data_m9->pluck('prior_period2')->toArray();
+            $total_m9_2020 = array_sum($data_m9_2020);
+            $data_m10_2020 = $data_m10->pluck('prior_period2')->toArray();
+            $total_m10_2020 = array_sum($data_m10_2020);
 
             //data 2021
             $data_m1_2021 = $data_m1->pluck('prior_period')->toArray();
@@ -1986,6 +2016,12 @@ class ProjectTaskController extends Controller
             $total_m6_2021 = array_sum($data_m6_2021);
             $data_m7_2021 = $data_m7->pluck('prior_period')->toArray();
             $total_m7_2021 = array_sum($data_m7_2021);
+            $data_m8_2021 = $data_m8->pluck('prior_period')->toArray();
+            $total_m8_2021 = array_sum($data_m8_2021);
+            $data_m9_2021 = $data_m9->pluck('prior_period')->toArray();
+            $total_m9_2021 = array_sum($data_m9_2021);
+            $data_m10_2021 = $data_m10->pluck('prior_period')->toArray();
+            $total_m10_2021 = array_sum($data_m10_2021);
 
             //data inhouse 2022
             $data_m1_in_2022 = $data_m1->pluck('inhouse')->toArray();
@@ -2002,6 +2038,12 @@ class ProjectTaskController extends Controller
             $total_m6_in_2022 = array_sum($data_m6_in_2022);
             $data_m7_in_2022 = $data_m7->pluck('inhouse')->toArray();
             $total_m7_in_2022 = array_sum($data_m7_in_2022);
+            $data_m8_in_2022 = $data_m8->pluck('inhouse')->toArray();
+            $total_m8_in_2022 = array_sum($data_m8_in_2022);
+            $data_m9_in_2022 = $data_m9->pluck('inhouse')->toArray();
+            $total_m9_in_2022 = array_sum($data_m9_in_2022);
+            $data_m10_in_2022 = $data_m10->pluck('inhouse')->toArray();
+            $total_m10_in_2022 = array_sum($data_m10_in_2022);
 
             //data audited 2022
             $data_m1_au_2022 = $data_m1->pluck('audited')->toArray();
@@ -2018,6 +2060,12 @@ class ProjectTaskController extends Controller
             $total_m6_au_2022 = array_sum($data_m6_au_2022);
             $data_m7_au_2022 = $data_m7->pluck('audited')->toArray();
             $total_m7_au_2022 = array_sum($data_m7_au_2022);
+            $data_m8_au_2022 = $data_m8->pluck('audited')->toArray();
+            $total_m8_au_2022 = array_sum($data_m8_au_2022);
+            $data_m9_au_2022 = $data_m9->pluck('audited')->toArray();
+            $total_m9_au_2022 = array_sum($data_m9_au_2022);
+            $data_m10_au_2022 = $data_m10->pluck('audited')->toArray();
+            $total_m10_au_2022 = array_sum($data_m10_au_2022);
 
             //data array unaudited 2020
             $data_array_2020 = 
@@ -2029,11 +2077,16 @@ class ProjectTaskController extends Controller
                 '5' => $total_m5_2020,
                 '6' => $total_m6_2020,
                 '7' => $total_m7_2020 * -1,
+                '8' => $total_m8_2020 * -1,
+                '9' => $total_m9_2020,
+                '10' => $total_m10_2020 * -1,
             ];
 
-            $data_array_2020['8'] = ($total_m4_2020 * -1) + $total_m5_2020;
-            $data_array_2020['9'] = $total_m6_2020 + $data_array_2020['8'];
-            $data_array_2020['10'] = ($total_m7_2020 * -1) + $data_array_2020['9'];
+            $data_array_2020['11'] = ($total_m4_2020 * -1) + $total_m5_2020;
+            $data_array_2020['12'] = $total_m6_2020 + $data_array_2020['11'];
+            $data_array_2020['13'] = $data_array_2020['12'] + ($total_m8_2020 * -1) + ($total_m7_2020 * -1);
+            $data_array_2020['14'] = $data_array_2020['13'] - $total_m9_2020;
+            $data_array_2020['15'] = $data_array_2020['14'] + $total_m10_2020;
 
             //data array audited 2021
             $data_array_2021 = 
@@ -2045,11 +2098,17 @@ class ProjectTaskController extends Controller
                 '5' => $total_m5_2021,
                 '6' => $total_m6_2021,
                 '7' => $total_m7_2021 * -1,
+                '8' => $total_m8_2021 * -1,
+                '9' => $total_m9_2021,
+                '10' => $total_m10_2021 * -1,
             ];
+            
 
-            $data_array_2021['8'] = ($total_m4_2021 * -1) + $total_m5_2021;
-            $data_array_2021['9'] = $total_m6_2021 + $data_array_2021['8'];
-            $data_array_2021['10'] = ($total_m7_2021 * -1) + $data_array_2021['9'];
+            $data_array_2021['11'] = ($total_m4_2021 * -1) + $total_m5_2021;
+            $data_array_2021['12'] = $total_m6_2021 + $data_array_2021['11'];
+            $data_array_2021['13'] = $data_array_2021['12'] + ($total_m8_2021 * -1) + ($total_m7_2021 * -1);
+            $data_array_2021['14'] = $data_array_2021['13'] - $total_m9_2021;
+            $data_array_2021['15'] = $data_array_2021['14'] + $total_m10_2021;
 
             //data array inhouse 2022
             $data_array_in_2022 = 
@@ -2061,11 +2120,16 @@ class ProjectTaskController extends Controller
                 '5' => $total_m5_in_2022,
                 '6' => $total_m6_in_2022,
                 '7' => $total_m7_in_2022 * -1,
+                '8' => $total_m8_in_2022 * -1,
+                '9' => $total_m9_in_2022,
+                '10' => $total_m10_in_2022 * -1,
             ];
 
-            $data_array_in_2022['8'] = ($total_m4_in_2022 * -1) + $total_m5_in_2022;
-            $data_array_in_2022['9'] = $total_m6_in_2022 + $data_array_in_2022['8'];
-            $data_array_in_2022['10'] = ($total_m7_in_2022 * -1) + $data_array_in_2022['9'];
+            $data_array_in_2022['11'] = ($total_m4_in_2022 * -1) + $total_m5_in_2022;
+            $data_array_in_2022['12'] = $total_m6_in_2022 + $data_array_in_2022['11'];
+            $data_array_in_2022['13'] = $data_array_in_2022['12'] + ($total_m8_in_2022 * -1) + ($total_m7_in_2022 * -1);
+            $data_array_in_2022['14'] = $data_array_in_2022['13'] - $total_m9_in_2022;
+            $data_array_in_2022['15'] = $data_array_in_2022['14'] + $total_m10_in_2022;
 
             //data array audited 2022
             $data_array_au_2022 = 
@@ -2077,11 +2141,16 @@ class ProjectTaskController extends Controller
                 '5' => $total_m5_au_2022,
                 '6' => $total_m6_au_2022,
                 '7' => $total_m7_au_2022 * -1,
+                '8' => $total_m8_au_2022 * -1,
+                '9' => $total_m9_au_2022,
+                '10' => $total_m10_au_2022 * -1,
             ];
 
-            $data_array_au_2022['8'] = ($total_m4_au_2022 * -1) + $total_m5_au_2022;
-            $data_array_au_2022['9'] = $total_m6_au_2022 + $data_array_au_2022['8'];
-            $data_array_au_2022['10'] = ($total_m7_au_2022 * -1) + $data_array_au_2022['9'];
+            $data_array_au_2022['11'] = ($total_m4_au_2022 * -1) + $total_m5_au_2022;
+            $data_array_au_2022['12'] = $total_m6_au_2022 + $data_array_au_2022['11'];
+            $data_array_au_2022['13'] = $data_array_au_2022['12'] + ($total_m8_au_2022 * -1) + ($total_m7_au_2022 * -1);
+            $data_array_au_2022['14'] = $data_array_au_2022['13'] - $total_m9_au_2022;
+            $data_array_au_2022['15'] = $data_array_au_2022['14'] + $total_m10_au_2022;
 
             $savematerialitas = Materialitas::get();
 
@@ -2129,7 +2198,7 @@ class ProjectTaskController extends Controller
         return json_encode($data);
     }
 
-    public function summaryMaterialitas(Request $request)
+    public function summaryMaterialitas(Request $request, $project_id)
     {
         
         $materialitas_id = $request->input('materialitas_id');
@@ -2144,8 +2213,8 @@ class ProjectTaskController extends Controller
         $finalte = str_replace(',', '', $request->input('finalmaterialityte'));
         $description = $request->input('description');
 
-        $valuesummary = ValueMaterialitas::find($materialitas_id);
-        $project_id = $valuesummary->project_id;
+        $valuesummary = ValueMaterialitas::where('project_id', $project_id)->where('materialitas_id', $materialitas_id)->first();
+        $project_id = $project_id;
         $value_materialitas_id = $valuesummary->id;
 
         // Simpan data ke dalam database menggunakan model
@@ -2297,9 +2366,9 @@ class ProjectTaskController extends Controller
             $id                                 = Crypt::decrypt($task_id);
             $project                            = Project::find($project_id);
             $task                               = ProjectTask::find($id);
-            $financial_statement                = FinancialStatement::where('project_id', $project_id)->whereNotNull('audited')->get();
+            $journaldata                        = SummaryJournalData::where('project_id', $project_id)->get();
             return view('project_task.journalentries', compact(
-                'task','project','financial_statement',
+                'task','project','journaldata',
             ));
         }
         else
@@ -2314,8 +2383,7 @@ class ProjectTaskController extends Controller
         {
             $project                       = Project::find($project_id);
             $task                          = ProjectTask::find($task_id);
-            $financial_statement = FinancialStatement::where('project_id', $project_id)->get()->pluck('coa', 'id');
-            $financial_statement->prepend('--', '');
+            $financial_statement = FinancialStatement::where('project_id', $project_id)->get()->pluck('account', 'coa');
 
             return view('project_task.createJournalData', compact('project','task', 'financial_statement'));
         }
@@ -2344,32 +2412,71 @@ class ProjectTaskController extends Controller
             $task                          = ProjectTask::find($id);
 
             $journaldata = $request->items;
+            $summary_journaldata = new SummaryJournalData();
 
-            $summary_journaldata               = new SummaryJournalData();
-            $summary_journaldata->project_id   = $project_id;
-            $summary_journaldata->notes        = $request->notes;
+            $lastAdjCodes = SummaryJournalData::select('adj_code')
+                ->where('project_id', $project_id)
+                ->groupBy('adj_code')
+                ->orderBy('adj_code', 'desc')
+                ->get();
 
-            $items = array();
-            foreach ($journaldata as $row) {
-            $items[] = $row['item'];
+            $adjCodeCounter = 1;
+            $prefix = $request->adj_code;
+
+            if ($lastAdjCodes->isNotEmpty()) {
+                $lastAdjCode = $lastAdjCodes[0]->adj_code;
+
+                if (strpos($lastAdjCode, $prefix) === 0) {
+                    $lastCode = intval(substr($lastAdjCode, strlen($prefix)));
+                    $adjCodeCounter = $lastCode + 1;
+                }
             }
+
+            for ($i = 0; $i < count($journaldata); $i++) {
+                $summary_journaldata->project_id = $project_id;
+                $summary_journaldata->notes = $request->notes;
+                $summary_journaldata->adj_code = $prefix . $adjCodeCounter;
+                $summary_journaldata->dr = $journaldata[$i]['dr'];
+                $summary_journaldata->cr = $journaldata[$i]['cr'];
+
+                // Pemisahan elemen 'coa' menjadi array terpisah
+                $coaValues = explode(',', $journaldata[$i]['item']);
+
+                foreach ($coaValues as $coa) {
+                    $item = new SummaryJournalData();
+                    $item->project_id = $summary_journaldata->project_id;
+                    $item->notes = $summary_journaldata->notes;
+                    $item->adj_code = $summary_journaldata->adj_code;
+                    $item->dr = str_replace(',', '', $summary_journaldata->dr);
+                    $item->cr = str_replace(',', '', $summary_journaldata->cr);
+                    $item->coa = $coa;
+                    $items[] = $item;
+
+                    $financial_data = FinancialStatement::where('project_id', $project_id)->where('coa', $coa)->first();
+
+                    $new_dr = $financial_data->dr + str_replace(',', '', $summary_journaldata->dr);
+                    $new_cr = $financial_data->cr + str_replace(',', '', $summary_journaldata->cr);
+
+                    FinancialStatement::where('project_id', $project_id)->where(['coa' => $coa])->update([
+                        'dr' => $new_dr,
+                        'notes' => $summary_journaldata->notes,
+                        'cr' => $new_cr,
+                        'audited' => $financial_data->inhouse + $new_dr - $new_cr,
+                    ]);
+                }
+
+                
+            }
+
+            $adjCodeCounter++;
 
             $result = implode(',', $items);
 
-            $summary_journaldata->coa     = $result;
-            $summary_journaldata->save();
-
-            for($i = 0; $i < count($journaldata); $i++)
-            {
-
-                FinancialStatement::where(['id' => $journaldata[$i]['item']])->update([
-                    'dr' => $journaldata[$i]['dr'],
-                    'notes' => $request->notes,
-                    'cr' => $journaldata[$i]['cr'],
-                    'audited' => $journaldata[$i]['audited'],
-                ]);
-
+            // Menyimpan item-item ke dalam database
+            foreach ($items as $item) {
+                $item->save();
             }
+
 
             ActivityLog::create(
                 [
@@ -4041,6 +4148,75 @@ class ProjectTaskController extends Controller
         else
         {
             return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function createMappingAccount($project_id, $task_id)
+    {
+        if(\Auth::user()->can('create project task'))
+        {
+            $project                       = Project::find($project_id);
+            $task                          = ProjectTask::find($task_id);
+            $materialitas                  = Materialitas::limit(10)->pluck('name', 'code');
+
+            return view('project_task.createMappingAccount', compact('project','task', 'materialitas'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function saveMappingAccount(Request $request, $project_id, $task_id)
+    {
+
+        if(\Auth::user()->can('create project task'))
+        {
+
+            $id                            = Crypt::decrypt($task_id);
+            $project                       = Project::find($project_id);
+            $task                          = ProjectTask::find($id);
+
+            $category = $request->items;
+
+            for($i = 0; $i < count($category); $i++)
+            {
+                $mapping_account                    = new MappingAccount();
+                $mapping_account->project_id        = $project_id;
+                $mapping_account->task_id           = $task->id;
+                $mapping_account->account_code      = $category[$i]['account_code'];
+                $mapping_account->name              = $category[$i]['name'];
+                $mapping_account->account_group     = $category[$i]['account_group'];
+                $mapping_account->save();
+            }
+
+            // for($i = 0; $i < count($journaldata); $i++)
+            // {
+
+            //     FinancialStatement::where(['id' => $journaldata[$i]['item']])->update([
+            //         'dr' => $journaldata[$i]['dr'],
+            //         'notes' => $request->notes,
+            //         'cr' => $journaldata[$i]['cr'],
+            //         'audited' => $journaldata[$i]['audited'],
+            //     ]);
+
+            // }
+
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $project_id,
+                    'task_id' => $task_id,
+                    'log_type' => 'Create Mapping Account',
+                    'remark' => json_encode(['title' => 'Create Mapping Account']),
+                ]
+            );
+
+            return redirect()->route('projects.tasks.financial.statement', [$project_id, $task_id])->with('success', __('Mapping Account successfully created.'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
         }
     }
 }

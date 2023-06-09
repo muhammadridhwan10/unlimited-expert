@@ -45,7 +45,9 @@ class ApiController extends Controller
         ];
         return $this->success([
             'token' => auth()->user()->createToken('API Token')->plainTextToken,
-            'user'=>auth()->user()->id,
+            'user'=> auth()->user()->id,
+            'name' => auth()->user()->name,
+//            'user'=> auth()->user()->id,
             'settings' =>$settings,
         ],'Login successfully.');
     }

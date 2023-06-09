@@ -31,7 +31,7 @@
     @endif
 @endpush
 @section('page-title')
-    {{__('Manage Project Task Template')}}
+    {{__('Manage Category Template')}}
 @endsection
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>

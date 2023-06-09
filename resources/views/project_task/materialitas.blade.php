@@ -105,7 +105,7 @@
             // Mengirim data ke server menggunakan Ajax
             $.ajax({
                 type: 'POST',
-                url: '/save-summary-materiality',
+                url: '/save-summary-materiality/{pid}',
                 data: {
                 materialitas_id: materialitas_id,
                 rate: rate,
@@ -162,7 +162,7 @@
 @endsection
 
 @section('content')
-{{ Form::open(['route' => ['summary.materialitas'], 'method' => 'post']) }}
+{{ Form::open(['route' => ['summary.materialitas', $project->id], 'method' => 'post']) }}
     <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}">
     <input type="hidden" name="materialitas_id" class = "form-control materialitas_id">
     <div class="row">
@@ -176,7 +176,7 @@
                                     <div class="form-group">
                                         <p style= 'text-align:center'><b>Critical Component</b></p>
                                         @foreach($materialitas as $materiality)
-                                        @if($materiality->name == 'LABA BRUTO' || $materiality->name == 'LABA OPERASI' || $materiality->name == 'LABA SEBELUM PAJAK')
+                                        @if($materiality->name == 'LABA BRUTO' || $materiality->name == 'LABA OPERASIONAL' || $materiality->name == 'LABA SEBELUM PAJAK' || $materiality->name == 'LABA SETELAH PAJAK' || $materiality->name == 'LABA RUGI KOMPREHENSIF SETELAH PAJAK')
                                             <div class="col-sm-3 col-md-12">    
                                                 <div class="form-group">
                                                     {{ Form::text('component', $materiality->name, ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold;']) }}
@@ -211,7 +211,7 @@
                                         </p>
                                     @endif
                                         @foreach($data_array_2020 as $key => $data_2020)
-                                        @if($key == '8' || $key == '9' || $key == '10')
+                                        @if($key == '11' || $key == '12' || $key == '13' || $key == '14' || $key == '15')
                                             <div class="col-sm-3 col-md-12">    
                                                 <div class="form-group">
                                                     {{ Form::text('2020', number_format($data_2020), ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold; text-align: right;']) }}
@@ -246,7 +246,7 @@
                                         </p>
                                     @endif
                                         @foreach($data_array_2021 as $key => $data_2021)
-                                            @if($key == '8' || $key == '9' || $key == '10')
+                                             @if($key == '11' || $key == '12' || $key == '13' || $key == '14' || $key == '15')
                                             <div class="col-sm-3 col-md-12">
                                                 <div class="form-group">
                                                     {{ Form::text('2021', number_format($data_2021), ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold; text-align: right;']) }}
@@ -281,7 +281,7 @@
                                             </p>
                                         @endif
                                         @foreach($data_array_in_2022 as $key => $data_in_2022)
-                                            @if($key == '8' || $key == '9' || $key == '10')
+                                            @if($key == '11' || $key == '12' || $key == '13' || $key == '14' || $key == '15')
                                             <div class="col-sm-3 col-md-12">    
                                                 <div class="form-group">
                                                     {{ Form::text('inhouse', number_format($data_in_2022), ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold; text-align: right;']) }}
@@ -316,7 +316,7 @@
                                             </p>
                                         @endif
                                         @foreach($data_array_au_2022 as $key => $data_au_2022)
-                                            @if($key == '8' || $key == '9' || $key == '10')
+                                            @if($key == '11' || $key == '12' || $key == '13' || $key == '14' || $key == '15')
                                             <div class="col-sm-3 col-md-12">    
                                                 <div class="form-group">
                                                     {{ Form::text('audited', number_format($data_au_2022), ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold; text-align: right;']) }}

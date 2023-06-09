@@ -22,6 +22,7 @@ class UserOvertime extends Model
         'approval',
         'status',
         'notes',
+        'created_date'
     ];
 
     public function employee()

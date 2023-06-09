@@ -64,24 +64,46 @@
 </div>
 {{Form::close()}}
 <script>
-    $( function() {
-        var currentDate = new Date();
-			var currentMonth = currentDate.getMonth();
-			var currentYear = currentDate.getFullYear();
-			var maxDate = new Date(currentYear, currentMonth, 27);
-			if (currentDate.getDate() > 27) {
-				if (currentMonth == 11) {
-					maxDate.setFullYear(currentYear + 1);
-					maxDate.setMonth(0);
-				} else {
-					maxDate.setMonth(currentMonth + 1);
-				}
-			}
-			
-			// initialize datepicker with maximum date
-			$( "#datepicker" ).datepicker({
-				maxDate: maxDate,
-				dateFormat: 'yy-mm-dd'
-			});
+  $(function() {
+    var currentDate = new Date();
+    var currentMonth = currentDate.getMonth() + 1; // bulan dimulai dari 0, jadi ditambah 1
+    var currentYear = currentDate.getFullYear();
+    var maxDate;
+
+    if (currentDate.getDate() < 27 || currentMonth === 5) {
+      // Bulan ini belum melewati tanggal 27 atau bulan ini adalah May
+      maxDate = 27;
+    } else {
+      maxDate = currentDate.getDate();
+    }
+
+    var startDate = new Date(currentYear, currentMonth - 2, 1); // 1 bulan sebelumnya
+    var endDate = new Date(currentYear, currentMonth - 1, 0); // akhir bulan ini
+
+    $("#datepicker").datepicker({
+      dateFormat: 'yy-mm-dd',
+      minDate: startDate,
+      maxDate: new Date(currentYear, currentMonth - 1, maxDate),
+      beforeShowDay: function(date) {
+        var day = date.getDate();
+        var month = date.getMonth() + 1;
+        var year = date.getFullYear();
+
+        if ((year === currentYear && month === currentMonth && day > maxDate) || 
+            (year === currentYear && month === currentMonth - 1 && day < 28)) {
+          return [false];
+        }
+        return [true];
+      }
     });
+
+    if (currentDate.getDate() > 27) 
+    {
+        $("#datepicker").datepicker("option", "disabled", true);
+        $("#datepicker").attr("readonly", "readonly");
+    }
+    
+  });
 </script>
+
+

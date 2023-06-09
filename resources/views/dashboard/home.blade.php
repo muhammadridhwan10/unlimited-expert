@@ -1,66 +1,8 @@
 @extends('layouts.admin')
 @section('page-title')
-    {{__('Dashboard')}}
+    {{__('Home')}}
 @endsection
 @push('script-page')
-    <script>
-
-        (function () {
-            var etitle;
-            var etype;
-            var etypeclass;
-            var calendar = new FullCalendar.Calendar(document.getElementById('event_calendar'), {
-                headerToolbar: {
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'timeGridDay,timeGridWeek,dayGridMonth'
-                },
-                buttonText: {
-                    timeGridDay: "{{__('Day')}}",
-                    timeGridWeek: "{{__('Week')}}",
-                    dayGridMonth: "{{__('Month')}}"
-                },
-                themeSystem: 'bootstrap',
-                navLinks: true,
-                droppable: true,
-                selectable: true,
-                selectMirror: true,
-                editable: true,
-                dayMaxEvents: true,
-                handleWindowResize: true,
-                events: {!! json_encode($arrEvents) !!},
-                locale: '{{basename(App::getLocale())}}',
-                dayClick: function (e) {
-                    var t = moment(e).toISOString();
-                    $("#new-event").modal("show"), $(".new-event--title").val(""), $(".new-event--start").val(t), $(".new-event--end").val(t)
-                },
-                eventResize: function (event) {
-                    var eventObj = {
-                        start: event.start.format(),
-                        end: event.end.format(),
-                    };
-                },
-                viewRender: function (t) {
-                    e.fullCalendar("getDate").month(), $(".fullcalendar-title").html(t.title)
-                },
-                eventClick: function (e, t) {
-                    var title = e.title;
-                    var url = e.url;
-
-                    if (typeof url != 'undefined') {
-                        $("#commonModal .modal-title").html(title);
-                        $("#commonModal .modal-dialog").addClass('modal-md');
-                        $("#commonModal").modal('show');
-                        $.get(url, {}, function (data) {
-                            $('#commonModal .modal-body').html(data);
-                        });
-                        return false;
-                    }
-                }
-            });
-            calendar.render();
-        })();
-    </script>
     <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase.js"></script>
     <script>
 
@@ -152,7 +94,6 @@
             document.getElementById("timer").innerHTML = "00:00:00";
         @endif
     </script>
-
 @endpush
 @push('css-page')
     <style>
@@ -182,8 +123,8 @@
     </style>
 @endpush
 @section('breadcrumb')
-    <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('HRM')}}</li>
+    <li class="breadcrumb-item"><a href="{{route('home')}}">{{__('Home')}}</a></li>
+    <li class="breadcrumb-item">{{__('Home')}}</li>
 @endsection
 @section('content')
     @if(\Auth::user()->type != 'client' && \Auth::user()->type != 'company' && \Auth::user()->type != 'admin')
@@ -219,6 +160,7 @@
                                         </div>
                                     </div>
                                 </center>
+                                <br>
                                 <div class="container">
                                     <div id="message">Your Working Time:</div>
                                     <br>
@@ -230,7 +172,7 @@
 
                          <div class="card">
                             <div class="card-body">
-                                {{ Form::open(array('route' => array('hrm.dashboard'),'method'=>'get','id'=>'report_monthly_attendance_user')) }}
+                                {{ Form::open(array('route' => array('home'),'method'=>'get','id'=>'report_monthly_attendance_user')) }}
                                 <div class="row align-items-center justify-content-end">
                                     <div class="col-auto">
                                         <div class="row">
@@ -248,7 +190,7 @@
                                                 <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_monthly_attendance_user').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
                                                     <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
                                                 </a>
-                                                <a href="{{route('hrm.dashboard')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
+                                                <a href="{{route('home')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
                                                     <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
                                                 </a>
                                             </div>
@@ -295,97 +237,233 @@
                                 </div>
                             </div>
                         </div>
-
-                        <div class="card ">
-                            <div class="card-header">
-                                <h4>{{__('Event View')}}</h4>
-                            </div>
-                            <div class="card-body dash-card-body">
-                                <div class="overflow-hidden widget-calendar">
-                                    <div class="calendar e-height" data-toggle="event_calendar" id="event_calendar"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-xxl-6">
-                        <div class="card list_card">
-                            <div class="card-header">
-                                <h4>{{__('Announcement List')}}</h4>
-                            </div>
-                            <div class="card-body dash-card-body">
-                                <div class="table-responsive">
-                                    <table class="table table-striped mb-0">
-                                        <thead>
-                                        <tr>
-                                            <th>{{__('Title')}}</th>
-                                            <th>{{__('Start Date')}}</th>
-                                            <th>{{__('End Date')}}</th>
-                                            <th>{{__('description')}}</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        @forelse($announcements as $announcement)
-                                            <tr>
-                                                <td>{{ $announcement->title }}</td>
-                                                <td>{{ \Auth::user()->dateFormat($announcement->start_date)  }}</td>
-                                                <td>{{ \Auth::user()->dateFormat($announcement->end_date) }}</td>
-                                                <td>{{ $announcement->description }}</td>
-                                            </tr>
-                                        @empty
-                                            <tr>
-                                                <td colspan="4">
-                                                    <div class="text-center">
-                                                        <h6>{{__('There is no Announcement List')}}</h6>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        @endforelse
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card list_card">
-                            <div class="card-header">
-                                <h4>{{__('Meeting List')}}</h4>
-                            </div>
-                            <div class="card-body dash-card-body">
-                                @if(count($meetings) > 0)
-                                    <div class="table-responsive">
-
-                                        <table class="table align-items-center">
-
-                                            <thead>
-                                            <tr>
-                                                <th>{{__('Meeting title')}}</th>
-                                                <th>{{__('Meeting Date')}}</th>
-                                                <th>{{__('Meeting Time')}}</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            @forelse($meetings as $meeting)
-                                                <tr>
-                                                    <td>{{ $meeting->title }}</td>
-                                                    <td>{{ \Auth::user()->dateFormat($meeting->date) }}</td>
-                                                    <td>{{ \Auth::user()->timeFormat($meeting->time) }}</td>
-                                                </tr>
-                                                @endforeach
-                                            </tbody>
-
-                                        </table>
-                                    </div>
-                                @else
-                                    <div class="p-2">
-                                        {{__('No meeting scheduled yet.')}}
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-
                     </div>
                 </div>
             </div>
         </div>
+
+        <div class="row">
+            <div class="col-lg-6 col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row align-items-center justify-content-between">
+                            <div class="col-auto mb-3 mb-sm-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="theme-avtar bg-primary">
+                                        <i class="ti ti-cast"></i>
+                                    </div>
+                                    <div class="ms-3">
+                                        <small class="text-muted">{{__('Total')}}</small>
+                                        <h6 class="m-0">{{__('Projects')}}</h6>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto text-end">
+                                <h4 class="m-0">{{ $home_data['total_project']['total'] }}</h4>
+                                <small class="text-muted"><span class="text-success">{{ $home_data['total_project']['percentage'] }}%</span> {{__('completd')}}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row align-items-center justify-content-between">
+                            <div class="col-auto mb-3 mb-sm-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="theme-avtar bg-info">
+                                        <i class="ti ti-activity"></i>
+                                    </div>
+                                    <div class="ms-3">
+                                        <small class="text-muted">{{__('Total')}}</small>
+                                        <h6 class="m-0">{{__('Tasks')}}</h6>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto text-end">
+                                <h4 class="m-0">{{ $home_data['total_task']['total'] }}</h4>
+                                <small class="text-muted"><span class="text-success">{{ $home_data['total_task']['percentage'] }}%</span> {{__('completd')}}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{__('Top Due Projects')}}</h5>
+                    </div>
+                    <div class="card-body project_table">
+                        <div class="table-responsive ">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                <tr>
+                                    <th>{{__('Name')}}</th>
+                                    <th>{{__('End Date')}}</th>
+                                    <th class="text-end">{{__('Status')}}</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @if($home_data['due_project']->count() > 0)
+                                    @foreach($home_data['due_project'] as $due_project)
+
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="{{asset(Storage::url('/'.$due_project->project_image ))}}"
+                                                        class="wid-40 rounded-circle me-3" alt="avatar image">
+                                                    <div>
+                                                        <h5 class="mb-0"><a class="text-blue" href="{{ route('projects.show',$due_project) }}">{{ $due_project->project_name }}</a></h5>
+                                                        <!-- <p class="mb-0"><span class="text-success">{{ \Auth::user()->priceFormat($due_project->budget) }}</p> -->
+
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td >{{  Utility::getDateFormated($due_project->end_date) }}</td>
+                                            <td class="text-end">
+                                                <span class="status_badge p-2 px-3 rounded badge bg-{{\App\Models\Project::$status_color[$due_project->status]}}">{{ __(\App\Models\Project::$project_status[$due_project->status]) }}</span>
+
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <div class="py-5">
+                                        <h5 class="text-center mb-0">{{__('No Due Projects Found.')}}</h5>
+                                    </div>
+                                @endif
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{__('Projects Remaining In 2 Weeks')}}</h5>
+                    </div>
+                    <div class="card-body project_table">
+                        <div class="table-responsive ">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                <tr>
+                                    <th>{{__('Name')}}</th>
+                                    <th>{{__('End Date')}}</th>
+                                    <th class="text-end">{{__('Status')}}</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @if($home_data['project']->count() > 0)
+                                    @foreach($home_data['project'] as $project)
+                                        <?php
+                                            $harisekarang =   date('Y-m-d');
+                                        
+                                            $date_now = strtotime($harisekarang . "+1 days");
+                                            $date_end = strtotime($project->end_date);
+                        
+                                            $jarak = $date_end - $date_now;
+                                            $hari = $jarak / 60 / 60 / 24;
+                        
+                                            $jml_hari = array();
+                                            $sabtuminggu = array();
+                                            
+                                            for ($i = $date_now; $i <= $date_end; $i += (60 * 60 * 24)) {
+                                                if (date('w', $i) !== '0' && date('w', $i) !== '6') {
+                                                    $jml_hari[] = $i;
+                                                } else {
+                                                    $sabtuminggu[] = $i;
+                                                }
+                                            
+                                            }
+
+                                            $jumlah_hari = count($jml_hari);
+                                        ?>
+                                        @if ($jumlah_hari == 14)
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <img src="{{asset(Storage::url('/'.$project->project_image ))}}"
+                                                            class="wid-40 rounded-circle me-3" alt="avatar image">
+                                                        <div>
+                                                           <h5 class="mb-0"><a class="text-blue" href="{{ route('projects.show',$project) }}">{{ $project->project_name }}</a></h5>
+                                                            <!-- <p class="mb-0"><span class="text-success">{{ \Auth::user()->priceFormat($due_project->budget) }}</p> -->
+
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td >{{  Utility::getDateFormated($project->end_date) }}</td>
+                                                <td class="text-end">
+                                                    <span class="status_badge p-2 px-3 rounded badge bg-{{\App\Models\Project::$status_color[$project->status]}}">{{ __(\App\Models\Project::$project_status[$project->status]) }}</span>
+
+                                                </td>
+                                            </tr>
+                                        @endif
+                                    @endforeach
+                                @else
+                                    <div class="py-5">
+                                        <h5 class="text-center mb-0">{{__('No Project Remaining In 2 Weeks Found.')}}</h5>
+                                    </div>
+                                @endif
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
+            <div class="row">
+                <div class="col-xl-12">
+                    <div class="card">
+                    <div class="card-header"><h6 class="mb-0">{{__('Notification Approval')}}</h6></div>
+                    <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                            <table class="table datatables">
+                                    <thead>
+                                    <tr>
+                                        @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
+                                            <th>{{__('Employee')}}</th>
+                                        @endif
+                                        <th>{{__('Project Name')}}</th>
+                                        <th>{{__('Start Date')}}</th>
+                                        <th>{{__('Start Time')}}</th>
+                                        <th>{{__('End Time')}}</th>
+                                        <th width="200px">{{__('Note')}}</th>
+                                        <th width="100px">{{__('Action')}}</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    @foreach ($approval as $approvals)
+                                        <tr>
+                                            @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
+                                                <td>{{!empty($approvals->employee->name)?$approvals->employee->name:'-'}}</td>
+                                            @endif
+                                            <td>{{!empty($approvals->project->project_name)?$approvals->project->project_name:'-'}}</td>
+                                            <td>{{date("l, d-m-Y",strtotime($approvals->start_date))}}</td>
+                                            <td>{{ ($approvals->start_time !='00:00:00') ?\Auth::user()->timeFormat( $approvals->start_time):'00:00' }} </td>
+                                            <td>{{ ($approvals->end_time !='00:00:00') ?\Auth::user()->timeFormat( $approvals->end_time):'00:00' }}</td>
+                                            <td>{{!empty($approvals->note)?$approvals->note:'-'}}</td>
+                                            <td>
+                                                <div class="action-btn ms-2">
+                                                    <a style="color:blue;" href="{{route('overtime.index')}}" class="mx-3 btn btn-sm" title="{{__('Overtime Link')}}" data-original-title="{{__('Overtime Link')}}">
+                                                        Link</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
 
     @else
         <div class="row">
@@ -418,11 +496,6 @@
                                         </div>
                                     </div>
                                 </center>
-                                <div class="container">
-                                    <div id="message">Your Working Time:</div>
-                                    <br>
-                                    <div id="timer"></div> 
-                                </div>
 
                             </div>
                         </div>

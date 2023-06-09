@@ -1,7 +1,7 @@
 {{Form::open(array('url'=>'leave','method'=>'post'))}}
     <div class="modal-body">
 
-    @if(\Auth::user()->type !='employee')
+    @if(\Auth::user()->type !='admin' || \Auth::user()->type !='company')
         <div class="row">
             <div class="col-md-12">
                 <div class="form-group">
@@ -11,6 +11,14 @@
             </div>
         </div>
     @endif
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                {{Form::label('approval',__('Approval By') ,['class'=>'form-label'])}}
+                {{Form::select('approval',$approval,null,array('class'=>'form-control select2','required'=>'required','id'=>'approval','placeholder'=>__('Select Approval')))}}
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col-md-12">
             <div class="form-group">
@@ -46,15 +54,6 @@
                 {{Form::textarea('leave_reason',null,array('class'=>'form-control','placeholder'=>__('Leave Reason')))}}
             </div>
         </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12">
-            <div class="form-group">
-                {{Form::label('remark',__('Remark'),['class'=>'form-label'])}}
-                {{Form::textarea('remark',null,array('class'=>'form-control','placeholder'=>__('Leave Remark')))}}
-            </div>
-        </div>
-       
     </div>
 </div>
 <div class="modal-footer">

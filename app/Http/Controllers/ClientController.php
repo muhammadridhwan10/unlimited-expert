@@ -38,11 +38,11 @@ class ClientController extends Controller
     {
         if(\Auth::user()->can('manage client'))
         {
-            if(\Auth::user()->type = 'admin')
+            if(\Auth::user()->type == 'admin')
             {
                 $clients   = User::where('type', '=', 'client')->get();
             }
-            elseif(\Auth::user()->type = 'company')
+            elseif(\Auth::user()->type == 'company')
             {
                 $clients   = User::where('type', '=', 'client')->get();
             }

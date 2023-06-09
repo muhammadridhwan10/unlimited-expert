@@ -13,12 +13,17 @@ class SummaryJournalData extends Model
     protected $table = 'summary_journaldata';
 
     protected $fillable = [
-        'project_id', 'coa', 'notes'
+        'project_id', 'coa', 'notes', 'adj_code', 'dr', 'cr'
     ];
 
     public function financial_statement()
     {
         return FinancialStatement::whereIn('id', explode(',', $this->coa))->get();
+    }
+
+    public function lk()
+    {
+        return $this->belongsTo('App\Models\FinancialStatement', 'coa', 'coa');
     }
 
     public function financialStatement()

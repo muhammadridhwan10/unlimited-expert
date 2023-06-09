@@ -5566,7 +5566,7 @@ class ReportController extends Controller
                     if($dateFormat <= date('Y-m-d'))
                     {
                         $employeeAttendance = AttendanceEmployee::where('employee_id', $id)->where('date', $dateFormat)->first();
-                        $overtimes = UserOvertime::where('user_id', '=', $id)->where('status', '=', 'Approved')->where('start_date', $dateFormat)->get();
+                        $overtimes = UserOvertime::where('user_id', '=', $id)->where('status', '=', 'Approved')->where('created_date', $dateFormat)->get();
 
                         if(!empty($employeeAttendance) && $employeeAttendance->status == 'Present')
                         {
@@ -5611,7 +5611,7 @@ class ReportController extends Controller
                         // Hitung jumlah hari lembur berdasarkan start_date
 
                         foreach ($overtimes as $overtime) {
-                            if ($overtime->start_date == $dateFormat) {
+                            if ($overtime->created_date == $dateFormat) {
                                 $totalOvertimeDays += 1;
                                 $totalOverTime += strtotime($overtime->total_time) - strtotime('00:00:00');
                                 $overtimeHours += (int)date('H', strtotime($overtime->total_time));
@@ -5753,20 +5753,20 @@ class ReportController extends Controller
                     $filterYear['type']          = __('Yearly');
                 }
 
-                if($request->type == 'weekly' && !empty($request->week))
-                {
-                    $startOfWeek = date('Y-m-d', strtotime($request->week));
-                    $endOfWeek = date('Y-m-d', strtotime('+6 days', strtotime($startOfWeek)));
+                // if($request->type == 'weekly' && !empty($request->week))
+                // {
+                //     $startOfWeek = date('Y-m-d', strtotime($request->week));
+                //     $endOfWeek = date('Y-m-d', strtotime('+6 days', strtotime($startOfWeek)));
 
-                    $project
-                    ->where('user_id', $employee->user_id)
-                    ->whereHas('project', function ($query) use ($startOfWeek, $endOfWeek) {
-                        $query->whereBetween('start_date', [$startOfWeek, $endOfWeek]);
-                    });
+                //     $project
+                //     ->where('user_id', $employee->user_id)
+                //     ->whereHas('project', function ($query) use ($startOfWeek, $endOfWeek) {
+                //         $query->whereBetween('start_date', [$startOfWeek, $endOfWeek]);
+                //     });
 
-                    $filterYear['dateYearRange'] = date('M-Y', strtotime($startOfWeek)).' - '.date('M-Y', strtotime($endOfWeek));
-                    $filterYear['type']          = __('Weekly');
-                }
+                //     $filterYear['dateYearRange'] = date('M-Y', strtotime($startOfWeek)).' - '.date('M-Y', strtotime($endOfWeek));
+                //     $filterYear['type']          = __('Weekly');
+                // }
 
                 $project = $project->count();
 
@@ -5796,7 +5796,7 @@ class ReportController extends Controller
 
     }
 
-    public function employeeProjects(Request $request, $employee_id, $type, $month, $year, $week)
+    public function employeeProjects(Request $request, $employee_id, $type, $month, $year)
     {
         if(\Auth::user()->can('manage report'))
         {
@@ -5814,17 +5814,17 @@ class ReportController extends Controller
                         $query->whereYear('start_date', $year);
                     });
             }
-            elseif ($type == 'weekly')
-            {
-                $startOfWeek = date('Y-m-d', strtotime($week));
-                $endOfWeek = date('Y-m-d', strtotime('+6 days', strtotime($startOfWeek)));
+            // elseif ($type == 'weekly')
+            // {
+            //     $startOfWeek = date('Y-m-d', strtotime($week));
+            //     $endOfWeek = date('Y-m-d', strtotime('+6 days', strtotime($startOfWeek)));
 
-                $project
-                    ->where('user_id', $employee->user_id)
-                    ->whereHas('project', function ($query) use ($startOfWeek, $endOfWeek) {
-                        $query->whereBetween('start_date', [$startOfWeek, $endOfWeek]);
-                    });
-            }
+            //     $project
+            //         ->where('user_id', $employee->user_id)
+            //         ->whereHas('project', function ($query) use ($startOfWeek, $endOfWeek) {
+            //             $query->whereBetween('start_date', [$startOfWeek, $endOfWeek]);
+            //         });
+            // }
             else
             {
                 $m = date('m', strtotime($month));
@@ -5859,7 +5859,7 @@ class ReportController extends Controller
             $m = date('m', strtotime($month));
             $y = date('Y', strtotime($month));
 
-            $employee_overtime->whereMonth('start_date', $m)->whereYear('start_date', $y);
+            $employee_overtime->whereMonth('created_date', $m)->whereYear('created_date', $y);
             $employee_overtime = $employee_overtime->get();
 
 

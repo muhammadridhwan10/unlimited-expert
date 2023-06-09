@@ -11,6 +11,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Mail\OvertimeNotification;
 use Illuminate\Support\Facades\Mail;
+use Carbon\Carbon;
 
 class OvertimeController extends Controller
 {
@@ -99,6 +100,7 @@ class OvertimeController extends Controller
             $overtime                 = new UserOvertime();
             $user                     = \Auth::user();
             $employees                = Employee::where('user_id', '=', $user->id)->first();
+            $date                     = Carbon::now()->format('Y-m-d');
             if(\Auth::user()->type == "admin" || \Auth::user()->type == "company" )
             {
                 $overtime->user_id = $request->user_id;
@@ -113,6 +115,7 @@ class OvertimeController extends Controller
             $overtime->start_date       = $request->start_date;
             $overtime->approval         = $request->approval;
             $overtime->status           = 'Pending';
+            $overtime->created_date     = $date;
             $overtime->total_time       = 0;
             $overtime->note             = $request->note;
             $overtime->save();
@@ -199,6 +202,7 @@ class OvertimeController extends Controller
         {
             $user                     = \Auth::user();
             $employees                = Employee::where('user_id', '=', $user->id)->first();
+            $date                     = Carbon::now()->format('Y-m-d');
             if(\Auth::user()->type == "admin" || \Auth::user()->type == "company" )
             {
                 $overtime->user_id = $request->user_id;
@@ -213,6 +217,7 @@ class OvertimeController extends Controller
             $overtime->start_date       = $request->start_date;
             $overtime->approval         = $request->approval;
             $overtime->status           = 'Pending';
+            $overtime->created_date     = $date;
             $overtime->total_time       = 0;
             $overtime->note             = $request->note;
             $overtime->save();

@@ -95,6 +95,13 @@ class ProjectTask extends Model
         'NCL' => 'LIABILITAS JANGKA PANJANG',
     ];
 
+    public static $category = [
+        'PAJE' => 'PAJE',
+        'PRJE' => 'PAJE',
+        'CAJE' => 'PAJE',
+        'CRJE' => 'PAJE',
+    ];
+
     public static $rasio_keuangan = [
         'CURA' => 'CURRENT RATIO',
         'QURA' => 'QUICK RATIO',

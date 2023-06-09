@@ -17,7 +17,7 @@ $emailTemplate = \App\Models\EmailTemplate::first();
         @endif
         <div class="navbar-wrapper">
             <div class="m-header main-logo">
-                <a href="#" class="b-brand">
+                <a href="home" class="b-brand">
                     @if($mode_setting['cust_darklayout'] && $mode_setting['cust_darklayout'] == 'on' )
                     <img src="{{ $logo . '/' . (isset($company_logos) && !empty($company_logos) ? $company_logos : 'logo-dark.png') }}" alt="{{ config('app.name', 'TGS AU-Partners Apps') }}" class="logo logo-lg">
                     @else
@@ -30,9 +30,15 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                 <ul class="dash-navbar">
 
                     <!--------------------- Start Dashboard ----------------------------------->
-
-                    @if( Gate::check('show hrm dashboard') || Gate::check('show project dashboard') || Gate::check('show account dashboard'))
-                    <li class="dash-item dash-hasmenu
+                    @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
+                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'home')?'active':''}}">
+                            <a href="{{route('home')}}" class="dash-link">
+                                <span class="dash-micon"><i class="ti ti-home"></i></span><span class="dash-mtext">{{__('Home')}}</span>
+                            </a>
+                        </li>
+                    @else
+                        @if( Gate::check('show hrm dashboard') || Gate::check('show project dashboard') || Gate::check('show account dashboard'))
+                        <li class="dash-item dash-hasmenu
                                 {{ ( Request::segment(1) == null ||Request::segment(1) == 'account-dashboard' || Request::segment(1) == 'income report'
                                    || Request::segment(1) == 'report' || Request::segment(1) == 'reports-payroll' || Request::segment(1) == 'reports-leave' ||
                                     Request::segment(1) == 'reports-monthly-attendance') ?'active dash-trigger':''}}">
@@ -170,7 +176,25 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                             @endif
 
                         </ul>
-                    </li @endif <!--------------------- End Dashboard ----------------------------------->
+                        </li> @endif
+                    @endif
+
+                    <!--------------------- End Dashboard ----------------------------------->
+
+                    @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
+                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'overtime')?'active':''}}">
+                            <a href="{{route('overtime.index')}}" class="dash-link">
+                                <span class="dash-micon"><i class="ti ti-clock"></i></span><span class="dash-mtext">{{__('Overtime')}}</span><sup style="color: red;">New</sup>
+                            </a>
+                        </li>
+                    @endif
+                    @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
+                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'leave')?'active':''}}">
+                            <a href="{{route('leave.index')}}" class="dash-link">
+                                <span class="dash-micon"><i class="ti ti-calendar"></i></span><span class="dash-mtext">{{__('Leave')}}</span><sup style="color: red;">New</sup>
+                            </a>
+                        </li>
+                    @endif
 
 
                     <!--------------------- Start HRM ----------------------------------->
@@ -178,7 +202,7 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                     @if(\Auth::user()->show_hrm() == 1)
                     @if( Gate::check('manage employee') || Gate::check('manage setsalary'))
                     <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'holiday-calender' || Request::segment(1) == 'reports-monthly-attendance' ||
-                                Request::segment(1) == 'reports-leave' || Request::segment(1) == 'reports-payroll' || Request::segment(1) == 'leavetype' || Request::segment(1) == 'leave' ||
+                                Request::segment(1) == 'reports-leave' || Request::segment(1) == 'reports-overtime' || Request::segment(1) == 'reports-projects' || Request::segment(1) == 'time-tracker' || Request::segment(1) == 'overtime' || Request::segment(1) == 'reports-payroll' || Request::segment(1) == 'leavetype' || Request::segment(1) == 'leave' ||
                                 Request::segment(1) == 'attendanceemployee' || Request::segment(1) == 'document-upload' || Request::segment(1) == 'document' || Request::segment(1) == 'performanceType'  ||
                                     Request::segment(1) == 'branch' || Request::segment(1) == 'department' || Request::segment(1) == 'designation' || Request::segment(1) == 'employee'
                                     || Request::segment(1) == 'leave_requests' || Request::segment(1) == 'holidays' || Request::segment(1) == 'policies' || Request::segment(1) == 'leave_calender'
@@ -225,7 +249,7 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                             </li>
                             @endif -->
 
-                            @if( Gate::check('manage leave') || Gate::check('manage attendance'))
+                            {{-- @if( Gate::check('manage leave') || Gate::check('manage attendance'))
                             <li class="dash-item dash-hasmenu  {{ (Request::segment(1) == 'leave' || Request::segment(1) == 'attendanceemployee') ? 'active dash-trigger' :''}}">
                                 <a class="dash-link" href="#">{{__('Leave Management Setup')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                 <ul class="dash-submenu">
@@ -251,7 +275,7 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                     @endcan
                                 </ul>
                             </li>
-                            @endif
+                            @endif --}}
 
                             @if( Gate::check('manage indicator') || Gate::check('manage appraisal') || Gate::check('manage goal tracking'))
                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'indicator' || Request::segment(1) == 'appraisal' || Request::segment(1) == 'goaltracking') ? 'active dash-trigger' : ''}}" href="#navbar-performance" data-toggle="collapse" role="button" aria-expanded="{{ (Request::segment(1) == 'indicator' || Request::segment(1) == 'appraisal' || Request::segment(1) == 'goaltracking') ? 'true' : 'false'}}">
@@ -429,7 +453,7 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                             </li>
                             @endcan
 
-                            @can('manage report')
+                            {{-- @can('manage report')
                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'reports-monthly-attendance' || Request::segment(1) == 'reports-leave' || Request::segment(1) == 'reports-payroll') ? 'active dash-trigger' : ''}}" href="#hr-report" data-toggle="collapse" role="button" aria-expanded="{{(Request::segment(1) == 'reports-monthly-attendance' || Request::segment(1) == 'reports-leave' || Request::segment(1) == 'reports-payroll') ? 'true' : 'false'}}">
                                 <a class="dash-link" href="#">{{__('Reports')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                 <ul class="dash-submenu">
@@ -449,6 +473,64 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                         <a class="dash-link" href="{{ route('report.projects') }}">{{ __('Projects') }}</a>
                                     </li>
 
+                                </ul>
+                            </li>
+                            @endcan --}}
+
+                            @can('manage report')
+                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'reports-monthly-attendance' || Request::segment(1) == 'reports-leave' || Request::segment(1) == 'leave' || Request::segment(1) == 'overtime' || Request::segment(1) == 'reports-payroll' || Request::segment(1) == 'reports-overtime') ? 'active dash-trigger' : ''}}" href="#hr-report" data-toggle="collapse" role="button" aria-expanded="{{(Request::segment(1) == 'reports-monthly-attendance' || Request::segment(1) == 'reports-leave' || Request::segment(1) == 'leave' || Request::segment(1) == 'overtime' || Request::segment(1) == 'reports-payroll' || Request::segment(1) == 'reports-overtime') ? 'true' : 'false'}}">
+                                <a class="dash-link" href="#">{{__('Reports')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
+                                <ul class="dash-submenu">
+                                    <li class="dash-item {{ request()->is('reports-payroll') ? 'active' : '' }}">
+                                        <a class="dash-link" href="{{ route('report.payroll') }}">{{__('Payroll')}}</a>
+                                    </li>
+                                    <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'reports-leave') ? 'active dash-trigger' : ''}}" href="#navbar-attendance" data-toggle="collapse" role="button" aria-expanded="{{ (Request::segment(1) == 'reports-leave') ? 'true' : 'false'}}">
+                                        <a class="dash-link" href="#">{{__('Leave')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
+                                        <ul class="dash-submenu">
+                                             <li class="dash-item {{ request()->is('leave') ? 'active' : '' }}">
+                                                <a class="dash-link" href="{{route('leave.index')}}">{{__('Approval Leave')}}</a>
+                                            </li>
+                                            <li class="dash-item {{ request()->is('reports-leave') ? 'active' : '' }}">
+                                                <a class="dash-link" href="{{ route('report.leave') }}">{{__('Report Leave')}}</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'reports-monthly-attendance') ? 'active dash-trigger' : ''}}" href="#navbar-attendance" data-toggle="collapse" role="button" aria-expanded="{{ (Request::segment(1) == 'reports-monthly-attendance') ? 'true' : 'false'}}">
+                                        <a class="dash-link" href="#">{{__('Attendance')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
+                                        <ul class="dash-submenu">
+                                            <li class="dash-item {{ request()->is('reports-monthly-attendance') ? 'active' : '' }}">
+                                                <a class="dash-link" href="{{ route('report.monthly.attendance') }}">{{ __('Monthly Attendance') }}</a>
+                                            </li>
+                                            <li class="dash-item {{ (Request::route()->getName() == 'attendanceemployee.index' ? 'active' : '')}}">
+                                                <a class="dash-link" href="{{route('attendanceemployee.index')}}">{{__('Report Attendance')}}</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'reports-overtime') ? 'active dash-trigger' : ''}}" href="#navbar-attendance" data-toggle="collapse" role="button" aria-expanded="{{ (Request::segment(1) == 'reports-overtime') ? 'true' : 'false'}}">
+                                        <a class="dash-link" href="#">{{__('Overtime')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
+                                        <ul class="dash-submenu">
+                                            <li class="dash-item {{ request()->is('reports-overtime') ? 'active' : '' }}">
+                                                <a class="dash-link" href="{{ route('report.overtime') }}">{{ __('Report Overtime') }}</a>
+                                            </li>
+                                            <li class="dash-item {{ request()->is('overtime') ? 'active' : '' }}">
+                                                <a class="dash-link" href="{{ route('overtime.index') }}">{{__('Approval Overtime')}}</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'reports-projects') ? 'active dash-trigger' : ''}}" href="#navbar-attendance" data-toggle="collapse" role="button" aria-expanded="{{ (Request::segment(1) == 'reports-projects') ? 'true' : 'false'}}">
+                                        <a class="dash-link" href="#">{{__('Projects')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
+                                        <ul class="dash-submenu">
+                                            <li class="dash-item {{ request()->is('reports-projects') ? 'active' : '' }}">
+                                                <a class="dash-link" href="{{ route('report.projects') }}">{{ __('Project Reports User') }}</a>
+                                            </li>
+                                            <li class="dash-item {{ request()->is('time-tracker') ? 'active' : '' }}">
+                                                <a class="dash-link" href="{{ route('time.tracker') }}">{{__('Project Tracker')}}</a>
+                                            </li>
+                                            <li class="dash-item  {{(Request::route()->getName() == 'project_report.index' || Request::route()->getName() == 'project_report.show') ? 'active' : ''}}">
+                                                <a class="dash-link" href="{{route('project_report.index') }}">{{__('Project Reports Detail')}}</a>
+                                            </li>
+                                        </ul>
+                                    </li>
                                 </ul>
                             </li>
                             @endcan
@@ -798,11 +880,6 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                 <a class="dash-link" href="{{route('timesheet.list')}}">{{__('Timesheet')}}</a>
                             </li>
                             @endcan
-                            @can('manage project task')
-                            <li class="dash-item {{ (Request::route()->getName() == 'overtime.index') ? ' active' : '' }}">
-                                <a class="dash-link" href="{{ route('overtime.index') }}">{{__('Overtime')}}</a>
-                            </li>
-                            @endcan
                             @can('manage bug report')
                             <li class="dash-item {{ (request()->is('bugs-report*') ? 'active' : '')}}">
                                 <a class="dash-link" href="{{route('bugs.view','list')}}">{{__('Bug')}}</a>
@@ -813,17 +890,17 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                             <a class="dash-link" href="{{ route('task.calendar',['all']) }}">{{__('Task Calendar')}}</a>
                                         </li>
                                     @endcan -->
-                            @if(\Auth::user()->type!='super admin')
+                            @if(\Auth::user()->type !== 'admin' && \Auth::user()->type !== 'company')
                             <li class="dash-item  {{ (Request::segment(1) == 'time-tracker')?'active open':''}}">
                                 <a class="dash-link" href="{{ route('time.tracker') }}">{{__('Tracker')}}</a>
                             </li>
                             @endif
-                            @if (\Auth::user()->type !== 'client' && \Auth::user()->type !== 'staff_client')
+                            @if(\Auth::user()->type !== 'admin' && \Auth::user()->type !== 'company')
                             <li class="dash-item  {{(Request::route()->getName() == 'project_report.index' || Request::route()->getName() == 'project_report.show') ? 'active' : ''}}">
                                 <a class="dash-link" href="{{route('project_report.index') }}">{{__('Project Report')}}</a>
                             </li>
                             @endif
-                            @if(Gate::check('manage project task stage') || Gate::check('manage bug status') || Gate::check('manage project task template'))
+                            @if(Gate::check('manage project task stage') || Gate::check('manage bug status') || Gate::check('manage project task template') || Gate::check('manage mapping account data'))
                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'bugstatus' || Request::segment(1) == 'project-task-stages' || Request::segment(1) == 'tasktemplate') ? 'active dash-trigger' : ''}}">
                                 <a class="dash-link" href="#">{{__('Project System Setup')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                 <ul class="dash-submenu">
@@ -847,6 +924,11 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                         <a class="dash-link" href="{{route('tasktemplate.index')}}">{{__('Project Task Template')}}</a>
                                     </li>
                                     @endcan
+                                    @can('manage mapping account data')
+                                    <li class="dash-item {{ (Request::route()->getName() == 'mapping-account-data.index') ? 'active' : '' }}">
+                                        <a class="dash-link" href="{{route('mappingaccountdata.index')}}">{{__('Mapping Account Data')}}</a>
+                                    </li>
+                                    @endcan
                                 </ul>
                             </li>
                             @endif
@@ -859,7 +941,7 @@ $emailTemplate = \App\Models\EmailTemplate::first();
 
                     <!--------------------- Start Audit Managaement System ----------------------------------->
 
-                    @if(\Auth::user()->type!='super admin' && ( Gate::check('manage user') || Gate::check('manage role') || Gate::check('manage client')))
+                    @if(( Gate::check('manage user')))
                     <li class="dash-item dash-hasmenu">
                         <a href="#!" class="dash-link {{ (Request::segment(1) == 'users' || Request::segment(1) == 'roles' || Request::segment(1) == 'clients')?' active dash-trigger':''}}"><span class="dash-micon"><i class="ti ti-book"></i></span><span class="dash-mtext">{{__('Audit Management')}}</span><span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                         <ul class="dash-submenu">
@@ -968,11 +1050,13 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                             </li>
                         </ul>
                     </li>
-                    <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'support')?'active':''}}">
-                        <a href="{{route('support.index')}}" class="dash-link">
-                            <span class="dash-micon"><i class="ti ti-headphones"></i></span><span class="dash-mtext">{{__('IT Support')}}</span>
-                        </a>
-                    </li>
+                    @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
+                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'event')?'active':''}}">
+                            <a href="{{route('event.index')}}" class="dash-link">
+                                <span class="dash-micon"><i class="ti ti-calendar"></i></span><span class="dash-mtext">{{__('Event')}}</span><sup style="color: red;">New</sup>
+                            </a>
+                        </li>
+                    @endif
                     <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'zoom-meeting' || Request::segment(1) == 'zoom-meeting-calender')?'active':''}}">
                         <a href="{{route('zoom-meeting.index')}}" class="dash-link">
                             <span class="dash-micon"><i class="ti ti-user-check"></i></span><span class="dash-mtext">{{__('Zoom Meeting')}}</span>

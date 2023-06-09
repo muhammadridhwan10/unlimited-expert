@@ -79,14 +79,14 @@
                                 @if(count(array($financial_statement)) > 0)
                                     @foreach($financial_statement as $financial_statements)
                                         <tr>
-                                            <td style="border: 1px solid black;">{{ $financial_statements->coa }}</td>
+                                            <td style="border: 1px solid black; width:100px;">{{ $financial_statements->coa }}</td>
                                             <td style="border: 1px solid black;">{{ $financial_statements->account }}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->prior_period2))? (number_format($financial_statements->prior_period2) < 0 ? '('.number_format(abs($financial_statements->prior_period2)).')' : number_format($financial_statements->prior_period2)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->prior_period))? (number_format($financial_statements->prior_period) < 0 ? '('.number_format(abs($financial_statements->prior_period)).')' : number_format($financial_statements->prior_period)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->inhouse))? (number_format($financial_statements->inhouse) < 0 ? '('.number_format(abs($financial_statements->inhouse)).')' : number_format($financial_statements->inhouse)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->dr))? (number_format($financial_statements->dr) < 0 ? '('.number_format(abs($financial_statements->dr)).')' : number_format($financial_statements->dr)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->cr))? (number_format($financial_statements->cr) < 0 ? '('.number_format(abs($financial_statements->cr)).')' : number_format($financial_statements->cr)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->audited))? (number_format($financial_statements->audited) < 0 ? '('.number_format(abs($financial_statements->audited)).')' : number_format($financial_statements->audited)): number_format($financial_statements->inhouse)}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->prior_period2))? (number_format($financial_statements->prior_period2) < 0 ? '('.number_format(abs($financial_statements->prior_period2)).')' : number_format($financial_statements->prior_period2)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->prior_period))? (number_format($financial_statements->prior_period) < 0 ? '('.number_format(abs($financial_statements->prior_period)).')' : number_format($financial_statements->prior_period)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->inhouse))? (number_format($financial_statements->inhouse) < 0 ? '('.number_format(abs($financial_statements->inhouse)).')' : number_format($financial_statements->inhouse)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->dr))? (number_format($financial_statements->dr) < 0 ? '('.number_format(abs($financial_statements->dr)).')' : number_format($financial_statements->dr)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->cr))? (number_format($financial_statements->cr) < 0 ? '('.number_format(abs($financial_statements->cr)).')' : number_format($financial_statements->cr)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->audited))? (number_format($financial_statements->audited) < 0 ? '('.number_format(abs($financial_statements->audited)).')' : number_format($financial_statements->audited)): number_format($financial_statements->inhouse)}}</td>
                                         </tr>
                                     @endforeach
                                 @else
@@ -127,10 +127,7 @@
                                     <th style="text-align: center;" scope="col">{{'Oct'}}</th>
                                     <th style="text-align: center;" scope="col">{{'Nov'}}</th>
                                     <th style="text-align: center;" scope="col">{{'Dec'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Triwulan 1'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Triwulan 2'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Triwulan 3'}}</th>
-                                    <th style="text-align: center;" scope="col">{{'Triwulan 4'}}</th>
+
                                 </tr>
                                 </thead>
                                 <tbody class="list">
@@ -139,22 +136,73 @@
                                         <tr>
                                             <td style="border: 1px solid black;">{{ $financial_statements->coa }}</td>
                                             <td style="border: 1px solid black;">{{ $financial_statements->account }}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->jan))? (number_format($financial_statements->jan) < 0 ? '('.number_format(abs($financial_statements->jan)).')' : number_format($financial_statements->jan)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->feb))? (number_format($financial_statements->feb) < 0 ? '('.number_format(abs($financial_statements->feb)).')' : number_format($financial_statements->feb)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->mar))? (number_format($financial_statements->mar) < 0 ? '('.number_format(abs($financial_statements->mar)).')' : number_format($financial_statements->mar)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->apr))? (number_format($financial_statements->apr) < 0 ? '('.number_format(abs($financial_statements->apr)).')' : number_format($financial_statements->apr)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->may))? (number_format($financial_statements->may) < 0 ? '('.number_format(abs($financial_statements->may)).')' : number_format($financial_statements->may)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->jun))? (number_format($financial_statements->jun) < 0 ? '('.number_format(abs($financial_statements->jun)).')' : number_format($financial_statements->jun)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->jul))? (number_format($financial_statements->jul) < 0 ? '('.number_format(abs($financial_statements->jul)).')' : number_format($financial_statements->jul)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->aug))? (number_format($financial_statements->aug) < 0 ? '('.number_format(abs($financial_statements->aug)).')' : number_format($financial_statements->aug)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->sep))? (number_format($financial_statements->sep) < 0 ? '('.number_format(abs($financial_statements->sep)).')' : number_format($financial_statements->sep)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->oct))? (number_format($financial_statements->oct) < 0 ? '('.number_format(abs($financial_statements->oct)).')' : number_format($financial_statements->oct)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->nov))? (number_format($financial_statements->nov) < 0 ? '('.number_format(abs($financial_statements->nov)).')' : number_format($financial_statements->nov)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->dec))? (number_format($financial_statements->dec) < 0 ? '('.number_format(abs($financial_statements->dec)).')' : number_format($financial_statements->dec)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->triwulan1))? (number_format($financial_statements->triwulan1) < 0 ? '('.number_format(abs($financial_statements->triwulan1)).')' : number_format($financial_statements->triwulan1)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->triwulan2))? (number_format($financial_statements->triwulan2) < 0 ? '('.number_format(abs($financial_statements->triwulan2)).')' : number_format($financial_statements->triwulan2)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->triwulan3))? (number_format($financial_statements->triwulan3) < 0 ? '('.number_format(abs($financial_statements->triwulan3)).')' : number_format($financial_statements->triwulan3)): '-'}}</td>
-                                            <td style="border: 1px solid black; text-align: right;">{{ !empty(number_format($financial_statements->triwulan4))? (number_format($financial_statements->triwulan4) < 0 ? '('.number_format(abs($financial_statements->triwulan4)).')' : number_format($financial_statements->triwulan4)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->jan))? (number_format($financial_statements->jan) < 0 ? '('.number_format(abs($financial_statements->jan)).')' : number_format($financial_statements->jan)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->feb))? (number_format($financial_statements->feb) < 0 ? '('.number_format(abs($financial_statements->feb)).')' : number_format($financial_statements->feb)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->mar))? (number_format($financial_statements->mar) < 0 ? '('.number_format(abs($financial_statements->mar)).')' : number_format($financial_statements->mar)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->apr))? (number_format($financial_statements->apr) < 0 ? '('.number_format(abs($financial_statements->apr)).')' : number_format($financial_statements->apr)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->may))? (number_format($financial_statements->may) < 0 ? '('.number_format(abs($financial_statements->may)).')' : number_format($financial_statements->may)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->jun))? (number_format($financial_statements->jun) < 0 ? '('.number_format(abs($financial_statements->jun)).')' : number_format($financial_statements->jun)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->jul))? (number_format($financial_statements->jul) < 0 ? '('.number_format(abs($financial_statements->jul)).')' : number_format($financial_statements->jul)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->aug))? (number_format($financial_statements->aug) < 0 ? '('.number_format(abs($financial_statements->aug)).')' : number_format($financial_statements->aug)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->sep))? (number_format($financial_statements->sep) < 0 ? '('.number_format(abs($financial_statements->sep)).')' : number_format($financial_statements->sep)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->oct))? (number_format($financial_statements->oct) < 0 ? '('.number_format(abs($financial_statements->oct)).')' : number_format($financial_statements->oct)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->nov))? (number_format($financial_statements->nov) < 0 ? '('.number_format(abs($financial_statements->nov)).')' : number_format($financial_statements->nov)): '-'}}</td>
+                                            <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($financial_statements->dec))? (number_format($financial_statements->dec) < 0 ? '('.number_format(abs($financial_statements->dec)).')' : number_format($financial_statements->dec)): '-'}}</td>
+                                            
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr>
+                                        <th scope="col" colspan="7"><h6 class="text-center">{{__('No Financial Data Found')}}</h6></th>
+                                    </tr>
+                                @endif
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="col-12">
+                    <div class="card-header">
+                        <div class="float-end">
+                                @can('create project task')
+                                    <a href="{{ route('projects.tasks.create.mappingaccount',[$project->id, $task->id]) }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="{{__('Add Mapping Account')}}">
+                                        <i class="ti ti-plus"></i>
+                                    </a>
+                                @endcan
+                        </div>
+                    <h6 class="mb-0">{{__('Mapping Account')}}</h6>
+                    
+                    </div>
+                    <div class="card-body table-border-style">
+                        <div class="table-responsive">
+                            <table class="table datatabless">
+                                <thead>
+                                <tr>
+                                    <th style="text-align: center;" scope="col">{{'Account Name'}}</th>
+                                    <th style="text-align: center;" scope="col">{{date(' Y', strtotime('-3 year', strtotime($project->book_year)))}}</th>
+                                    <th style="text-align: center;" scope="col">{{date(' Y', strtotime('-2 year', strtotime($project->book_year)))}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Inhouse ' . $project->book_year}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Audited ' . $project->book_year}}</th>
+                                </tr>
+                                </thead>
+                                <tbody class="list">
+                                @if(count(array($result)) > 0)
+                                    @foreach ($result as $results)
+                                        <tr>
+                                            <td  style="border: 1px solid black; width:100px;">{{ $results['name'] }}</td>
+                                            <td  style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($results['prior_period2'])) ? number_format($results['prior_period2']) : '-' }}</td>
+                                            <td  style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($results['prior_period'])) ? number_format($results['prior_period']) : '-' }}</td>
+                                            <td  style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($results['inhouse'])) ? number_format($results['inhouse']) : '-' }}</td>
+                                            <td  style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($results['audited'])) ? number_format($results['audited']) : '-' }}</td>
                                         </tr>
                                     @endforeach
                                 @else

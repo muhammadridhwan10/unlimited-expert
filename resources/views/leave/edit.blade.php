@@ -12,8 +12,20 @@
     <div class="row">
         <div class="col-md-12">
             <div class="form-group">
+                {{Form::label('approval',__('Approval By') ,['class'=>'form-label'])}}
+                {{Form::select('approval',$approval,null,array('class'=>'form-control select2','required'=>'required','id'=>'approval','placeholder'=>__('Select Approval')))}}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
                 {{Form::label('leave_type_id',__('Leave Type'),['class'=>'form-label'])}}
-                {{Form::select('leave_type_id',$leavetypes,null,array('class'=>'form-control select','placeholder'=>__('Select Leave Type')))}}
+                <select name="leave_type_id" id="leave_type_id" class="form-control select">
+                    @foreach($leavetypes as $leave)
+                        <option value="{{ $leave->id }}">{{ $leave->title }} (<p class="float-right pr-5">{{ $leave->days }}</p>)</option>
+                    @endforeach
+                </select>
             </div>
         </div>
     </div>
@@ -36,14 +48,6 @@
             <div class="form-group">
                 {{Form::label('leave_reason',__('Leave Reason'),['class'=>'form-label'])}}
                 {{Form::textarea('leave_reason',null,array('class'=>'form-control','placeholder'=>__('Leave Reason')))}}
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12">
-            <div class="form-group">
-                {{Form::label('remark',__('Remark'),['class'=>'form-label'])}}
-                {{Form::textarea('remark',null,array('class'=>'form-control','placeholder'=>__('Leave Remark')))}}
             </div>
         </div>
     </div>

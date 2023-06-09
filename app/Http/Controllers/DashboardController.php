@@ -36,6 +36,7 @@ use App\Models\TimeTracker;
 use App\Models\Trainer;
 use App\Models\Training;
 use App\Models\User;
+use App\Models\UserOvertime;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -465,37 +466,29 @@ class DashboardController extends Controller
                     $employeesAttendances = [];
                     $totalPresent        = $totalLeave = $totalEarlyLeave = 0;
 
-                    foreach($employees as $id => $employee)
-                    {
+                    foreach ($employees as $id => $employee) {
                         $attendances['name'] = $employee;
-                        // $employee     = Employee::where('employee_id', '=', $id)->first();
-                        // $overtime     = UserOvertime::where('user_id', $employee->user_id)->where('start_date', '=', '2023-05')->get();
-
-                        foreach($dates as $date)
-                        {
+                    
+                        foreach ($dates as $date) {
                             $dateFormat = $year . '-' . $month . '-' . $date;
-
-                            if($dateFormat <= date('Y-m-d'))
-                            {
-                                $employeeAttendance = AttendanceEmployee::where('employee_id', $id)->where('date', $dateFormat)->first();
-
-                                if(!empty($employeeAttendance) && $employeeAttendance->status == 'Present')
-                                {
-                                    $attendanceStatus[$date] = 'P';
-                                    $totalPresent            += 1;
-
+                    
+                            if ($dateFormat <= date('Y-m-d')) {
+                                if ($this->isWeekend($dateFormat)) {
+                                    $attendanceStatus[$date] = 'W'; // Jika hari adalah Sabtu atau Minggu, status kehadiran diatur sebagai 'W'
+                                } else {
+                                    $employeeAttendance = AttendanceEmployee::where('employee_id', $id)->where('date', $dateFormat)->first();
+                    
+                                    if (!empty($employeeAttendance) && $employeeAttendance->status == 'Present') {
+                                        $attendanceStatus[$date] = 'P';
+                                        $totalPresent += 1;
+                                    } else {
+                                        $attendanceStatus[$date] = '';
+                                    }
                                 }
-                                else
-                                {
-                                    $attendanceStatus[$date] = '';
-                                }
-                            }
-                            else
-                            {
+                            } else {
                                 $attendanceStatus[$date] = '';
                             }
-
-                        }
+                        }            
                         $attendances['status'] = $attendanceStatus;
                         $employeesAttendances[] = $attendances;
                     }
@@ -1161,6 +1154,253 @@ class DashboardController extends Controller
         }
 
         return Utility::error_res('Tracker not found.');
+    }
+
+    public function home(Request $request)
+    {
+        if(Auth::check())
+        {
+            if(\Auth::user()->can('show hrm dashboard'))
+            {
+                $user = Auth::user();
+                    if($user->type != 'client' && $user->type != 'staff_client' && $user->type != 'company' && $user->type != 'admin')
+                    {
+                        $emp = Employee::where('user_id', '=', $user->id)->first();
+                        $get_name                = $user->name;
+                        $img                     = \DefaultProfileImage::create($get_name);
+                        $profile                 = \Storage::put($get_name . '.jpg', $img->encode());
+
+                        $employees = Employee::where('user_id', '=', $user->id)->get()->pluck('name', 'id');
+
+                        if(!empty($request->month))
+                        {
+                            $currentdate = strtotime($request->month);
+                            $month       = date('m', $currentdate);
+                            $year        = date('Y', $currentdate);
+                            $curMonth    = date('M-Y', strtotime($request->month));
+
+                        }
+                        else
+                        {
+                            $month    = date('m');
+                            $year     = date('Y');
+                            $curMonth = date('M-Y', strtotime($year . '-' . $month));
+                        }
+
+                        $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
+                        for($i = 1; $i <= $num_of_days; $i++)
+                        {
+                            $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
+                        }
+
+                        $employeesAttendances = [];
+                        $totalPresent        = $totalLeave = $totalEarlyLeave = 0;
+
+                        foreach ($employees as $id => $employee) {
+                            $attendances['name'] = $employee;
+                        
+                            foreach ($dates as $date) {
+                                $dateFormat = $year . '-' . $month . '-' . $date;
+                        
+                                if ($dateFormat <= date('Y-m-d')) {
+                                    if ($this->isWeekend($dateFormat)) {
+                                        $attendanceStatus[$date] = 'W'; // Jika hari adalah Sabtu atau Minggu, status kehadiran diatur sebagai 'W'
+                                    } else {
+                                        $employeeAttendance = AttendanceEmployee::where('employee_id', $id)->where('date', $dateFormat)->first();
+                        
+                                        if (!empty($employeeAttendance) && $employeeAttendance->status == 'Present') {
+                                            $attendanceStatus[$date] = 'P';
+                                            $totalPresent += 1;
+                                        } else {
+                                            $attendanceStatus[$date] = '';
+                                        }
+                                    }
+                                } else {
+                                    $attendanceStatus[$date] = '';
+                                }
+                            }            
+                            $attendances['status'] = $attendanceStatus;
+                            $employeesAttendances[] = $attendances;
+                        }
+
+                        $data['totalPresent']    = $totalPresent;
+                        $data['curMonth']        = $curMonth;
+
+                        $date               = date("Y-m-d");
+                        $time               = date("H:i:s");
+                        $employeeAttendance = AttendanceEmployee::orderBy('id', 'desc')->where('employee_id', '=', !empty(\Auth::user()->employee) ? \Auth::user()->employee->id : 0)->where('date', '=', $date)->first();
+
+                        if($emp->branch_id == 1)
+                        {
+                            $officeTime['startTime']    = Utility::getValByName('company_start_time');
+                            $officeTime['endTime']      = Utility::getValByName('company_end_time');
+                        }
+                        elseif($emp->branch_id == 2)
+                        {
+                            $officeTime['startTime']    = "08:30";
+                            $officeTime['endTime']      = "17:30";
+                        }
+                        elseif($emp->branch_id == 3)
+                        {
+                            $officeTime['startTime']    = "08:00";
+                            $officeTime['endTime']      = "17:00";
+                        }
+
+                        $home_data = [];
+
+                        $user_projects   = $user->projects()->pluck('project_id')->toArray();
+                        $project_tasks   = ProjectTask::whereIn('project_id', $user_projects)->get();
+                        $project_expense = Expense::whereIn('project_id', $user_projects)->get();
+                        $seven_days      = Utility::getLastSevenDays();
+
+                        // Total Projects
+                        $complete_project           = $user->projects()->where('status', 'LIKE', 'complete')->count();
+                        $home_data['total_project'] = [
+                            'total' => count($user_projects),
+                            'percentage' => Utility::getPercentage($complete_project, count($user_projects)),
+                        ];
+
+                        // Total Tasks
+                        $complete_task           = ProjectTask::where('is_complete', '=', 1)->whereRaw("find_in_set('" . $user->id . "',assign_to)")->whereIn('project_id', $user_projects)->count();
+                        $home_data['total_task'] = [
+                            'total' => $project_tasks->count(),
+                            'percentage' => Utility::getPercentage($complete_task, $project_tasks->count()),
+                        ];
+
+                        // Top Due Project
+                        $home_data['due_project'] = $user->projects()->orderBy('end_date', 'DESC')->limit(5)->get();
+
+                        $harisekarang =   date('Y-m-d');
+                        $home_data['project'] = $user->projects()->where('status', '!=', 'complete')->get();
+                        $home_data['project_user'] = ProjectUser::where('user_id','=', $user->id)->get();
+
+                        if(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
+                        {
+                            $users        = \Auth::user();
+                            $employee     = Employee::where('user_id', '=', $users->id)->first();
+                            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
+                        }
+                        else
+                        {
+                            $users        = \Auth::user();
+                            $employee     = Employee::where('user_id', '=', $users->id)->first();
+                            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
+                        }
+
+                        return view('dashboard.home', compact('employeesAttendances', 'dates', 'data', 'profile','employees', 'employeeAttendance', 'officeTime', 'home_data', 'approval'));
+                    }
+                    else
+                    {
+                        $events    = Event::where('created_by', '=', \Auth::user()->creatorId())->get();
+                        $arrEvents = [];
+    
+                        foreach($events as $event)
+                        {
+                            $arr['id']    = $event['id'];
+                            $arr['title'] = $event['title'];
+                            $arr['start'] = $event['start_date'];
+                            $arr['end']   = $event['end_date'];
+    
+                            $arr['backgroundColor'] = $event['color'];
+                            $arr['borderColor']     = "#fff";
+                            $arr['textColor']       = "white";
+                            $arr['url']             = route('event.edit', $event['id']);
+    
+                            $arrEvents[] = $arr;
+                        }
+    
+    
+                        $announcements = Announcement::orderBy('announcements.id', 'desc')->take(5)->where('created_by', '=', \Auth::user()->creatorId())->get();
+    
+    
+                        $employees           = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
+                        $countEmployee = count($employees);
+    
+                        $emp = Employee::where('user_id', '=', Auth::user()->id)->first();
+    
+    
+                        $date               = date("Y-m-d");
+                        $time               = date("H:i:s");
+                        $employeeAttendance = AttendanceEmployee::orderBy('id', 'desc')->where('employee_id', '=', !empty(\Auth::user()->employee) ? \Auth::user()->employee->id : 0)->where('date', '=', $date)->first();
+    
+                        if($emp->branch_id == 1)
+                        {
+                            $officeTime['startTime']    = Utility::getValByName('company_start_time');
+                            $officeTime['endTime']      = Utility::getValByName('company_end_time');
+                        }
+                        elseif($emp->branch_id == 2)
+                        {
+                            $officeTime['startTime']    = "08:30";
+                            $officeTime['endTime']      = "17:30";
+                        }
+                        elseif($emp->branch_id == 3)
+                        {
+                            $officeTime['startTime']    = "08:00";
+                            $officeTime['endTime']      = "17:00";
+                        }
+    
+                        $get_name                = $user->name;
+                        $img                     = \DefaultProfileImage::create($get_name);
+                        $profile                 = \Storage::put($get_name . '.jpg', $img->encode());
+    
+                        $user      = User::where('type', '!=', 'client')->where('type', '!=', 'company')->where('created_by', '=', \Auth::user()->creatorId())->get();
+                        $countUser = count($user);
+    
+    
+                        $countTrainer    = Trainer::where('created_by', '=', \Auth::user()->creatorId())->count();
+                        $onGoingTraining = Training::where('status', '=', 1)->where('created_by', '=', \Auth::user()->creatorId())->count();
+                        $doneTraining    = Training::where('status', '=', 2)->where('created_by', '=', \Auth::user()->creatorId())->count();
+    
+                        $currentDate = date('Y-m-d');
+    
+                        $employees   = User::where('type', '=', 'client')->where('created_by', '=', \Auth::user()->creatorId())->get();
+                        $countClient = count($employees);
+                        $notClockIn  = AttendanceEmployee::where('date', '=', $currentDate)->get()->pluck('employee_id');
+    
+                        $notClockIns = Employee::where('created_by', '=', \Auth::user()->creatorId())->whereNotIn('id', $notClockIn)->get();
+                        $activeJob   = Job::where('status', 'active')->where('created_by', '=', \Auth::user()->creatorId())->count();
+                        $inActiveJOb = Job::where('status', 'in_active')->where('created_by', '=', \Auth::user()->creatorId())->count();
+    
+    
+                        $meetings = Meeting::where('created_by', '=', \Auth::user()->creatorId())->limit(5)->get();
+    
+                        return view('dashboard.dashboard', compact('profile','arrEvents', 'onGoingTraining', 'activeJob', 'inActiveJOb', 'doneTraining', 'announcements', 'employees', 'meetings', 'countTrainer', 'countClient', 'countUser', 'notClockIns', 'countEmployee', 'employeeAttendance'));
+                    }
+            }
+            else
+            {
+                return redirect()->back()->with('error', __('Permission denied.'));
+            }
+        }
+        else
+        {
+            if(!file_exists(storage_path() . "/installed"))
+            {
+                header('location:install');
+                die;
+            }
+            else
+            {
+                $settings = Utility::settings();
+                if($settings['display_landing_page'] == 'on')
+                {
+
+
+                    return view('layouts.landing');
+                }
+                else
+                {
+                    return redirect('login');
+                }
+
+            }
+        }
+    }
+
+    function isWeekend($date)
+    {
+        $dayOfWeek = date('N', strtotime($date)); // Mengambil hari dalam format angka (1-7, dimulai dari Senin)
+        return ($dayOfWeek == 6 || $dayOfWeek == 7); // Jika hari adalah Sabtu (6) atau Minggu (7), kembalikan true
     }
 
 }

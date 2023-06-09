@@ -21,7 +21,7 @@ class RouteServiceProvider extends ServiceProvider
 
     public const HOME_CLIENT = '/';
 
-    public const EMPHOME = 'hrm-dashboard';
+    public const EMPHOME = 'home';
 
     /**
      * The controller namespace for the application.

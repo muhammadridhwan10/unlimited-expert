@@ -59,6 +59,13 @@ Route::get('/account-dashboard', 'DashboardController@account_dashboard_index')-
         'revalidate',
     ]
 );
+Route::get('/home', 'DashboardController@home')->name('home')->middleware(
+    [
+        'auth',
+        'XSS',
+        'revalidate',
+    ]
+);
 Route::get('/project-dashboard', 'DashboardController@project_dashboard_index')->name('project.dashboard')->middleware(
     [
         'auth',
@@ -2270,7 +2277,7 @@ Route::get('employee/{id}/leave/{status}/{type}/{month}/{year}', 'ReportControll
         'XSS',
     ]
 );
-Route::get('employee/{id}/projects/{type}/{month}/{year}/{week}', 'ReportController@employeeProjects')->name('report.employee.projects')->middleware(
+Route::get('employee/{id}/projects/{type}/{month}/{year}', 'ReportController@employeeProjects')->name('report.employee.projects')->middleware(
     [
         'auth',
         'XSS',
@@ -2844,6 +2851,18 @@ Route::get(
 );
 
 Route::get(
+    '/projects/{pid}/task/{tid}/create-mapping-account', [
+    'as' => 'projects.tasks.create.mappingaccount',
+    'uses' => 'ProjectTaskController@createMappingAccount',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::get(
     '/projects/{pid}/task/invite', [
     'as' => 'projects.tasks.invite',
     'uses' => 'ProjectTaskController@invite',
@@ -2973,7 +2992,7 @@ Route::post(
 ]
 );
 Route::post(
-    '/save-summary-materiality', [
+    '/save-summary-materiality/{pid}', [
     'as' => 'summary.materialitas',
     'uses' => 'ProjectTaskController@summaryMaterialitas',
 ]
@@ -2983,6 +3002,12 @@ Route::post(
     '/projects/{pid}/task/{tid}/save-journal-data', [
     'as' => 'save-journal-data',
     'uses' => 'ProjectTaskController@saveJournalData',
+]
+);
+Route::post(
+    '/projects/{pid}/task/{tid}/save-mappingaccount', [
+    'as' => 'save-mappingaccount',
+    'uses' => 'ProjectTaskController@saveMappingAccount',
 ]
 );
 Route::post(
@@ -3109,7 +3134,14 @@ Route::resource('tasktemplate', 'TaskTemplateController')->middleware(
         'XSS',
     ]
 );
-Route::get('tasktemplate/create', 'TaskTemplateController@create')->name('tasktemplate.create');
+Route::resource('mappingaccountdata', 'MappingAccountDataController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('mappingaccountdata/create', 'TaskTemplateController@create')->name('tasktemplate.create');
+Route::get('tasktemplate/create', 'MappingAccountDataController@create')->name('mappingaccountdata.create');
 Route::post(
     '/project-task-stages/order', [
     'as' => 'project-task-stages.order',

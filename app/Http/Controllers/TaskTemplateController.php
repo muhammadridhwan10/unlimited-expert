@@ -20,7 +20,8 @@ class TaskTemplateController extends Controller
         if(\Auth::user()->can('manage project task template'))
         {
 
-            if(\Auth::user()->type = 'admin')
+            $user = Auth::user();
+            if($user->type == 'admin')
             {
                 $category = ProductServiceCategory::all()->pluck('name', 'id');
                 $category_template = CategoryTemplate::get()->pluck('name', 'id');
@@ -46,10 +47,8 @@ class TaskTemplateController extends Controller
                 //     $query->where('status', '=', $request->status);
                 // }
                 $templates = $query;
-    
-                return view('tasktemplate.index', compact('templates', 'category', 'category_template'));
             }
-            elseif(\Auth::user()->type = 'company')
+            elseif($user->type == 'company')
             {
                 $category = ProductServiceCategory::all()->pluck('name', 'id');
                 $category_template = CategoryTemplate::get()->pluck('name', 'id');
@@ -75,13 +74,11 @@ class TaskTemplateController extends Controller
                 //     $query->where('status', '=', $request->status);
                 // }
                 $templates = $query;
-    
-                return view('tasktemplate.index', compact('templates', 'category', 'category_template'));
             }
             else
             {
-                $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                $category_template = CategoryTemplate::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $category = ProductServiceCategory::all()->pluck('name', 'id');
+                $category_template = CategoryTemplate::get()->pluck('name', 'id');
                 $category_template->prepend('Select Category Template', '');
                 $category->prepend('Select Category', '');
     
@@ -104,9 +101,9 @@ class TaskTemplateController extends Controller
                 //     $query->where('status', '=', $request->status);
                 // }
                 $templates = $query->get();
-    
-                return view('tasktemplate.index', compact('templates', 'category', 'category_template'));
             }
+
+            return view('tasktemplate.index', compact('templates', 'category', 'category_template'));
         }
         else
         {
@@ -130,8 +127,8 @@ class TaskTemplateController extends Controller
             else
             {
                 $customFields   = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
-                $categorys = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 1)->get()->pluck('name', 'id');
-                $category_template = CategoryTemplate::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $categorys = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
+                $category_template = CategoryTemplate::get()->pluck('name', 'id');
                 $category_template->prepend('Select Category Template', '');
                 $categorys->prepend('Select Category', '');
             }
@@ -214,8 +211,8 @@ class TaskTemplateController extends Controller
             }
             else
             {
-                $category       = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 1)->get()->pluck('name', 'id');
-                $category_template = CategoryTemplate::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $category       = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
+                $category_template = CategoryTemplate::get()->pluck('name', 'id');
                 $category_template->prepend('Select Category Template', '');
                 $category->prepend('Select Category', '');
     
