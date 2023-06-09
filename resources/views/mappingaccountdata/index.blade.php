@@ -108,7 +108,7 @@
                                     @if (Gate::check('edit mapping account data') || Gate::check('delete mapping account data'))
                                         <td class="Action">
                                                 <span>
-                                                    @can('edit project task template')
+                                                    @can('edit mapping account data')
                                                         <div class="action-btn bg-primary ms-2">
                                                                 <a href="{{ route('mappingaccountdata.edit', \Crypt::encrypt($mapping_accounts->id)) }}"
                                                                    class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="Edit "
@@ -117,7 +117,7 @@
                                                                 </a>
                                                             </div>
                                                     @endcan
-                                                    @can('delete project task template')
+                                                    @can('delete mapping account data')
                                                         <div class="action-btn bg-danger ms-2">
                                                                 {!! Form::open(['method' => 'DELETE', 'route' => ['mappingaccountdata.destroy', $mapping_accounts->id], 'id' => 'delete-form-' . $mapping_accounts->id]) !!}
                                                                     <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para " data-bs-toggle="tooltip" title="{{__('Delete')}}"
