@@ -23,10 +23,11 @@ class TaskTemplateController extends Controller
             $user = Auth::user();
             if($user->type == 'admin')
             {
+
                 $category = ProductServiceCategory::all()->pluck('name', 'id');
                 $category_template = CategoryTemplate::get()->pluck('name', 'id');
                 $category_template->prepend('Select Category Template', '');
-                $category->prepend('Select Category', '');
+                $category->prepend('All', '');
     
                 // $status = Invoice::$statues;
     
@@ -34,26 +35,20 @@ class TaskTemplateController extends Controller
     
                 if(!empty($request->category))
                 {
-                    $query->where('category_id', '=', $request->category);
+                    $templates = $query->where('category_id', '=', $request->category);
                 }
-                // if(!empty($request->issue_date))
-                // {
-                //     $date_range = explode(' - ', $request->issue_date);
-                //     $query->where('issue_date', $date_range);
-                // }
-    
-                // if(!empty($request->status))
-                // {
-                //     $query->where('status', '=', $request->status);
-                // }
-                $templates = $query;
+                elseif($request->category = 'All')
+                {
+                    $templates = ProjectTaskTemplate::all();
+                }
+            
             }
             elseif($user->type == 'company')
             {
                 $category = ProductServiceCategory::all()->pluck('name', 'id');
                 $category_template = CategoryTemplate::get()->pluck('name', 'id');
                 $category_template->prepend('Select Category Template', '');
-                $category->prepend('Select Category', '');
+                $category->prepend('All', '');
     
                 // $status = Invoice::$statues;
     
@@ -61,26 +56,20 @@ class TaskTemplateController extends Controller
     
                 if(!empty($request->category))
                 {
-                    $query->where('category_id', '=', $request->category);
+                    $templates = $query->where('category_id', '=', $request->category);
                 }
-                // if(!empty($request->issue_date))
-                // {
-                //     $date_range = explode(' - ', $request->issue_date);
-                //     $query->where('issue_date', $date_range);
-                // }
-    
-                // if(!empty($request->status))
-                // {
-                //     $query->where('status', '=', $request->status);
-                // }
-                $templates = $query;
+                elseif($request->category = 'All')
+                {
+                    $templates = ProjectTaskTemplate::all();
+                }
+        
             }
             else
             {
                 $category = ProductServiceCategory::all()->pluck('name', 'id');
                 $category_template = CategoryTemplate::get()->pluck('name', 'id');
                 $category_template->prepend('Select Category Template', '');
-                $category->prepend('Select Category', '');
+                $category->prepend('All', '');
     
                 // $status = Invoice::$statues;
     
@@ -88,18 +77,13 @@ class TaskTemplateController extends Controller
     
                 if(!empty($request->category))
                 {
-                    $query->where('category_id', '=', $request->category);
+                    $templates = $query->where('category_id', '=', $request->category);
                 }
-                // if(!empty($request->issue_date))
-                // {
-                //     $date_range = explode(' - ', $request->issue_date);
-                //     $query->where('issue_date', $date_range);
-                // }
-    
-                // if(!empty($request->status))
-                // {
-                //     $query->where('status', '=', $request->status);
-                // }
+                elseif($request->category = 'All')
+                {
+                    $templates = ProjectTaskTemplate::all();
+                }
+
                 $templates = $query->get();
             }
 

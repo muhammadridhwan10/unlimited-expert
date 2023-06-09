@@ -55,7 +55,7 @@
                             @if (!\Auth::guard('customer')->check())
                                 <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
                                     <div class="btn-box">
-                                        {{ Form::label('materialitas', __('Category'),['class'=>'form-label'])}}
+                                        {{ Form::label('materialitas', __('Account Group'),['class'=>'form-label'])}}
                                         {{ Form::select('materialitas', $materialitas, isset($_GET['materialitas']) ? $_GET['materialitas'] : '', ['class' => 'form-control select']) }}
                                     </div>
                                 </div>
