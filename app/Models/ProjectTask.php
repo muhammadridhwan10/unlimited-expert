@@ -181,7 +181,7 @@ class ProjectTask extends Model
         {
             $percentage = 100;
         }
-        elseif($this->name == "INPUT LAPORAN KEUANGAN")
+        elseif($this->name == "FINANCIAL INFORMATION")
         {
             $percentage = 100;
         }

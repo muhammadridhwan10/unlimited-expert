@@ -64,7 +64,7 @@
                                     <input type="checkbox" class="form-check-input" id="check-item-{{ $category->id }}" @if($category->status) checked @endif data-url="{{route('checklist.update',[$task->project_id,$category->id])}}">
                                 @endif
                                     <?php
-                                        if($category->name == 'Data Keuangan Ringkas')
+                                        if($category->name == 'Perbandingan Data Antar Periode')
                                         {
                                             $link = route('projects.tasks.keuangan.ringkas',[$task->project_id,\Crypt::encrypt($task->id)]);
                                         }

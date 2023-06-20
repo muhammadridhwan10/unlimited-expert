@@ -26,6 +26,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\DataImport;
 use App\Models\FinancialStatement;
 use App\Models\MappingAccount;
+use App\Models\MappingAccountData;
 use App\Models\Materialitas;
 use App\Models\ValueMaterialitas;
 use App\Models\SummaryMateriality;
@@ -60,7 +61,7 @@ class ProjectTaskController extends Controller
 
                 if(!empty($data_task))
                 {
-                    $existingSubTasks = TaskChecklist::whereIn('name', ['Data Keuangan Ringkas', 'Rasio Keuangan', 'Audit Memorandum'])
+                    $existingSubTasks = TaskChecklist::whereIn('name', ['Perbandingan Data Antar Periode', 'Rasio Keuangan', 'Audit Memorandum'])
                         ->where('task_id', $data_task->id)
                         ->where('project_id', $project_id)
                         ->pluck('name')
@@ -68,9 +69,9 @@ class ProjectTaskController extends Controller
 
                     $createSubTask = [];
 
-                    if (!in_array('Data Keuangan Ringkas', $existingSubTasks)) {
+                    if (!in_array('Perbandingan Data Antar Periode', $existingSubTasks)) {
                         $createSubTask[] = [
-                            'name' => 'Data Keuangan Ringkas',
+                            'name' => 'Perbandingan Data Antar Periode',
                             'task_id' => $data_task->id,
                             'project_id' => $project_id,
                             'created_by' => 1,
@@ -134,7 +135,7 @@ class ProjectTaskController extends Controller
 
                         $createSubTask = [
                             [
-                                'name' => 'Data Keuangan Ringkas',
+                                'name' => 'Perbandingan Data Antar Periode',
                                 'task_id' => $data->id,
                                 'project_id' => $data->project_id,
                                 'created_by' => 1,
@@ -201,7 +202,7 @@ class ProjectTaskController extends Controller
                 {
                     $createSubTask = [
                         [
-                            'name' => 'Data Keuangan Ringkas',
+                            'name' => 'Perbandingan Data Antar Periode',
                             'task_id' => $data_task->id,
                             'project_id' => $project_id,
                             'created_by' => 1,
@@ -1932,22 +1933,168 @@ class ProjectTaskController extends Controller
             $result = $mapping_accounts->map(function ($mapping_account) use ($financial_statement) {
                 $account_code = $mapping_account->account_code;
                 $name = $mapping_account->name;
-                $account_group = $mapping_account->account_group;
+                $account_group = $mapping_account->materialitas->name;
             
                 $financial_data = $financial_statement->where('lk', $account_code);
+
+                $prior_period2 = $financial_data->sum('prior_period2') ?? null;
+                $prior_period = $financial_data->sum('prior_period') ?? null;
+                $inhouse = $financial_data->sum('inhouse') ?? null;
+                $audited = $financial_data->sum('audited') ?? null;
+
+                // dd($audited);
+
+                if ($account_group === 'LIABILITAS') {
+                    $prior_period2 *= -1;
+                    $prior_period *= -1;
+                    $inhouse *= -1;
+                    $audited *= -1;
+                }
+                elseif($account_group === 'EKUITAS')
+                {
+                    $prior_period2 *= -1;
+                    $prior_period *= -1;
+                    $inhouse *= -1;
+                    $audited *= -1;
+                }
+                elseif($account_group === 'PENDAPATAN')
+                {
+                    $prior_period2 *= -1;
+                    $prior_period *= -1;
+                    $inhouse *= -1;
+                    $audited *= -1;
+                }
+                elseif($account_group === 'PENDAPATAN / BEBAN KEUANGAN')
+                {
+                    $prior_period2 *= -1;
+                    $prior_period *= -1;
+                    $inhouse *= -1;
+                    $audited *= -1;
+                }
+                elseif($account_group === 'PENDAPATAN / BEBAN LAIN-LAIN')
+                {
+                    $prior_period2 *= -1;
+                    $prior_period *= -1;
+                    $inhouse *= -1;
+                    $audited *= -1;
+                }
+                elseif($account_group === "PENGHASILAN KOMPREHENSIF LAIN")
+                {
+                    $prior_period2 *= -1;
+                    $prior_period *= -1;
+                    $inhouse *= -1;
+                    $audited *= -1;
+                }
             
                 return [
                     'account_code' => $account_code,
                     'name' => $name,
                     'account_group' => $account_group,
-                    'prior_period2' => $financial_data->sum('prior_period2') ?? null,
-                    'prior_period' => $financial_data->sum('prior_period') ?? null,
-                    'inhouse' => $financial_data->sum('inhouse') ?? null,
-                    'audited' => $financial_data->sum('audited') ?? null,
+                    'prior_period2' => $prior_period2,
+                    'prior_period' => $prior_period,
+                    'inhouse' => $inhouse,
+                    'audited' => $audited,
                 ];
             });
+
+            // dd($result);
+
+            // Mengelompokkan hasil berdasarkan account_group
+            $grouped_result = $result->groupBy('account_group');
+
+            // Menghitung total masing-masing dari account_group
+            $summary = $grouped_result->map(function ($group) {
+                $accountGroup = $group->first()['account_group'];
+                $priorPeriod2Total = $group->sum('prior_period2');
+                $priorPeriodTotal = $group->sum('prior_period');
+                $inhouseTotal = $group->sum('inhouse');
+                $auditedTotal = $group->sum('audited');
+                
+                
+                
+                return [
+                    'account_group' => $accountGroup,
+                    'prior_period2_total' => $priorPeriod2Total,
+                    'prior_period_total' => $priorPeriodTotal,
+                    'inhouse_total' => $inhouseTotal,
+                    'audited_total' => $auditedTotal,
+                ];
+            });
+
+            // dd($summary);
+
+            $laba_kotor = [
+                'account_group' => 'LABA BRUTO',
+                'prior_period2_total' => $summary['PENDAPATAN']['prior_period2_total'] - $summary['BEBAN POKOK PENDAPATAN']['prior_period2_total'],
+                'prior_period_total' => $summary['PENDAPATAN']['prior_period_total'] - $summary['BEBAN POKOK PENDAPATAN']['prior_period_total'],
+                'inhouse_total' => $summary['PENDAPATAN']['inhouse_total'] - $summary['BEBAN POKOK PENDAPATAN']['inhouse_total'],
+                'audited_total' => $summary['PENDAPATAN']['audited_total'] - $summary['BEBAN POKOK PENDAPATAN']['audited_total'],
+            ];
+
+            // Menambahkan perhitungan "TOTAL LABA OPERASI"
+            $laba_operasi = [
+                'account_group' => 'LABA OPERASIONAL',
+                'prior_period2_total' => $laba_kotor['prior_period2_total'] - $summary['BEBAN OPERASIONAL']['prior_period2_total'],
+                'prior_period_total' =>  $laba_kotor['prior_period_total'] - $summary['BEBAN OPERASIONAL']['prior_period_total'],
+                'inhouse_total' => $laba_kotor['inhouse_total'] - $summary['BEBAN OPERASIONAL']['inhouse_total'],
+                'audited_total' => $laba_kotor['audited_total'] - $summary['BEBAN OPERASIONAL']['audited_total'],
+            ];
+
+            // Menambahkan perhitungan "TOTAL LABA SEBELUM PAJAK"
+            $laba_sebelum_pajak = [
+                'account_group' => 'LABA SEBELUM PAJAK',
+                'prior_period2_total' => $laba_operasi['prior_period2_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['prior_period2_total'] + $summary['PENDAPATAN / BEBAN LAIN-LAIN']['prior_period2_total'],
+                'prior_period_total' => $laba_operasi['prior_period_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['prior_period_total'] + $summary['PENDAPATAN / BEBAN LAIN-LAIN']['prior_period_total'],
+                'inhouse_total' => $laba_operasi['inhouse_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['inhouse_total'] + $summary['PENDAPATAN / BEBAN LAIN-LAIN']['inhouse_total'],
+                'audited_total' => $laba_operasi['audited_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['audited_total'] + $summary['PENDAPATAN / BEBAN LAIN-LAIN']['audited_total'],
+            ];
+
+            // Menambahkan perhitungan "TOTAL LABA SETELAH PAJAK"
+            $laba_setelah_pajak = [
+                'account_group' => 'LABA SETELAH PAJAK',
+                'prior_period2_total' => $summary['BEBAN PAJAK PENGHASILAN']['prior_period2_total'] + $laba_sebelum_pajak['prior_period2_total'],
+                'prior_period_total' => $summary['BEBAN PAJAK PENGHASILAN']['prior_period_total'] + $laba_sebelum_pajak['prior_period_total'],
+                'inhouse_total' => $summary['BEBAN PAJAK PENGHASILAN']['inhouse_total'] + $laba_sebelum_pajak['inhouse_total'],
+                'audited_total' => $summary['BEBAN PAJAK PENGHASILAN']['audited_total'] + $laba_sebelum_pajak['audited_total'],
+            ];
+
+            // Menambahkan perhitungan "LABA RUGI KOMPREHENSIF SETELAH PAJAK
+            $laba_rugi_komprehensif_setelah_pajak = [
+                'account_group' => 'LABA RUGI KOMPREHENSIF SETELAH PAJAK',
+                'prior_period2_total' => $laba_setelah_pajak['prior_period2_total'] + $summary['PENGHASILAN KOMPREHENSIF LAIN']['prior_period2_total'] ,
+                'prior_period_total' => $laba_setelah_pajak['prior_period_total'] + $summary['PENGHASILAN KOMPREHENSIF LAIN']['prior_period_total'],
+                'inhouse_total' => $laba_setelah_pajak['inhouse_total'] + $summary['PENGHASILAN KOMPREHENSIF LAIN']['inhouse_total'],
+                'audited_total' => $laba_setelah_pajak['audited_total'] + $summary['PENGHASILAN KOMPREHENSIF LAIN']['audited_total'],
+            ];
+
+            // Menggabungkan hasil total masing-masing account_group dengan perhitungan "TOTAL LABA KOTOR"
+            $summaryWithLabaKotor = $summary->put('LABA BRUTO', $laba_kotor); 
+            $summaryWithBebanOperasi = $summary->put('LABA OPERASIONAL', $laba_operasi); 
+            $summaryWithLabaSebelumPajak = $summary->put('LABA SEBELUM PAJAK', $laba_sebelum_pajak); 
+            $summaryWithLabaSetelahPajak = $summary->put('LABA SETELAH PAJAK', $laba_setelah_pajak); 
+            $summaryWithLabaRugiKomprehensifSetelahPajak = $summary->put('LABA RUGI KOMPREHENSIF SETELAH PAJAK', $laba_rugi_komprehensif_setelah_pajak); 
+
+            $summary_mapping = 
+            [
+                'ASET' => $summary['ASET'],
+                'LIABILITAS' => $summary['LIABILITAS'],
+                'EKUITAS' => $summary['EKUITAS'],
+                'PENDAPATAN' => $summary['PENDAPATAN'],
+                'BEBAN POKOK PENDAPATAN' => $summary['BEBAN POKOK PENDAPATAN'],
+                'LABA BRUTO' => $summary['LABA BRUTO'],
+                'BEBAN OPERASIONAL' => $summary['BEBAN OPERASIONAL'],
+                'LABA OPERASIONAL' => $summary['LABA OPERASIONAL'],
+                'PENDAPATAN / BEBAN KEUANGAN' => $summary['PENDAPATAN / BEBAN KEUANGAN'],
+                'PENDAPATAN / BEBAN LAIN-LAIN' => $summary['PENDAPATAN / BEBAN LAIN-LAIN'],
+                'LABA SEBELUM PAJAK' => $summary['LABA SEBELUM PAJAK'],
+                'BEBAN PAJAK PENGHASILAN' => $summary['BEBAN PAJAK PENGHASILAN'],
+                'LABA SETELAH PAJAK' => $summary['LABA SETELAH PAJAK'],
+                'PENGHASILAN KOMPREHENSIF LAIN' => $summary['PENGHASILAN KOMPREHENSIF LAIN'],
+                'LABA RUGI KOMPREHENSIF SETELAH PAJAK' => $summary['LABA RUGI KOMPREHENSIF SETELAH PAJAK'],
+
+            ];
             
-            return view('project_task.financialStatement', compact('task','project','financial_statement','mapping_accounts', 'result'));
+            return view('project_task.financialStatement', compact('task','summary_mapping','project','financial_statement','mapping_accounts', 'result'));
         }
         else
         {
@@ -2082,11 +2229,11 @@ class ProjectTaskController extends Controller
                 '10' => $total_m10_2020 * -1,
             ];
 
-            $data_array_2020['11'] = ($total_m4_2020 * -1) + $total_m5_2020;
-            $data_array_2020['12'] = $total_m6_2020 + $data_array_2020['11'];
+            $data_array_2020['11'] = ($total_m4_2020 * -1) - $total_m5_2020;
+            $data_array_2020['12'] = $data_array_2020['11'] - $total_m6_2020;
             $data_array_2020['13'] = $data_array_2020['12'] + ($total_m8_2020 * -1) + ($total_m7_2020 * -1);
             $data_array_2020['14'] = $data_array_2020['13'] - $total_m9_2020;
-            $data_array_2020['15'] = $data_array_2020['14'] + $total_m10_2020;
+            $data_array_2020['15'] = $data_array_2020['14'] + ($total_m10_2020 * -1);
 
             //data array audited 2021
             $data_array_2021 = 
@@ -2102,13 +2249,12 @@ class ProjectTaskController extends Controller
                 '9' => $total_m9_2021,
                 '10' => $total_m10_2021 * -1,
             ];
-            
 
-            $data_array_2021['11'] = ($total_m4_2021 * -1) + $total_m5_2021;
-            $data_array_2021['12'] = $total_m6_2021 + $data_array_2021['11'];
+            $data_array_2021['11'] = ($total_m4_2021 * -1) - $total_m5_2021;
+            $data_array_2021['12'] = $data_array_2021['11'] - $total_m6_2021;
             $data_array_2021['13'] = $data_array_2021['12'] + ($total_m8_2021 * -1) + ($total_m7_2021 * -1);
             $data_array_2021['14'] = $data_array_2021['13'] - $total_m9_2021;
-            $data_array_2021['15'] = $data_array_2021['14'] + $total_m10_2021;
+            $data_array_2021['15'] = $data_array_2021['14'] + ($total_m10_2021 * -1);
 
             //data array inhouse 2022
             $data_array_in_2022 = 
@@ -2125,11 +2271,11 @@ class ProjectTaskController extends Controller
                 '10' => $total_m10_in_2022 * -1,
             ];
 
-            $data_array_in_2022['11'] = ($total_m4_in_2022 * -1) + $total_m5_in_2022;
-            $data_array_in_2022['12'] = $total_m6_in_2022 + $data_array_in_2022['11'];
+            $data_array_in_2022['11'] = ($total_m4_in_2022 * -1) - $total_m5_in_2022;
+            $data_array_in_2022['12'] = $data_array_in_2022['11'] - $total_m6_in_2022;
             $data_array_in_2022['13'] = $data_array_in_2022['12'] + ($total_m8_in_2022 * -1) + ($total_m7_in_2022 * -1);
             $data_array_in_2022['14'] = $data_array_in_2022['13'] - $total_m9_in_2022;
-            $data_array_in_2022['15'] = $data_array_in_2022['14'] + $total_m10_in_2022;
+            $data_array_in_2022['15'] = $data_array_in_2022['14'] + ($total_m10_in_2022 * -1);
 
             //data array audited 2022
             $data_array_au_2022 = 
@@ -2146,11 +2292,11 @@ class ProjectTaskController extends Controller
                 '10' => $total_m10_au_2022 * -1,
             ];
 
-            $data_array_au_2022['11'] = ($total_m4_au_2022 * -1) + $total_m5_au_2022;
-            $data_array_au_2022['12'] = $total_m6_au_2022 + $data_array_au_2022['11'];
+            $data_array_au_2022['11'] = ($total_m4_au_2022 * -1) - $total_m5_au_2022;
+            $data_array_au_2022['12'] = $data_array_au_2022['11'] - $total_m6_au_2022;
             $data_array_au_2022['13'] = $data_array_au_2022['12'] + ($total_m8_au_2022 * -1) + ($total_m7_au_2022 * -1);
             $data_array_au_2022['14'] = $data_array_au_2022['13'] - $total_m9_au_2022;
-            $data_array_au_2022['15'] = $data_array_au_2022['14'] + $total_m10_au_2022;
+            $data_array_au_2022['15'] = $data_array_au_2022['14'] + ($total_m10_au_2022 * -1);
 
             $savematerialitas = Materialitas::get();
 
@@ -2322,6 +2468,11 @@ class ProjectTaskController extends Controller
             $post['prior_period2'] = $request->prior_period2;
             $post['prior_period'] = $request->prior_period;
             $post['inhouse'] = $request->inhouse;
+            if ($post['audited'] == 0) {
+                $post['audited'] = $request->inhouse;
+            } else {
+                $post['audited'] = $request->audited;
+            }            
             $post['jan'] = $request->jan;
             $post['feb'] = $request->feb;
             $post['mar'] = $request->mar;
@@ -2439,30 +2590,34 @@ class ProjectTaskController extends Controller
                 $summary_journaldata->dr = $journaldata[$i]['dr'];
                 $summary_journaldata->cr = $journaldata[$i]['cr'];
 
-                // Pemisahan elemen 'coa' menjadi array terpisah
-                $coaValues = explode(',', $journaldata[$i]['item']);
+                $coaValues = $journaldata[$i]['item'];
 
-                foreach ($coaValues as $coa) {
-                    $item = new SummaryJournalData();
-                    $item->project_id = $summary_journaldata->project_id;
-                    $item->notes = $summary_journaldata->notes;
-                    $item->adj_code = $summary_journaldata->adj_code;
-                    $item->dr = str_replace(',', '', $summary_journaldata->dr);
-                    $item->cr = str_replace(',', '', $summary_journaldata->cr);
-                    $item->coa = $coa;
-                    $items[] = $item;
+                $item = new SummaryJournalData();
+                $item->project_id = $summary_journaldata->project_id;
+                $item->notes = $summary_journaldata->notes;
+                $item->adj_code = $summary_journaldata->adj_code;
+                $item->dr = str_replace(',', '', $summary_journaldata->dr);
+                $item->cr = str_replace(',', '', $summary_journaldata->cr);
+                $item->coa = $coaValues;
+                $items[] = $item;
 
-                    $financial_data = FinancialStatement::where('project_id', $project_id)->where('coa', $coa)->first();
+                $financial_data = FinancialStatement::where('project_id', $project_id)->where('coa', $coaValues)->first();
 
-                    $new_dr = $financial_data->dr + str_replace(',', '', $summary_journaldata->dr);
-                    $new_cr = $financial_data->cr + str_replace(',', '', $summary_journaldata->cr);
-
-                    FinancialStatement::where('project_id', $project_id)->where(['coa' => $coa])->update([
-                        'dr' => $new_dr,
-                        'notes' => $summary_journaldata->notes,
-                        'cr' => $new_cr,
-                        'audited' => $financial_data->inhouse + $new_dr - $new_cr,
-                    ]);
+                if ($financial_data) {
+                    // Data ditemukan, lakukan penambahan nilai dr dan cr
+                    $financial_data->dr += $item->dr;
+                    $financial_data->cr += $item->cr;
+                    $financial_data->audited = $financial_data->inhouse + $financial_data->dr - $financial_data->cr;
+                    $financial_data->save();
+                } else {
+                    // Data tidak ditemukan, buat entri baru
+                    $financial_data = new FinancialStatement();
+                    $financial_data->project_id = $project_id;
+                    $financial_data->coa = $coaValues;
+                    $financial_data->dr = $item->dr;
+                    $financial_data->cr = $item->cr;
+                    $financial_data->audited = $financial_data->inhouse + $item->dr - $item->cr;
+                    $financial_data->save();
                 }
 
                 
@@ -2496,6 +2651,144 @@ class ProjectTaskController extends Controller
         }
     }
 
+    public function editJournalData($project_id, $task_id, $ids)
+    {
+        if(\Auth::user()->can('edit project task'))
+        {
+            $id             = Crypt::decrypt($task_id);
+            $task           = ProjectTask::find($id);
+            $project        = Project::find($project_id);
+            $summary_journaldata = SummaryJournalData::find($ids);
+            $financial_statement = FinancialStatement::where('project_id', $project_id)->get()->pluck('account', 'coa');
+
+            return view('project_task.editJournalData', compact('financial_statement','task', 'summary_journaldata', 'project'));
+        }
+        else
+        {
+            return response()->json(['error' => __('Permission denied.')], 401);
+        }
+    }
+
+    public function updateJournalData(Request $request, $project_id, $task_id, $id)
+    {
+
+        if(\Auth::user()->can('edit project task'))
+        {
+
+            $journaldata = $request->items;
+
+            for ($i = 0; $i < count($journaldata); $i++) {
+                $summary_journaldata = SummaryJournalData::find($id);
+                $summary_journaldata->project_id = $project_id;
+                $summary_journaldata->notes = $request->notes;
+                $dr = $journaldata[$i]['dr'];
+                $cr = $journaldata[$i]['cr'];
+                $summary_journaldata->dr = str_replace(',', '', $dr);
+                $summary_journaldata->cr = str_replace(',', '', $cr);
+
+                $coaValues = $journaldata[$i]['coa'];
+
+                $item = SummaryJournalData::find($id);
+                $item->project_id = $summary_journaldata->project_id;
+                $item->notes = $summary_journaldata->notes;
+                $item->adj_code = $summary_journaldata->adj_code;
+                $item->dr = str_replace(',', '', $summary_journaldata->dr);
+                $item->cr = str_replace(',', '', $summary_journaldata->cr);
+                $item->coa = $coaValues;
+                $items[] = $item;
+
+                if ($dr != 0 || $cr != 0) {
+                    // Cek apakah jenis data yang diupdate adalah dr atau cr
+                    if ($dr != 0 && $cr == 0) {
+                        // Update data DR dan perhitungan audited
+                        $financial_data = FinancialStatement::where('project_id', $project_id)
+                            ->where('coa', $coaValues)
+                            ->first();
+
+                        if ($financial_data) {
+                            // Membandingkan nilai input dengan nilai sebelumnya
+                            $drDifference = $summary_journaldata->dr - $financial_data->dr;
+
+                            if ($drDifference != 0) {
+                                // Perbarui nilai DR pada financial_data
+                                $financial_data->dr += $drDifference;
+
+                                // Perbarui nilai audited
+                                $financial_data->audited = $financial_data->inhouse + $financial_data->dr - $financial_data->cr;
+
+                                // Simpan perubahan di financial_data
+                                $financial_data->save();
+                            }
+                        }
+                    } elseif ($dr == 0 && $cr != 0) {
+                        // Update data CR dan perhitungan audited
+                        $financial_data = FinancialStatement::where('project_id', $project_id)
+                            ->where('coa', $coaValues)
+                            ->first();
+
+                        if ($financial_data) {
+                            // Membandingkan nilai input dengan nilai sebelumnya
+                            $crDifference = $summary_journaldata->cr - $financial_data->cr;
+
+                            if ($crDifference != 0) {
+                                // Perbarui nilai CR pada financial_data
+                                $financial_data->cr += $crDifference;
+
+                                // Perbarui nilai audited
+                                $financial_data->audited = $financial_data->inhouse + $financial_data->dr - $financial_data->cr;
+
+                                // Simpan perubahan di financial_data
+                                $financial_data->save();
+                            }
+                        }
+                    }
+                }
+
+                // Update nilai dr dan cr di summary_journaldata
+                $summary_journaldata->save();
+            }
+
+
+                  
+            return redirect()->route('projects.tasks.journal.entries', [$project_id, $task_id])->with('success', __('Journal Data successfully updated.'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
+
+    public function destroyJournalData(Request $request, $project_id, $task_id, $id)
+    {
+
+        if(\Auth::user()->can('delete project task'))
+        {
+            $summary_journaldata = SummaryJournalData::find($id);
+            $drToDelete = $summary_journaldata->dr;
+            $crToDelete = $summary_journaldata->cr;
+            
+            $summary_journaldata->delete();
+            
+            $financial_data = FinancialStatement::where('project_id', $project_id)
+                ->where('coa', $summary_journaldata->coa)
+                ->first();
+            
+            if ($financial_data) {
+                $financial_data->dr -= $drToDelete;
+                $financial_data->cr -= $crToDelete;
+                $financial_data->audited = $financial_data->inhouse + $financial_data->dr - $financial_data->cr;
+                $financial_data->save();
+            }
+            
+                            
+                return redirect()->route('projects.tasks.journal.entries', [$project_id, $task_id])->with('success', __('Journal Data successfully deleted.'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
+
     public function getKeuanganRingkas(Request $request, $project_id, $task_id)
     {
         if(\Auth::user()->can('manage project task'))
@@ -2506,1063 +2799,1172 @@ class ProjectTaskController extends Controller
             $financial_statement                = FinancialStatement::where('project_id', $project_id)->get();
             $materialitas                       = Materialitas::get();
             $get_data_materialitas              = ValueMaterialitas::where('project_id', $project_id)->get();
+            $mapping_accounts                   = MappingAccount::where('project_id', $project_id)->get();
+            $summart_materialitas               = SummaryMateriality::where('project_id', $project_id)->orderBy('id', 'DESC')->first();
+            $data_initialmaterialityom          = $summart_materialitas->initialmaterialityom;
 
-
-            $data_lk_2020 = [];
-            $data_lk_2021 = [];
-            $data_lk_in_2022 = [];
-            $data_januari = [];
-            $data_februari = [];
-            $data_maret = [];
-            $data_april = [];
-            $data_mei = [];
-            $data_juni = [];
-            $data_juli = [];
-            $data_agustus = [];
-            $data_september = [];
-            $data_oktober = [];
-            $data_november = [];
-            $data_desember = [];
-
-            $index = [];
-            $summarys = [];
-            $cn = [];
-
-            for ($i = 1; $i <= 35; $i++) {
-                $m = 'LK.' . $i;
-                $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
-                
-                $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
-                $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
-                
-                $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
-                $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
-                
-                $data_lk_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
-                $total_lk_in_2022[$m] = array_sum($data_lk_in_2022[$m]);
-                
-                $data_lk_au_2022[$m] = $data_lk->pluck('audited')->toArray();
-                $total_lk_au_2022[$m] = array_sum($data_lk_au_2022[$m]);
-
-                $data_januari[$m] = $data_lk->pluck('jan')->toArray();
-                $total_januari[$m] = array_sum($data_januari[$m]);
-                
-                $data_februari[$m] = $data_lk->pluck('feb')->toArray();
-                $total_februari[$m] = array_sum($data_februari[$m]);
-
-                $data_maret[$m] = $data_lk->pluck('mar')->toArray();
-                $total_maret[$m] = array_sum($data_maret[$m]);
-
-                $data_april[$m] = $data_lk->pluck('apr')->toArray();
-                $total_april[$m] = array_sum($data_april[$m]);
-
-                $data_mei[$m] = $data_lk->pluck('may')->toArray();
-                $total_mei[$m] = array_sum($data_mei[$m]);
-
-                $data_juni[$m] = $data_lk->pluck('jun')->toArray();
-                $total_juni[$m] = array_sum($data_juni[$m]);
-
-                $data_juli[$m] = $data_lk->pluck('jul')->toArray();
-                $total_juli[$m] = array_sum($data_juli[$m]);
-
-                $data_agustus[$m] = $data_lk->pluck('aug')->toArray();
-                $total_agustus[$m] = array_sum($data_agustus[$m]);
-
-                $data_september[$m] = $data_lk->pluck('sep')->toArray();
-                $total_september[$m] = array_sum($data_september[$m]);
-
-                $data_oktober[$m] = $data_lk->pluck('oct')->toArray();
-                $total_oktober[$m] = array_sum($data_oktober[$m]);
-
-                $data_november[$m] = $data_lk->pluck('nov')->toArray();
-                $total_november[$m] = array_sum($data_november[$m]);
-
-                $data_desember[$m] = $data_lk->pluck('dec')->toArray();
-                $total_desember[$m] = array_sum($data_desember[$m]);
-            }
-
-            //Mencari nilai total aset
-            $total_aset_2020 = 0;
-            $total_aset_2021 = 0;
-            $total_aset_in_2022 = 0;
-            $total_aset_au_2022 = 0;
-            $total_aset_januari = 0;
-            $total_aset_februari = 0;
-            $total_aset_maret = 0;
-            $total_aset_april = 0;
-            $total_aset_mei = 0;
-            $total_aset_juni = 0;
-            $total_aset_juli = 0;
-            $total_aset_agustus = 0;
-            $total_aset_september = 0;
-            $total_aset_oktober = 0;
-            $total_aset_november = 0;
-            $total_aset_desember = 0;
+            $data_keuangan = $mapping_accounts->map(function ($mapping_account) use ($financial_statement, $data_initialmaterialityom) {
+                $account_code = $mapping_account->account_code;
+                $name = $mapping_account->name;
+                $account_group = $mapping_account->materialitas->name;
             
-            for ($i = 1; $i <= 15; $i++) {
-                $m = 'LK.' . $i;
-                $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
-
-                $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
-                $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
-                
-                $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
-                $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
-                
-                $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
-                $total_in_2022[$m] = array_sum($data_in_2022[$m]);
-                
-                $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
-                $total_au_2022[$m] = array_sum($data_au_2022[$m]);
-
-                $data_januari[$m] = $data_lk->pluck('jan')->toArray();
-                $total_januari[$m] = array_sum($data_januari[$m]);
-                
-                $data_februari[$m] = $data_lk->pluck('feb')->toArray();
-                $total_februari[$m] = array_sum($data_februari[$m]);
-
-                $data_maret[$m] = $data_lk->pluck('mar')->toArray();
-                $total_maret[$m] = array_sum($data_maret[$m]);
-
-                $data_april[$m] = $data_lk->pluck('apr')->toArray();
-                $total_april[$m] = array_sum($data_april[$m]);
-
-                $data_mei[$m] = $data_lk->pluck('may')->toArray();
-                $total_mei[$m] = array_sum($data_mei[$m]);
-
-                $data_juni[$m] = $data_lk->pluck('jun')->toArray();
-                $total_juni[$m] = array_sum($data_juni[$m]);
-
-                $data_juli[$m] = $data_lk->pluck('jul')->toArray();
-                $total_juli[$m] = array_sum($data_juli[$m]);
-
-                $data_agustus[$m] = $data_lk->pluck('aug')->toArray();
-                $total_agustus[$m] = array_sum($data_agustus[$m]);
-
-                $data_september[$m] = $data_lk->pluck('sep')->toArray();
-                $total_september[$m] = array_sum($data_september[$m]);
-
-                $data_oktober[$m] = $data_lk->pluck('oct')->toArray();
-                $total_oktober[$m] = array_sum($data_oktober[$m]);
-
-                $data_november[$m] = $data_lk->pluck('nov')->toArray();
-                $total_november[$m] = array_sum($data_november[$m]);
-
-                $data_desember[$m] = $data_lk->pluck('dec')->toArray();
-                $total_desember[$m] = array_sum($data_desember[$m]);
-
-                $total_aset_2020 += $total_lk_2020[$m];
-                $total_aset_2021 += $total_lk_2021[$m];
-                $total_aset_in_2022 += $total_in_2022[$m];
-                $total_aset_au_2022 += $total_au_2022[$m];
-                $total_aset_januari += $total_januari[$m];
-                $total_aset_februari += $total_februari[$m];
-                $total_aset_maret += $total_maret[$m];
-                $total_aset_april += $total_april[$m];
-                $total_aset_mei += $total_mei[$m];
-                $total_aset_juni += $total_juni[$m];
-                $total_aset_juli += $total_juli[$m];
-                $total_aset_agustus += $total_agustus[$m];
-                $total_aset_september += $total_september[$m];
-                $total_aset_oktober += $total_oktober[$m];
-                $total_aset_november += $total_november[$m];
-                $total_aset_desember += $total_desember[$m];
-            }
-
-
-            //Mencari nilai total liabitias
-            $total_liabilitas_2020 = 0;
-            $total_liabilitas_2021 = 0;
-            $total_liabilitas_in_2022 = 0;
-            $total_liabilitas_au_2022 = 0;
-            $total_liabilitas_januari = 0;
-            $total_liabilitas_februari = 0;
-            $total_liabilitas_maret = 0;
-            $total_liabilitas_april = 0;
-            $total_liabilitas_mei = 0;
-            $total_liabilitas_juni = 0;
-            $total_liabilitas_juli = 0;
-            $total_liabilitas_agustus = 0;
-            $total_liabilitas_september = 0;
-            $total_liabilitas_oktober = 0;
-            $total_liabilitas_november = 0;
-            $total_liabilitas_desember = 0;
-            
-            for ($i = 16; $i <= 25; $i++) {
-                $m = 'LK.' . $i;
-                $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
-
-                $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
-                $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
-                
-                $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
-                $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
-                
-                $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
-                $total_in_2022[$m] = array_sum($data_in_2022[$m]);
-                
-                $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
-                $total_au_2022[$m] = array_sum($data_au_2022[$m]);
-                
-                $data_januari[$m] = $data_lk->pluck('jan')->toArray();
-                $total_januari[$m] = array_sum($data_januari[$m]);
-                
-                $data_februari[$m] = $data_lk->pluck('feb')->toArray();
-                $total_februari[$m] = array_sum($data_februari[$m]);
-
-                $data_maret[$m] = $data_lk->pluck('mar')->toArray();
-                $total_maret[$m] = array_sum($data_maret[$m]);
-
-                $data_april[$m] = $data_lk->pluck('apr')->toArray();
-                $total_april[$m] = array_sum($data_april[$m]);
-
-                $data_mei[$m] = $data_lk->pluck('may')->toArray();
-                $total_mei[$m] = array_sum($data_mei[$m]);
-
-                $data_juni[$m] = $data_lk->pluck('jun')->toArray();
-                $total_juni[$m] = array_sum($data_juni[$m]);
-
-                $data_juli[$m] = $data_lk->pluck('jul')->toArray();
-                $total_juli[$m] = array_sum($data_juli[$m]);
-
-                $data_agustus[$m] = $data_lk->pluck('aug')->toArray();
-                $total_agustus[$m] = array_sum($data_agustus[$m]);
-
-                $data_september[$m] = $data_lk->pluck('sep')->toArray();
-                $total_september[$m] = array_sum($data_september[$m]);
-
-                $data_oktober[$m] = $data_lk->pluck('oct')->toArray();
-                $total_oktober[$m] = array_sum($data_oktober[$m]);
-
-                $data_november[$m] = $data_lk->pluck('nov')->toArray();
-                $total_november[$m] = array_sum($data_november[$m]);
-
-                $data_desember[$m] = $data_lk->pluck('dec')->toArray();
-                $total_desember[$m] = array_sum($data_desember[$m]);
-
-                $total_liabilitas_2020 += $total_lk_2020[$m];
-                $total_liabilitas_2021 += $total_lk_2021[$m];
-                $total_liabilitas_in_2022 += $total_in_2022[$m];
-                $total_liabilitas_au_2022 += $total_au_2022[$m];
-                $total_liabilitas_januari += $total_januari[$m];
-                $total_liabilitas_februari += $total_februari[$m];
-                $total_liabilitas_maret += $total_maret[$m];
-                $total_liabilitas_april += $total_april[$m];
-                $total_liabilitas_mei += $total_mei[$m];
-                $total_liabilitas_juni += $total_juni[$m];
-                $total_liabilitas_juli += $total_juli[$m];
-                $total_liabilitas_agustus += $total_agustus[$m];
-                $total_liabilitas_september += $total_september[$m];
-                $total_liabilitas_oktober += $total_oktober[$m];
-                $total_liabilitas_november += $total_november[$m];
-                $total_liabilitas_desember += $total_desember[$m];
-            }
-
-            //Mencari nilai total ekuitas
-            $total_ekuitas_2020 = 0;
-            $total_ekuitas_2021 = 0;
-            $total_ekuitas_in_2022 = 0;
-            $total_ekuitas_au_2022 = 0;
-            $total_ekuitas_januari = 0;
-            $total_ekuitas_februari = 0;
-            $total_ekuitas_maret = 0;
-            $total_ekuitas_april = 0;
-            $total_ekuitas_mei = 0;
-            $total_ekuitas_juni = 0;
-            $total_ekuitas_juli = 0;
-            $total_ekuitas_agustus = 0;
-            $total_ekuitas_september = 0;
-            $total_ekuitas_oktober = 0;
-            $total_ekuitas_november = 0;
-            $total_ekuitas_desember = 0;
-            
-            for ($i = 26; $i <= 29; $i++) {
-                $m = 'LK.' . $i;
-                $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
-
-                $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
-                $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
-                $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
-                $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
-                $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
-                $total_in_2022[$m] = array_sum($data_in_2022[$m]);
-                $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
-                $total_au_2022[$m] = array_sum($data_au_2022[$m]);
-                
-                $data_januari[$m] = $data_lk->pluck('jan')->toArray();
-                $total_januari[$m] = array_sum($data_januari[$m]);
-                
-                $data_februari[$m] = $data_lk->pluck('feb')->toArray();
-                $total_februari[$m] = array_sum($data_februari[$m]);
-
-                $data_maret[$m] = $data_lk->pluck('mar')->toArray();
-                $total_maret[$m] = array_sum($data_maret[$m]);
-
-                $data_april[$m] = $data_lk->pluck('apr')->toArray();
-                $total_april[$m] = array_sum($data_april[$m]);
-
-                $data_mei[$m] = $data_lk->pluck('may')->toArray();
-                $total_mei[$m] = array_sum($data_mei[$m]);
-
-                $data_juni[$m] = $data_lk->pluck('jun')->toArray();
-                $total_juni[$m] = array_sum($data_juni[$m]);
-
-                $data_juli[$m] = $data_lk->pluck('jul')->toArray();
-                $total_juli[$m] = array_sum($data_juli[$m]);
-
-                $data_agustus[$m] = $data_lk->pluck('aug')->toArray();
-                $total_agustus[$m] = array_sum($data_agustus[$m]);
-
-                $data_september[$m] = $data_lk->pluck('sep')->toArray();
-                $total_september[$m] = array_sum($data_september[$m]);
-
-                $data_oktober[$m] = $data_lk->pluck('oct')->toArray();
-                $total_oktober[$m] = array_sum($data_oktober[$m]);
-
-                $data_november[$m] = $data_lk->pluck('nov')->toArray();
-                $total_november[$m] = array_sum($data_november[$m]);
-
-                $data_desember[$m] = $data_lk->pluck('dec')->toArray();
-                $total_desember[$m] = array_sum($data_desember[$m]);
-
-                $total_ekuitas_2020 += $total_lk_2020[$m];
-                $total_ekuitas_2021 += $total_lk_2021[$m];
-                $total_ekuitas_in_2022 += $total_in_2022[$m];
-                $total_ekuitas_au_2022 += $total_au_2022[$m];
-                $total_ekuitas_januari += $total_januari[$m];
-                $total_ekuitas_februari += $total_februari[$m];
-                $total_ekuitas_maret += $total_maret[$m];
-                $total_ekuitas_april += $total_april[$m];
-                $total_ekuitas_mei += $total_mei[$m];
-                $total_ekuitas_juni += $total_juni[$m];
-                $total_ekuitas_juli += $total_juli[$m];
-                $total_ekuitas_agustus += $total_agustus[$m];
-                $total_ekuitas_september += $total_september[$m];
-                $total_ekuitas_oktober += $total_oktober[$m];
-                $total_ekuitas_november += $total_november[$m];
-                $total_ekuitas_desember += $total_desember[$m];
-            }
-
-            //Mencari nilai total laba kotor
-            $total_laba_kotor_2020 = 0;
-            $total_laba_kotor_2021 = 0;
-            $total_laba_kotor_in_2022 = 0;
-            $total_laba_kotor_au_2022 = 0;
-            $total_laba_kotor_januari = 0;
-            $total_laba_kotor_februari = 0;
-            $total_laba_kotor_maret = 0;
-            $total_laba_kotor_april = 0;
-            $total_laba_kotor_mei = 0;
-            $total_laba_kotor_juni = 0;
-            $total_laba_kotor_juli = 0;
-            $total_laba_kotor_agustus = 0;
-            $total_laba_kotor_september = 0;
-            $total_laba_kotor_oktober = 0;
-            $total_laba_kotor_november = 0;
-            $total_laba_kotor_desember = 0;
-            
-            for ($i = 30; $i <= 31; $i++) {
-                $m = 'LK.' . $i;
-                $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
-
-                $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
-                $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
-                $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
-                $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
-                $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
-                $total_in_2022[$m] = array_sum($data_in_2022[$m]);
-                $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
-                $total_au_2022[$m] = array_sum($data_au_2022[$m]);
-
-                $data_januari[$m] = $data_lk->pluck('jan')->toArray();
-                $total_januari[$m] = array_sum($data_januari[$m]);
-                
-                $data_februari[$m] = $data_lk->pluck('feb')->toArray();
-                $total_februari[$m] = array_sum($data_februari[$m]);
-
-                $data_maret[$m] = $data_lk->pluck('mar')->toArray();
-                $total_maret[$m] = array_sum($data_maret[$m]);
-
-                $data_april[$m] = $data_lk->pluck('apr')->toArray();
-                $total_april[$m] = array_sum($data_april[$m]);
-
-                $data_mei[$m] = $data_lk->pluck('may')->toArray();
-                $total_mei[$m] = array_sum($data_mei[$m]);
-
-                $data_juni[$m] = $data_lk->pluck('jun')->toArray();
-                $total_juni[$m] = array_sum($data_juni[$m]);
-
-                $data_juli[$m] = $data_lk->pluck('jul')->toArray();
-                $total_juli[$m] = array_sum($data_juli[$m]);
-
-                $data_agustus[$m] = $data_lk->pluck('aug')->toArray();
-                $total_agustus[$m] = array_sum($data_agustus[$m]);
-
-                $data_september[$m] = $data_lk->pluck('sep')->toArray();
-                $total_september[$m] = array_sum($data_september[$m]);
-
-                $data_oktober[$m] = $data_lk->pluck('oct')->toArray();
-                $total_oktober[$m] = array_sum($data_oktober[$m]);
-
-                $data_november[$m] = $data_lk->pluck('nov')->toArray();
-                $total_november[$m] = array_sum($data_november[$m]);
-
-                $data_desember[$m] = $data_lk->pluck('dec')->toArray();
-                $total_desember[$m] = array_sum($data_desember[$m]);
-
-                $total_laba_kotor_2020 += $total_lk_2020[$m];
-                $total_laba_kotor_2021 += $total_lk_2021[$m];
-                $total_laba_kotor_in_2022 += $total_in_2022[$m];
-                $total_laba_kotor_au_2022 += $total_au_2022[$m];
-                $total_laba_kotor_januari += $total_januari[$m];
-                $total_laba_kotor_februari += $total_februari[$m];
-                $total_laba_kotor_maret += $total_maret[$m];
-                $total_laba_kotor_april += $total_april[$m];
-                $total_laba_kotor_mei += $total_mei[$m];
-                $total_laba_kotor_juni += $total_juni[$m];
-                $total_laba_kotor_juli += $total_juli[$m];
-                $total_laba_kotor_agustus += $total_agustus[$m];
-                $total_laba_kotor_september += $total_september[$m];
-                $total_laba_kotor_oktober += $total_oktober[$m];
-                $total_laba_kotor_november += $total_november[$m];
-                $total_laba_kotor_desember += $total_desember[$m];
-            }
-
-            //Mencari nilai total laba bersih sebelum pajak
-            $total_laba_bersih_sebelum_pajak_2020 = 0;
-            $total_laba_bersih_sebelum_pajak_2021 = 0;
-            $total_laba_bersih_sebelum_pajak_in_2022 = 0;
-            $total_laba_bersih_sebelum_pajak_au_2022 = 0;
-            $total_laba_bersih_sebelum_pajak_januari = 0;
-            $total_laba_bersih_sebelum_pajak_februari = 0;
-            $total_laba_bersih_sebelum_pajak_maret = 0;
-            $total_laba_bersih_sebelum_pajak_april = 0;
-            $total_laba_bersih_sebelum_pajak_mei = 0;
-            $total_laba_bersih_sebelum_pajak_juni = 0;
-            $total_laba_bersih_sebelum_pajak_juli = 0;
-            $total_laba_bersih_sebelum_pajak_agustus = 0;
-            $total_laba_bersih_sebelum_pajak_september = 0;
-            $total_laba_bersih_sebelum_pajak_oktober = 0;
-            $total_laba_bersih_sebelum_pajak_november = 0;
-            $total_laba_bersih_sebelum_pajak_desember = 0;
-            
-            for ($i = 32; $i <= 34; $i++) {
-                $m = 'LK.' . $i;
-                $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
-
-                $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
-                $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
-                $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
-                $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
-                $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
-                $total_in_2022[$m] = array_sum($data_in_2022[$m]);
-                $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
-                $total_au_2022[$m] = array_sum($data_au_2022[$m]);
-
-                $data_januari[$m] = $data_lk->pluck('jan')->toArray();
-                $total_januari[$m] = array_sum($data_januari[$m]);
-                
-                $data_februari[$m] = $data_lk->pluck('feb')->toArray();
-                $total_februari[$m] = array_sum($data_februari[$m]);
-
-                $data_maret[$m] = $data_lk->pluck('mar')->toArray();
-                $total_maret[$m] = array_sum($data_maret[$m]);
-
-                $data_april[$m] = $data_lk->pluck('apr')->toArray();
-                $total_april[$m] = array_sum($data_april[$m]);
-
-                $data_mei[$m] = $data_lk->pluck('may')->toArray();
-                $total_mei[$m] = array_sum($data_mei[$m]);
-
-                $data_juni[$m] = $data_lk->pluck('jun')->toArray();
-                $total_juni[$m] = array_sum($data_juni[$m]);
-
-                $data_juli[$m] = $data_lk->pluck('jul')->toArray();
-                $total_juli[$m] = array_sum($data_juli[$m]);
-
-                $data_agustus[$m] = $data_lk->pluck('aug')->toArray();
-                $total_agustus[$m] = array_sum($data_agustus[$m]);
-
-                $data_september[$m] = $data_lk->pluck('sep')->toArray();
-                $total_september[$m] = array_sum($data_september[$m]);
-
-                $data_oktober[$m] = $data_lk->pluck('oct')->toArray();
-                $total_oktober[$m] = array_sum($data_oktober[$m]);
-
-                $data_november[$m] = $data_lk->pluck('nov')->toArray();
-                $total_november[$m] = array_sum($data_november[$m]);
-
-                $data_desember[$m] = $data_lk->pluck('dec')->toArray();
-                $total_desember[$m] = array_sum($data_desember[$m]);
-
-                $total_laba_bersih_sebelum_pajak_2020 += $total_lk_2020[$m];
-                $total_laba_bersih_sebelum_pajak_2021 += $total_lk_2021[$m];
-                $total_laba_bersih_sebelum_pajak_in_2022 += $total_in_2022[$m];
-                $total_laba_bersih_sebelum_pajak_au_2022 += $total_au_2022[$m];
-                $total_laba_bersih_sebelum_pajak_januari += $total_januari[$m];
-                $total_laba_bersih_sebelum_pajak_februari += $total_februari[$m];
-                $total_laba_bersih_sebelum_pajak_maret += $total_maret[$m];
-                $total_laba_bersih_sebelum_pajak_april += $total_april[$m];
-                $total_laba_bersih_sebelum_pajak_mei += $total_mei[$m];
-                $total_laba_bersih_sebelum_pajak_juni += $total_juni[$m];
-                $total_laba_bersih_sebelum_pajak_juli += $total_juli[$m];
-                $total_laba_bersih_sebelum_pajak_agustus += $total_agustus[$m];
-                $total_laba_bersih_sebelum_pajak_september += $total_september[$m];
-                $total_laba_bersih_sebelum_pajak_oktober += $total_oktober[$m];
-                $total_laba_bersih_sebelum_pajak_november += $total_november[$m];
-                $total_laba_bersih_sebelum_pajak_desember += $total_desember[$m];
-            }
-
-            //Mencari nilai total laba bersih setelah pajak
-            $total_laba_bersih_setelah_pajak_2020 = 0;
-            $total_laba_bersih_setelah_pajak_2021 = 0;
-            $total_laba_bersih_setelah_pajak_in_2022 = 0;
-            $total_laba_bersih_setelah_pajak_au_2022 = 0;
-            $total_laba_bersih_setelah_pajak_januari = 0;
-            $total_laba_bersih_setelah_pajak_februari = 0;
-            $total_laba_bersih_setelah_pajak_maret = 0;
-            $total_laba_bersih_setelah_pajak_april = 0;
-            $total_laba_bersih_setelah_pajak_mei = 0;
-            $total_laba_bersih_setelah_pajak_juni = 0;
-            $total_laba_bersih_setelah_pajak_juli = 0;
-            $total_laba_bersih_setelah_pajak_agustus = 0;
-            $total_laba_bersih_setelah_pajak_september = 0;
-            $total_laba_bersih_setelah_pajak_oktober = 0;
-            $total_laba_bersih_setelah_pajak_november = 0;
-            $total_laba_bersih_setelah_pajak_desember = 0;
-            
-            $i = 35;
-            $m = 'LK.' . $i;
-            $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
-
-            $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
-            $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
-            $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
-            $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
-            $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
-            $total_in_2022[$m] = array_sum($data_in_2022[$m]);
-            $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
-            $total_au_2022[$m] = array_sum($data_au_2022[$m]);
-            $data_januari[$m] = $data_lk->pluck('jan')->toArray();
-            $total_januari[$m] = array_sum($data_januari[$m]);
-            
-            $data_februari[$m] = $data_lk->pluck('feb')->toArray();
-            $total_februari[$m] = array_sum($data_februari[$m]);
-
-            $data_maret[$m] = $data_lk->pluck('mar')->toArray();
-            $total_maret[$m] = array_sum($data_maret[$m]);
-
-            $data_april[$m] = $data_lk->pluck('apr')->toArray();
-            $total_april[$m] = array_sum($data_april[$m]);
-
-            $data_mei[$m] = $data_lk->pluck('may')->toArray();
-            $total_mei[$m] = array_sum($data_mei[$m]);
-
-            $data_juni[$m] = $data_lk->pluck('jun')->toArray();
-            $total_juni[$m] = array_sum($data_juni[$m]);
-
-            $data_juli[$m] = $data_lk->pluck('jul')->toArray();
-            $total_juli[$m] = array_sum($data_juli[$m]);
-
-            $data_agustus[$m] = $data_lk->pluck('aug')->toArray();
-            $total_agustus[$m] = array_sum($data_agustus[$m]);
-
-            $data_september[$m] = $data_lk->pluck('sep')->toArray();
-            $total_september[$m] = array_sum($data_september[$m]);
-
-            $data_oktober[$m] = $data_lk->pluck('oct')->toArray();
-            $total_oktober[$m] = array_sum($data_oktober[$m]);
-
-            $data_november[$m] = $data_lk->pluck('nov')->toArray();
-            $total_november[$m] = array_sum($data_november[$m]);
-
-            $data_desember[$m] = $data_lk->pluck('dec')->toArray();
-            $total_desember[$m] = array_sum($data_desember[$m]);
-
-            $total_laba_bersih_setelah_pajak_2020 += $total_lk_2020[$m];
-            $total_laba_bersih_setelah_pajak_2021 += $total_lk_2021[$m];
-            $total_laba_bersih_setelah_pajak_in_2022 += $total_in_2022[$m];
-            $total_laba_bersih_setelah_pajak_au_2022 += $total_au_2022[$m];
-            $total_laba_bersih_setelah_pajak_januari += $total_januari[$m];
-            $total_laba_bersih_setelah_pajak_februari += $total_februari[$m];
-            $total_laba_bersih_setelah_pajak_maret += $total_maret[$m];
-            $total_laba_bersih_setelah_pajak_april += $total_april[$m];
-            $total_laba_bersih_setelah_pajak_mei += $total_mei[$m];
-            $total_laba_bersih_setelah_pajak_juni += $total_juni[$m];
-            $total_laba_bersih_setelah_pajak_juli += $total_juli[$m];
-            $total_laba_bersih_setelah_pajak_agustus += $total_agustus[$m];
-            $total_laba_bersih_setelah_pajak_september += $total_september[$m];
-            $total_laba_bersih_setelah_pajak_oktober += $total_oktober[$m];
-            $total_laba_bersih_setelah_pajak_november += $total_november[$m];
-            $total_laba_bersih_setelah_pajak_desember += $total_desember[$m];
-
-
-            //data array 2020
-            $data_array_2020 = 
-            [
-                '00' => $total_aset_2020,
-                '000' => $total_liabilitas_2020,
-                '0000' => $total_ekuitas_2020,
-                '00000' => $total_laba_kotor_2020,
-                '000000' => $total_laba_kotor_2020 + $total_laba_bersih_sebelum_pajak_2020,
-                '0000000' => $total_laba_kotor_2020 + $total_laba_bersih_sebelum_pajak_2020 + $total_laba_bersih_setelah_pajak_2020,
-            ];
-
-            //data array 2021
-            $data_array_2021 = 
-            [
-                '00' => $total_aset_2021,
-                '000' => $total_liabilitas_2021,
-                '0000' => $total_ekuitas_2021,
-                '00000' => $total_laba_kotor_2021,
-                '000000' => $total_laba_kotor_2021 + $total_laba_bersih_sebelum_pajak_2021,
-                '0000000' => $total_laba_kotor_2021 + $total_laba_bersih_sebelum_pajak_2021 + $total_laba_bersih_setelah_pajak_2021,
-            ];
-
-
-            //data array inhouse 2022
-            $data_array_in_2022 = 
-            [
-                '00' => $total_aset_in_2022,
-                '000' => $total_liabilitas_in_2022,
-                '0000' => $total_ekuitas_in_2022,
-                '00000' => $total_laba_kotor_in_2022,
-                '000000' => $total_laba_kotor_in_2022 + $total_laba_bersih_sebelum_pajak_in_2022,
-                '0000000' => $total_laba_kotor_in_2022 + $total_laba_bersih_sebelum_pajak_in_2022 + $total_laba_bersih_setelah_pajak_in_2022,
-            ];
-
-            //data array audited 2022
-            $data_array_au_2022 = 
-            [
-                '00' => $total_aset_au_2022,
-                '000' => $total_liabilitas_au_2022,
-                '0000' => $total_ekuitas_au_2022,
-                '00000' => $total_laba_kotor_au_2022,
-                '000000' => $total_laba_kotor_au_2022 + $total_laba_bersih_sebelum_pajak_au_2022,
-                '0000000' => $total_laba_kotor_au_2022 + $total_laba_bersih_sebelum_pajak_au_2022 + $total_laba_bersih_setelah_pajak_au_2022,
-            ];
-
-            $data_summary_januari = 
-            [
-                '00' => $total_aset_januari,
-                '000' => $total_liabilitas_januari,
-                '0000' => $total_ekuitas_januari,
-                '00000' => $total_laba_kotor_januari,
-                '000000' => $total_laba_kotor_januari + $total_laba_bersih_sebelum_pajak_januari,
-                '0000000' => $total_laba_kotor_januari + $total_laba_bersih_sebelum_pajak_januari + $total_laba_bersih_setelah_pajak_januari,
-            ];
-
-            $data_summary_februari = 
-            [
-                '00' => $total_aset_februari,
-                '000' => $total_liabilitas_februari,
-                '0000' => $total_ekuitas_februari,
-                '00000' => $total_laba_kotor_februari,
-                '000000' => $total_laba_kotor_februari + $total_laba_bersih_sebelum_pajak_februari,
-                '0000000' => $total_laba_kotor_februari + $total_laba_bersih_sebelum_pajak_februari + $total_laba_bersih_setelah_pajak_februari,
-            ];
-
-            $data_summary_maret = 
-            [
-                '00' => $total_aset_maret,
-                '000' => $total_liabilitas_maret,
-                '0000' => $total_ekuitas_maret,
-                '00000' => $total_laba_kotor_maret,
-                '000000' => $total_laba_kotor_maret + $total_laba_bersih_sebelum_pajak_maret,
-                '0000000' => $total_laba_kotor_maret + $total_laba_bersih_sebelum_pajak_maret + $total_laba_bersih_setelah_pajak_maret,
-            ];
-
-            $data_summary_april = 
-            [
-                '00' => $total_aset_april,
-                '000' => $total_liabilitas_april,
-                '0000' => $total_ekuitas_april,
-                '00000' => $total_laba_kotor_april,
-                '000000' => $total_laba_kotor_april + $total_laba_bersih_sebelum_pajak_april,
-                '0000000' => $total_laba_kotor_april + $total_laba_bersih_sebelum_pajak_april + $total_laba_bersih_setelah_pajak_april,
-            ];
-
-            $data_summary_mei = 
-            [
-                '00' => $total_aset_mei,
-                '000' => $total_liabilitas_mei,
-                '0000' => $total_ekuitas_mei,
-                '00000' => $total_laba_kotor_mei,
-                '000000' => $total_laba_kotor_mei + $total_laba_bersih_sebelum_pajak_mei,
-                '0000000' => $total_laba_kotor_mei + $total_laba_bersih_sebelum_pajak_mei + $total_laba_bersih_setelah_pajak_mei,
-            ];
-            
-            $data_summary_juni = 
-            [
-                '00' => $total_aset_juni,
-                '000' => $total_liabilitas_juni,
-                '0000' => $total_ekuitas_juni,
-                '00000' => $total_laba_kotor_juni,
-                '000000' => $total_laba_kotor_juni + $total_laba_bersih_sebelum_pajak_juni,
-                '0000000' => $total_laba_kotor_juni + $total_laba_bersih_sebelum_pajak_juni + $total_laba_bersih_setelah_pajak_juni,
-            ];
-
-            $data_summary_juli = 
-            [
-                '00' => $total_aset_juli,
-                '000' => $total_liabilitas_juli,
-                '0000' => $total_ekuitas_juli,
-                '00000' => $total_laba_kotor_juli,
-                '000000' => $total_laba_kotor_juli + $total_laba_bersih_sebelum_pajak_juli,
-                '0000000' => $total_laba_kotor_juli + $total_laba_bersih_sebelum_pajak_juli + $total_laba_bersih_setelah_pajak_juli,
-            ];
-
-            $data_summary_agustus = 
-            [
-                '00' => $total_aset_agustus,
-                '000' => $total_liabilitas_agustus,
-                '0000' => $total_ekuitas_agustus,
-                '00000' => $total_laba_kotor_agustus,
-                '000000' => $total_laba_kotor_agustus + $total_laba_bersih_sebelum_pajak_agustus,
-                '0000000' => $total_laba_kotor_agustus + $total_laba_bersih_sebelum_pajak_agustus + $total_laba_bersih_setelah_pajak_agustus,
-            ];
-
-            $data_summary_september = 
-            [
-                '00' => $total_aset_september,
-                '000' => $total_liabilitas_september,
-                '0000' => $total_ekuitas_september,
-                '00000' => $total_laba_kotor_september,
-                '000000' => $total_laba_kotor_september + $total_laba_bersih_sebelum_pajak_september,
-                '0000000' => $total_laba_kotor_september + $total_laba_bersih_sebelum_pajak_september + $total_laba_bersih_setelah_pajak_september,
-            ];
-
-            $data_summary_oktober = 
-            [
-                '00' => $total_aset_oktober,
-                '000' => $total_liabilitas_oktober,
-                '0000' => $total_ekuitas_oktober,
-                '00000' => $total_laba_kotor_oktober,
-                '000000' => $total_laba_kotor_oktober + $total_laba_bersih_sebelum_pajak_oktober,
-                '0000000' => $total_laba_kotor_oktober + $total_laba_bersih_sebelum_pajak_oktober + $total_laba_bersih_setelah_pajak_oktober,
-            ];
-
-            $data_summary_november = 
-            [
-                '00' => $total_aset_november,
-                '000' => $total_liabilitas_november,
-                '0000' => $total_ekuitas_november,
-                '00000' => $total_laba_kotor_november,
-                '000000' => $total_laba_kotor_november + $total_laba_bersih_sebelum_pajak_november,
-                '0000000' => $total_laba_kotor_november + $total_laba_bersih_sebelum_pajak_november + $total_laba_bersih_setelah_pajak_november,
-            ];
-
-            $data_summary_desember = 
-            [
-                '00' => $total_aset_desember,
-                '000' => $total_liabilitas_desember,
-                '0000' => $total_ekuitas_desember,
-                '00000' => $total_laba_kotor_desember,
-                '000000' => $total_laba_kotor_desember + $total_laba_bersih_sebelum_pajak_desember,
-                '0000000' => $total_laba_kotor_desember + $total_laba_bersih_sebelum_pajak_desember + $total_laba_bersih_setelah_pajak_desember,
-            ];
-
-            $summary = ProjectTask::$summary;
-
-            $result = $this->mergeSummaryData($summary,$data_array_2020,$data_array_2021, $data_array_in_2022, $data_array_au_2022, $data_summary_januari, $data_summary_februari, $data_summary_maret,
-            $data_summary_april, $data_summary_mei, $data_summary_juni, $data_summary_juli, $data_summary_agustus,
-            $data_summary_september, $data_summary_oktober, $data_summary_november, $data_summary_desember);
-
-            $data_index = ProjectTask::$financial_statement;
-            $data_materialitiy = SummaryMateriality::where('project_id', $project_id)->first();
-            $initialmaterialityom = $data_materialitiy->initialmaterialityom;
-
-            foreach($data_index as $a => $b)
-            {
-                $keuanganringkas['kode']    = $a;
-                $keuanganringkas['akun']    = $b;
-                $keuanganringkas['data_2020']    =  isset($total_lk_2020[$a]) ? $total_lk_2020[$a] : 0;
-                $keuanganringkas['data_2021']    =  isset($total_lk_2021[$a]) ? $total_lk_2021[$a] : 0;
-                $keuanganringkas['data_in_2022']    =  isset($total_lk_in_2022[$a]) ? $total_lk_in_2022[$a] : 0;
-                $keuanganringkas['data_au_2022']    =  isset($total_lk_au_2022[$a]) ? $total_lk_au_2022[$a] : 0;
-                $keuanganringkas['januari'] = isset($total_januari[$a]) ? $total_januari[$a] : 0;
-                $keuanganringkas['februari'] = isset($total_februari[$a]) ? $total_februari[$a] : 0;
-                $keuanganringkas['maret'] = isset($total_maret[$a]) ? $total_maret[$a] : 0;
-                $keuanganringkas['april'] = isset($total_april[$a]) ? $total_april[$a] : 0;
-                $keuanganringkas['mei'] = isset($total_mei[$a]) ? $total_mei[$a] : 0;
-                $keuanganringkas['juni'] = isset($total_juni[$a]) ? $total_juni[$a] : 0;
-                $keuanganringkas['juli'] = isset($total_juli[$a]) ? $total_juli[$a] : 0;
-                $keuanganringkas['agustus'] = isset($total_agustus[$a]) ? $total_agustus[$a] : 0;
-                $keuanganringkas['september'] = isset($total_september[$a]) ? $total_september[$a] : 0;
-                $keuanganringkas['oktober'] = isset($total_oktober[$a]) ? $total_oktober[$a] : 0;
-                $keuanganringkas['november'] = isset($total_november[$a]) ? $total_november[$a] : 0;
-                $keuanganringkas['desember'] = isset($total_desember[$a]) ? $total_desember[$a] : 0;
-                //2021
-
-                $keuanganringkas['kenaikan_2021'] = $keuanganringkas['data_2021'] - $keuanganringkas['data_2020'];
-                
-                if ($keuanganringkas['data_2020'] != 0) {
-                    $keuanganringkas['persen_kenaikan'] = ($keuanganringkas['kenaikan_2021'] / $keuanganringkas['data_2020']) * 100;
-                } else {
-                    $keuanganringkas['persen_kenaikan'] = 0;
+                $financial_data = $financial_statement->where('lk', $account_code);
+
+                $prior_period2 = $financial_data->sum('prior_period2') ?? null;
+                $prior_period = $financial_data->sum('prior_period') ?? null;
+                $inhouse = $financial_data->sum('inhouse') ?? null;
+                $audited = $financial_data->sum('audited') ?? null;
+                $kenaikan_penurunan_prior_period_1 = $inhouse - $prior_period;
+                $filter_kenaikan_penurunan_prior_period_1 = null;
+
+                if ($kenaikan_penurunan_prior_period_1 > $data_initialmaterialityom || $kenaikan_penurunan_prior_period_1 * -1 > $data_initialmaterialityom) {
+                    $filter_kenaikan_penurunan_prior_period_1 = $kenaikan_penurunan_prior_period_1;
+                } 
+
+                $kenaikan_penurunan_prior_period_persen_1 = ($prior_period != 0) ? (($inhouse - $prior_period) / $prior_period) * 100 : 0;
+                $kenaikan_penurunan_prior_period_2 = $audited - $prior_period;
+                $kenaikan_penurunan_prior_period_persen_2 = ($prior_period != 0) ? (($audited - $prior_period) / $prior_period) * 100 : 0;
+
+
+                if ($account_group === 'LIABILITAS') {
+                    $prior_period2 *= -1;
+                    $prior_period *= -1;
+                    $inhouse *= -1;
+                    $audited *= -1;
+                    $kenaikan_penurunan_prior_period_1 *= -1;
+                    $kenaikan_penurunan_prior_period_2 *= -1;
+                    $kenaikan_penurunan_prior_period_persen_1 *= -1;
+                    $kenaikan_penurunan_prior_period_persen_2 *= -1; 
                 }
-
-                if ($keuanganringkas['kenaikan_2021'] > $initialmaterialityom) {
-                    $keuanganringkas['M/TM'] = 'M';
-                } elseif ($keuanganringkas['kenaikan_2021'] < $initialmaterialityom) {
-                    $keuanganringkas['M/TM'] = 'TM';
-                } else {
-                    $keuanganringkas['M/TM'] = '-';
+                elseif($account_group === 'EKUITAS')
+                {
+                    $prior_period2 *= -1;
+                    $prior_period *= -1;
+                    $inhouse *= -1;
+                    $audited *= -1;
+                    $kenaikan_penurunan_prior_period_1 *= -1;
+                    $kenaikan_penurunan_prior_period_2 *= -1;
+                    $kenaikan_penurunan_prior_period_persen_1 *= -1;
+                    $kenaikan_penurunan_prior_period_persen_2 *= -1; 
                 }
-
-                //2022
-                
-                $keuanganringkas['kenaikan_2022'] = $keuanganringkas['data_au_2022'] - $keuanganringkas['data_2021'];
-                
-                if ($keuanganringkas['data_2021'] != 0) {
-                    $keuanganringkas['persen_kenaikan_2022'] = ($keuanganringkas['kenaikan_2022'] / $keuanganringkas['data_2021']) * 100;
-                } else {
-                    $keuanganringkas['persen_kenaikan_2022'] = 0;
+                elseif($account_group === 'PENDAPATAN')
+                {
+                    $prior_period2 *= -1;
+                    $prior_period *= -1;
+                    $inhouse *= -1;
+                    $audited *= -1;
+                    $kenaikan_penurunan_prior_period_1 *= -1;
+                    $kenaikan_penurunan_prior_period_2 *= -1;
+                    $kenaikan_penurunan_prior_period_persen_1 *= -1;
+                    $kenaikan_penurunan_prior_period_persen_2 *= -1; 
                 }
-
-                if ($keuanganringkas['kenaikan_2022'] > $initialmaterialityom) {
-                    $keuanganringkas['M/TM_2022'] = 'M';
-                } elseif ($keuanganringkas['kenaikan_2022'] < $initialmaterialityom) {
-                    $keuanganringkas['M/TM_2022'] = 'TM';
-                } else {
-                    $keuanganringkas['M/TM_2022'] = '-';
+                elseif($account_group === 'PENDAPATAN / BEBAN KEUANGAN')
+                {
+                    $prior_period2 *= -1;
+                    $prior_period *= -1;
+                    $inhouse *= -1;
+                    $audited *= -1;
+                    $kenaikan_penurunan_prior_period_1 *= -1;
+                    $kenaikan_penurunan_prior_period_2 *= -1;
+                    $kenaikan_penurunan_prior_period_persen_1 *= -1;
+                    $kenaikan_penurunan_prior_period_persen_2 *= -1; 
                 }
-                
-
-                $index[] = $keuanganringkas;
-            }
-            $ca = FinancialStatement::where('project_id', $project_id)->where('cn', '=', 'CA');
-            $nca = FinancialStatement::where('project_id', $project_id)->where('cn', '=', 'NCA');
-            $cl = FinancialStatement::where('project_id', $project_id)->where('cn', '=', 'CL');
-            $ncl = FinancialStatement::where('project_id', $project_id)->where('cn', '=', 'NCL');
-
-            $total_ca_2020 = $ca->sum('prior_period2');
-            $total_nca_2020 = $nca->sum('prior_period2');
-            $total_cl_2020 = $cl->sum('prior_period2');
-            $total_ncl_2020 = $ncl->sum('prior_period2');
-
-            $total_ca_2021 = $ca->sum('prior_period');
-            $total_nca_2021 = $nca->sum('prior_period');
-            $total_cl_2021 = $cl->sum('prior_period');
-            $total_ncl_2021 = $ncl->sum('prior_period');
-
-            $total_ca_in_2022 = $ca->sum('inhouse');
-            $total_nca_in_2022 = $nca->sum('inhouse');
-            $total_cl_in_2022 = $cl->sum('inhouse');
-            $total_ncl_in_2022 = $ncl->sum('inhouse');
-
-            $total_ca_au_2022 = $ca->sum('audited');
-            $total_nca_au_2022 = $nca->sum('audited');
-            $total_cl_au_2022 = $cl->sum('audited');
-            $total_ncl_au_2022 = $ncl->sum('audited');
-
-            $total_ca_januari = $ca->sum('jan');
-            $total_ca_februari = $ca->sum('feb');
-            $total_ca_maret = $ca->sum('mar');
-            $total_ca_april = $ca->sum('apr');
-            $total_ca_mei = $ca->sum('may');
-            $total_ca_juni = $ca->sum('jun');
-            $total_ca_juli = $ca->sum('jul');
-            $total_ca_agustus = $ca->sum('aug');
-            $total_ca_september = $ca->sum('sep');
-            $total_ca_oktober = $ca->sum('oct');
-            $total_ca_november = $ca->sum('nov');
-            $total_ca_desember = $ca->sum('dec');
-
-            $total_nca_januari = $nca->sum('jan');
-            $total_nca_februari = $nca->sum('feb');
-            $total_nca_maret = $nca->sum('mar');
-            $total_nca_april = $nca->sum('apr');
-            $total_nca_mei = $nca->sum('may');
-            $total_nca_juni = $nca->sum('jun');
-            $total_nca_juli = $nca->sum('jul');
-            $total_nca_agustus = $nca->sum('aug');
-            $total_nca_september = $nca->sum('sep');
-            $total_nca_oktober = $nca->sum('oct');
-            $total_nca_november = $nca->sum('nov');
-            $total_nca_desember = $nca->sum('dec');
-
-            $total_cl_januari = $cl->sum('jan');
-            $total_cl_februari = $cl->sum('feb');
-            $total_cl_maret = $cl->sum('mar');
-            $total_cl_april = $cl->sum('apr');
-            $total_cl_mei = $cl->sum('may');
-            $total_cl_juni = $cl->sum('jun');
-            $total_cl_juli = $cl->sum('jul');
-            $total_cl_agustus = $cl->sum('aug');
-            $total_cl_september = $cl->sum('sep');
-            $total_cl_oktober = $cl->sum('oct');
-            $total_cl_november = $cl->sum('nov');
-            $total_cl_desember = $cl->sum('dec');
-
-            $total_ncl_januari = $nca->sum('jan');
-            $total_ncl_februari = $nca->sum('feb');
-            $total_ncl_maret = $nca->sum('mar');
-            $total_ncl_april = $nca->sum('apr');
-            $total_ncl_mei = $nca->sum('may');
-            $total_ncl_juni = $nca->sum('jun');
-            $total_ncl_juli = $nca->sum('jul');
-            $total_ncl_agustus = $nca->sum('aug');
-            $total_ncl_september = $nca->sum('sep');
-            $total_ncl_oktober = $nca->sum('oct');
-            $total_ncl_november = $nca->sum('nov');
-            $total_ncl_desember = $nca->sum('dec');
-
-            $summary_2020 = 
-            [
-                'CA' => $total_ca_2020,
-                'NCA' => $total_nca_2020,
-                'CL' => $total_cl_2020,
-                'NCL' => $total_ncl_2020,
-            ];
+                elseif($account_group === 'PENDAPATAN / BEBAN LAIN-LAIN')
+                {
+                    $prior_period2 *= -1;
+                    $prior_period *= -1;
+                    $inhouse *= -1;
+                    $audited *= -1;
+                    $kenaikan_penurunan_prior_period_1 *= -1;
+                    $kenaikan_penurunan_prior_period_2 *= -1;
+                    $kenaikan_penurunan_prior_period_persen_1 *= -1;
+                    $kenaikan_penurunan_prior_period_persen_2 *= -1; 
+                }
+                elseif($account_group === "PENGHASILAN KOMPREHENSIF LAIN")
+                {
+                    $prior_period2 *= -1;
+                    $prior_period *= -1;
+                    $inhouse *= -1;
+                    $audited *= -1;
+                    $kenaikan_penurunan_prior_period_1 *= -1;
+                    $kenaikan_penurunan_prior_period_2 *= -1;
+                    $kenaikan_penurunan_prior_period_persen_1 *= -1;
+                    $kenaikan_penurunan_prior_period_persen_2 *= -1; 
+                }
+            
+                return [
+                    'account_code' => $account_code,
+                    'name' => $name,
+                    'account_group' => $account_group,
+                    'prior_period2' => $prior_period2,
+                    'prior_period' => $prior_period,
+                    'inhouse' => $inhouse,
+                    'audited' => $audited,
+                    'kenaikan_penurunan_prior_period_1' => $kenaikan_penurunan_prior_period_1,
+                    'filter_kenaikan_penurunan_prior_period_1' => $filter_kenaikan_penurunan_prior_period_1,
+                    'kenaikan_penurunan_prior_period_persen_1' => $kenaikan_penurunan_prior_period_persen_1,
+                    'kenaikan_penurunan_prior_period_2' => $kenaikan_penurunan_prior_period_2,
+                    'kenaikan_penurunan_prior_period_persen_2' => $kenaikan_penurunan_prior_period_persen_2,
+                ];
+            });
+            
             
 
-            $summary_2021 = 
-            [
-                'CA' => $total_ca_2021,
-                'NCA' => $total_nca_2021,
-                'CL' => $total_cl_2021,
-                'NCL' => $total_ncl_2021,
-            ];
+            // $data_lk_2020 = [];
+            // $data_lk_2021 = [];
+            // $data_lk_in_2022 = [];
+            // $data_januari = [];
+            // $data_februari = [];
+            // $data_maret = [];
+            // $data_april = [];
+            // $data_mei = [];
+            // $data_juni = [];
+            // $data_juli = [];
+            // $data_agustus = [];
+            // $data_september = [];
+            // $data_oktober = [];
+            // $data_november = [];
+            // $data_desember = [];
 
-            $summary_in_2022 = 
-            [
-                'CA' => $total_ca_in_2022,
-                'NCA' => $total_nca_in_2022,
-                'CL' => $total_cl_in_2022,
-                'NCL' => $total_ncl_in_2022,
-            ];
+            // $index = [];
+            // $summarys = [];
+            // $cn = [];
 
-            $summary_au_2022 = 
-            [
-                'CA' => $total_ca_au_2022,
-                'NCA' => $total_nca_au_2022,
-                'CL' => $total_cl_au_2022,
-                'NCL' => $total_ncl_au_2022,
-            ];
+            // for ($i = 1; $i <= 35; $i++) {
+            //     $m = 'LK.' . $i;
+            //     $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
+                
+            //     $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
+            //     $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
+                
+            //     $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
+            //     $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
+                
+            //     $data_lk_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
+            //     $total_lk_in_2022[$m] = array_sum($data_lk_in_2022[$m]);
+                
+            //     $data_lk_au_2022[$m] = $data_lk->pluck('audited')->toArray();
+            //     $total_lk_au_2022[$m] = array_sum($data_lk_au_2022[$m]);
 
-            $summary_jan = 
-            [
-                'CA' => $total_ca_januari,
-                'NCA' => $total_nca_januari,
-                'CL' => $total_cl_januari,
-                'NCL' => $total_ncl_januari,
-            ];
+            //     $data_januari[$m] = $data_lk->pluck('jan')->toArray();
+            //     $total_januari[$m] = array_sum($data_januari[$m]);
+                
+            //     $data_februari[$m] = $data_lk->pluck('feb')->toArray();
+            //     $total_februari[$m] = array_sum($data_februari[$m]);
 
-            $summary_feb = 
-            [
-                'CA' => $total_ca_februari,
-                'NCA' => $total_nca_februari,
-                'CL' => $total_cl_februari,
-                'NCL' => $total_ncl_februari,
-            ];
+            //     $data_maret[$m] = $data_lk->pluck('mar')->toArray();
+            //     $total_maret[$m] = array_sum($data_maret[$m]);
 
-            $summary_mar = 
-            [
-                'CA' => $total_ca_maret,
-                'NCA' => $total_nca_maret,
-                'CL' => $total_cl_maret,
-                'NCL' => $total_ncl_maret,
-            ];
+            //     $data_april[$m] = $data_lk->pluck('apr')->toArray();
+            //     $total_april[$m] = array_sum($data_april[$m]);
 
-            $summary_apr = 
-            [
-                'CA' => $total_ca_april,
-                'NCA' => $total_nca_april,
-                'CL' => $total_cl_april,
-                'NCL' => $total_ncl_april,
-            ];
+            //     $data_mei[$m] = $data_lk->pluck('may')->toArray();
+            //     $total_mei[$m] = array_sum($data_mei[$m]);
 
-            $summary_may = 
-            [
-                'CA' => $total_ca_mei,
-                'NCA' => $total_nca_mei,
-                'CL' => $total_cl_mei,
-                'NCL' => $total_ncl_mei,
-            ];
+            //     $data_juni[$m] = $data_lk->pluck('jun')->toArray();
+            //     $total_juni[$m] = array_sum($data_juni[$m]);
 
-            $summary_jun = 
-            [
-                'CA' => $total_ca_juni,
-                'NCA' => $total_nca_juni,
-                'CL' => $total_cl_juni,
-                'NCL' => $total_ncl_juni,
-            ];
+            //     $data_juli[$m] = $data_lk->pluck('jul')->toArray();
+            //     $total_juli[$m] = array_sum($data_juli[$m]);
 
-            $summary_jul = 
-            [
-                'CA' => $total_ca_juli,
-                'NCA' => $total_nca_juli,
-                'CL' => $total_cl_juli,
-                'NCL' => $total_ncl_juli,
-            ];
+            //     $data_agustus[$m] = $data_lk->pluck('aug')->toArray();
+            //     $total_agustus[$m] = array_sum($data_agustus[$m]);
 
-            $summary_aug = 
-            [
-                'CA' => $total_ca_agustus,
-                'NCA' => $total_nca_agustus,
-                'CL' => $total_cl_agustus,
-                'NCL' => $total_ncl_agustus,
-            ];
+            //     $data_september[$m] = $data_lk->pluck('sep')->toArray();
+            //     $total_september[$m] = array_sum($data_september[$m]);
 
-            $summary_sep = 
-            [
-                'CA' => $total_ca_september,
-                'NCA' => $total_nca_september,
-                'CL' => $total_cl_september,
-                'NCL' => $total_ncl_september,
-            ];
+            //     $data_oktober[$m] = $data_lk->pluck('oct')->toArray();
+            //     $total_oktober[$m] = array_sum($data_oktober[$m]);
 
-            $summary_oct = 
-            [
-                'CA' => $total_ca_oktober,
-                'NCA' => $total_nca_oktober,
-                'CL' => $total_cl_oktober,
-                'NCL' => $total_ncl_oktober,
-            ];
+            //     $data_november[$m] = $data_lk->pluck('nov')->toArray();
+            //     $total_november[$m] = array_sum($data_november[$m]);
 
-            $summary_nov = 
-            [
-                'CA' => $total_ca_november,
-                'NCA' => $total_nca_november,
-                'CL' => $total_cl_november,
-                'NCL' => $total_ncl_november,
-            ];
+            //     $data_desember[$m] = $data_lk->pluck('dec')->toArray();
+            //     $total_desember[$m] = array_sum($data_desember[$m]);
+            // }
 
-            $summary_dec = 
-            [
-                'CA' => $total_ca_desember,
-                'NCA' => $total_nca_desember,
-                'CL' => $total_cl_desember,
-                'NCL' => $total_ncl_desember,
-            ];
+            // //Mencari nilai total aset
+            // $total_aset_2020 = 0;
+            // $total_aset_2021 = 0;
+            // $total_aset_in_2022 = 0;
+            // $total_aset_au_2022 = 0;
+            // $total_aset_januari = 0;
+            // $total_aset_februari = 0;
+            // $total_aset_maret = 0;
+            // $total_aset_april = 0;
+            // $total_aset_mei = 0;
+            // $total_aset_juni = 0;
+            // $total_aset_juli = 0;
+            // $total_aset_agustus = 0;
+            // $total_aset_september = 0;
+            // $total_aset_oktober = 0;
+            // $total_aset_november = 0;
+            // $total_aset_desember = 0;
+            
+            // for ($i = 1; $i <= 15; $i++) {
+            //     $m = 'LK.' . $i;
+            //     $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
 
-            $data_cn = ProjectTask::$cn;
+            //     $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
+            //     $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
+                
+            //     $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
+            //     $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
+                
+            //     $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
+            //     $total_in_2022[$m] = array_sum($data_in_2022[$m]);
+                
+            //     $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
+            //     $total_au_2022[$m] = array_sum($data_au_2022[$m]);
 
-            foreach($data_cn as $a => $b)
-            {
-                $summarycn['kode']    = $a;
-                $summarycn['akun']    = $b;
-                $summarycn['data_2020']    =  isset($summary_2020[$a]) ? $summary_2020[$a] : 0;
-                $summarycn['data_2021']    =  isset($summary_2021[$a]) ? $summary_2021[$a] : 0;
-                $summarycn['data_in_2022']    =  isset($summary_in_2022[$a]) ? $summary_in_2022[$a] : 0;
-                $summarycn['data_au_2022']    =  isset($summary_au_2022[$a]) ? $summary_au_2022[$a] : 0;
-                $summarycn['januari']    =  isset($summary_jan[$a]) ? $summary_jan[$a] : 0;
-                $summarycn['februari']    =  isset($summary_feb[$a]) ? $summary_feb[$a] : 0;
-                $summarycn['maret']    =  isset($summary_mar[$a]) ? $summary_mar[$a] : 0;
-                $summarycn['april']    =  isset($summary_apr[$a]) ? $summary_apr[$a] : 0;
-                $summarycn['mei']    =  isset($summary_may[$a]) ? $summary_may[$a] : 0;
-                $summarycn['juni']    =  isset($summary_jun[$a]) ? $summary_jun[$a] : 0;
-                $summarycn['juli']    =  isset($summary_jul[$a]) ? $summary_jul[$a] : 0;
-                $summarycn['agustus']    =  isset($summary_aug[$a]) ? $summary_aug[$a] : 0;
-                $summarycn['september']    =  isset($summary_sep[$a]) ? $summary_sep[$a] : 0;
-                $summarycn['oktober']    =  isset($summary_oct[$a]) ? $summary_oct[$a] : 0;
-                $summarycn['november']    =  isset($summary_nov[$a]) ? $summary_nov[$a] : 0;
-                $summarycn['desember']    =  isset($summary_dec[$a]) ? $summary_dec[$a] : 0;
+            //     $data_januari[$m] = $data_lk->pluck('jan')->toArray();
+            //     $total_januari[$m] = array_sum($data_januari[$m]);
+                
+            //     $data_februari[$m] = $data_lk->pluck('feb')->toArray();
+            //     $total_februari[$m] = array_sum($data_februari[$m]);
 
-                $cn[] = $summarycn;
+            //     $data_maret[$m] = $data_lk->pluck('mar')->toArray();
+            //     $total_maret[$m] = array_sum($data_maret[$m]);
 
-            }
+            //     $data_april[$m] = $data_lk->pluck('apr')->toArray();
+            //     $total_april[$m] = array_sum($data_april[$m]);
+
+            //     $data_mei[$m] = $data_lk->pluck('may')->toArray();
+            //     $total_mei[$m] = array_sum($data_mei[$m]);
+
+            //     $data_juni[$m] = $data_lk->pluck('jun')->toArray();
+            //     $total_juni[$m] = array_sum($data_juni[$m]);
+
+            //     $data_juli[$m] = $data_lk->pluck('jul')->toArray();
+            //     $total_juli[$m] = array_sum($data_juli[$m]);
+
+            //     $data_agustus[$m] = $data_lk->pluck('aug')->toArray();
+            //     $total_agustus[$m] = array_sum($data_agustus[$m]);
+
+            //     $data_september[$m] = $data_lk->pluck('sep')->toArray();
+            //     $total_september[$m] = array_sum($data_september[$m]);
+
+            //     $data_oktober[$m] = $data_lk->pluck('oct')->toArray();
+            //     $total_oktober[$m] = array_sum($data_oktober[$m]);
+
+            //     $data_november[$m] = $data_lk->pluck('nov')->toArray();
+            //     $total_november[$m] = array_sum($data_november[$m]);
+
+            //     $data_desember[$m] = $data_lk->pluck('dec')->toArray();
+            //     $total_desember[$m] = array_sum($data_desember[$m]);
+
+            //     $total_aset_2020 += $total_lk_2020[$m];
+            //     $total_aset_2021 += $total_lk_2021[$m];
+            //     $total_aset_in_2022 += $total_in_2022[$m];
+            //     $total_aset_au_2022 += $total_au_2022[$m];
+            //     $total_aset_januari += $total_januari[$m];
+            //     $total_aset_februari += $total_februari[$m];
+            //     $total_aset_maret += $total_maret[$m];
+            //     $total_aset_april += $total_april[$m];
+            //     $total_aset_mei += $total_mei[$m];
+            //     $total_aset_juni += $total_juni[$m];
+            //     $total_aset_juli += $total_juli[$m];
+            //     $total_aset_agustus += $total_agustus[$m];
+            //     $total_aset_september += $total_september[$m];
+            //     $total_aset_oktober += $total_oktober[$m];
+            //     $total_aset_november += $total_november[$m];
+            //     $total_aset_desember += $total_desember[$m];
+            // }
+
+
+            // //Mencari nilai total liabitias
+            // $total_liabilitas_2020 = 0;
+            // $total_liabilitas_2021 = 0;
+            // $total_liabilitas_in_2022 = 0;
+            // $total_liabilitas_au_2022 = 0;
+            // $total_liabilitas_januari = 0;
+            // $total_liabilitas_februari = 0;
+            // $total_liabilitas_maret = 0;
+            // $total_liabilitas_april = 0;
+            // $total_liabilitas_mei = 0;
+            // $total_liabilitas_juni = 0;
+            // $total_liabilitas_juli = 0;
+            // $total_liabilitas_agustus = 0;
+            // $total_liabilitas_september = 0;
+            // $total_liabilitas_oktober = 0;
+            // $total_liabilitas_november = 0;
+            // $total_liabilitas_desember = 0;
+            
+            // for ($i = 16; $i <= 25; $i++) {
+            //     $m = 'LK.' . $i;
+            //     $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
+
+            //     $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
+            //     $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
+                
+            //     $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
+            //     $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
+                
+            //     $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
+            //     $total_in_2022[$m] = array_sum($data_in_2022[$m]);
+                
+            //     $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
+            //     $total_au_2022[$m] = array_sum($data_au_2022[$m]);
+                
+            //     $data_januari[$m] = $data_lk->pluck('jan')->toArray();
+            //     $total_januari[$m] = array_sum($data_januari[$m]);
+                
+            //     $data_februari[$m] = $data_lk->pluck('feb')->toArray();
+            //     $total_februari[$m] = array_sum($data_februari[$m]);
+
+            //     $data_maret[$m] = $data_lk->pluck('mar')->toArray();
+            //     $total_maret[$m] = array_sum($data_maret[$m]);
+
+            //     $data_april[$m] = $data_lk->pluck('apr')->toArray();
+            //     $total_april[$m] = array_sum($data_april[$m]);
+
+            //     $data_mei[$m] = $data_lk->pluck('may')->toArray();
+            //     $total_mei[$m] = array_sum($data_mei[$m]);
+
+            //     $data_juni[$m] = $data_lk->pluck('jun')->toArray();
+            //     $total_juni[$m] = array_sum($data_juni[$m]);
+
+            //     $data_juli[$m] = $data_lk->pluck('jul')->toArray();
+            //     $total_juli[$m] = array_sum($data_juli[$m]);
+
+            //     $data_agustus[$m] = $data_lk->pluck('aug')->toArray();
+            //     $total_agustus[$m] = array_sum($data_agustus[$m]);
+
+            //     $data_september[$m] = $data_lk->pluck('sep')->toArray();
+            //     $total_september[$m] = array_sum($data_september[$m]);
+
+            //     $data_oktober[$m] = $data_lk->pluck('oct')->toArray();
+            //     $total_oktober[$m] = array_sum($data_oktober[$m]);
+
+            //     $data_november[$m] = $data_lk->pluck('nov')->toArray();
+            //     $total_november[$m] = array_sum($data_november[$m]);
+
+            //     $data_desember[$m] = $data_lk->pluck('dec')->toArray();
+            //     $total_desember[$m] = array_sum($data_desember[$m]);
+
+            //     $total_liabilitas_2020 += $total_lk_2020[$m];
+            //     $total_liabilitas_2021 += $total_lk_2021[$m];
+            //     $total_liabilitas_in_2022 += $total_in_2022[$m];
+            //     $total_liabilitas_au_2022 += $total_au_2022[$m];
+            //     $total_liabilitas_januari += $total_januari[$m];
+            //     $total_liabilitas_februari += $total_februari[$m];
+            //     $total_liabilitas_maret += $total_maret[$m];
+            //     $total_liabilitas_april += $total_april[$m];
+            //     $total_liabilitas_mei += $total_mei[$m];
+            //     $total_liabilitas_juni += $total_juni[$m];
+            //     $total_liabilitas_juli += $total_juli[$m];
+            //     $total_liabilitas_agustus += $total_agustus[$m];
+            //     $total_liabilitas_september += $total_september[$m];
+            //     $total_liabilitas_oktober += $total_oktober[$m];
+            //     $total_liabilitas_november += $total_november[$m];
+            //     $total_liabilitas_desember += $total_desember[$m];
+            // }
+
+            // //Mencari nilai total ekuitas
+            // $total_ekuitas_2020 = 0;
+            // $total_ekuitas_2021 = 0;
+            // $total_ekuitas_in_2022 = 0;
+            // $total_ekuitas_au_2022 = 0;
+            // $total_ekuitas_januari = 0;
+            // $total_ekuitas_februari = 0;
+            // $total_ekuitas_maret = 0;
+            // $total_ekuitas_april = 0;
+            // $total_ekuitas_mei = 0;
+            // $total_ekuitas_juni = 0;
+            // $total_ekuitas_juli = 0;
+            // $total_ekuitas_agustus = 0;
+            // $total_ekuitas_september = 0;
+            // $total_ekuitas_oktober = 0;
+            // $total_ekuitas_november = 0;
+            // $total_ekuitas_desember = 0;
+            
+            // for ($i = 26; $i <= 29; $i++) {
+            //     $m = 'LK.' . $i;
+            //     $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
+
+            //     $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
+            //     $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
+            //     $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
+            //     $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
+            //     $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
+            //     $total_in_2022[$m] = array_sum($data_in_2022[$m]);
+            //     $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
+            //     $total_au_2022[$m] = array_sum($data_au_2022[$m]);
+                
+            //     $data_januari[$m] = $data_lk->pluck('jan')->toArray();
+            //     $total_januari[$m] = array_sum($data_januari[$m]);
+                
+            //     $data_februari[$m] = $data_lk->pluck('feb')->toArray();
+            //     $total_februari[$m] = array_sum($data_februari[$m]);
+
+            //     $data_maret[$m] = $data_lk->pluck('mar')->toArray();
+            //     $total_maret[$m] = array_sum($data_maret[$m]);
+
+            //     $data_april[$m] = $data_lk->pluck('apr')->toArray();
+            //     $total_april[$m] = array_sum($data_april[$m]);
+
+            //     $data_mei[$m] = $data_lk->pluck('may')->toArray();
+            //     $total_mei[$m] = array_sum($data_mei[$m]);
+
+            //     $data_juni[$m] = $data_lk->pluck('jun')->toArray();
+            //     $total_juni[$m] = array_sum($data_juni[$m]);
+
+            //     $data_juli[$m] = $data_lk->pluck('jul')->toArray();
+            //     $total_juli[$m] = array_sum($data_juli[$m]);
+
+            //     $data_agustus[$m] = $data_lk->pluck('aug')->toArray();
+            //     $total_agustus[$m] = array_sum($data_agustus[$m]);
+
+            //     $data_september[$m] = $data_lk->pluck('sep')->toArray();
+            //     $total_september[$m] = array_sum($data_september[$m]);
+
+            //     $data_oktober[$m] = $data_lk->pluck('oct')->toArray();
+            //     $total_oktober[$m] = array_sum($data_oktober[$m]);
+
+            //     $data_november[$m] = $data_lk->pluck('nov')->toArray();
+            //     $total_november[$m] = array_sum($data_november[$m]);
+
+            //     $data_desember[$m] = $data_lk->pluck('dec')->toArray();
+            //     $total_desember[$m] = array_sum($data_desember[$m]);
+
+            //     $total_ekuitas_2020 += $total_lk_2020[$m];
+            //     $total_ekuitas_2021 += $total_lk_2021[$m];
+            //     $total_ekuitas_in_2022 += $total_in_2022[$m];
+            //     $total_ekuitas_au_2022 += $total_au_2022[$m];
+            //     $total_ekuitas_januari += $total_januari[$m];
+            //     $total_ekuitas_februari += $total_februari[$m];
+            //     $total_ekuitas_maret += $total_maret[$m];
+            //     $total_ekuitas_april += $total_april[$m];
+            //     $total_ekuitas_mei += $total_mei[$m];
+            //     $total_ekuitas_juni += $total_juni[$m];
+            //     $total_ekuitas_juli += $total_juli[$m];
+            //     $total_ekuitas_agustus += $total_agustus[$m];
+            //     $total_ekuitas_september += $total_september[$m];
+            //     $total_ekuitas_oktober += $total_oktober[$m];
+            //     $total_ekuitas_november += $total_november[$m];
+            //     $total_ekuitas_desember += $total_desember[$m];
+            // }
+
+            // //Mencari nilai total laba kotor
+            // $total_laba_kotor_2020 = 0;
+            // $total_laba_kotor_2021 = 0;
+            // $total_laba_kotor_in_2022 = 0;
+            // $total_laba_kotor_au_2022 = 0;
+            // $total_laba_kotor_januari = 0;
+            // $total_laba_kotor_februari = 0;
+            // $total_laba_kotor_maret = 0;
+            // $total_laba_kotor_april = 0;
+            // $total_laba_kotor_mei = 0;
+            // $total_laba_kotor_juni = 0;
+            // $total_laba_kotor_juli = 0;
+            // $total_laba_kotor_agustus = 0;
+            // $total_laba_kotor_september = 0;
+            // $total_laba_kotor_oktober = 0;
+            // $total_laba_kotor_november = 0;
+            // $total_laba_kotor_desember = 0;
+            
+            // for ($i = 30; $i <= 31; $i++) {
+            //     $m = 'LK.' . $i;
+            //     $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
+
+            //     $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
+            //     $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
+            //     $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
+            //     $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
+            //     $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
+            //     $total_in_2022[$m] = array_sum($data_in_2022[$m]);
+            //     $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
+            //     $total_au_2022[$m] = array_sum($data_au_2022[$m]);
+
+            //     $data_januari[$m] = $data_lk->pluck('jan')->toArray();
+            //     $total_januari[$m] = array_sum($data_januari[$m]);
+                
+            //     $data_februari[$m] = $data_lk->pluck('feb')->toArray();
+            //     $total_februari[$m] = array_sum($data_februari[$m]);
+
+            //     $data_maret[$m] = $data_lk->pluck('mar')->toArray();
+            //     $total_maret[$m] = array_sum($data_maret[$m]);
+
+            //     $data_april[$m] = $data_lk->pluck('apr')->toArray();
+            //     $total_april[$m] = array_sum($data_april[$m]);
+
+            //     $data_mei[$m] = $data_lk->pluck('may')->toArray();
+            //     $total_mei[$m] = array_sum($data_mei[$m]);
+
+            //     $data_juni[$m] = $data_lk->pluck('jun')->toArray();
+            //     $total_juni[$m] = array_sum($data_juni[$m]);
+
+            //     $data_juli[$m] = $data_lk->pluck('jul')->toArray();
+            //     $total_juli[$m] = array_sum($data_juli[$m]);
+
+            //     $data_agustus[$m] = $data_lk->pluck('aug')->toArray();
+            //     $total_agustus[$m] = array_sum($data_agustus[$m]);
+
+            //     $data_september[$m] = $data_lk->pluck('sep')->toArray();
+            //     $total_september[$m] = array_sum($data_september[$m]);
+
+            //     $data_oktober[$m] = $data_lk->pluck('oct')->toArray();
+            //     $total_oktober[$m] = array_sum($data_oktober[$m]);
+
+            //     $data_november[$m] = $data_lk->pluck('nov')->toArray();
+            //     $total_november[$m] = array_sum($data_november[$m]);
+
+            //     $data_desember[$m] = $data_lk->pluck('dec')->toArray();
+            //     $total_desember[$m] = array_sum($data_desember[$m]);
+
+            //     $total_laba_kotor_2020 += $total_lk_2020[$m];
+            //     $total_laba_kotor_2021 += $total_lk_2021[$m];
+            //     $total_laba_kotor_in_2022 += $total_in_2022[$m];
+            //     $total_laba_kotor_au_2022 += $total_au_2022[$m];
+            //     $total_laba_kotor_januari += $total_januari[$m];
+            //     $total_laba_kotor_februari += $total_februari[$m];
+            //     $total_laba_kotor_maret += $total_maret[$m];
+            //     $total_laba_kotor_april += $total_april[$m];
+            //     $total_laba_kotor_mei += $total_mei[$m];
+            //     $total_laba_kotor_juni += $total_juni[$m];
+            //     $total_laba_kotor_juli += $total_juli[$m];
+            //     $total_laba_kotor_agustus += $total_agustus[$m];
+            //     $total_laba_kotor_september += $total_september[$m];
+            //     $total_laba_kotor_oktober += $total_oktober[$m];
+            //     $total_laba_kotor_november += $total_november[$m];
+            //     $total_laba_kotor_desember += $total_desember[$m];
+            // }
+
+            // //Mencari nilai total laba bersih sebelum pajak
+            // $total_laba_bersih_sebelum_pajak_2020 = 0;
+            // $total_laba_bersih_sebelum_pajak_2021 = 0;
+            // $total_laba_bersih_sebelum_pajak_in_2022 = 0;
+            // $total_laba_bersih_sebelum_pajak_au_2022 = 0;
+            // $total_laba_bersih_sebelum_pajak_januari = 0;
+            // $total_laba_bersih_sebelum_pajak_februari = 0;
+            // $total_laba_bersih_sebelum_pajak_maret = 0;
+            // $total_laba_bersih_sebelum_pajak_april = 0;
+            // $total_laba_bersih_sebelum_pajak_mei = 0;
+            // $total_laba_bersih_sebelum_pajak_juni = 0;
+            // $total_laba_bersih_sebelum_pajak_juli = 0;
+            // $total_laba_bersih_sebelum_pajak_agustus = 0;
+            // $total_laba_bersih_sebelum_pajak_september = 0;
+            // $total_laba_bersih_sebelum_pajak_oktober = 0;
+            // $total_laba_bersih_sebelum_pajak_november = 0;
+            // $total_laba_bersih_sebelum_pajak_desember = 0;
+            
+            // for ($i = 32; $i <= 34; $i++) {
+            //     $m = 'LK.' . $i;
+            //     $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
+
+            //     $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
+            //     $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
+            //     $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
+            //     $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
+            //     $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
+            //     $total_in_2022[$m] = array_sum($data_in_2022[$m]);
+            //     $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
+            //     $total_au_2022[$m] = array_sum($data_au_2022[$m]);
+
+            //     $data_januari[$m] = $data_lk->pluck('jan')->toArray();
+            //     $total_januari[$m] = array_sum($data_januari[$m]);
+                
+            //     $data_februari[$m] = $data_lk->pluck('feb')->toArray();
+            //     $total_februari[$m] = array_sum($data_februari[$m]);
+
+            //     $data_maret[$m] = $data_lk->pluck('mar')->toArray();
+            //     $total_maret[$m] = array_sum($data_maret[$m]);
+
+            //     $data_april[$m] = $data_lk->pluck('apr')->toArray();
+            //     $total_april[$m] = array_sum($data_april[$m]);
+
+            //     $data_mei[$m] = $data_lk->pluck('may')->toArray();
+            //     $total_mei[$m] = array_sum($data_mei[$m]);
+
+            //     $data_juni[$m] = $data_lk->pluck('jun')->toArray();
+            //     $total_juni[$m] = array_sum($data_juni[$m]);
+
+            //     $data_juli[$m] = $data_lk->pluck('jul')->toArray();
+            //     $total_juli[$m] = array_sum($data_juli[$m]);
+
+            //     $data_agustus[$m] = $data_lk->pluck('aug')->toArray();
+            //     $total_agustus[$m] = array_sum($data_agustus[$m]);
+
+            //     $data_september[$m] = $data_lk->pluck('sep')->toArray();
+            //     $total_september[$m] = array_sum($data_september[$m]);
+
+            //     $data_oktober[$m] = $data_lk->pluck('oct')->toArray();
+            //     $total_oktober[$m] = array_sum($data_oktober[$m]);
+
+            //     $data_november[$m] = $data_lk->pluck('nov')->toArray();
+            //     $total_november[$m] = array_sum($data_november[$m]);
+
+            //     $data_desember[$m] = $data_lk->pluck('dec')->toArray();
+            //     $total_desember[$m] = array_sum($data_desember[$m]);
+
+            //     $total_laba_bersih_sebelum_pajak_2020 += $total_lk_2020[$m];
+            //     $total_laba_bersih_sebelum_pajak_2021 += $total_lk_2021[$m];
+            //     $total_laba_bersih_sebelum_pajak_in_2022 += $total_in_2022[$m];
+            //     $total_laba_bersih_sebelum_pajak_au_2022 += $total_au_2022[$m];
+            //     $total_laba_bersih_sebelum_pajak_januari += $total_januari[$m];
+            //     $total_laba_bersih_sebelum_pajak_februari += $total_februari[$m];
+            //     $total_laba_bersih_sebelum_pajak_maret += $total_maret[$m];
+            //     $total_laba_bersih_sebelum_pajak_april += $total_april[$m];
+            //     $total_laba_bersih_sebelum_pajak_mei += $total_mei[$m];
+            //     $total_laba_bersih_sebelum_pajak_juni += $total_juni[$m];
+            //     $total_laba_bersih_sebelum_pajak_juli += $total_juli[$m];
+            //     $total_laba_bersih_sebelum_pajak_agustus += $total_agustus[$m];
+            //     $total_laba_bersih_sebelum_pajak_september += $total_september[$m];
+            //     $total_laba_bersih_sebelum_pajak_oktober += $total_oktober[$m];
+            //     $total_laba_bersih_sebelum_pajak_november += $total_november[$m];
+            //     $total_laba_bersih_sebelum_pajak_desember += $total_desember[$m];
+            // }
+
+            // //Mencari nilai total laba bersih setelah pajak
+            // $total_laba_bersih_setelah_pajak_2020 = 0;
+            // $total_laba_bersih_setelah_pajak_2021 = 0;
+            // $total_laba_bersih_setelah_pajak_in_2022 = 0;
+            // $total_laba_bersih_setelah_pajak_au_2022 = 0;
+            // $total_laba_bersih_setelah_pajak_januari = 0;
+            // $total_laba_bersih_setelah_pajak_februari = 0;
+            // $total_laba_bersih_setelah_pajak_maret = 0;
+            // $total_laba_bersih_setelah_pajak_april = 0;
+            // $total_laba_bersih_setelah_pajak_mei = 0;
+            // $total_laba_bersih_setelah_pajak_juni = 0;
+            // $total_laba_bersih_setelah_pajak_juli = 0;
+            // $total_laba_bersih_setelah_pajak_agustus = 0;
+            // $total_laba_bersih_setelah_pajak_september = 0;
+            // $total_laba_bersih_setelah_pajak_oktober = 0;
+            // $total_laba_bersih_setelah_pajak_november = 0;
+            // $total_laba_bersih_setelah_pajak_desember = 0;
+            
+            // $i = 35;
+            // $m = 'LK.' . $i;
+            // $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
+
+            // $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
+            // $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
+            // $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
+            // $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
+            // $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
+            // $total_in_2022[$m] = array_sum($data_in_2022[$m]);
+            // $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
+            // $total_au_2022[$m] = array_sum($data_au_2022[$m]);
+            // $data_januari[$m] = $data_lk->pluck('jan')->toArray();
+            // $total_januari[$m] = array_sum($data_januari[$m]);
+            
+            // $data_februari[$m] = $data_lk->pluck('feb')->toArray();
+            // $total_februari[$m] = array_sum($data_februari[$m]);
+
+            // $data_maret[$m] = $data_lk->pluck('mar')->toArray();
+            // $total_maret[$m] = array_sum($data_maret[$m]);
+
+            // $data_april[$m] = $data_lk->pluck('apr')->toArray();
+            // $total_april[$m] = array_sum($data_april[$m]);
+
+            // $data_mei[$m] = $data_lk->pluck('may')->toArray();
+            // $total_mei[$m] = array_sum($data_mei[$m]);
+
+            // $data_juni[$m] = $data_lk->pluck('jun')->toArray();
+            // $total_juni[$m] = array_sum($data_juni[$m]);
+
+            // $data_juli[$m] = $data_lk->pluck('jul')->toArray();
+            // $total_juli[$m] = array_sum($data_juli[$m]);
+
+            // $data_agustus[$m] = $data_lk->pluck('aug')->toArray();
+            // $total_agustus[$m] = array_sum($data_agustus[$m]);
+
+            // $data_september[$m] = $data_lk->pluck('sep')->toArray();
+            // $total_september[$m] = array_sum($data_september[$m]);
+
+            // $data_oktober[$m] = $data_lk->pluck('oct')->toArray();
+            // $total_oktober[$m] = array_sum($data_oktober[$m]);
+
+            // $data_november[$m] = $data_lk->pluck('nov')->toArray();
+            // $total_november[$m] = array_sum($data_november[$m]);
+
+            // $data_desember[$m] = $data_lk->pluck('dec')->toArray();
+            // $total_desember[$m] = array_sum($data_desember[$m]);
+
+            // $total_laba_bersih_setelah_pajak_2020 += $total_lk_2020[$m];
+            // $total_laba_bersih_setelah_pajak_2021 += $total_lk_2021[$m];
+            // $total_laba_bersih_setelah_pajak_in_2022 += $total_in_2022[$m];
+            // $total_laba_bersih_setelah_pajak_au_2022 += $total_au_2022[$m];
+            // $total_laba_bersih_setelah_pajak_januari += $total_januari[$m];
+            // $total_laba_bersih_setelah_pajak_februari += $total_februari[$m];
+            // $total_laba_bersih_setelah_pajak_maret += $total_maret[$m];
+            // $total_laba_bersih_setelah_pajak_april += $total_april[$m];
+            // $total_laba_bersih_setelah_pajak_mei += $total_mei[$m];
+            // $total_laba_bersih_setelah_pajak_juni += $total_juni[$m];
+            // $total_laba_bersih_setelah_pajak_juli += $total_juli[$m];
+            // $total_laba_bersih_setelah_pajak_agustus += $total_agustus[$m];
+            // $total_laba_bersih_setelah_pajak_september += $total_september[$m];
+            // $total_laba_bersih_setelah_pajak_oktober += $total_oktober[$m];
+            // $total_laba_bersih_setelah_pajak_november += $total_november[$m];
+            // $total_laba_bersih_setelah_pajak_desember += $total_desember[$m];
+
+
+            // //data array 2020
+            // $data_array_2020 = 
+            // [
+            //     '00' => $total_aset_2020,
+            //     '000' => $total_liabilitas_2020,
+            //     '0000' => $total_ekuitas_2020,
+            //     '00000' => $total_laba_kotor_2020,
+            //     '000000' => $total_laba_kotor_2020 + $total_laba_bersih_sebelum_pajak_2020,
+            //     '0000000' => $total_laba_kotor_2020 + $total_laba_bersih_sebelum_pajak_2020 + $total_laba_bersih_setelah_pajak_2020,
+            // ];
+
+            // //data array 2021
+            // $data_array_2021 = 
+            // [
+            //     '00' => $total_aset_2021,
+            //     '000' => $total_liabilitas_2021,
+            //     '0000' => $total_ekuitas_2021,
+            //     '00000' => $total_laba_kotor_2021,
+            //     '000000' => $total_laba_kotor_2021 + $total_laba_bersih_sebelum_pajak_2021,
+            //     '0000000' => $total_laba_kotor_2021 + $total_laba_bersih_sebelum_pajak_2021 + $total_laba_bersih_setelah_pajak_2021,
+            // ];
+
+
+            // //data array inhouse 2022
+            // $data_array_in_2022 = 
+            // [
+            //     '00' => $total_aset_in_2022,
+            //     '000' => $total_liabilitas_in_2022,
+            //     '0000' => $total_ekuitas_in_2022,
+            //     '00000' => $total_laba_kotor_in_2022,
+            //     '000000' => $total_laba_kotor_in_2022 + $total_laba_bersih_sebelum_pajak_in_2022,
+            //     '0000000' => $total_laba_kotor_in_2022 + $total_laba_bersih_sebelum_pajak_in_2022 + $total_laba_bersih_setelah_pajak_in_2022,
+            // ];
+
+            // //data array audited 2022
+            // $data_array_au_2022 = 
+            // [
+            //     '00' => $total_aset_au_2022,
+            //     '000' => $total_liabilitas_au_2022,
+            //     '0000' => $total_ekuitas_au_2022,
+            //     '00000' => $total_laba_kotor_au_2022,
+            //     '000000' => $total_laba_kotor_au_2022 + $total_laba_bersih_sebelum_pajak_au_2022,
+            //     '0000000' => $total_laba_kotor_au_2022 + $total_laba_bersih_sebelum_pajak_au_2022 + $total_laba_bersih_setelah_pajak_au_2022,
+            // ];
+
+            // $data_summary_januari = 
+            // [
+            //     '00' => $total_aset_januari,
+            //     '000' => $total_liabilitas_januari,
+            //     '0000' => $total_ekuitas_januari,
+            //     '00000' => $total_laba_kotor_januari,
+            //     '000000' => $total_laba_kotor_januari + $total_laba_bersih_sebelum_pajak_januari,
+            //     '0000000' => $total_laba_kotor_januari + $total_laba_bersih_sebelum_pajak_januari + $total_laba_bersih_setelah_pajak_januari,
+            // ];
+
+            // $data_summary_februari = 
+            // [
+            //     '00' => $total_aset_februari,
+            //     '000' => $total_liabilitas_februari,
+            //     '0000' => $total_ekuitas_februari,
+            //     '00000' => $total_laba_kotor_februari,
+            //     '000000' => $total_laba_kotor_februari + $total_laba_bersih_sebelum_pajak_februari,
+            //     '0000000' => $total_laba_kotor_februari + $total_laba_bersih_sebelum_pajak_februari + $total_laba_bersih_setelah_pajak_februari,
+            // ];
+
+            // $data_summary_maret = 
+            // [
+            //     '00' => $total_aset_maret,
+            //     '000' => $total_liabilitas_maret,
+            //     '0000' => $total_ekuitas_maret,
+            //     '00000' => $total_laba_kotor_maret,
+            //     '000000' => $total_laba_kotor_maret + $total_laba_bersih_sebelum_pajak_maret,
+            //     '0000000' => $total_laba_kotor_maret + $total_laba_bersih_sebelum_pajak_maret + $total_laba_bersih_setelah_pajak_maret,
+            // ];
+
+            // $data_summary_april = 
+            // [
+            //     '00' => $total_aset_april,
+            //     '000' => $total_liabilitas_april,
+            //     '0000' => $total_ekuitas_april,
+            //     '00000' => $total_laba_kotor_april,
+            //     '000000' => $total_laba_kotor_april + $total_laba_bersih_sebelum_pajak_april,
+            //     '0000000' => $total_laba_kotor_april + $total_laba_bersih_sebelum_pajak_april + $total_laba_bersih_setelah_pajak_april,
+            // ];
+
+            // $data_summary_mei = 
+            // [
+            //     '00' => $total_aset_mei,
+            //     '000' => $total_liabilitas_mei,
+            //     '0000' => $total_ekuitas_mei,
+            //     '00000' => $total_laba_kotor_mei,
+            //     '000000' => $total_laba_kotor_mei + $total_laba_bersih_sebelum_pajak_mei,
+            //     '0000000' => $total_laba_kotor_mei + $total_laba_bersih_sebelum_pajak_mei + $total_laba_bersih_setelah_pajak_mei,
+            // ];
+            
+            // $data_summary_juni = 
+            // [
+            //     '00' => $total_aset_juni,
+            //     '000' => $total_liabilitas_juni,
+            //     '0000' => $total_ekuitas_juni,
+            //     '00000' => $total_laba_kotor_juni,
+            //     '000000' => $total_laba_kotor_juni + $total_laba_bersih_sebelum_pajak_juni,
+            //     '0000000' => $total_laba_kotor_juni + $total_laba_bersih_sebelum_pajak_juni + $total_laba_bersih_setelah_pajak_juni,
+            // ];
+
+            // $data_summary_juli = 
+            // [
+            //     '00' => $total_aset_juli,
+            //     '000' => $total_liabilitas_juli,
+            //     '0000' => $total_ekuitas_juli,
+            //     '00000' => $total_laba_kotor_juli,
+            //     '000000' => $total_laba_kotor_juli + $total_laba_bersih_sebelum_pajak_juli,
+            //     '0000000' => $total_laba_kotor_juli + $total_laba_bersih_sebelum_pajak_juli + $total_laba_bersih_setelah_pajak_juli,
+            // ];
+
+            // $data_summary_agustus = 
+            // [
+            //     '00' => $total_aset_agustus,
+            //     '000' => $total_liabilitas_agustus,
+            //     '0000' => $total_ekuitas_agustus,
+            //     '00000' => $total_laba_kotor_agustus,
+            //     '000000' => $total_laba_kotor_agustus + $total_laba_bersih_sebelum_pajak_agustus,
+            //     '0000000' => $total_laba_kotor_agustus + $total_laba_bersih_sebelum_pajak_agustus + $total_laba_bersih_setelah_pajak_agustus,
+            // ];
+
+            // $data_summary_september = 
+            // [
+            //     '00' => $total_aset_september,
+            //     '000' => $total_liabilitas_september,
+            //     '0000' => $total_ekuitas_september,
+            //     '00000' => $total_laba_kotor_september,
+            //     '000000' => $total_laba_kotor_september + $total_laba_bersih_sebelum_pajak_september,
+            //     '0000000' => $total_laba_kotor_september + $total_laba_bersih_sebelum_pajak_september + $total_laba_bersih_setelah_pajak_september,
+            // ];
+
+            // $data_summary_oktober = 
+            // [
+            //     '00' => $total_aset_oktober,
+            //     '000' => $total_liabilitas_oktober,
+            //     '0000' => $total_ekuitas_oktober,
+            //     '00000' => $total_laba_kotor_oktober,
+            //     '000000' => $total_laba_kotor_oktober + $total_laba_bersih_sebelum_pajak_oktober,
+            //     '0000000' => $total_laba_kotor_oktober + $total_laba_bersih_sebelum_pajak_oktober + $total_laba_bersih_setelah_pajak_oktober,
+            // ];
+
+            // $data_summary_november = 
+            // [
+            //     '00' => $total_aset_november,
+            //     '000' => $total_liabilitas_november,
+            //     '0000' => $total_ekuitas_november,
+            //     '00000' => $total_laba_kotor_november,
+            //     '000000' => $total_laba_kotor_november + $total_laba_bersih_sebelum_pajak_november,
+            //     '0000000' => $total_laba_kotor_november + $total_laba_bersih_sebelum_pajak_november + $total_laba_bersih_setelah_pajak_november,
+            // ];
+
+            // $data_summary_desember = 
+            // [
+            //     '00' => $total_aset_desember,
+            //     '000' => $total_liabilitas_desember,
+            //     '0000' => $total_ekuitas_desember,
+            //     '00000' => $total_laba_kotor_desember,
+            //     '000000' => $total_laba_kotor_desember + $total_laba_bersih_sebelum_pajak_desember,
+            //     '0000000' => $total_laba_kotor_desember + $total_laba_bersih_sebelum_pajak_desember + $total_laba_bersih_setelah_pajak_desember,
+            // ];
+
+            // $summary = ProjectTask::$summary;
+
+            // $result = $this->mergeSummaryData($summary,$data_array_2020,$data_array_2021, $data_array_in_2022, $data_array_au_2022, $data_summary_januari, $data_summary_februari, $data_summary_maret,
+            // $data_summary_april, $data_summary_mei, $data_summary_juni, $data_summary_juli, $data_summary_agustus,
+            // $data_summary_september, $data_summary_oktober, $data_summary_november, $data_summary_desember);
+
+            // $data_index = ProjectTask::$financial_statement;
+            // $data_materialitiy = SummaryMateriality::where('project_id', $project_id)->first();
+            // $initialmaterialityom = $data_materialitiy->initialmaterialityom;
+
+            // foreach($data_index as $a => $b)
+            // {
+            //     $keuanganringkas['kode']    = $a;
+            //     $keuanganringkas['akun']    = $b;
+            //     $keuanganringkas['data_2020']    =  isset($total_lk_2020[$a]) ? $total_lk_2020[$a] : 0;
+            //     $keuanganringkas['data_2021']    =  isset($total_lk_2021[$a]) ? $total_lk_2021[$a] : 0;
+            //     $keuanganringkas['data_in_2022']    =  isset($total_lk_in_2022[$a]) ? $total_lk_in_2022[$a] : 0;
+            //     $keuanganringkas['data_au_2022']    =  isset($total_lk_au_2022[$a]) ? $total_lk_au_2022[$a] : 0;
+            //     $keuanganringkas['januari'] = isset($total_januari[$a]) ? $total_januari[$a] : 0;
+            //     $keuanganringkas['februari'] = isset($total_februari[$a]) ? $total_februari[$a] : 0;
+            //     $keuanganringkas['maret'] = isset($total_maret[$a]) ? $total_maret[$a] : 0;
+            //     $keuanganringkas['april'] = isset($total_april[$a]) ? $total_april[$a] : 0;
+            //     $keuanganringkas['mei'] = isset($total_mei[$a]) ? $total_mei[$a] : 0;
+            //     $keuanganringkas['juni'] = isset($total_juni[$a]) ? $total_juni[$a] : 0;
+            //     $keuanganringkas['juli'] = isset($total_juli[$a]) ? $total_juli[$a] : 0;
+            //     $keuanganringkas['agustus'] = isset($total_agustus[$a]) ? $total_agustus[$a] : 0;
+            //     $keuanganringkas['september'] = isset($total_september[$a]) ? $total_september[$a] : 0;
+            //     $keuanganringkas['oktober'] = isset($total_oktober[$a]) ? $total_oktober[$a] : 0;
+            //     $keuanganringkas['november'] = isset($total_november[$a]) ? $total_november[$a] : 0;
+            //     $keuanganringkas['desember'] = isset($total_desember[$a]) ? $total_desember[$a] : 0;
+            //     //2021
+
+            //     $keuanganringkas['kenaikan_2021'] = $keuanganringkas['data_2021'] - $keuanganringkas['data_2020'];
+                
+            //     if ($keuanganringkas['data_2020'] != 0) {
+            //         $keuanganringkas['persen_kenaikan'] = ($keuanganringkas['kenaikan_2021'] / $keuanganringkas['data_2020']) * 100;
+            //     } else {
+            //         $keuanganringkas['persen_kenaikan'] = 0;
+            //     }
+
+            //     if ($keuanganringkas['kenaikan_2021'] > $initialmaterialityom) {
+            //         $keuanganringkas['M/TM'] = 'M';
+            //     } elseif ($keuanganringkas['kenaikan_2021'] < $initialmaterialityom) {
+            //         $keuanganringkas['M/TM'] = 'TM';
+            //     } else {
+            //         $keuanganringkas['M/TM'] = '-';
+            //     }
+
+            //     //2022
+                
+            //     $keuanganringkas['kenaikan_2022'] = $keuanganringkas['data_au_2022'] - $keuanganringkas['data_2021'];
+                
+            //     if ($keuanganringkas['data_2021'] != 0) {
+            //         $keuanganringkas['persen_kenaikan_2022'] = ($keuanganringkas['kenaikan_2022'] / $keuanganringkas['data_2021']) * 100;
+            //     } else {
+            //         $keuanganringkas['persen_kenaikan_2022'] = 0;
+            //     }
+
+            //     if ($keuanganringkas['kenaikan_2022'] > $initialmaterialityom) {
+            //         $keuanganringkas['M/TM_2022'] = 'M';
+            //     } elseif ($keuanganringkas['kenaikan_2022'] < $initialmaterialityom) {
+            //         $keuanganringkas['M/TM_2022'] = 'TM';
+            //     } else {
+            //         $keuanganringkas['M/TM_2022'] = '-';
+            //     }
+                
+
+            //     $index[] = $keuanganringkas;
+            // }
+            // $ca = FinancialStatement::where('project_id', $project_id)->where('cn', '=', 'CA');
+            // $nca = FinancialStatement::where('project_id', $project_id)->where('cn', '=', 'NCA');
+            // $cl = FinancialStatement::where('project_id', $project_id)->where('cn', '=', 'CL');
+            // $ncl = FinancialStatement::where('project_id', $project_id)->where('cn', '=', 'NCL');
+
+            // $total_ca_2020 = $ca->sum('prior_period2');
+            // $total_nca_2020 = $nca->sum('prior_period2');
+            // $total_cl_2020 = $cl->sum('prior_period2');
+            // $total_ncl_2020 = $ncl->sum('prior_period2');
+
+            // $total_ca_2021 = $ca->sum('prior_period');
+            // $total_nca_2021 = $nca->sum('prior_period');
+            // $total_cl_2021 = $cl->sum('prior_period');
+            // $total_ncl_2021 = $ncl->sum('prior_period');
+
+            // $total_ca_in_2022 = $ca->sum('inhouse');
+            // $total_nca_in_2022 = $nca->sum('inhouse');
+            // $total_cl_in_2022 = $cl->sum('inhouse');
+            // $total_ncl_in_2022 = $ncl->sum('inhouse');
+
+            // $total_ca_au_2022 = $ca->sum('audited');
+            // $total_nca_au_2022 = $nca->sum('audited');
+            // $total_cl_au_2022 = $cl->sum('audited');
+            // $total_ncl_au_2022 = $ncl->sum('audited');
+
+            // $total_ca_januari = $ca->sum('jan');
+            // $total_ca_februari = $ca->sum('feb');
+            // $total_ca_maret = $ca->sum('mar');
+            // $total_ca_april = $ca->sum('apr');
+            // $total_ca_mei = $ca->sum('may');
+            // $total_ca_juni = $ca->sum('jun');
+            // $total_ca_juli = $ca->sum('jul');
+            // $total_ca_agustus = $ca->sum('aug');
+            // $total_ca_september = $ca->sum('sep');
+            // $total_ca_oktober = $ca->sum('oct');
+            // $total_ca_november = $ca->sum('nov');
+            // $total_ca_desember = $ca->sum('dec');
+
+            // $total_nca_januari = $nca->sum('jan');
+            // $total_nca_februari = $nca->sum('feb');
+            // $total_nca_maret = $nca->sum('mar');
+            // $total_nca_april = $nca->sum('apr');
+            // $total_nca_mei = $nca->sum('may');
+            // $total_nca_juni = $nca->sum('jun');
+            // $total_nca_juli = $nca->sum('jul');
+            // $total_nca_agustus = $nca->sum('aug');
+            // $total_nca_september = $nca->sum('sep');
+            // $total_nca_oktober = $nca->sum('oct');
+            // $total_nca_november = $nca->sum('nov');
+            // $total_nca_desember = $nca->sum('dec');
+
+            // $total_cl_januari = $cl->sum('jan');
+            // $total_cl_februari = $cl->sum('feb');
+            // $total_cl_maret = $cl->sum('mar');
+            // $total_cl_april = $cl->sum('apr');
+            // $total_cl_mei = $cl->sum('may');
+            // $total_cl_juni = $cl->sum('jun');
+            // $total_cl_juli = $cl->sum('jul');
+            // $total_cl_agustus = $cl->sum('aug');
+            // $total_cl_september = $cl->sum('sep');
+            // $total_cl_oktober = $cl->sum('oct');
+            // $total_cl_november = $cl->sum('nov');
+            // $total_cl_desember = $cl->sum('dec');
+
+            // $total_ncl_januari = $nca->sum('jan');
+            // $total_ncl_februari = $nca->sum('feb');
+            // $total_ncl_maret = $nca->sum('mar');
+            // $total_ncl_april = $nca->sum('apr');
+            // $total_ncl_mei = $nca->sum('may');
+            // $total_ncl_juni = $nca->sum('jun');
+            // $total_ncl_juli = $nca->sum('jul');
+            // $total_ncl_agustus = $nca->sum('aug');
+            // $total_ncl_september = $nca->sum('sep');
+            // $total_ncl_oktober = $nca->sum('oct');
+            // $total_ncl_november = $nca->sum('nov');
+            // $total_ncl_desember = $nca->sum('dec');
+
+            // $summary_2020 = 
+            // [
+            //     'CA' => $total_ca_2020,
+            //     'NCA' => $total_nca_2020,
+            //     'CL' => $total_cl_2020,
+            //     'NCL' => $total_ncl_2020,
+            // ];
+            
+
+            // $summary_2021 = 
+            // [
+            //     'CA' => $total_ca_2021,
+            //     'NCA' => $total_nca_2021,
+            //     'CL' => $total_cl_2021,
+            //     'NCL' => $total_ncl_2021,
+            // ];
+
+            // $summary_in_2022 = 
+            // [
+            //     'CA' => $total_ca_in_2022,
+            //     'NCA' => $total_nca_in_2022,
+            //     'CL' => $total_cl_in_2022,
+            //     'NCL' => $total_ncl_in_2022,
+            // ];
+
+            // $summary_au_2022 = 
+            // [
+            //     'CA' => $total_ca_au_2022,
+            //     'NCA' => $total_nca_au_2022,
+            //     'CL' => $total_cl_au_2022,
+            //     'NCL' => $total_ncl_au_2022,
+            // ];
+
+            // $summary_jan = 
+            // [
+            //     'CA' => $total_ca_januari,
+            //     'NCA' => $total_nca_januari,
+            //     'CL' => $total_cl_januari,
+            //     'NCL' => $total_ncl_januari,
+            // ];
+
+            // $summary_feb = 
+            // [
+            //     'CA' => $total_ca_februari,
+            //     'NCA' => $total_nca_februari,
+            //     'CL' => $total_cl_februari,
+            //     'NCL' => $total_ncl_februari,
+            // ];
+
+            // $summary_mar = 
+            // [
+            //     'CA' => $total_ca_maret,
+            //     'NCA' => $total_nca_maret,
+            //     'CL' => $total_cl_maret,
+            //     'NCL' => $total_ncl_maret,
+            // ];
+
+            // $summary_apr = 
+            // [
+            //     'CA' => $total_ca_april,
+            //     'NCA' => $total_nca_april,
+            //     'CL' => $total_cl_april,
+            //     'NCL' => $total_ncl_april,
+            // ];
+
+            // $summary_may = 
+            // [
+            //     'CA' => $total_ca_mei,
+            //     'NCA' => $total_nca_mei,
+            //     'CL' => $total_cl_mei,
+            //     'NCL' => $total_ncl_mei,
+            // ];
+
+            // $summary_jun = 
+            // [
+            //     'CA' => $total_ca_juni,
+            //     'NCA' => $total_nca_juni,
+            //     'CL' => $total_cl_juni,
+            //     'NCL' => $total_ncl_juni,
+            // ];
+
+            // $summary_jul = 
+            // [
+            //     'CA' => $total_ca_juli,
+            //     'NCA' => $total_nca_juli,
+            //     'CL' => $total_cl_juli,
+            //     'NCL' => $total_ncl_juli,
+            // ];
+
+            // $summary_aug = 
+            // [
+            //     'CA' => $total_ca_agustus,
+            //     'NCA' => $total_nca_agustus,
+            //     'CL' => $total_cl_agustus,
+            //     'NCL' => $total_ncl_agustus,
+            // ];
+
+            // $summary_sep = 
+            // [
+            //     'CA' => $total_ca_september,
+            //     'NCA' => $total_nca_september,
+            //     'CL' => $total_cl_september,
+            //     'NCL' => $total_ncl_september,
+            // ];
+
+            // $summary_oct = 
+            // [
+            //     'CA' => $total_ca_oktober,
+            //     'NCA' => $total_nca_oktober,
+            //     'CL' => $total_cl_oktober,
+            //     'NCL' => $total_ncl_oktober,
+            // ];
+
+            // $summary_nov = 
+            // [
+            //     'CA' => $total_ca_november,
+            //     'NCA' => $total_nca_november,
+            //     'CL' => $total_cl_november,
+            //     'NCL' => $total_ncl_november,
+            // ];
+
+            // $summary_dec = 
+            // [
+            //     'CA' => $total_ca_desember,
+            //     'NCA' => $total_nca_desember,
+            //     'CL' => $total_cl_desember,
+            //     'NCL' => $total_ncl_desember,
+            // ];
+
+            // $data_cn = ProjectTask::$cn;
+
+            // foreach($data_cn as $a => $b)
+            // {
+            //     $summarycn['kode']    = $a;
+            //     $summarycn['akun']    = $b;
+            //     $summarycn['data_2020']    =  isset($summary_2020[$a]) ? $summary_2020[$a] : 0;
+            //     $summarycn['data_2021']    =  isset($summary_2021[$a]) ? $summary_2021[$a] : 0;
+            //     $summarycn['data_in_2022']    =  isset($summary_in_2022[$a]) ? $summary_in_2022[$a] : 0;
+            //     $summarycn['data_au_2022']    =  isset($summary_au_2022[$a]) ? $summary_au_2022[$a] : 0;
+            //     $summarycn['januari']    =  isset($summary_jan[$a]) ? $summary_jan[$a] : 0;
+            //     $summarycn['februari']    =  isset($summary_feb[$a]) ? $summary_feb[$a] : 0;
+            //     $summarycn['maret']    =  isset($summary_mar[$a]) ? $summary_mar[$a] : 0;
+            //     $summarycn['april']    =  isset($summary_apr[$a]) ? $summary_apr[$a] : 0;
+            //     $summarycn['mei']    =  isset($summary_may[$a]) ? $summary_may[$a] : 0;
+            //     $summarycn['juni']    =  isset($summary_jun[$a]) ? $summary_jun[$a] : 0;
+            //     $summarycn['juli']    =  isset($summary_jul[$a]) ? $summary_jul[$a] : 0;
+            //     $summarycn['agustus']    =  isset($summary_aug[$a]) ? $summary_aug[$a] : 0;
+            //     $summarycn['september']    =  isset($summary_sep[$a]) ? $summary_sep[$a] : 0;
+            //     $summarycn['oktober']    =  isset($summary_oct[$a]) ? $summary_oct[$a] : 0;
+            //     $summarycn['november']    =  isset($summary_nov[$a]) ? $summary_nov[$a] : 0;
+            //     $summarycn['desember']    =  isset($summary_dec[$a]) ? $summary_dec[$a] : 0;
+
+            //     $cn[] = $summarycn;
+
+            // }
 
 
             // $savematerialitas = Materialitas::get();
@@ -3581,7 +3983,7 @@ class ProjectTaskController extends Controller
             // }
              
             return view('project_task.keuanganringkas', compact(
-                'task','project','materialitas','financial_statement','index','result','cn'
+                'task','project','materialitas','financial_statement','data_keuangan'
             ));
         }
         else
@@ -4157,9 +4559,10 @@ class ProjectTaskController extends Controller
         {
             $project                       = Project::find($project_id);
             $task                          = ProjectTask::find($task_id);
-            $materialitas                  = Materialitas::limit(10)->pluck('name', 'code');
+            $mapping_account               = MappingAccountData::get()->pluck('name', 'id');
+            $mapping_account->prepend('--', '');
 
-            return view('project_task.createMappingAccount', compact('project','task', 'materialitas'));
+            return view('project_task.createMappingAccount', compact('project','task', 'mapping_account'));
         }
         else
         {
@@ -4218,5 +4621,16 @@ class ProjectTaskController extends Controller
         {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
+    }
+
+    public function mappingaccountdata(Request $request)
+    {
+        $data['mappingaccountdata']       = $mappingaccountdata = MappingAccountData::find($request->mappingaccountdata_id);
+        $data['name']        = (!empty($mappingaccountdata->name)) ? $mappingaccountdata->name : '-';
+        $data['code']        = (!empty($mappingaccountdata->code)) ? $mappingaccountdata->code : '-';
+        $data['account_group']        = (!empty($mappingaccountdata->materialitas->code)) ? $mappingaccountdata->materialitas->code : '-';
+
+        return json_encode($data);
+
     }
 }

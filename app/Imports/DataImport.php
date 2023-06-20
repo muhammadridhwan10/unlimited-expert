@@ -38,7 +38,7 @@ class DataImport implements ToModel, WithHeadingRow
                 'inhouse' => $row['inhouse'],
                 'dr' => $row['dr'],
                 'cr' => $row['cr'],
-                'audited' => $row['audited'],
+                'audited' => ($row['audited'] == 0) ? $row['inhouse'] : $row['audited'],
                 'jan' => $row['jan'],
                 'feb' => $row['feb'],
                 'mar' => $row['mar'],

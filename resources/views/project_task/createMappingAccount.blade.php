@@ -72,6 +72,7 @@
             var iteams_id = $(this).val();
             var url = $(this).data('url');
             var el = $(this);
+            console.log(url);
             $.ajax({
                 url: url,
                 type: 'POST',
@@ -79,31 +80,16 @@
                     'X-CSRF-TOKEN': jQuery('#token').val()
                 },
                 data: {
-                    'id': iteams_id
+                    'mappingaccountdata_id': iteams_id
                 },
                 cache: false,
                 success: function (data) {
                     var item = JSON.parse(data);
-                    // console.log(item)
-                    $(el.parent().parent().find('.inhouse')).val(item.journaldata.inhouse);
-                    $(el.parent().parent().find('.account')).val(item.journaldata.account);
-                    $(el.parent().parent().find('.amount')).html(item.journaldata.audited);
-
-
-                    var inputs = $(".amount");
-                    var subTotal = 0;
-                    for (var i = 0; i < inputs.length; i++) {
-                        subTotal = parseFloat(subTotal) + parseFloat($(inputs[i]).html());
-                    }
-                    $('.subTotal').html(subTotal.toFixed(0));
-
-
-                    var totalItemPrice = 0;
-                    var priceInput = $('.price');
-                    for (var j = 0; j < priceInput.length; j++) {
-                        totalItemPrice += parseFloat(priceInput[j].value);
-                    }
-
+                    console.log(item)
+                    $(el.parent().parent().find('.account_code')).val(item.mappingaccountdata.code);
+                    $(el.parent().parent().find('.account_group')).val(item.mappingaccountdata.materialitas.code);
+                    $(el.parent().parent().find('.materialitas')).val(item.mappingaccountdata.materialitas.name);
+                    $(el.parent().parent().find('.name')).val(item.mappingaccountdata.name);
                 },
             });
         });
@@ -149,25 +135,6 @@
 
         })
 
-        document.addEventListener('DOMContentLoaded', function() {
-        var dueSelect = document.getElementById('due');
-        var accountGroupSelect = document.querySelector('select[name="account_group"]');
-
-        // Tambahkan event listener untuk pemilihan pada elemen accountGroupSelect
-        accountGroupSelect.addEventListener('change', function() {
-            var selectedValue = accountGroupSelect.value;
-
-            if (selectedValue === 'ASET' || selectedValue === 'LIABILITAS') {
-                // Jika memilih 'ASET' atau 'LIABILITAS', aktifkan kembali elemen dueSelect
-                dueSelect.disabled = false;
-                dueSelect.removeAttribute('disabled');
-            } else {
-                // Jika memilih selain 'ASET' atau 'LIABILITAS', nonaktifkan elemen dueSelect
-                dueSelect.disabled = true;
-                dueSelect.setAttribute('disabled', 'disabled');
-            }
-        });
-    });
     </script>
 
 
@@ -175,6 +142,8 @@
 @section('content')
     <div class="row">
         {{ Form::open(['route' => ['save-mappingaccount',[$project->id, \Crypt::encrypt($task->id)]], 'method' => 'post']) }}
+        <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}">
+        <input type="hidden" name="code" class = "form-control code">
         <div class="col-12">
             <div class="card repeater">
                 <div class="item-section py-2">
@@ -193,32 +162,36 @@
                         <table class="table  mb-0 table-custom-style" data-repeater-list="items" id="sortable-table">
                             <thead>
                             <tr>
-                                <th>{{__('Kode')}}</th>
-                                <th>{{__('Nama Mapping Account')}}</th>
-                                <th>{{__('Group Akun')}}</th>
+                                <th>{{__('Mapping Account Name')}}</th>
+                                <th>{{__('Mapping Code')}}</th>
+                                <th>{{__('Account Group')}}</th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
                             </tr>
                             </thead>
 
                             <tbody class="ui-sortable" data-repeater-item>
                             <tr>
 
-                                <td width="15%">
-                                    <div class="form-group input-group search-form">
-                                        {{ Form::text('account_code','', array('class' => 'form-control account_code','required'=>'required','placeholder'=>__('Kode Akun'), 'required'=>'required')) }}
-                                    </div>
+                                <td class="form-group">
+                                    {{ Form::select('item', $mapping_account,'', array('class' => 'form-control select2 item','data-url'=>route('tasks.mappingaccount'),'required'=>'required')) }}
                                 </td>
-                                <td>
-                                    <div class="form-group input-group search-form">
-                                        {{ Form::text('name','', array('class' => 'form-control name','required'=>'required','placeholder'=>__('Nama Mapping Account'),'required'=>'required')) }}
-                                    </div>
+
+                                <td class="form-group">
+                                        {{ Form::text('account_code','', array('class' => 'form-control account_code','readonly' => true,'placeholder'=>__('Mapping Code'))) }}
                                 </td>
-                                <td width="20%">
-                                    <div class="form-group input-group search-form">
-                                        {{ Form::select('account_group',$materialitas,null, array('class' => 'form-control account_group','required'=>'required','required'=>'required')) }}
-                                    </div>
+                                <td class="form-group">
+                                        {{ Form::text('materialitas','', array('class' => 'form-control materialitas','readonly' => true, 'placeholder'=>__('Account Group'))) }}
                                 </td>
                                 <td>
                                     <a href="#" class="ti ti-trash text-white repeater-action-btn bg-danger ms-2 bs-pass-para" data-repeater-delete></a>
+                                </td>
+                                <td class="form-group">
+                                        {{ Form::hidden('account_group','', array('class' => 'form-control account_group','readonly' => true)) }}
+                                </td>
+                                <td class="form-group">
+                                        {{ Form::hidden('name','', array('class' => 'form-control name','readonly' => true)) }}
                                 </td>
                             </tr>
                             </tbody>

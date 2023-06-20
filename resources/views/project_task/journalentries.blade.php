@@ -52,7 +52,7 @@
                     @endforeach
                     @if ($totalDr == 0 && $totalCr == 0)
                         <tr>
-                            <div class="card-header"><h6 class="mb-0">{{__('Journal Data')}}</h6></div>
+                            <div class="card-header"><h6 class="mb-0">{{__('Proposed Adjustment / Reclassification Journal Entries')}}</h6></div>
                         </tr>
                     @elseif ($totalDr == $totalCr)
                         <tr>
@@ -69,7 +69,7 @@
                                     <thead>
                                         <tr>
                                             <th style="text-align: center; width:80px;" scope="col">{{'Adj Code'}}</th>
-                                            <th style="text-align: center; width:250px;" scope="col">{{'Account Name'}}</th>
+                                            <th style="text-align: center; width:500px;" scope="col">{{'Account Name'}}</th>
                                             <th style="text-align: center; width:150px;" scope="col">{{'Adj Dr.'}}</th>
                                             <th style="text-align: center; width:150px;" scope="col">{{'Adj Cr.'}}</th>
                                             <th style="text-align: center;" scope="col">{{'Notes'}}</th>
@@ -84,10 +84,30 @@
                                                             {{ substr_replace($journaldatas->adj_code, ' ', 4, 0) }}
                                                         @endif
                                                     </td>
-                                                    <td style="border: 1px solid black; width:250px;">{{ $journaldatas->lk->account }}</td>
+                                                    <td style="border: 1px solid black; width:500px;">{{ $journaldatas->lk->account }}</td>
                                                     <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($journaldatas->dr))? number_format($journaldatas->dr):'-' }}</td>
                                                     <td style="border: 1px solid black; width:150px; text-align: right;">{{ !empty(number_format($journaldatas->cr))? number_format($journaldatas->cr):'-' }}</td>
                                                     <td style="border: 1px solid black; text-align: center;" width="50%">{{ $journaldatas->notes }}</td>
+                                                    <td>
+                                                        @can('edit project task')
+                                                        <div class="action-btn bg-primary ms-2">
+                                                                <a href="{{ route('journal.data.edit', [$project->id, \Crypt::encrypt($task->id), $journaldatas->id]) }}"
+                                                                   class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="Edit "
+                                                                   data-original-title="{{ __('Edit') }}">
+                                                                    <i class="ti ti-pencil text-white"></i>
+                                                                </a>
+                                                            </div>
+                                                        @endcan
+                                                        @can('edit project task')
+                                                                <div class="action-btn bg-danger ms-2">
+                                                                    {!! Form::open(['method' => 'DELETE', 'route' => array('journal.data.delete',[$project->id, \Crypt::encrypt($task->id), $journaldatas->id]),'class'=>'delete-form-btn','id'=>'delete-form-'.$journaldatas->id]) !!}
+                                                                        <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para" data-bs-toggle="tooltip" title="{{__('Delete')}}" data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$journaldatas->id}}').submit();">
+                                                                            <i class="ti ti-trash text-white"></i>
+                                                                        </a>
+                                                                    {!! Form::close() !!}
+                                                                </div>
+                                                        @endcan
+                                                    </td>
                                                 </tr>
                                                 @php
                                                     $prevAdjCode = $journaldatas->adj_code;

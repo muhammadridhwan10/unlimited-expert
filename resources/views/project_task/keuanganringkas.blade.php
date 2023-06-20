@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 @section('page-title')
-    {{ucwords('Data Keuangan Ringkas')}}
+    {{ucwords('Perbandingan Data Antar Periode')}}
 @endsection
 
 @push('css-page')
@@ -19,7 +19,7 @@
     <li class="breadcrumb-item"><a href="{{route('projects.index')}}">{{__('Project')}}</a></li>
     <li class="breadcrumb-item"><a href="{{route('projects.show',$project->id)}}">    {{ucwords($project->project_name)}}</a></li>
     <li class="breadcrumb-item"><a href="{{route('projects.tasks.index',$project->id)}}">{{__('Task')}}</a></li>
-    <li class="breadcrumb-item">{{__('Data Keuangan Ringkas')}}</li>
+    <li class="breadcrumb-item">{{__('Perbandingan Data Antar Periode')}}</li>
 @endsection
 @push('script-page')
 @endpush
@@ -103,7 +103,7 @@
             </div>
         </div>
     </div> --}}
-    <div class="row">
+    {{-- <div class="row">
         <div class="col-sm-12">
             <div class=" mt-2 " id="multiCollapseExample1">
                 <div class="card overflow-auto" style="overflow-x: scroll;">
@@ -199,7 +199,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
     {{-- <div class="row">
         <div class="col-sm-12">
             <div class=" mt-2 " id="multiCollapseExample1">
@@ -234,7 +234,7 @@
             </div>
         </div>
     </div> --}}
-    <div class="row">
+    {{-- <div class="row">
         <div class="col-sm-12">
             <div class=" mt-2 " id="multiCollapseExample1">
                 <div class="card overflow-auto" style="overflow-x: scroll;">
@@ -375,7 +375,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
     {{-- <div class="row">
         <div class="col-sm-12">
             <div class=" mt-2 " id="multiCollapseExample1">
@@ -426,7 +426,499 @@
             </div>
         </div>
     </div> --}}
+
+    {{-- sebelum difilter --}}
+    {{-- <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="col-12">
+                    <div class="card-header">
+                        <div class="float-end">
+                            @can('create project task')
+                                <a href="{{ route('projects.tasks.create.mappingaccount',[$project->id, $task->id]) }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="{{__('Add Mapping Account')}}">
+                                    <i class="ti ti-plus"></i>
+                                </a>
+                            @endcan
+                        </div>
+                        <h6 class="mb-0">{{__('Financial Statements (Short Form)')}}</h6>
+                    </div>
+                    <div class="card-body table-border-style">
+                        <div class="table-responsive">
+                            <table class="table datatabless">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: center;" scope="col">{{'Code'}}</th>
+                                        <th style="text-align: center;" scope="col">{{'Account Name'}}</th>
+                                        <th style="text-align: center;" scope="col">Kenaikan / (Penurunan) {{$project->book_year}} Unaudited</th>
+                                        <th style="text-align: center;" scope="col">%</th>
+                                        <th style="text-align: center;" scope="col">Kenaikan / (Penurunan) {{$project->book_year}} Audited</th>
+                                        <th style="text-align: center;" scope="col">%</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="list">
+                                    @php
+                                        $accountGroups = [];
+                                        $totals = [];
+                                    @endphp
+
+                                    @if (count(array($data_keuangan)) > 0)
+                                        @foreach ($data_keuangan as $data_keuangans)
+                                            @php
+                                                $accountGroup = $data_keuangans['account_group'];
+                                                if (!isset($accountGroups[$accountGroup])) {
+                                                    $accountGroups[$accountGroup] = [];
+                                                    $totals[$accountGroup] = [
+                                                        'prior_period2_total' => 0,
+                                                        'prior_period_total' => 0,
+                                                        'inhouse_total' => 0,
+                                                        'audited_total' => 0,
+                                                        'kenaikan_penurunan_prior_period_1_total' => 0,
+                                                        'kenaikan_penurunan_prior_period_persen_1_total' => 0,
+                                                        'kenaikan_penurunan_prior_period_2_total' => 0,
+                                                        'kenaikan_penurunan_prior_period_persen_2_total' => 0,
+                                                    ];
+                                                }
+                                                $accountGroups[$accountGroup][] = $data_keuangans;
+                                                $totals[$accountGroup]['prior_period2_total'] += $data_keuangans['prior_period2'];
+                                                $totals[$accountGroup]['prior_period_total'] += $data_keuangans['prior_period'];
+                                                $totals[$accountGroup]['inhouse_total'] += $data_keuangans['inhouse'];
+                                                $totals[$accountGroup]['kenaikan_penurunan_prior_period_1_total'] += $data_keuangans['kenaikan_penurunan_prior_period_1'];
+                                                $totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_1_total'] += $data_keuangans['kenaikan_penurunan_prior_period_persen_1'];
+                                                $totals[$accountGroup]['kenaikan_penurunan_prior_period_2_total'] += $data_keuangans['kenaikan_penurunan_prior_period_2'];
+                                                $totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_2_total'] += $data_keuangans['kenaikan_penurunan_prior_period_persen_2'];
+                                            @endphp
+                                        @endforeach
+
+                                        @foreach ($accountGroups as $accountGroup => $accounts)
+                                            @if (count($accounts) > 0)
+                                                <tr>
+                                                    <th colspan="6">{{ $accountGroup }}</th>
+                                                </tr>
+                                                @foreach ($accounts as $account)
+                                                    <tr>
+                                                        <td style="border: 1px solid black; width:100px;">{{ $account['account_code'] }}</td>
+                                                        <td style="border: 1px solid black; width:100px;">{{ $account['name'] }}</td>
+                                                        <td style="border: 1px solid black; width:150px; text-align: right;">
+                                                            {!!
+                                                                !empty(number_format($account['kenaikan_penurunan_prior_period_1'])) ? (
+                                                                    number_format($account['kenaikan_penurunan_prior_period_1']) < 0 ?
+                                                                    '<span style="color: red;">('.number_format(abs($account['kenaikan_penurunan_prior_period_1'])).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                    '<span style="color: green;">'.number_format($account['kenaikan_penurunan_prior_period_1']).' <i class="fas fa-arrow-up"></i></span>'
+                                                                ) : '-'
+                                                            !!}
+                                                        </td>
+                                                        <td style="border: 1px solid black; width:150px; text-align: right;">
+                                                            {!!
+                                                                !empty(number_format($account['kenaikan_penurunan_prior_period_persen_1'], 2)) ? (
+                                                                    $account['kenaikan_penurunan_prior_period_persen_1'] < 0 ?
+                                                                    '<span style="color: red;">('.number_format(abs($account['kenaikan_penurunan_prior_period_persen_1']), 2).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                    '<span style="color: green;">'.number_format($account['kenaikan_penurunan_prior_period_persen_1'], 2).' <i class="fas fa-arrow-up"></i></span>'
+                                                                ) : '-'
+                                                            !!} %
+                                                        </td>
+
+                                                        <td style="border: 1px solid black; width:150px; text-align: right;">
+                                                            {!!
+                                                                !empty(number_format($account['kenaikan_penurunan_prior_period_2'])) ? (
+                                                                    number_format($account['kenaikan_penurunan_prior_period_2']) < 0 ?
+                                                                    '<span style="color: red;">('.number_format(abs($account['kenaikan_penurunan_prior_period_2'])).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                    '<span style="color: green;">'.number_format($account['kenaikan_penurunan_prior_period_2']).' <i class="fas fa-arrow-up"></i></span>'
+                                                                ) : '-'
+                                                            !!}
+                                                        </td>
+
+                                                        <td style="border: 1px solid black; width:150px; text-align: right;">
+                                                            {!!
+                                                                !empty(number_format($account['kenaikan_penurunan_prior_period_persen_2'], 2)) ? (
+                                                                    $account['kenaikan_penurunan_prior_period_persen_2'] < 0 ?
+                                                                    '<span style="color: red;">('.number_format(abs($account['kenaikan_penurunan_prior_period_persen_2']), 2).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                    '<span style="color: green;">'.number_format($account['kenaikan_penurunan_prior_period_persen_2'], 2).' <i class="fas fa-arrow-up"></i></span>'
+                                                                ) : '-'
+                                                            !!} %
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                                <tr>
+                                                    <td colspan="2" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;"><strong>TOTAL {{ $accountGroup }} :</strong></td>
+                                                    <td style="border: 1px solid black; width:150px; text-align: right; background-color:#008b8b; color:white; font-weight: bold;">
+                                                        {!!
+                                                            !empty(number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_1_total'])) ? (
+                                                                number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_1_total']) < 0 ?
+                                                                '<span style="color: white;">('.number_format(abs($totals[$accountGroup]['kenaikan_penurunan_prior_period_1_total'])).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                '<span style="color: white;">'.number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_1_total']).' <i class="fas fa-arrow-up"></i></span>'
+                                                            ) : '-'
+                                                        !!}
+                                                    </td>
+
+                                                    <td style="border: 1px solid black; width:150px; text-align: right; background-color:#008b8b; color:white; font-weight: bold;">
+                                                        {!!
+                                                            !empty(number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_1_total'], 2)) ? (
+                                                                $totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_1_total'] < 0 ?
+                                                                '<span style="color: white;">('.number_format(abs($totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_1_total']), 2).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                '<span style="color: white;">'.number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_1_total'], 2).' <i class="fas fa-arrow-up"></i></span>'
+                                                            ) : '-'
+                                                        !!} %
+                                                    </td>
+
+                                                    <td style="border: 1px solid black; width:150px; text-align: right; background-color:#008b8b; color:white; font-weight: bold;">
+                                                        {!!
+                                                            !empty(number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_2_total'])) ? (
+                                                                number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_2_total']) < 0 ?
+                                                                '<span style="color: white;">('.number_format(abs($totals[$accountGroup]['kenaikan_penurunan_prior_period_2_total'])).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                '<span style="color: white;">'.number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_2_total']).' <i class="fas fa-arrow-up"></i></span>'
+                                                            ) : '-'
+                                                        !!}
+                                                    </td>
+                                                    <td style="border: 1px solid black; width:150px; text-align: right; background-color:#008b8b; color:white; font-weight: bold;">
+                                                        {!!
+                                                            !empty(number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_2_total'], 2)) ? (
+                                                                $totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_2_total'] < 0 ?
+                                                                '<span style="color: white;">('.number_format(abs($totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_2_total']), 2).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                '<span style="color: white;">'.number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_2_total'], 2).' <i class="fas fa-arrow-up"></i></span>'
+                                                            ) : '-'
+                                                        !!} %
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                        @endforeach
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> --}}
+
+    {{-- sesudah difilter --}}
     <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="col-12">
+                    <div class="card-header">
+                        {{-- <div class="float-end">
+                            @can('create project task')
+                                <a href="{{ route('projects.tasks.create.mappingaccount',[$project->id, $task->id]) }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="{{__('Add Mapping Account')}}">
+                                    <i class="ti ti-plus"></i>
+                                </a>
+                            @endcan
+                        </div> --}}
+                        <h6 class="mb-0">{{__('Perbandingan Data Antar Periode')}}</h6>
+                    </div>
+                    <div class="card-body table-border-style">
+                        <div class="table-responsive">
+                            <table class="table datatabless">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: center;" scope="col">{{'Code'}}</th>
+                                        <th style="text-align: center;" scope="col">{{'Account Name'}}</th>
+                                        <th style="text-align: center; width:150px; white-space: normal;" scope="col">Kenaikan / (Penurunan) {{$project->book_year}} Unaudited</th>
+                                        <th style="text-align: center; width:150px; white-space: normal;" scope="col">%</th>
+                                        <th style="text-align: center; width:150px; white-space: normal;" scope="col">Kenaikan / (Penurunan) {{$project->book_year}} Audited</th>
+                                        <th style="text-align: center; width:150px; white-space: normal;" scope="col">%</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="list">
+                                    @php
+                                        $accountGroups = [];
+                                        $totals = [];
+                                    @endphp
+
+                                    @if (count(array($data_keuangan)) > 0)
+                                        @foreach ($data_keuangan as $data_keuangans)
+                                            @php
+                                                $accountGroup = $data_keuangans['account_group'];
+                                                if (!isset($accountGroups[$accountGroup])) {
+                                                    $accountGroups[$accountGroup] = [];
+                                                    $totals[$accountGroup] = [
+                                                        'prior_period2_total' => 0,
+                                                        'prior_period_total' => 0,
+                                                        'inhouse_total' => 0,
+                                                        'audited_total' => 0,
+                                                        'kenaikan_penurunan_prior_period_1_total' => 0,
+                                                        'kenaikan_penurunan_prior_period_persen_1_total' => 0,
+                                                        'kenaikan_penurunan_prior_period_2_total' => 0,
+                                                        'kenaikan_penurunan_prior_period_persen_2_total' => 0,
+                                                    ];
+                                                }
+                                                $accountGroups[$accountGroup][] = $data_keuangans;
+                                                $totals[$accountGroup]['prior_period2_total'] += $data_keuangans['prior_period2'];
+                                                $totals[$accountGroup]['prior_period_total'] += $data_keuangans['prior_period'];
+                                                $totals[$accountGroup]['inhouse_total'] += $data_keuangans['inhouse'];
+                                                $totals[$accountGroup]['kenaikan_penurunan_prior_period_1_total'] += $data_keuangans['kenaikan_penurunan_prior_period_1'];
+                                                $totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_1_total'] += $data_keuangans['kenaikan_penurunan_prior_period_persen_1'];
+                                                $totals[$accountGroup]['kenaikan_penurunan_prior_period_2_total'] += $data_keuangans['kenaikan_penurunan_prior_period_2'];
+                                                $totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_2_total'] += $data_keuangans['kenaikan_penurunan_prior_period_persen_2'];
+                                            @endphp
+                                        @endforeach
+
+                                        @php
+                                           $sortedAccountGroups = [
+                                                'ASET' => [],
+                                                'LIABILITAS' => [],
+                                                'EKUITAS' => [],
+                                                'PENDAPATAN' => [],
+                                                'BEBAN POKOK PENDAPATAN' => [],
+                                                'BEBAN OPERASIONAL' => [],
+                                                'PENDAPATAN / BEBAN KEUANGAN' => [],
+                                                'PENDAPATAN / BEBAN LAIN-LAIN' => [],
+                                                'BEBAN PAJAK PENGHASILAN' => [],
+                                                'PENGHASILAN KOMPREHENSIF LAIN' => [],
+                                            ];
+                                            foreach ($accountGroups as $accountGroup => $accounts) {
+                                                if (count($accounts) > 0) {
+                                                    $sortedAccountGroups[$accountGroup] = $accounts;
+                                                }
+                                            }
+                                        @endphp
+
+                                        @foreach ($sortedAccountGroups as $accountGroup => $accounts)
+                                            @if (count($accounts) > 0)
+                                                <tr>
+                                                    <th colspan="6">{{ $accountGroup }}</th>
+                                                </tr>
+                                                @foreach ($accounts as $account)
+                                                    <tr>
+                                                        <td style="border: 1px solid black; width:100px;">{{ $account['account_code'] }}</td>
+                                                        <td style="border: 1px solid black; width:100px;">{{ $account['name'] }}</td>
+                                                        <td style="border: 1px solid black; width:150px; text-align: right;">
+                                                            {!!
+                                                                !empty(number_format($account['kenaikan_penurunan_prior_period_1'])) ? (
+                                                                    number_format($account['kenaikan_penurunan_prior_period_1']) < 0 ?
+                                                                    '<span style="color: red;">('.number_format(abs($account['kenaikan_penurunan_prior_period_1'])).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                    '<span style="color: green;">'.number_format($account['kenaikan_penurunan_prior_period_1']).' <i class="fas fa-arrow-up"></i></span>'
+                                                                ) : '-'
+                                                            !!}
+                                                        </td>
+                                                        <td style="border: 1px solid black; width:150px; text-align: right;">
+                                                            {!!
+                                                                !empty(number_format($account['kenaikan_penurunan_prior_period_persen_1'], 2)) ? (
+                                                                    $account['kenaikan_penurunan_prior_period_persen_1'] < 0 ?
+                                                                    '<span style="color: red;">('.number_format(abs($account['kenaikan_penurunan_prior_period_persen_1']), 2).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                    '<span style="color: green;">'.number_format($account['kenaikan_penurunan_prior_period_persen_1'], 2).' <i class="fas fa-arrow-up"></i></span>'
+                                                                ) : '-'
+                                                            !!} %
+                                                        </td>
+
+                                                        <td style="border: 1px solid black; width:150px; text-align: right;">
+                                                            {!!
+                                                                !empty(number_format($account['kenaikan_penurunan_prior_period_2'])) ? (
+                                                                    number_format($account['kenaikan_penurunan_prior_period_2']) < 0 ?
+                                                                    '<span style="color: red;">('.number_format(abs($account['kenaikan_penurunan_prior_period_2'])).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                    '<span style="color: green;">'.number_format($account['kenaikan_penurunan_prior_period_2']).' <i class="fas fa-arrow-up"></i></span>'
+                                                                ) : '-'
+                                                            !!}
+                                                        </td>
+
+                                                        <td style="border: 1px solid black; width:150px; text-align: right;">
+                                                            {!!
+                                                                !empty(number_format($account['kenaikan_penurunan_prior_period_persen_2'], 2)) ? (
+                                                                    $account['kenaikan_penurunan_prior_period_persen_2'] < 0 ?
+                                                                    '<span style="color: red;">('.number_format(abs($account['kenaikan_penurunan_prior_period_persen_2']), 2).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                    '<span style="color: green;">'.number_format($account['kenaikan_penurunan_prior_period_persen_2'], 2).' <i class="fas fa-arrow-up"></i></span>'
+                                                                ) : '-'
+                                                            !!} %
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                                <tr>
+                                                    <td colspan="2" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;"><strong>TOTAL {{ $accountGroup }} :</strong></td>
+                                                    <td style="border: 1px solid black; width:150px; text-align: right; background-color:#008b8b; color:white; font-weight: bold;">
+                                                        {!!
+                                                            !empty(number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_1_total'])) ? (
+                                                                number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_1_total']) < 0 ?
+                                                                '<span style="color: white;">('.number_format(abs($totals[$accountGroup]['kenaikan_penurunan_prior_period_1_total'])).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                '<span style="color: white;">'.number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_1_total']).' <i class="fas fa-arrow-up"></i></span>'
+                                                            ) : '-'
+                                                        !!}
+                                                    </td>
+
+                                                    <td style="border: 1px solid black; width:150px; text-align: right; background-color:#008b8b; color:white; font-weight: bold;">
+                                                        {!!
+                                                            !empty(number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_1_total'], 2)) ? (
+                                                                $totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_1_total'] < 0 ?
+                                                                '<span style="color: white;">('.number_format(abs($totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_1_total']), 2).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                '<span style="color: white;">'.number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_1_total'], 2).' <i class="fas fa-arrow-up"></i></span>'
+                                                            ) : '-'
+                                                        !!} %
+                                                    </td>
+
+                                                    <td style="border: 1px solid black; width:150px; text-align: right; background-color:#008b8b; color:white; font-weight: bold;">
+                                                        {!!
+                                                            !empty(number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_2_total'])) ? (
+                                                                number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_2_total']) < 0 ?
+                                                                '<span style="color: white;">('.number_format(abs($totals[$accountGroup]['kenaikan_penurunan_prior_period_2_total'])).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                '<span style="color: white;">'.number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_2_total']).' <i class="fas fa-arrow-up"></i></span>'
+                                                            ) : '-'
+                                                        !!}
+                                                    </td>
+                                                    <td style="border: 1px solid black; width:150px; text-align: right; background-color:#008b8b; color:white; font-weight: bold;">
+                                                        {!!
+                                                            !empty(number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_2_total'], 2)) ? (
+                                                                $totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_2_total'] < 0 ?
+                                                                '<span style="color: white;">('.number_format(abs($totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_2_total']), 2).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                '<span style="color: white;">'.number_format($totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_2_total'], 2).' <i class="fas fa-arrow-up"></i></span>'
+                                                            ) : '-'
+                                                        !!} %
+                                                    </td>
+                                                </tr>
+                                            @endif
+                                        @endforeach
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <p style="color:red">
+            *Indikator kenaikan dan penurunan untuk akun <strong>PENDAPATAN / BEBAN KEUANGAN</strong>, <strong>PENDAPATAN / BEBAN LAIN-LAIN</strong>, <strong>BEBAN PAJAK PENGHASILAN</strong>, dan <strong>PENGHASILAN KOMPREHENSIF LAIN</strong> belum dapat digunakan, sistem masih dalam pengembangan.
+        </p>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="col-12">
+                    <div class="card-header">
+                        <h6 class="mb-0">{{__('Analysis Summary')}}</h6>
+                    </div>
+                    <div class="card-body">
+                        <div>
+                            <p>
+                                <strong style="color:red">PERHATIAN!</strong> Akun - Akun berikut mengalami kenaikan atau penurunan secara signifikan.
+                            </p>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table datatablesss">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align: center;" scope="col">{{'Code'}}</th>
+                                        <th style="text-align: center;" scope="col">{{'Account Name'}}</th>
+                                        <th style="text-align: center; width:150px;" scope="col">Kenaikan / (Penurunan) {{$project->book_year}} Unaudited</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="list">
+                                    @php
+                                        $accountGroups = [];
+                                        $totals = [];
+                                    @endphp
+
+                                    @if (count(array($data_keuangan)) > 0)
+                                        @foreach ($data_keuangan as $data_keuangans)
+                                            @php
+                                                $accountGroup = $data_keuangans['account_group'];
+                                                if (!isset($accountGroups[$accountGroup])) {
+                                                    $accountGroups[$accountGroup] = [];
+                                                    $totals[$accountGroup] = [
+                                                        'prior_period2_total' => 0,
+                                                        'prior_period_total' => 0,
+                                                        'inhouse_total' => 0,
+                                                        'audited_total' => 0,
+                                                        'kenaikan_penurunan_prior_period_1_total' => 0,
+                                                        'filter_kenaikan_penurunan_prior_period_1_total' => 0,
+                                                        'kenaikan_penurunan_prior_period_persen_1_total' => 0,
+                                                        'kenaikan_penurunan_prior_period_2_total' => 0,
+                                                        'kenaikan_penurunan_prior_period_persen_2_total' => 0,
+                                                    ];
+                                                }
+                                                $accountGroups[$accountGroup][] = $data_keuangans;
+                                                $totals[$accountGroup]['prior_period2_total'] += $data_keuangans['prior_period2'];
+                                                $totals[$accountGroup]['prior_period_total'] += $data_keuangans['prior_period'];
+                                                $totals[$accountGroup]['inhouse_total'] += $data_keuangans['inhouse'];
+                                                $totals[$accountGroup]['kenaikan_penurunan_prior_period_1_total'] += $data_keuangans['kenaikan_penurunan_prior_period_1'];
+                                                $totals[$accountGroup]['filter_kenaikan_penurunan_prior_period_1_total'] += $data_keuangans['filter_kenaikan_penurunan_prior_period_1'];
+                                                $totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_1_total'] += $data_keuangans['kenaikan_penurunan_prior_period_persen_1'];
+                                                $totals[$accountGroup]['kenaikan_penurunan_prior_period_2_total'] += $data_keuangans['kenaikan_penurunan_prior_period_2'];
+                                                $totals[$accountGroup]['kenaikan_penurunan_prior_period_persen_2_total'] += $data_keuangans['kenaikan_penurunan_prior_period_persen_2'];
+                                            @endphp
+                                        @endforeach
+
+                                        @php
+                                        $sortedAccountGroups = [
+                                                'ASET' => [],
+                                                'LIABILITAS' => [],
+                                                'EKUITAS' => [],
+                                                'PENDAPATAN' => [],
+                                                'BEBAN POKOK PENDAPATAN' => [],
+                                                'BEBAN OPERASIONAL' => [],
+                                                'PENDAPATAN / BEBAN KEUANGAN' => [],
+                                                'PENDAPATAN / BEBAN LAIN-LAIN' => [],
+                                                'BEBAN PAJAK PENGHASILAN' => [],
+                                                'PENGHASILAN KOMPREHENSIF LAIN' => [],
+                                            ];
+                                            foreach ($accountGroups as $accountGroup => $accounts) {
+                                                if (count($accounts) > 0) {
+                                                    $sortedAccountGroups[$accountGroup] = $accounts;
+                                                }
+                                            }
+                                        @endphp
+
+                                        @foreach ($sortedAccountGroups as $accountGroup => $accounts)
+                                            @php
+                                                $hasFilteredData = false;
+                                            @endphp
+
+                                            @if (count($accounts) > 0)
+                                                @php
+                                                    $hasFilteredData = collect($accounts)->pluck('filter_kenaikan_penurunan_prior_period_1')->filter()->count() > 0;
+                                                @endphp
+
+                                                @if ($hasFilteredData)
+                                                    <tr>
+                                                        <th colspan="6">{{ $accountGroup }}</th>
+                                                    </tr>
+                                                    @foreach ($accounts as $account)
+                                                        @if (!empty($account['filter_kenaikan_penurunan_prior_period_1']))
+                                                            <tr>
+                                                                <td style="border: 1px solid black; width:100px;">{{ $account['account_code'] }}</td>
+                                                                <td style="border: 1px solid black; width:100px;">{{ $account['name'] }}</td>
+                                                                <td style="border: 1px solid black; width:150px; text-align: right;">
+                                                                    {!!
+                                                                        !empty(number_format($account['filter_kenaikan_penurunan_prior_period_1'])) ? (
+                                                                            number_format($account['filter_kenaikan_penurunan_prior_period_1']) < 0 ?
+                                                                            '<span style="color: red;">('.number_format(abs($account['filter_kenaikan_penurunan_prior_period_1'])).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                            '<span style="color: green;">'.number_format($account['filter_kenaikan_penurunan_prior_period_1']).' <i class="fas fa-arrow-up"></i></span>'
+                                                                        ) : '-'
+                                                                    !!}
+                                                                </td>
+                                                            </tr>
+                                                        @endif
+                                                    @endforeach
+
+                                                    <tr>
+                                                        <td colspan="2" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;"><strong>TOTAL {{ $accountGroup }} :</strong></td>
+                                                        <td style="border: 1px solid black; width:150px; text-align: right; background-color:#008b8b; color:white; font-weight: bold;">
+                                                            {!!
+                                                                !empty(number_format($totals[$accountGroup]['filter_kenaikan_penurunan_prior_period_1_total'])) ? (
+                                                                    number_format($totals[$accountGroup]['filter_kenaikan_penurunan_prior_period_1_total']) < 0 ?
+                                                                    '<span style="color: white;">('.number_format(abs($totals[$accountGroup]['filter_kenaikan_penurunan_prior_period_1_total'])).') <i class="fas fa-arrow-down"></i></span>' :
+                                                                    '<span style="color: white;">'.number_format($totals[$accountGroup]['filter_kenaikan_penurunan_prior_period_1_total']).' <i class="fas fa-arrow-up"></i></span>'
+                                                                ) : '-'
+                                                            !!}
+                                                        </td>
+                                                    </tr>
+                                                @endif
+                                            @endif
+                                        @endforeach
+
+                                    @endif
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    {{-- <div class="row">
         <div class="col-sm-12">
             <div class=" mt-2 " id="multiCollapseExample1">
                 <div class="card overflow-auto" style="overflow-x: scroll;">
@@ -519,7 +1011,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 {{-- {{ Form::close() }} --}}
 @endsection
 

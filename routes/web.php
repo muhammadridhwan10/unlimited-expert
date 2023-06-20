@@ -2849,6 +2849,9 @@ Route::get(
         'XSS',
     ]
 );
+Route::delete('projects/{pid}/task/{tid}/delete/{id}', 'ProjectTaskController@destroyJournalData')->name('journal.data.delete');
+Route::get('projects/{pid}/task/{tid}/edit/{id}', 'ProjectTaskController@editJournalData')->name('journal.data.edit');
+Route::put('projects/{pid}/task/{tid}/update/{id}', 'ProjectTaskController@updateJournalData')->name('journal.data.update');
 
 Route::get(
     '/projects/{pid}/task/{tid}/create-mapping-account', [
@@ -4039,6 +4042,7 @@ Route::get(
 );
 
 Route::post('tasks/materialitas', 'ProjectTaskController@materialitas')->name('tasks.materialitas');
+Route::post('tasks/mappingaccountdata', 'ProjectTaskController@mappingaccountdata')->name('tasks.mappingaccount');
 Route::post('tasks/journaldata', 'ProjectTaskController@journaldata')->name('journal.data');
 Route::post('/import/project-financial-statement/{pid}', 'ProjectTaskController@import')->name('import');
 

@@ -214,13 +214,13 @@
                                         @if($key == '11' || $key == '12' || $key == '13' || $key == '14' || $key == '15')
                                             <div class="col-sm-3 col-md-12">    
                                                 <div class="form-group">
-                                                    {{ Form::text('2020', number_format($data_2020), ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold; text-align: right;']) }}
+                                                    {{ Form::text('2020', ($data_2020 != 0) ? (($data_2020 < 0) ? '('.number_format(abs($data_2020)).')' : number_format($data_2020)) : '-',  ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold; text-align: right;']) }}
                                                 </div>
                                             </div>
                                         @else
                                             <div class="col-sm-3 col-md-12">
                                                 <div class="form-group">
-                                                    {{ Form::text('2020', number_format($data_2020), ['class' => 'form-control','readonly'=>'true', 'style' => 'text-align: right;']) }}
+                                                    {{ Form::text('2020', ($data_2020 != 0) ? (($data_2020 < 0) ? '('.number_format(abs($data_2020)).')' : number_format($data_2020)) : '-', ['class' => 'form-control','readonly'=>'true', 'style' => 'text-align: right;']) }}
                                                 </div>
                                             </div>
                                         @endif
@@ -249,13 +249,13 @@
                                              @if($key == '11' || $key == '12' || $key == '13' || $key == '14' || $key == '15')
                                             <div class="col-sm-3 col-md-12">
                                                 <div class="form-group">
-                                                    {{ Form::text('2021', number_format($data_2021), ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold; text-align: right;']) }}
+                                                    {{ Form::text('2021', ($data_2021 != 0) ? (($data_2021 < 0) ? '('.number_format(abs($data_2021)).')' : number_format($data_2021)) : '-',  ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold; text-align: right;']) }}
                                                 </div>
                                             </div>
                                             @else
                                                 <div class="col-sm-3 col-md-12">
                                                     <div class="form-group">
-                                                        {{ Form::text('2021', number_format($data_2021), ['class' => 'form-control','readonly'=>'true', 'style' => 'text-align: right;']) }}
+                                                        {{ Form::text('2021', ($data_2021 != 0) ? (($data_2021 < 0) ? '('.number_format(abs($data_2021)).')' : number_format($data_2021)) : '-', ['class' => 'form-control','readonly'=>'true', 'style' => 'text-align: right;']) }}
                                                     </div>
                                                 </div>
                                             @endif
@@ -284,13 +284,13 @@
                                             @if($key == '11' || $key == '12' || $key == '13' || $key == '14' || $key == '15')
                                             <div class="col-sm-3 col-md-12">    
                                                 <div class="form-group">
-                                                    {{ Form::text('inhouse', number_format($data_in_2022), ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold; text-align: right;']) }}
+                                                    {{ Form::text('inhouse', ($data_in_2022 != 0) ? (($data_in_2022 < 0) ? '('.number_format(abs($data_in_2022)).')' : number_format($data_in_2022)) : '-',  ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold; text-align: right;']) }}
                                                 </div>
                                             </div>
                                             @else
                                                 <div class="col-sm-3 col-md-12">
                                                     <div class="form-group">
-                                                        {{ Form::text('inhouse', number_format($data_in_2022), ['class' => 'form-control','readonly'=>'true', 'style' => 'text-align: right;']) }}
+                                                        {{ Form::text('inhouse', ($data_in_2022 != 0) ? (($data_in_2022 < 0) ? '('.number_format(abs($data_in_2022)).')' : number_format($data_in_2022)) : '-', ['class' => 'form-control','readonly'=>'true', 'style' => 'text-align: right;']) }}
                                                     </div>
                                                 </div>
                                             @endif
@@ -319,13 +319,13 @@
                                             @if($key == '11' || $key == '12' || $key == '13' || $key == '14' || $key == '15')
                                             <div class="col-sm-3 col-md-12">    
                                                 <div class="form-group">
-                                                    {{ Form::text('audited', number_format($data_au_2022), ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold; text-align: right;']) }}
+                                                    {{ Form::text('audited', ($data_au_2022 != 0) ? (($data_au_2022 < 0) ? '('.number_format(abs($data_au_2022)).')' : number_format($data_au_2022)) : '-',  ['class' => 'form-control','readonly'=>'true','style' => 'background-color:#008b8b; color:white; font-weight: bold; text-align: right;']) }}
                                                 </div>
                                             </div>
                                             @else
                                                 <div class="col-sm-3 col-md-12">
                                                     <div class="form-group">
-                                                        {{ Form::text('audited', number_format($data_au_2022), ['class' => 'form-control','readonly'=>'true', 'style' => 'text-align: right;']) }}
+                                                       {{ Form::text('audited', ($data_au_2022 != 0) ? (($data_au_2022 < 0) ? '('.number_format(abs($data_au_2022)).')' : number_format($data_au_2022)) : '-', ['class' => 'form-control','readonly'=>'true', 'style' => 'text-align: right;']) }}
                                                     </div>
                                                 </div>
                                             @endif
@@ -342,7 +342,14 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="col-12">
-                    <div class="card-header"><h6 class="mb-0">{{__('Rule of thumb penentuan margin (ISA Guidance 3th Edition) :')}}</h6></div>
+                    <div class="card-header"><h6 class="mb-0">{{__('Overall Materiality ')}}</h6>
+                    <br>
+                    <p>
+                        <strong>
+                                Reference : https://
+                        </strong>
+                    </p>
+                    </div>
                     <div class="card-body">
                         <div class="row">
                                 <div class="col-sm-3 col-md-4">
@@ -422,7 +429,7 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="col-12">
-                    <div class="card-header"><h6 class="mb-0">{{__('Ringkasan Materialitas')}}</h6></div>
+                    <div class="card-header"><h6 class="mb-0">{{__('Summary')}}</h6></div>
                     <div class="card-body">
                         <div class="row">
                                 <div class="col-sm-3 col-md-4">
@@ -442,7 +449,7 @@
                                 </div>
                                 <div class="col-sm-3 col-md-2">
                                     <div class="form-group">
-                                        <p style= 'text-align:center'><b>PM Rate % and TE Rate %</b></p>
+                                        <p style= 'text-align:center'><b>Rate %</b></p>
                                     </div>
                                 </div>
                         </div>
@@ -592,7 +599,18 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="col-12">
-                    <div class="card-header"><h6 class="mb-0">{{__('Auditor Notes')}}</h6></div>
+                    <div class="card-header"><h6 class="mb-0">{{__('Auditor Notes')}}</h6>
+                    <br>
+                    <p>
+                        <strong>
+                                Reference : https://
+                        </strong>
+                    </p>
+                    <p>
+                        Berdasarkan hasil diskusi, materialitas pada tingkat laporan keuangan ditentukan sebesar <strong> {{$valuemateriality->rate }}% </strong> dari  <strong> {{$valuemateriality->materiality->name }}. </strong>
+                    </p>
+                    
+                    </div>
                     <div class="card-body">
                         <div class="row">
                                 <div class="col-sm-12 col-md-12">

@@ -6,7 +6,7 @@
             <div class="col-md-12">
                 <div class="form-group">
                     {{Form::label('employee_id',__('Employee') ,['class'=>'form-label'])}}
-                    {{Form::select('employee_id',$employees,null,array('class'=>'form-control select','id'=>'employee_id','placeholder'=>__('Select Employee')))}}
+                    {{Form::select('employee_id',$employees,null,array('class'=>'form-control select2','id'=>'employee_id','placeholder'=>__('Select Employee')))}}
                 </div>
             </div>
         </div>

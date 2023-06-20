@@ -14,4 +14,9 @@ class MappingAccount extends Model
     protected $fillable = [
         'project_id', 'task_id', 'account_code', 'name', 'account_group'
     ];
+
+    public function materialitas()
+    {
+        return $this->belongsTo('App\Models\Materialitas', 'account_group', 'code');
+    }
 }

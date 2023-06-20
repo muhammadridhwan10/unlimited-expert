@@ -74,15 +74,23 @@
         IntitalizeFireBaseMessaging();
     </script>
     <script>
+        
         @if(!empty($employeeAttendance) && $employeeAttendance->clock_out == '00:00:00')
-            var startTime = new Date({{ strtotime($employeeAttendance->clock_in) }} * 1000).getTime();
+            var startTime = localStorage.getItem("startTime"); // Mengambil startTime dari localStorage
             var currentTime = new Date().getTime();
             var timeDifference = currentTime - startTime;
-            var timerInterval = setInterval(updateTimer, 1000);
+            var isPaused = localStorage.getItem("isPaused") === "true"; // Menyimpan status pause pada localStorage
+            var pausedTime = localStorage.getItem("pausedTime") || 0; // Mengambil waktu yang dijeda dari localStorage
+            var timerInterval;
 
+            // Fungsi untuk memperbarui timer
             function updateTimer() {
                 var currentTime = new Date().getTime();
                 var timeDifference = currentTime - startTime;
+
+                if (isPaused) {
+                    timeDifference -= pausedTime;
+                }
 
                 var hours = Math.floor(timeDifference / (1000 * 60 * 60)).toString().padStart(2, '0');
                 var minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
@@ -90,9 +98,42 @@
 
                 document.getElementById("timer").innerHTML = hours + ":" + minutes + ":" + seconds;
             }
+
+            // Fungsi untuk mengecek waktu dan melakukan pause/resume timer
+            function checkTime() {
+                var currentTime = new Date();
+
+                if (currentTime.getHours() === 12 && currentTime.getMinutes() === 0 && !isPaused) {
+                    clearInterval(timerInterval); // Pause timer
+                    isPaused = true;
+                    pausedTime = new Date().getTime() - startTime;
+                    localStorage.setItem("isPaused", "true"); // Menyimpan status pause pada localStorage
+                    localStorage.setItem("pausedTime", pausedTime); // Menyimpan waktu yang dijeda pada localStorage
+                    document.getElementById("timer").innerHTML = "Time to Rest";
+                } else if (currentTime.getHours() === 13 && currentTime.getMinutes() === 0 && isPaused) {
+                    isPaused = false;
+                    localStorage.removeItem("isPaused"); // Menghapus status pause dari localStorage
+                    startTime = new Date().getTime() - pausedTime; // Resume timer
+                    localStorage.setItem("startTime", startTime); // Menyimpan startTime pada localStorage
+                    timerInterval = setInterval(updateTimer, 1000);
+                }
+            }
+
+            if (!startTime) {
+                startTime = new Date().getTime(); // Jika startTime belum ada, inisialisasikan dengan waktu saat ini
+                localStorage.setItem("startTime", startTime); // Menyimpan startTime pada localStorage
+            }
+
+            timerInterval = setInterval(updateTimer, 1000); // Memulai timer
+            checkTime(); // Mengecek waktu saat memuat halaman
+
+            // Memeriksa waktu setiap detik
+            setInterval(checkTime, 1000);
         @else
+            localStorage.removeItem("startTime");
             document.getElementById("timer").innerHTML = "00:00:00";
         @endif
+
     </script>
 @endpush
 @push('css-page')

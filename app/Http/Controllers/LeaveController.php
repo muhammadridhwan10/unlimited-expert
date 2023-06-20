@@ -11,6 +11,7 @@ use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Mail\LeaveNotification;
+use App\Mail\LeaveApprovalNotification;
 use Illuminate\Support\Facades\Mail;
 
 class LeaveController extends Controller
@@ -62,7 +63,7 @@ class LeaveController extends Controller
     {
         if(\Auth::user()->can('create leave'))
         {
-            if(Auth::user()->type !=='admin' || Auth::user()->type !=='company')
+            if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
             {
                 $employees         = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
                 $leavetypes        = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
@@ -148,7 +149,7 @@ class LeaveController extends Controller
             $leave->save();
 
             //Email Notification
-            $user = User::where('id', 9)->first();
+            $user = User::where('id', $leave->approval)->first();
             $email = $user->email;
             Mail::to($email)->send(new LeaveNotification($leave));
 
@@ -366,12 +367,17 @@ class LeaveController extends Controller
             $startDate               = new \DateTime($leave->start_date);
             $endDate                 = new \DateTime($leave->end_date);
             $interval                = $startDate->diff($endDate);
-            $total_leave_days        = $interval->days + 1; // Tambahkan 1 karena Anda ingin memasukkan juga hari terakhir
+            $total_leave_days        = $interval->days + 1;
             $leave->total_leave_days = $total_leave_days;
             $leave->status           = 'Approved';
         }
 
         $leave->save();
+
+        //Email Notification
+        $employee = Employee::where('id', $leave->employee_id)->first();
+        $email = $employee->email;
+        Mail::to($email)->send(new LeaveApprovalNotification($leave));
 
         //Send Email
 //         $setings = Utility::settings();

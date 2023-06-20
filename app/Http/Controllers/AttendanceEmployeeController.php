@@ -592,7 +592,9 @@ class AttendanceEmployeeController extends Controller
                 AttendanceEmployee::where('id',$id)->update($attendanceEmployee);
                 //                $attendanceEmployee->save();
 
-                return redirect()->route('hrm.dashboard')->with('success', __('Employee successfully clock Out.'));
+                return redirect()->back()->with('success', __('Employee Successfully Clock Out.'));
+
+                // return redirect()->route('hrm.dashboard')->with('success', __('Employee successfully clock Out.'));
             }
             else
             {
