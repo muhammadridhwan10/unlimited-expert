@@ -102,21 +102,30 @@ class ProjectTask extends Model
         'CRJE' => 'PAJE',
     ];
 
-    public static $rasio_keuangan = [
+    public static $rasio_likuiditas = [
         'CURA' => 'CURRENT RATIO',
         'QURA' => 'QUICK RATIO',
         'CARA' => 'CASH RATIO',
-        'DETARA' => 'DEBT TO ASSET RATIO',
-        'DETERA' => 'DEBT TO EQUITY RATIO',
-        'TATURA' => 'TOTAL ASSET TURNOVER RATIO',
-        'RETURA' => 'RECEIVABLE TURNOVER RATIO',
-        'RETURAH' => 'RECEIVABLE TURNOVER RATIO (HARI)',
-        'INTURA' => 'INVENTORY TURNOVER RATIO',
+    ];
+
+    public static $rasio_profitabilitas = [
         'GPM' => 'GROSS PROFIT MARGIN',
         'OPM' => 'OPERATING PROFIT MARGIN',
         'NPM' => 'NET PROFIT MARGIN',
         'ROA' => 'RETURN ON ASSET',
         'ROE' => 'RETURN ON EQUITY',
+    ];
+
+    public static $rasio_utang = [
+        'DETERA' => 'DEBT TO EQUITY RATIO',
+        'DETARA' => 'DEBT TO ASSET RATIO',
+        'NPM' => 'NET PROFIT MARGIN',
+        'ROA' => 'RETURN ON ASSET',
+        'ROE' => 'RETURN ON EQUITY',
+        'TATURA' => 'TOTAL ASSET TURNOVER RATIO',
+        'RETURA' => 'RECEIVABLE TURNOVER RATIO',
+        'RETURAH' => 'RECEIVABLE TURNOVER RATIO (HARI)',
+        'INTURA' => 'INVENTORY TURNOVER RATIO',
     ];
 
     public static $lancar = [

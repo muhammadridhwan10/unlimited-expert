@@ -35,6 +35,7 @@
             <div class=" mt-2 " id="multiCollapseExample1">
                 <div class="card overflow-auto" style="overflow-x: scroll;">
                     <div class="card-body">
+                    <div class="card-header"><h6 class="mb-0">{{__('Rasio Likuiditas')}}</h6></div>
                         <table class="table datatables">
                             <thead>
                                 <tr>
@@ -46,7 +47,44 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($summary_rasio_keuangan as $data)
+                                @foreach($rasio_likuiditas as $data)
+                                    <tr>
+                                        <td style="border: 1px solid black;">{{$data['akun']}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{!empty($data['data_2020'])? ($data['data_2020'] != '0.00' ? $data['data_2020'] : '-') : '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{!empty($data['data_2021'])? ($data['data_2021'] != '0.00' ? $data['data_2021'] : '-') : '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{!empty($data['data_in_2022'])? ($data['data_in_2022'] != '0.00' ? $data['data_in_2022'] : '-') : '-'}}</td>
+                                        <td style="border: 1px solid black; width:150px; text-align: right;">{{!empty($data['data_au_2022'])? ($data['data_au_2022'] != '0.00' ? $data['data_au_2022'] : '-') : '-'}}</td>
+                                    </tr>
+                                @endforeach  
+                            </tbody>
+                        </table>
+
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <div class=" mt-2 " id="multiCollapseExample1">
+                <div class="card overflow-auto" style="overflow-x: scroll;">
+                    <div class="card-body">
+                    <div class="card-header"><h6 class="mb-0">{{__('Rasio Profitabilitas')}}</h6></div>
+                        <table class="table datatabless">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: center;" scope="col">Rasio Keuangan</th>
+                                    <th style="text-align: center;" scope="col">{{date(' Y', strtotime('-3 year', strtotime($project->book_year)))}}</th>
+                                    <th style="text-align: center;" scope="col">{{date(' Y', strtotime('-2 year', strtotime($project->book_year)))}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Inhouse ' . $project->book_year}}</th>
+                                    <th style="text-align: center;" scope="col">{{'Audited ' . $project->book_year}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($rasio_profitabilitas as $data)
                                     <tr>
                                         <td style="border: 1px solid black;">{{$data['akun']}}</td>
                                         <td style="border: 1px solid black; width:150px; text-align: right;">{{!empty($data['data_2020'])? ($data['data_2020'] != '0.00' ? $data['data_2020'] : '-') : '-'}}</td>

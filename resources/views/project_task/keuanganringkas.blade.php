@@ -19,7 +19,7 @@
     <li class="breadcrumb-item"><a href="{{route('projects.index')}}">{{__('Project')}}</a></li>
     <li class="breadcrumb-item"><a href="{{route('projects.show',$project->id)}}">    {{ucwords($project->project_name)}}</a></li>
     <li class="breadcrumb-item"><a href="{{route('projects.tasks.index',$project->id)}}">{{__('Task')}}</a></li>
-    <li class="breadcrumb-item">{{__('Perbandingan Data Antar Periode')}}</li>
+    <li class="breadcrumb-item">{{__($task->name)}}</li>
 @endsection
 @push('script-page')
 @endpush
@@ -916,6 +916,45 @@
             </div>
         </div>
     </div>
+{{ Form::open(['route' => ['notes.analysis', [$project->id, $task->id]], 'method' => 'post']) }}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="col-12">
+                    <div class="card-header"><h6 class="mb-0">{{__('Auditor Notes')}}</h6>
+                    <br>
+                    <p>
+                        <strong>
+                                Reference : https://
+                        </strong>
+                    </p>
+                    
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                                <div class="col-sm-12 col-md-12">
+                                    <div class="form-group">
+                                        <div class="col-sm-12 col-md-12">
+                                                <div class="form-group">
+                                                @if(isset($notesanalysis->notes))
+                                                    {{ Form::textarea('notes', $notesanalysis->notes, ['class' => 'form-control notes']) }}
+                                                @else
+                                                    {{ Form::textarea('notes', null, ['class' => 'form-control notes']) }}
+                                                @endif
+                                                </div>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <input type="submit" value="{{__('Save')}}" class="btn btn-simpan  btn-primary">
+    </div>
+{{ Form::close() }}
 
     
     {{-- <div class="row">

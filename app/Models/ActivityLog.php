@@ -169,6 +169,10 @@ class ActivityLog extends Model
             {
                 return $user_name . ' ' . __('Create Summary Materiality') . " <b>" . $remark['title'] . "</b>";
             }
+            elseif($this->log_type == 'Create Notes Analysis Perbandingan Data Antar Periode')
+            {
+                return $user_name . ' ' . __('Create Notes Analysis Perbandingan Data Antar Periode') . " <b>" . $remark['title'] . "</b>";
+            }
         }
         else
         {
@@ -319,6 +323,10 @@ class ActivityLog extends Model
                 $icon = 'pencil';
             }
             else if($type == 'Create Summary Materiality')
+            {
+                $icon = 'pencil';
+            }
+            else if($type == 'Create Notes Analysis Perbandingan Data Antar Periode')
             {
                 $icon = 'pencil';
             }

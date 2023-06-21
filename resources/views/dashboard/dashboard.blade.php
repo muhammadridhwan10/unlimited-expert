@@ -161,14 +161,14 @@
             function checkTime() {
                 var currentTime = new Date();
 
-                if (currentTime.getHours() === 12 && currentTime.getMinutes() === 0 && !isPaused) {
+                if (currentTime.getHours() === 12 && currentTime.getMinutes() === 00 && !isPaused) {
                     clearInterval(timerInterval); // Pause timer
                     isPaused = true;
                     pausedTime = new Date().getTime() - startTime;
                     localStorage.setItem("isPaused", "true"); // Menyimpan status pause pada localStorage
                     localStorage.setItem("pausedTime", pausedTime); // Menyimpan waktu yang dijeda pada localStorage
                     document.getElementById("timer").innerHTML = "Time to Rest";
-                } else if (currentTime.getHours() === 13 && currentTime.getMinutes() === 0 && isPaused) {
+                } else if (currentTime.getHours() === 13 && currentTime.getMinutes() === 00 && isPaused) {
                     isPaused = false;
                     localStorage.removeItem("isPaused"); // Menghapus status pause dari localStorage
                     startTime = new Date().getTime() - pausedTime; // Resume timer

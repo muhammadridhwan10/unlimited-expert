@@ -32,6 +32,7 @@ use App\Models\ValueMaterialitas;
 use App\Models\SummaryMateriality;
 use App\Models\AuditMemorandum;
 use App\Models\SummaryJournalData;
+use App\Models\NotesAnalysis;
 use Illuminate\Support\Facades\Crypt;
 use App\Mail\CommentNotification;
 
@@ -2802,6 +2803,7 @@ class ProjectTaskController extends Controller
             $mapping_accounts                   = MappingAccount::where('project_id', $project_id)->get();
             $summart_materialitas               = SummaryMateriality::where('project_id', $project_id)->orderBy('id', 'DESC')->first();
             $data_initialmaterialityom          = $summart_materialitas->initialmaterialityom;
+            $notesanalysis                      = NotesAnalysis::where('project_id', $project_id)->orderBy('id', 'DESC')->first();
 
             $data_keuangan = $mapping_accounts->map(function ($mapping_account) use ($financial_statement, $data_initialmaterialityom) {
                 $account_code = $mapping_account->account_code;
@@ -3983,13 +3985,38 @@ class ProjectTaskController extends Controller
             // }
              
             return view('project_task.keuanganringkas', compact(
-                'task','project','materialitas','financial_statement','data_keuangan'
+                'task','project','materialitas','financial_statement','data_keuangan','notesanalysis',
             ));
         }
         else
         {
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
+    }
+
+    public function notesAnalysis(Request $request, $project_id, $task_id)
+    {
+
+        // Simpan data ke dalam database menggunakan model
+        $data = new NotesAnalysis();
+        $data->project_id = $project_id;
+        $data->task_id = $task_id;
+        $data->notes = $request->notes;
+
+        $data->save();
+
+        ActivityLog::create(
+            [
+                'user_id' => \Auth::user()->id,
+                'project_id' => $project_id,
+                'task_id' => $task_id,
+                'log_type' => 'Create Notes Analysis Perbandingan Data Antar Periode',
+                'remark' => json_encode(['title' => 'Create Notes Analysis Perbandingan Data Antar Periode']),
+            ]
+        );
+
+        return redirect()->back()->with('success', __('Notes Analysis Perbandingan Data Antar Periode added successfully.'));
+
     }
 
     public function showproseduranalisis($project_id, $task_id)
@@ -4118,13 +4145,13 @@ class ProjectTaskController extends Controller
             $project                            = Project::find($project_id);
             $task                               = ProjectTask::find($id);
 
-            $summary_rasio_keuangan = [];
+            $rasio_likuiditas = [];
             
             $financial_statement = FinancialStatement::where('project_id', $project_id)->whereIn('cn', ['CA', 'NCA', 'CL', 'NCL'])->get(['cn', 'prior_period2', 'prior_period', 'inhouse', 'audited',
             'jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec']);
 
             //data persediaan
-            $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', 'LK.7')->get();
+            $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', 'LK.9')->get();
             $data_persediaan_2020 = $data_lk->pluck('prior_period2')->toArray();
             $total_persediaan_2020 = array_sum($data_persediaan_2020);
             $data_persediaan_2021 = $data_lk->pluck('prior_period')->toArray();
@@ -4146,14 +4173,14 @@ class ProjectTaskController extends Controller
             $total_kas_setara_kas_au_2022 = array_sum($data_kas_setara_kas_au_2022);
 
             //data pendapatan
-            $data_lk_pendapatan = FinancialStatement::where('project_id', $project_id)->where('lk', '=', 'LK.30')->get();
-            $data_pendapatan_2020 = $data_lk_pendapatan->pluck('prior_period2')->toArray();
+            $data_m_pendapatan = FinancialStatement::where('project_id', $project_id)->where('m', '=', 'M.4')->get();
+            $data_pendapatan_2020 = $data_m_pendapatan->pluck('prior_period2')->toArray();
             $total_pendapatan_2020 = array_sum($data_pendapatan_2020);
-            $data_pendapatan_2021 = $data_lk_pendapatan->pluck('prior_period')->toArray();
+            $data_pendapatan_2021 = $data_m_pendapatan->pluck('prior_period')->toArray();
             $total_pendapatan_2021 = array_sum($data_pendapatan_2021);
-            $data_pendapatan_in_2022 = $data_lk_pendapatan->pluck('inhouse')->toArray();
+            $data_pendapatan_in_2022 = $data_m_pendapatan->pluck('inhouse')->toArray();
             $total_pendapatan_in_2022 = array_sum($data_pendapatan_in_2022);
-            $data_pendapatan_au_2022 = $data_lk_pendapatan->pluck('audited')->toArray();
+            $data_pendapatan_au_2022 = $data_m_pendapatan->pluck('audited')->toArray();
             $total_pendapatan_au_2022 = array_sum($data_pendapatan_au_2022);
 
             //data piutang usaha pihak berelasi
@@ -4252,105 +4279,40 @@ class ProjectTaskController extends Controller
                 $total_liabilitas_au_2022 += $total_au_2022[$m];
             }
 
+            //Mencari nilai total aset
+            $total_aset                 = ValueMaterialitas::where('project_id', $project_id)->where('materialitas_id', 1)->first();
+            $total_aset_2020            = $total_aset->prior_period2;
+            $total_aset_2021            = $total_aset->prior_period;
+            $total_aset_in_2022         = $total_aset->inhouse;
+            $total_aset_au_2022         = $total_aset->audited;
+
             //Mencari nilai total ekuitas
-            $total_ekuitas_2020 = 0;
-            $total_ekuitas_2021 = 0;
-            $total_ekuitas_in_2022 = 0;
-            $total_ekuitas_au_2022 = 0;
-            
-            for ($i = 26; $i <= 29; $i++) {
-                $m = 'LK.' . $i;
-                $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
-
-                $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
-                $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
-                $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
-                $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
-                $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
-                $total_in_2022[$m] = array_sum($data_in_2022[$m]);
-                $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
-                $total_au_2022[$m] = array_sum($data_au_2022[$m]);
-                
-
-                $total_ekuitas_2020 += $total_lk_2020[$m];
-                $total_ekuitas_2021 += $total_lk_2021[$m];
-                $total_ekuitas_in_2022 += $total_in_2022[$m];
-                $total_ekuitas_au_2022 += $total_au_2022[$m];
-            }
+            $total_ekuitas                 = ValueMaterialitas::where('project_id', $project_id)->where('materialitas_id', 3)->first();
+            $total_ekuitas_2020            = $total_ekuitas->prior_period2;
+            $total_ekuitas_2021            = $total_ekuitas->prior_period;
+            $total_ekuitas_in_2022         = $total_ekuitas->inhouse;
+            $total_ekuitas_au_2022         = $total_ekuitas->audited;
 
             //Mencari nilai total laba kotor
-            $total_laba_kotor_2020 = 0;
-            $total_laba_kotor_2021 = 0;
-            $total_laba_kotor_in_2022 = 0;
-            $total_laba_kotor_au_2022 = 0;
-            
-            for ($i = 30; $i <= 31; $i++) {
-                $m = 'LK.' . $i;
-                $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
-
-                $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
-                $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
-                $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
-                $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
-                $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
-                $total_in_2022[$m] = array_sum($data_in_2022[$m]);
-                $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
-                $total_au_2022[$m] = array_sum($data_au_2022[$m]);
-
-                $total_laba_kotor_2020 += $total_lk_2020[$m];
-                $total_laba_kotor_2021 += $total_lk_2021[$m];
-                $total_laba_kotor_in_2022 += $total_in_2022[$m];
-                $total_laba_kotor_au_2022 += $total_au_2022[$m];
-            }
+            $laba_bruto                 = ValueMaterialitas::where('project_id', $project_id)->where('materialitas_id', 11)->first();
+            $total_laba_kotor_2020      = $laba_bruto->prior_period2;
+            $total_laba_kotor_2021      = $laba_bruto->prior_period;
+            $total_laba_kotor_in_2022   = $laba_bruto->inhouse;
+            $total_laba_kotor_au_2022   = $laba_bruto->audited;
 
             //Mencari nilai total laba bersih sebelum pajak
-            $total_laba_bersih_sebelum_pajak_2020 = 0;
-            $total_laba_bersih_sebelum_pajak_2021 = 0;
-            $total_laba_bersih_sebelum_pajak_in_2022 = 0;
-            $total_laba_bersih_sebelum_pajak_au_2022 = 0;
-            
-            for ($i = 32; $i <= 34; $i++) {
-                $m = 'LK.' . $i;
-                $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
-
-                $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
-                $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
-                $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
-                $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
-                $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
-                $total_in_2022[$m] = array_sum($data_in_2022[$m]);
-                $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
-                $total_au_2022[$m] = array_sum($data_au_2022[$m]);
-
-                $total_laba_bersih_sebelum_pajak_2020 += $total_lk_2020[$m];
-                $total_laba_bersih_sebelum_pajak_2021 += $total_lk_2021[$m];
-                $total_laba_bersih_sebelum_pajak_in_2022 += $total_in_2022[$m];
-                $total_laba_bersih_sebelum_pajak_au_2022 += $total_au_2022[$m];
-            }
+            $total_laba_bersih_sebelum_pajak           = ValueMaterialitas::where('project_id', $project_id)->where('materialitas_id', 13)->first();
+            $total_laba_bersih_sebelum_pajak_2020      = $total_laba_bersih_sebelum_pajak->prior_period2;
+            $total_laba_bersih_sebelum_pajak_2021      = $total_laba_bersih_sebelum_pajak->prior_period;
+            $total_laba_bersih_sebelum_pajak_in_2022   = $total_laba_bersih_sebelum_pajak->inhouse;
+            $total_laba_bersih_sebelum_pajak_au_2022   = $total_laba_bersih_sebelum_pajak->audited;
 
             //Mencari nilai total laba bersih setelah pajak
-            $total_laba_bersih_setelah_pajak_2020 = 0;
-            $total_laba_bersih_setelah_pajak_2021 = 0;
-            $total_laba_bersih_setelah_pajak_in_2022 = 0;
-            $total_laba_bersih_setelah_pajak_au_2022 = 0;
-            
-            $i = 35;
-            $m = 'LK.' . $i;
-            $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
-
-            $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
-            $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
-            $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
-            $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
-            $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
-            $total_in_2022[$m] = array_sum($data_in_2022[$m]);
-            $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
-            $total_au_2022[$m] = array_sum($data_au_2022[$m]);
-
-            $total_laba_bersih_setelah_pajak_2020 += $total_lk_2020[$m];
-            $total_laba_bersih_setelah_pajak_2021 += $total_lk_2021[$m];
-            $total_laba_bersih_setelah_pajak_in_2022 += $total_in_2022[$m];
-            $total_laba_bersih_setelah_pajak_au_2022 += $total_au_2022[$m];
+            $total_laba_bersih_setelah_pajak           = ValueMaterialitas::where('project_id', $project_id)->where('materialitas_id', 14)->first();
+            $total_laba_bersih_setelah_pajak_2020      = $total_laba_bersih_setelah_pajak->prior_period2;
+            $total_laba_bersih_setelah_pajak_2021      = $total_laba_bersih_setelah_pajak->prior_period;
+            $total_laba_bersih_setelah_pajak_in_2022   = $total_laba_bersih_setelah_pajak->inhouse;
+            $total_laba_bersih_setelah_pajak_au_2022   = $total_laba_bersih_setelah_pajak->audited;
 
             //perhitungan current ratio
             $current_ratio_2020 = ($total_cl_2020 != 0) ? $total_ca_2020 / ($total_cl_2020 * -1) : 0;
@@ -4371,50 +4333,50 @@ class ProjectTaskController extends Controller
             $cash_ratio_au_2022 = ($total_cl_au_2022 != 0) ? $total_kas_setara_kas_au_2022 / ($total_cl_au_2022 * -1) : 0;
 
             //perhitungan debt to asset ratio
-            $detara_2020 = ($total_aset_2020 != 0) ? ($total_liabilitas_2020 * -1) / $total_aset_2020 : 0;
-            $detara_2021 = ($total_aset_2021 != 0) ? ($total_liabilitas_2021 * -1) / $total_aset_2021 : 0;
-            $detara_in_2022 = ($total_aset_in_2022 != 0) ? ($total_liabilitas_in_2022 * -1) / $total_aset_in_2022 : 0;
-            $detara_au_2022 = ($total_aset_au_2022 != 0) ? ($total_liabilitas_au_2022 * -1) / $total_aset_au_2022 : 0;
+            // $detara_2020 = ($total_aset_2020 != 0) ? ($total_liabilitas_2020 * -1) / $total_aset_2020 : 0;
+            // $detara_2021 = ($total_aset_2021 != 0) ? ($total_liabilitas_2021 * -1) / $total_aset_2021 : 0;
+            // $detara_in_2022 = ($total_aset_in_2022 != 0) ? ($total_liabilitas_in_2022 * -1) / $total_aset_in_2022 : 0;
+            // $detara_au_2022 = ($total_aset_au_2022 != 0) ? ($total_liabilitas_au_2022 * -1) / $total_aset_au_2022 : 0;
 
-            //perhitungan debt to equity ratio
-            $detera_2020 = ($total_ekuitas_2020 != 0) ? $total_liabilitas_2020 / $total_ekuitas_2020 : 0;
-            $detera_2021 = ($total_ekuitas_2021 != 0) ? $total_liabilitas_2021 / $total_ekuitas_2021 : 0;
-            $detera_in_2022 = ($total_ekuitas_in_2022 != 0) ? $total_liabilitas_in_2022 / $total_ekuitas_in_2022 : 0;
-            $detera_au_2022 = ($total_ekuitas_au_2022 != 0) ? $total_liabilitas_au_2022 / $total_ekuitas_au_2022 : 0;
+            // //perhitungan debt to equity ratio
+            // $detera_2020 = ($total_ekuitas_2020 != 0) ? $total_liabilitas_2020 / $total_ekuitas_2020 : 0;
+            // $detera_2021 = ($total_ekuitas_2021 != 0) ? $total_liabilitas_2021 / $total_ekuitas_2021 : 0;
+            // $detera_in_2022 = ($total_ekuitas_in_2022 != 0) ? $total_liabilitas_in_2022 / $total_ekuitas_in_2022 : 0;
+            // $detera_au_2022 = ($total_ekuitas_au_2022 != 0) ? $total_liabilitas_au_2022 / $total_ekuitas_au_2022 : 0;
 
-            //perhitungan total asset turnover ratio
-            $tatura_2020 = ($total_aset_2020 != 0) ? ($total_pendapatan_2020 * -1) / $total_aset_2020 : 0;
-            $tatura_2021 = ($total_aset_2021 != 0) ? ($total_pendapatan_2021  * -1) / $total_aset_2021 : 0;
-            $tatura_in_2022 = ($total_aset_in_2022 != 0) ? ($total_pendapatan_in_2022  * -1) / $total_aset_in_2022 : 0;
-            $tatura_au_2022 = ($total_aset_au_2022 != 0) ? ($total_pendapatan_au_2022  * -1) / $total_aset_au_2022 : 0;
+            // //perhitungan total asset turnover ratio
+            // $tatura_2020 = ($total_aset_2020 != 0) ? ($total_pendapatan_2020 * -1) / $total_aset_2020 : 0;
+            // $tatura_2021 = ($total_aset_2021 != 0) ? ($total_pendapatan_2021  * -1) / $total_aset_2021 : 0;
+            // $tatura_in_2022 = ($total_aset_in_2022 != 0) ? ($total_pendapatan_in_2022  * -1) / $total_aset_in_2022 : 0;
+            // $tatura_au_2022 = ($total_aset_au_2022 != 0) ? ($total_pendapatan_au_2022  * -1) / $total_aset_au_2022 : 0;
 
-            //perhitungan receivable turnover ratio
-            $piutang_usaha_2020 = $total_berelasi_2020 + $total_ketiga_2020;
-            $retura_2020 =   ($piutang_usaha_2020 != 0) ? ($total_pendapatan_2020 * -1) / $piutang_usaha_2020 : 0;
-            $piutang_usaha_2021 = ($total_berelasi_2020 + $total_ketiga_2020 + $total_berelasi_2021 + $total_ketiga_2021) / 2;
-            $retura_2021 =   ($piutang_usaha_2021 != 0) ? ($total_pendapatan_2021 * -1) / $piutang_usaha_2021 : 0;
-            $piutang_usaha_in_2022 = ($total_berelasi_2021 + $total_ketiga_2021 + $total_berelasi_in_2022 + $total_ketiga_in_2022) / 2;
-            $retura_in_2022 =   ($piutang_usaha_in_2022 != 0) ? ($total_pendapatan_in_2022 * -1) / $piutang_usaha_in_2022 : 0;
-            $piutang_usaha_au_2022 = ($total_berelasi_in_2022 + $total_ketiga_in_2022 + $total_berelasi_au_2022 + $total_ketiga_au_2022) / 2;
-            $retura_au_2022 =   ($piutang_usaha_au_2022 != 0) ? ($total_pendapatan_au_2022 * -1) / $piutang_usaha_au_2022 : 0;
+            // //perhitungan receivable turnover ratio
+            // $piutang_usaha_2020 = $total_berelasi_2020 + $total_ketiga_2020;
+            // $retura_2020 =   ($piutang_usaha_2020 != 0) ? ($total_pendapatan_2020 * -1) / $piutang_usaha_2020 : 0;
+            // $piutang_usaha_2021 = ($total_berelasi_2020 + $total_ketiga_2020 + $total_berelasi_2021 + $total_ketiga_2021) / 2;
+            // $retura_2021 =   ($piutang_usaha_2021 != 0) ? ($total_pendapatan_2021 * -1) / $piutang_usaha_2021 : 0;
+            // $piutang_usaha_in_2022 = ($total_berelasi_2021 + $total_ketiga_2021 + $total_berelasi_in_2022 + $total_ketiga_in_2022) / 2;
+            // $retura_in_2022 =   ($piutang_usaha_in_2022 != 0) ? ($total_pendapatan_in_2022 * -1) / $piutang_usaha_in_2022 : 0;
+            // $piutang_usaha_au_2022 = ($total_berelasi_in_2022 + $total_ketiga_in_2022 + $total_berelasi_au_2022 + $total_ketiga_au_2022) / 2;
+            // $retura_au_2022 =   ($piutang_usaha_au_2022 != 0) ? ($total_pendapatan_au_2022 * -1) / $piutang_usaha_au_2022 : 0;
 
-            //perhitungan receivable turnover ratio (hari)
-            $retura_hari_2020 =   ($retura_2020 != 0) ? 365 / $retura_2020 : 0;
-            $retura_hari_2021 =   ($retura_2021 != 0) ? 365 / $retura_2021 : 0;
-            $retura_hari_in_2022 =   ($retura_in_2022 != 0) ? 365 / $retura_in_2022 : 0;
-            $retura_hari_au_2022 =   ($retura_au_2022 != 0) ? 365 / $retura_au_2022 : 0;
+            // //perhitungan receivable turnover ratio (hari)
+            // $retura_hari_2020 =   ($retura_2020 != 0) ? 365 / $retura_2020 : 0;
+            // $retura_hari_2021 =   ($retura_2021 != 0) ? 365 / $retura_2021 : 0;
+            // $retura_hari_in_2022 =   ($retura_in_2022 != 0) ? 365 / $retura_in_2022 : 0;
+            // $retura_hari_au_2022 =   ($retura_au_2022 != 0) ? 365 / $retura_au_2022 : 0;
 
-            //perhitungan inventory turnover ratio
-            $intura_2020 = ($total_persediaan_2020 != 0) ? ($total_pendapatan_2020 * -1) / $total_persediaan_2020 : 0;
+            // //perhitungan inventory turnover ratio
+            // $intura_2020 = ($total_persediaan_2020 != 0) ? ($total_pendapatan_2020 * -1) / $total_persediaan_2020 : 0;
 
-            $persediaan_2021 = ($total_persediaan_2020 + $total_persediaan_2021) / 2;
-            $intura_2021 = ($persediaan_2021 != 0) ? ($total_pendapatan_2021 * -1) / $persediaan_2021 : 0;
+            // $persediaan_2021 = ($total_persediaan_2020 + $total_persediaan_2021) / 2;
+            // $intura_2021 = ($persediaan_2021 != 0) ? ($total_pendapatan_2021 * -1) / $persediaan_2021 : 0;
 
-            $persediaan_in_2022 = ($total_persediaan_2021 + $total_persediaan_in_2022) / 2;
-            $intura_in_2022 = ($persediaan_in_2022 != 0) ? ($total_pendapatan_in_2022 * -1) / $persediaan_in_2022 : 0;
+            // $persediaan_in_2022 = ($total_persediaan_2021 + $total_persediaan_in_2022) / 2;
+            // $intura_in_2022 = ($persediaan_in_2022 != 0) ? ($total_pendapatan_in_2022 * -1) / $persediaan_in_2022 : 0;
 
-            $persediaan_au_2022 = ($total_persediaan_in_2022 + $total_persediaan_au_2022) / 2;
-            $intura_au_2022 = ($persediaan_au_2022 != 0) ? ($total_pendapatan_au_2022 * -1) / $persediaan_au_2022 : 0;
+            // $persediaan_au_2022 = ($total_persediaan_in_2022 + $total_persediaan_au_2022) / 2;
+            // $intura_au_2022 = ($persediaan_au_2022 != 0) ? ($total_pendapatan_au_2022 * -1) / $persediaan_au_2022 : 0;
 
             //perhitungan gross profit margin
             $gpm_2020 = ($total_pendapatan_2020 != 0) ? $total_laba_kotor_2020 / $total_pendapatan_2020 : 0;
@@ -4458,17 +4420,21 @@ class ProjectTaskController extends Controller
 
 
 
-            $summary_2020 = 
+            $summary_2020_rasio_likuiditas = 
             [
                 'CURA' => number_format($current_ratio_2020,2),
                 'QURA' => number_format($quick_ratio_2020,2),
                 'CARA' => number_format($cash_ratio_2020,2),
-                'DETARA' => number_format($detara_2020,2),
-                'DETERA' => number_format($detera_2020,2),
-                'TATURA' => number_format($tatura_2020,2),
-                'RETURA' => number_format($retura_2020,2),
-                'RETURAH' => number_format($retura_hari_2020),
-                'INTURA' => number_format($intura_2020,2),
+            ];
+
+            $summary_2020_rasio_profitabilitas = 
+            [
+                // 'DETARA' => number_format($detara_2020,2),
+                // 'DETERA' => number_format($detera_2020,2),
+                // 'TATURA' => number_format($tatura_2020,2),
+                // 'RETURA' => number_format($retura_2020,2),
+                // 'RETURAH' => number_format($retura_hari_2020),
+                // 'INTURA' => number_format($intura_2020,2),
                 'GPM' => number_format($gpm_2020,2),
                 'OPM' => number_format($opm_2020,2),
                 'NPM' => number_format($npm_2020,2),
@@ -4476,17 +4442,21 @@ class ProjectTaskController extends Controller
                 'ROE' => number_format($roe_2020,2),
             ];
             
-            $summary_2021 = 
+            $summary_2021_rasio_likuiditas = 
             [
                 'CURA' => number_format($current_ratio_2021,2),
                 'QURA' => number_format($quick_ratio_2021,2),
                 'CARA' => number_format($cash_ratio_2021,2),
-                'DETARA' => number_format($detara_2021,2),
-                'DETERA' => number_format($detera_2021,2),
-                'TATURA' => number_format($tatura_2021,2),
-                'RETURA' => number_format($retura_2021,2),
-                'RETURAH' => number_format($retura_hari_2021),
-                'INTURA' => number_format($intura_2021,2),
+            ];
+
+            $summary_2021_rasio_profitabilitas = 
+            [
+                // 'DETARA' => number_format($detara_2021,2),
+                // 'DETERA' => number_format($detera_2021,2),
+                // 'TATURA' => number_format($tatura_2021,2),
+                // 'RETURA' => number_format($retura_2021,2),
+                // 'RETURAH' => number_format($retura_hari_2021),
+                // 'INTURA' => number_format($intura_2021,2),
                 'GPM' => number_format($gpm_2021,2),
                 'OPM' => number_format($opm_2021,2),
                 'NPM' => number_format($npm_2021,2),
@@ -4494,17 +4464,21 @@ class ProjectTaskController extends Controller
                 'ROE' => number_format($roe_2021,2),
             ];
 
-            $summary_in_2022 = 
+            $summary_in_2022_rasio_likuiditas = 
             [
                 'CURA' => number_format($current_ratio_in_2022,2),
                 'QURA' => number_format($quick_ratio_in_2022,2),
                 'CARA' => number_format($cash_ratio_in_2022,2),
-                'DETARA' => number_format($detara_in_2022,2),
-                'DETERA' => number_format($detera_in_2022,2),
-                'TATURA' => number_format($tatura_in_2022,2),
-                'RETURA' => number_format($retura_in_2022),
-                'RETURAH' => number_format($retura_hari_in_2022),
-                'INTURA' => number_format($intura_in_2022,2),
+            ];
+
+            $summary_in_2022_rasio_profitabilitas = 
+            [
+                // 'DETARA' => number_format($detara_in_2022,2),
+                // 'DETERA' => number_format($detera_in_2022,2),
+                // 'TATURA' => number_format($tatura_in_2022,2),
+                // 'RETURA' => number_format($retura_in_2022),
+                // 'RETURAH' => number_format($retura_hari_in_2022),
+                // 'INTURA' => number_format($intura_in_2022,2),
                 'GPM' => number_format($gpm_in_2022,2),
                 'OPM' => number_format($opm_in_2022,2),
                 'NPM' => number_format($npm_in_2022,2),
@@ -4512,17 +4486,21 @@ class ProjectTaskController extends Controller
                 'ROE' => number_format($roe_in_2022,2),
             ];
 
-            $summary_au_2022 = 
+            $summary_au_2022_rasio_likuiditas = 
             [
                 'CURA' => number_format($current_ratio_au_2022,2),
                 'QURA' => number_format($quick_ratio_au_2022,2),
                 'CARA' => number_format($cash_ratio_au_2022,2),
-                'DETARA' => number_format($detara_au_2022,2),
-                'DETERA' => number_format($detera_au_2022,2),
-                'TATURA' => number_format($tatura_au_2022,2),
-                'RETURA' => number_format($retura_au_2022),
-                'RETURAH' => number_format($retura_hari_au_2022),
-                'INTURA' => number_format($intura_au_2022,2),
+            ];
+
+            $summary_au_2022_rasio_profitabilitas = 
+            [
+                // 'DETARA' => number_format($detara_au_2022,2),
+                // 'DETERA' => number_format($detera_au_2022,2),
+                // 'TATURA' => number_format($tatura_au_2022,2),
+                // 'RETURA' => number_format($retura_au_2022),
+                // 'RETURAH' => number_format($retura_hari_au_2022),
+                // 'INTURA' => number_format($intura_au_2022,2),
                 'GPM' => number_format($gpm_au_2022,2),
                 'OPM' => number_format($opm_au_2022,2),
                 'NPM' => number_format($npm_au_2022,2),
@@ -4530,22 +4508,36 @@ class ProjectTaskController extends Controller
                 'ROE' => number_format($roe_au_2022,2),
             ];
 
-            $data_summary = ProjectTask::$rasio_keuangan;
+            $data_summary_rasio_likuiditas = ProjectTask::$rasio_likuiditas;
+            $data_summary_rasio_profitabilitas = ProjectTask::$rasio_profitabilitas;
 
-            foreach($data_summary as $a => $b)
+            foreach($data_summary_rasio_likuiditas as $a => $b)
             {
-                $summaryrasiokeuangan['kode']    = $a;
-                $summaryrasiokeuangan['akun']    = $b;
-                $summaryrasiokeuangan['data_2020']    =  isset($summary_2020[$a]) ? $summary_2020[$a] : 0;
-                $summaryrasiokeuangan['data_2021']    =  isset($summary_2021[$a]) ? $summary_2021[$a] : 0;
-                $summaryrasiokeuangan['data_in_2022']    =  isset($summary_in_2022[$a]) ? $summary_in_2022[$a] : 0;
-                $summaryrasiokeuangan['data_au_2022']    =  isset($summary_au_2022[$a]) ? $summary_au_2022[$a] : 0;
+                $summaryrasiolikuiditas['kode']           = $a;
+                $summaryrasiolikuiditas['akun']           = $b;
+                $summaryrasiolikuiditas['data_2020']      =  isset($summary_2020_rasio_likuiditas[$a]) ? $summary_2020_rasio_likuiditas[$a] : 0;
+                $summaryrasiolikuiditas['data_2021']      =  isset($summary_2021_rasio_likuiditas[$a]) ? $summary_2021_rasio_likuiditas[$a] : 0;
+                $summaryrasiolikuiditas['data_in_2022']   =  isset($summary_in_2022_rasio_likuiditas[$a]) ? $summary_in_2022_rasio_likuiditas[$a] : 0;
+                $summaryrasiolikuiditas['data_au_2022']   =  isset($summary_au_2022_rasio_likuiditas[$a]) ? $summary_au_2022_rasio_likuiditas[$a] : 0;
 
-                $summary_rasio_keuangan[] = $summaryrasiokeuangan;
+                $rasio_likuiditas[] = $summaryrasiolikuiditas;
 
             }
 
-            return view('project_task.rasiokeuangan', compact('project','task','summary_rasio_keuangan'));
+            foreach($data_summary_rasio_profitabilitas as $a => $b)
+            {
+                $summaryrasioprofitabilitas['kode']           = $a;
+                $summaryrasioprofitabilitas['akun']           = $b;
+                $summaryrasioprofitabilitas['data_2020']      =  isset($summary_2020_rasio_profitabilitas[$a]) ? $summary_2020_rasio_profitabilitas[$a] : 0;
+                $summaryrasioprofitabilitas['data_2021']      =  isset($summary_2021_rasio_profitabilitas[$a]) ? $summary_2021_rasio_profitabilitas[$a] : 0;
+                $summaryrasioprofitabilitas['data_in_2022']   =  isset($summary_in_2022_rasio_profitabilitas[$a]) ? $summary_in_2022_rasio_profitabilitas[$a] : 0;
+                $summaryrasioprofitabilitas['data_au_2022']   =  isset($summary_au_2022_rasio_profitabilitas[$a]) ? $summary_au_2022_rasio_profitabilitas[$a] : 0;
+
+                $rasio_profitabilitas[] = $summaryrasioprofitabilitas;
+
+            }
+
+            return view('project_task.rasiokeuangan', compact('project','task','rasio_likuiditas','rasio_profitabilitas'));
         }
         else
         {

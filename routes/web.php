@@ -4003,6 +4003,13 @@ Route::get(
     ]
 );
 
+Route::post(
+    '/save-notes-analysis/project/{pid}/task/{tid}', [
+    'as' => 'notes.analysis',
+    'uses' => 'ProjectTaskController@notesAnalysis',
+]
+);
+
 Route::get(
     '/projects/{id}/task/{tid}/audit-memorandum', [
     'as' => 'projects.tasks.audit.memorandum',
