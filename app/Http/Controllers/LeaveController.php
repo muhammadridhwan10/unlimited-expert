@@ -22,7 +22,7 @@ class LeaveController extends Controller
         if(\Auth::user()->can('manage leave'))
         {
             $leaves = Leave::all();
-            if(Auth::user()->type !=='admin' || Auth::user()->type !=='company')
+            if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
             {
                 $user     = \Auth::user();
                 $employee = Employee::where('user_id', '=', $user->id)->first();

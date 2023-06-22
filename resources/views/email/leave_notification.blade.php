@@ -42,9 +42,15 @@
                                                         </p>
                                                         @php
                                                             $startDate = new \DateTime($leave->start_date);
-                                                            $endDate   = new \DateTime($leave->end_date);
-                                                            $interval = $startDate->diff($endDate);
-                                                            $total_leave_days = $interval->days + 1; // Tambahkan 1 karena Anda ingin memasukkan juga hari terakhir
+                                                            $endDate = new \DateTime($leave->end_date);
+                                                            $total_leave_days = 0;
+
+                                                            while ($startDate <= $endDate) {
+                                                                if ($startDate->format('N') <= 5) { // Memeriksa apakah hari adalah Senin hingga Jumat
+                                                                    $total_leave_days++;
+                                                                }
+                                                                $startDate->add(new \DateInterval('P1D')); // Menambahkan 1 hari ke tanggal start_date
+                                                            }
                                                         @endphp
                                                         <h2 style="color:#444444;font-family:sans-serif;font-weight:600;line-height:1.4;margin:0;margin-bottom:15px">{{ $total_leave_days }}</h2>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">The reason for my leave is {{ $leave->leave_reason }}</p>

@@ -52,9 +52,15 @@
                                     <td>{{ \Auth::user()->dateFormat($leave->end_date )  }}</td>
                                     @php
                                         $startDate = new \DateTime($leave->start_date);
-                                        $endDate   = new \DateTime($leave->end_date);
-                                        $interval = $startDate->diff($endDate);
-                                        $total_leave_days = $interval->days + 1; // Tambahkan 1 karena Anda ingin memasukkan juga hari terakhir
+                                        $endDate = new \DateTime($leave->end_date);
+                                        $total_leave_days = 0;
+
+                                        while ($startDate <= $endDate) {
+                                            if ($startDate->format('N') <= 5) { // Memeriksa apakah hari adalah Senin hingga Jumat
+                                                $total_leave_days++;
+                                            }
+                                            $startDate->add(new \DateInterval('P1D')); // Menambahkan 1 hari ke tanggal start_date
+                                        }
                                     @endphp
                                     <td>{{ $total_leave_days }}</td>
                                     <td>{{ $leave->leave_reason }}</td>
@@ -129,9 +135,15 @@
                                         <td>{{ \Auth::user()->dateFormat($approvals->end_date )  }}</td>
                                         @php
                                             $startDate = new \DateTime($approvals->start_date);
-                                            $endDate   = new \DateTime($approvals->end_date);
-                                            $interval = $startDate->diff($endDate);
-                                            $total_leave_days = $interval->days + 1; // Tambahkan 1 karena Anda ingin memasukkan juga hari terakhir
+                                            $endDate = new \DateTime($approvals->end_date);
+                                            $total_leave_days = 0;
+
+                                            while ($startDate <= $endDate) {
+                                                if ($startDate->format('N') <= 5) { // Memeriksa apakah hari adalah Senin hingga Jumat
+                                                    $total_leave_days++;
+                                                }
+                                                $startDate->add(new \DateInterval('P1D')); // Menambahkan 1 hari ke tanggal start_date
+                                            }
                                         @endphp
                                         <td>{{ $total_leave_days }}</td>
                                         <td>{{ $approvals->leave_reason }}</td>
@@ -202,11 +214,12 @@
         }
 
         function getNextWorkingDay(date) {
-        while (isWeekend(date)) {
-            date.setDate(date.getDate() + 1);
-        }
-        return date;
-        }
+    while (isWeekend(date) || date.getDay() === 5) {
+        date.setDate(date.getDate() + 1);
+    }
+    return date;
+}
+
 
         $(document).on('change', '#start_date', function () {
         var leaveTypeId = $('#leave_type_id').val();
