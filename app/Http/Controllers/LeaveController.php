@@ -364,10 +364,16 @@ class LeaveController extends Controller
         $leave->status = $request->status;
         if($leave->status == 'Approval')
         {
-            $startDate               = new \DateTime($leave->start_date);
-            $endDate                 = new \DateTime($leave->end_date);
-            $interval                = $startDate->diff($endDate);
-            $total_leave_days        = $interval->days + 1;
+            $startDate = new \DateTime($leave->start_date);
+            $endDate = new \DateTime($leave->end_date);
+            $total_leave_days = 0;
+
+            while ($startDate <= $endDate) {
+                if ($startDate->format('N') <= 5) { // Memeriksa apakah hari adalah Senin hingga Jumat
+                    $total_leave_days++;
+                }
+                $startDate->add(new \DateInterval('P1D')); // Menambahkan 1 hari ke tanggal start_date
+            }
             $leave->total_leave_days = $total_leave_days;
             $leave->status           = 'Approved';
         }
