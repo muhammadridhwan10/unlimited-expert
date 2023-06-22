@@ -149,9 +149,9 @@ class LeaveController extends Controller
             $leave->save();
 
             //Email Notification
-            $user = User::where('id', $leave->approval)->first();
-            $email = $user->email;
-            Mail::to($email)->send(new LeaveNotification($leave));
+            // $user = User::where('id', $leave->approval)->first();
+            // $email = $user->email;
+            // Mail::to($email)->send(new LeaveNotification($leave));
 
             return redirect()->route('leave.index')->with('success', __('Leave  successfully created.'));
         }
@@ -375,9 +375,9 @@ class LeaveController extends Controller
         $leave->save();
 
         //Email Notification
-        $employee = Employee::where('id', $leave->employee_id)->first();
-        $email = $employee->email;
-        Mail::to($email)->send(new LeaveApprovalNotification($leave));
+        // $employee = Employee::where('id', $leave->employee_id)->first();
+        // $email = $employee->email;
+        // Mail::to($email)->send(new LeaveApprovalNotification($leave));
 
         //Send Email
 //         $setings = Utility::settings();
