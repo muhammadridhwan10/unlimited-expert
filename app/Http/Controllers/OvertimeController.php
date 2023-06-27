@@ -35,7 +35,14 @@ class OvertimeController extends Controller
             $employee     = Employee::where('user_id', '=', $users->id)->first();
             $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
         }
-        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
+        elseif(\Auth::user()->type == 'senior accounting')
+        {
+            $users        = \Auth::user();
+            $employee     = Employee::where('user_id', '=', $users->id)->first();
+            $overtimes    = UserOvertime::all();
+            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
+        }
+        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
         {
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
