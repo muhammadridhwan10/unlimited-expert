@@ -16,12 +16,29 @@ use Carbon\Carbon;
 class OvertimeController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
 
         if(\Auth::user()->type == 'admin')
         {
             $overtimes   = UserOvertime::all();
+
+            $employee = Employee::all();
+            $employee = $employee->pluck('id');
+            $employeeOvertimes = UserOvertime::whereIn('user_id', $employee);
+
+            if (!empty($request->month)) {
+                $month = date('m', strtotime($request->month));
+                $year  = date('Y', strtotime($request->month));
+
+                $start_date = date($year . '-' . $month . '-01');
+                $end_date   = date($year . '-' . $month . '-t');
+
+                $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
+            } 
+
+            $employeeOvertimes = $employeeOvertimes->get();
+
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
@@ -31,22 +48,72 @@ class OvertimeController extends Controller
         {
             $overtimes   = UserOvertime::all();
 
+            $employee = Employee::all();
+            $employee = $employee->pluck('id');
+            $employeeOvertimes = UserOvertime::whereIn('user_id', $employee);
+
+            if (!empty($request->month)) {
+                $month = date('m', strtotime($request->month));
+                $year  = date('Y', strtotime($request->month));
+
+                $start_date = date($year . '-' . $month . '-01');
+                $end_date   = date($year . '-' . $month . '-t');
+
+                $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
+            } 
+
+            $employeeOvertimes = $employeeOvertimes->get();
+
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
             $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
         }
         elseif(\Auth::user()->type == 'senior accounting')
         {
+            $overtimes   = UserOvertime::all();
+
+            $employee = Employee::all();
+            $employee = $employee->pluck('id');
+            $employeeOvertimes = UserOvertime::whereIn('user_id', $employee);
+
+            if (!empty($request->month)) {
+                $month = date('m', strtotime($request->month));
+                $year  = date('Y', strtotime($request->month));
+
+                $start_date = date($year . '-' . $month . '-01');
+                $end_date   = date($year . '-' . $month . '-t');
+
+                $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
+            } 
+
+            $employeeOvertimes = $employeeOvertimes->get();
+
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $overtimes    = UserOvertime::all();
             $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
         }
         elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
         {
+            $overtimes    = UserOvertime::where('user_id', '=', $employee->id)->get();
+
+            $employee = Employee::all();
+            $employee = $employee->pluck('id');
+            $employeeOvertimes = UserOvertime::whereIn('user_id', $employee);
+
+            if (!empty($request->month)) {
+                $month = date('m', strtotime($request->month));
+                $year  = date('Y', strtotime($request->month));
+
+                $start_date = date($year . '-' . $month . '-01');
+                $end_date   = date($year . '-' . $month . '-t');
+
+                $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
+            } 
+
+            $employeeOvertimes = $employeeOvertimes->get();
+
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $overtimes    = UserOvertime::where('user_id', '=', $employee->id)->get();
             $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
         }
         else
@@ -56,7 +123,7 @@ class OvertimeController extends Controller
             $approval     = UserOvertime::where('approval', '=', \Auth::user()->id)->get();
         }
 
-        return view('overtime.index', compact('overtimes','approval'));
+        return view('overtime.index', compact('overtimes','approval','employeeOvertimes'));
     }
 
     public function create()

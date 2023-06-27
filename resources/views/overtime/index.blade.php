@@ -17,6 +17,43 @@
 @endsection
 
 @section('content')
+
+    <div class="row">
+        <div class="col-sm-12">
+            <div class=" mt-2 " id="multiCollapseExample1">
+                <div class="card">
+                    <div class="card-body">
+                        {{ Form::open(array('route' => array('overtime.index'),'method'=>'get','id'=>'report_monthly_overtime')) }}
+                        <div class="row align-items-center justify-content-end">
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <div class="btn-box">
+                                            {{Form::label('month',__('Month'),['class'=>'form-label'])}}
+                                            {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col-auto mt-4">
+                                        <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_monthly_overtime').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
+                                            <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
+                                        </a>
+                                        <a href="{{route('overtime.index')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
+                                            <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{ Form::close() }}
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col-xl-12">
             <div class="card">
@@ -40,7 +77,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach ($overtimes as $overtime)
+                            @foreach ($employeeOvertimes as $overtime)
                                 <tr>
                                     @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'client' || \Auth::user()->type == 'staff_client')
                                         <td>{{!empty($overtime->employee->name)?$overtime->employee->name:'-'}}</td>

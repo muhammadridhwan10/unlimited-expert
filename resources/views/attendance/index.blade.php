@@ -3,6 +3,22 @@
     {{__('Manage Attendance List')}}
 @endsection
 @push('script-page')
+    <script type="text/javascript" src="{{ asset('js/html2pdf.bundle.min.js') }}"></script>
+    <script>
+        var filename = $('#filename').val();
+
+        function saveAsPDF() {
+            var element = document.getElementById('printableArea');
+            var opt = {
+                margin: 0.3,
+                filename: filename,
+                image: {type: 'jpeg', quality: 1},
+                html2canvas: {scale: 4, dpi: 72, letterRendering: true},
+                jsPDF: {unit: 'in', format: 'A2'}
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+    </script>
     <script>
         $('input[name="type"]:radio').on('change', function (e) {
             var type = $(this).val();
@@ -29,13 +45,19 @@
     <li class="breadcrumb-item">{{__('Attendance')}}</li>
 @endsection
 
-{{--@section('action-btn')--}}
-{{--    <div class="float-end">--}}
-{{--        <a class="btn btn-sm btn-primary" data-bs-toggle="collapse" href="#multiCollapseExample1" role="button" aria-expanded="false" aria-controls="multiCollapseExample1" data-bs-toggle="tooltip" title="{{__('Filter')}}">--}}
-{{--            <i class="ti ti-filter"></i>--}}
-{{--        </a>--}}
-{{--    </div>--}}
-{{--@endsection--}}
+@section('action-btn')
+    <div class="float-end">
+        <a href="#" class="btn btn-sm btn-primary" onclick="saveAsPDF()" data-bs-toggle="tooltip" title="{{ __('Download') }}"
+           data-original-title="{{ __('Download') }}">
+            <span class="btn-inner--icon"><i class="ti ti-download"></i></span>
+        </a>
+
+       {{-- <a href="{{route('report.attendance',[isset($_GET['month'])?$_GET['month']:date('Y-m'),isset($_GET['branch'])?$_GET['branch']:0,isset($_GET['department'])?$_GET['department']:0])}}" class="btn btn-sm btn-primary" onclick="saveAsPDF()"data-bs-toggle="tooltip" title="{{__('Download Filter')}}" data-original-title="{{__('Download Filter')}}">
+           <span class="btn-inner--icon"><i class="ti ti-download"></i></span>
+       </a> --}}
+
+    </div>
+@endsection
 @section('content')
 
     <div class="row">
@@ -114,96 +136,98 @@
         </div>
     </div>
 
+    <div id="printableArea">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body table-border-style">
 
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-body table-border-style">
-
-                    <div class="table-responsive">
-                        <table class="table datatable">
-                            <thead>
-                            <tr>
-                                @if(\Auth::user()->type!='employee')
-                                    <th>{{__('Employee')}}</th>
-                                    <th>{{__('Employee Branch')}}</th>
-                                @endif
-                                <th>{{__('Date')}}</th>
-                                <th>{{__('Status')}}</th>
-                                <th>{{__('Clock In')}}</th>
-                                <th>{{__('Clock Out')}}</th>
-                                <!-- <th>{{__('Location')}}</th> -->
-                                <th>{{__('Total Work')}}</th>
-                                <th>{{__('Late')}}</th>
-                                <th>{{__('Early Leaving')}}</th>
-                                <th>{{__('Overtime')}}</th>
-                                @if(Gate::check('edit attendance') || Gate::check('delete attendance'))
-                                    <th>{{__('Action')}}</th>
-                                @endif
-                            </tr>
-                            </thead>
-                            <tbody>
-
-                            @foreach ($attendanceEmployee as $attendance)
+                        <div class="table-responsive">
+                            <table class="table datatable">
+                                <thead>
                                 <tr>
                                     @if(\Auth::user()->type!='employee')
-                                        <td>{{!empty($attendance->employee)?$attendance->employee->name:'' }}</td>
-                                        <td>{{!empty($attendance->employee->branch)?$attendance->employee->branch->name:'' }}</td>
+                                        <th>{{__('Employee')}}</th>
+                                        <th>{{__('Employee Branch')}}</th>
                                     @endif
-                                    <td>{{ \Auth::user()->dateFormat($attendance->date) }}</td>
-                                    <td>{{ $attendance->status }}</td>
-                                    <td>{{ ($attendance->clock_in !='00:00:00') ?\Auth::user()->timeFormat( $attendance->clock_in):'00:00' }} </td>
-                                    <td>{{ ($attendance->clock_out !='00:00:00') ?\Auth::user()->timeFormat( $attendance->clock_out):'00:00' }}</td>
-                                    <?php
-                                        
-                                        // Waktu awal
-                                        $startTime = Carbon\Carbon::parse($attendance->clock_in);
-
-                                        // Waktu akhir
-                                        $endTime = Carbon\Carbon::parse($attendance->clock_out);
-
-                                        // Menghitung selisih waktu
-                                        $diff = $endTime->diff($startTime);
-
-                                        // Mengambil selisih jam dan menit
-                                        $hours = $startTime->diffInHours($endTime);
-                                        $minutes = $startTime->diffInMinutes($endTime) % 60;
-
-                                        $total_work = $hours . ' Jam ' . $minutes . ' Menit';
-                                    ?>
-                                    <td>{{ $total_work }}</td>
-                                    <td>{{ $attendance->late }}</td>
-                                    <td>{{ $attendance->early_leaving }}</td>
-                                    <td>{{ $attendance->overtime }}</td>
+                                    <th>{{__('Date')}}</th>
+                                    <th>{{__('Status')}}</th>
+                                    <th>{{__('Clock In')}}</th>
+                                    <th>{{__('Clock Out')}}</th>
+                                    <!-- <th>{{__('Location')}}</th> -->
+                                    <th>{{__('Total Work')}}</th>
+                                    <th>{{__('Late')}}</th>
+                                    <th>{{__('Early Leaving')}}</th>
+                                    <th>{{__('Overtime')}}</th>
                                     @if(Gate::check('edit attendance') || Gate::check('delete attendance'))
-                                        <td>
-                                            @can('edit attendance')
-                                                <div class="action-btn bg-primary ms-2">
-                                                    <a href="#" data-url="{{ URL::to('attendanceemployee/'.$attendance->id.'/edit') }}" data-size="lg" data-ajax-popup="true" data-title="{{__('Edit Attendance')}}" class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-original-title="{{__('Edit')}}">
-                                                        <i class="ti ti-pencil text-white"></i></a>
-                                                </div>
-                                            @endcan
-                                                @can('delete attendance')
-                                                    <div class="action-btn bg-danger ms-2">
-                                                        {!! Form::open(['method' => 'DELETE', 'route' => ['attendanceemployee.destroy', $attendance->id],'id'=>'delete-form-'.$attendance->id]) !!}
-
-                                                        <a href="#" class="mx-3 btn btn-sm  align-items-center bs-pass-para" data-bs-toggle="tooltip" title="{{__('Delete')}}"
-                                                           data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$attendance->id}}').submit();">
-                                                            <i class="ti ti-trash text-white"></i></a>
-                                                        {!! Form::close() !!}
-                                                    </div>
-                                                @endif
-                                        </td>
+                                        <th>{{__('Action')}}</th>
                                     @endif
                                 </tr>
-                            @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+
+                                @foreach ($attendanceEmployee as $attendance)
+                                    <tr>
+                                        @if(\Auth::user()->type!='employee')
+                                            <td>{{!empty($attendance->employee)?$attendance->employee->name:'' }}</td>
+                                            <td>{{!empty($attendance->employee->branch)?$attendance->employee->branch->name:'' }}</td>
+                                        @endif
+                                        <td>{{ \Auth::user()->dateFormat($attendance->date) }}</td>
+                                        <td>{{ $attendance->status }}</td>
+                                        <td>{{ ($attendance->clock_in !='00:00:00') ?\Auth::user()->timeFormat( $attendance->clock_in):'00:00' }} </td>
+                                        <td>{{ ($attendance->clock_out !='00:00:00') ?\Auth::user()->timeFormat( $attendance->clock_out):'00:00' }}</td>
+                                        <?php
+                                            
+                                            // Waktu awal
+                                            $startTime = Carbon\Carbon::parse($attendance->clock_in);
+
+                                            // Waktu akhir
+                                            $endTime = Carbon\Carbon::parse($attendance->clock_out);
+
+                                            // Menghitung selisih waktu
+                                            $diff = $endTime->diff($startTime);
+
+                                            // Mengambil selisih jam dan menit
+                                            $hours = $startTime->diffInHours($endTime);
+                                            $minutes = $startTime->diffInMinutes($endTime) % 60;
+
+                                            $total_work = $hours . ' Jam ' . $minutes . ' Menit';
+                                        ?>
+                                        <td>{{ $total_work }}</td>
+                                        <td>{{ $attendance->late }}</td>
+                                        <td>{{ $attendance->early_leaving }}</td>
+                                        <td>{{ $attendance->overtime }}</td>
+                                        @if(Gate::check('edit attendance') || Gate::check('delete attendance'))
+                                            <td>
+                                                @can('edit attendance')
+                                                    <div class="action-btn bg-primary ms-2">
+                                                        <a href="#" data-url="{{ URL::to('attendanceemployee/'.$attendance->id.'/edit') }}" data-size="lg" data-ajax-popup="true" data-title="{{__('Edit Attendance')}}" class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-original-title="{{__('Edit')}}">
+                                                            <i class="ti ti-pencil text-white"></i></a>
+                                                    </div>
+                                                @endcan
+                                                    @can('delete attendance')
+                                                        <div class="action-btn bg-danger ms-2">
+                                                            {!! Form::open(['method' => 'DELETE', 'route' => ['attendanceemployee.destroy', $attendance->id],'id'=>'delete-form-'.$attendance->id]) !!}
+
+                                                            <a href="#" class="mx-3 btn btn-sm  align-items-center bs-pass-para" data-bs-toggle="tooltip" title="{{__('Delete')}}"
+                                                            data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$attendance->id}}').submit();">
+                                                                <i class="ti ti-trash text-white"></i></a>
+                                                            {!! Form::close() !!}
+                                                        </div>
+                                                    @endif
+                                            </td>
+                                        @endif
+                                    </tr>
+                                @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
 
 @endsection
 
