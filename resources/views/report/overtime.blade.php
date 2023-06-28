@@ -24,7 +24,7 @@
         }
     </script>
 
-    <script>
+    {{-- <script>
 
         $(document).ready(function () {
             var b_id = $('#branch_id').val();
@@ -98,7 +98,7 @@
                 }
             });
         }
-    </script>
+    </script> --}}
 @endpush
 
 
@@ -125,43 +125,43 @@
                     <div class="card-body">
                         {{ Form::open(array('route' => array('report.overtime'),'method'=>'get','id'=>'report_overtime')) }}
                         <div class="row align-items-center justify-content-end">
-                            <div class="col-xl-10">
+                            <div class="col-auto">
                                 <div class="row">
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
+                                    <div class="col-auto">
                                         <div class="btn-box">
                                             {{Form::label('month',__('Month'),['class'=>'form-label'])}}
                                             {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
                                         </div>
                                     </div>
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
+                                    <div class="col-auto" style = "width:200px;">
                                         <div class="btn-box">
                                             {{ Form::label('branch', __('Branch'),['class'=>'form-label']) }}
-{{--                                            {{ Form::select('branch', $branch,isset($_GET['branch'])?$_GET['branch']:'', array('class' => 'form-control select')) }}--}}
+                                            {{ Form::select('branch', $branch,isset($_GET['branch'])?$_GET['branch']:'', array('class' => 'form-control select')) }}
 
-                                            <select class="form-control select" name="branch_id" id="branch_id"  placeholder="Select Branch" required>
+                                            {{-- <select class="form-control select" name="branch_id" id="branch_id"  placeholder="Select Branch" required>
                                                 <option value="">{{__('Select Branch')}}</option>
                                                 <option value="0">{{__('All Branch')}}</option>
                                                 @foreach($branch as $branch)
                                                     <option value="{{ $branch->id }}">{{ $branch->name }}</option>
                                                 @endforeach
-                                            </select>
+                                            </select> --}}
                                         </div>
                                     </div>
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
+                                    {{-- <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
                                         <div class="btn-box" id="department_div">
                                             {{ Form::label('department', __('Department'),['class'=>'form-label']) }}
-{{--                                            {{ Form::select('department', $department,isset($_GET['department'])?$_GET['department']:'', array('class' => 'form-control select')) }}--}}
+                                            {{ Form::select('department', $department,isset($_GET['department'])?$_GET['department']:'', array('class' => 'form-control select')) }}
                                             <select class="form-control select" name="department_id[]" id="department_id" required="required" placeholder="Select Department" >
                                             </select>
                                         </div>
-                                    </div>
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
+                                    </div> --}}
+                                    {{-- <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
                                         <div class="btn-box" id="employee_div">
                                             {{ Form::label('employee', __('Employee'),['class'=>'form-label']) }}
                                             <select class="form-control select" name="employee_id[]" id="employee_id" placeholder="Select Employee" >
                                             </select>
                                         </div>
-                                    </div>
+                                    </div> --}}
                                 </div>
                             </div>
                             <div class="col-auto">

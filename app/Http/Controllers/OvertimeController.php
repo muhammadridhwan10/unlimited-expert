@@ -118,6 +118,23 @@ class OvertimeController extends Controller
         }
         else
         {
+            $employees    = Employee::all();
+
+            $employee = $employees->where('user_id', '=', \Auth::user()->id)->pluck('id');
+            $employeeOvertimes = UserOvertime::whereIn('user_id', $employee);
+
+            if (!empty($request->month)) {
+                $month = date('m', strtotime($request->month));
+                $year  = date('Y', strtotime($request->month));
+
+                $start_date = date($year . '-' . $month . '-01');
+                $end_date   = date($year . '-' . $month . '-t');
+
+                $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
+            } 
+
+            $employeeOvertimes = $employeeOvertimes->get();
+
             $employee     = Employee::where('user_id', '=', \Auth::user()->id)->first();
             $overtimes    = UserOvertime::where('user_id', '=', $employee->id)->get();
             $approval     = UserOvertime::where('approval', '=', \Auth::user()->id)->get();

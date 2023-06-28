@@ -5169,32 +5169,32 @@ class ReportController extends Controller
 
 
     //branch wise department get in monthly-attendance report
-    public function getdepartment(Request $request)
-    {
-        if($request->branch_id == 0)
-        {
-            $departments = Department::get()->pluck('name', 'id')->toArray();
-        }
-        else
-        {
-            $departments = Department::where('branch_id', $request->branch_id)->get()->pluck('name', 'id')->toArray();
-        }
+    // public function getdepartment(Request $request)
+    // {
+    //     if($request->branch_id == 0)
+    //     {
+    //         $departments = Department::get()->pluck('name', 'id')->toArray();
+    //     }
+    //     else
+    //     {
+    //         $departments = Department::where('branch_id', $request->branch_id)->get()->pluck('name', 'id')->toArray();
+    //     }
 
-        return response()->json($departments);
-    }
+    //     return response()->json($departments);
+    // }
 
-    public function getemployee(Request $request)
-    {
-        if(!$request->department_id )
-        {
-            $employees = Employee::get()->pluck('name', 'id')->toArray();
-        }
-        else
-        {
-            $employees = Employee::where('department_id', $request->department_id)->get()->pluck('name', 'id')->toArray();
-        }
-        return response()->json($employees);
-    }
+    // public function getemployee(Request $request)
+    // {
+    //     if(!$request->department_id )
+    //     {
+    //         $employees = Employee::get()->pluck('name', 'id')->toArray();
+    //     }
+    //     else
+    //     {
+    //         $employees = Employee::where('department_id', $request->department_id)->get()->pluck('name', 'id')->toArray();
+    //     }
+    //     return response()->json($employees);
+    // }
 
     public function leadreport(Request $request)
     {
@@ -5494,12 +5494,8 @@ class ReportController extends Controller
         $user = Auth::user();
         if(\Auth::user()->can('manage report'))
         {
-            $branch      = Branch::get();
-            $department = Department::get();
-
-            $data['branch']     = __('All');
-            $data['department'] = __('All');
-
+            $branch = Branch::get()->pluck('name', 'id');
+            $branch->prepend('Select Branch', '');
 
             $employees = Employee::select('id', 'name');
             if(!empty($request->employee_id) && $request->employee_id[0]!=0){
@@ -5513,13 +5509,14 @@ class ReportController extends Controller
                 $data['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
             }
 
-            if(!empty($request->department))
-            {
-                $employees->where('department_id', $request->department);
-                $data['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
-            }
+            // if(!empty($request->department))
+            // {
+            //     $employees->where('department_id', $request->department);
+            //     $data['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
+            // }
 
             $employees = $employees->get()->pluck('name', 'id');
+            // dd($employees);
 
             if(!empty($request->month))
             {
@@ -5657,7 +5654,7 @@ class ReportController extends Controller
             $data['totalLeave']      = $totalLeave;
             $data['curMonth']        = $curMonth;
 
-            return view('report.overtime', compact('employeesAttendance', 'branch', 'department', 'dates', 'data'));
+            return view('report.overtime', compact('employeesAttendance', 'branch', 'dates', 'data'));
         }
         else
         {
