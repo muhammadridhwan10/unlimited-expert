@@ -32,7 +32,7 @@
         <div class="col-sm-4">
             <div class="form-group">
                 {{ Form::label('client_identity', __('Client Name'), ['class' => 'form-label']) }}
-                {{ Form::text('client_name', $project->user->name, array('class' => 'form-control', 'readonly' => 'true')) }}
+                {{ Form::text('client_name', isset($project->user->name) ? $project->user->name : 'Client telah dihapus', array('class' => 'form-control', 'readonly' => 'true')) }}
             </div>
         </div>
         <div class="col-sm-4">
@@ -52,15 +52,15 @@
         <div class="col-sm-4">
             <div class="form-group">
                 {{ Form::label('address', __('Client Address'), ['class' => 'form-label']) }}
-                {{ Form::text('address', $project->user->alamat, array('class' => 'form-control', 'readonly' => 'true')) }}
+                {{ Form::text('address', !empty($project->user->alamat) ? $project->user->alamat:'Alamat Client telah dihapus', array('class' => 'form-control', 'readonly' => 'true')) }}
             </div>
         </div>
         <div class="col-sm-4">
             <div class="form-group">
-                @if ($project->user->engagement_type = "perikatan_tahun_pertama")
+                @if(isset($project->user->engagement_type) && $project->user->engagement_type == "perikatan_tahun_pertama")
                     {{ Form::label('engagement_type', __('Engagement Type'), ['class' => 'form-label']) }}
                     {{ Form::text('engagement_type', $note, array('class' => 'form-control', 'readonly' => 'true')) }}
-                @else if ($project->user->engagement_type = "perikatan_berulang")
+                @elseif(isset($project->user->engagement_type) && $project->user->engagement_type == "perikatan_berulang")
                     {{ Form::label('engagement_type', __('Engagement Type'), ['class' => 'form-label']) }}
                     {{ Form::text('engagement_type', $notes, array('class' => 'form-control', 'readonly' => 'true')) }}
                 @endif
@@ -73,12 +73,15 @@
         <div class="col-sm-4">
             <div class="form-group">
                 {{ Form::label('telephone', __('Telephone'), ['class' => 'form-label']) }}
-                {{ Form::text('telephone', $project->user->telp, array('class' => 'form-control', 'readonly' => 'true')) }}
+                {{ Form::text('telephone', !empty($project->user->telp) ? $project->user->telp:'', array('class' => 'form-control', 'readonly' => 'true')) }}
             </div>
         </div>
         <div class="col-sm-4">
             <div class="form-group">
-            @if ($project->user->engagement_types = "audit_atas_laporan_keuangan")
+            @if (isset($project->user->engagement_types) && $project->user->engagement_types == "audit_atas_laporan_keuangan")
+                {{ Form::label('engagement_types', __('Engagement Types'), ['class' => 'form-label']) }}
+                {{ Form::text('engagement_types', $engagement_types_text, array('class' => 'form-control', 'readonly' => 'true')) }}
+            @else
                 {{ Form::label('engagement_types', __('Engagement Types'), ['class' => 'form-label']) }}
                 {{ Form::text('engagement_types', $engagement_types_text, array('class' => 'form-control', 'readonly' => 'true')) }}
             @endif
@@ -94,12 +97,15 @@
         <div class="col-sm-4">
             <div class="form-group">
                 {{ Form::label('npwp', __('NPWP'), ['class' => 'form-label']) }}
-                {{ Form::text('npwp', $project->user->npwp, array('class' => 'form-control', 'readonly' => 'true')) }}
+                {{ Form::text('npwp', !empty($project->user->npwp) ? $project->user->npwp:'', array('class' => 'form-control', 'readonly' => 'true')) }}
             </div>
         </div>
         <div class="col-sm-4">
             <div class="form-group">
-            @if ($project->user->auditing_standard = "audit_atas_laporan_keuangan")
+            @if (isset($project->user->auditing_standard) && $project->user->auditing_standard == "audit_atas_laporan_keuangan")
+                {{ Form::label('auditing_standard', __('Auditing Standard'), ['class' => 'form-label']) }}
+                {{ Form::text('auditing_standard', $auditing_standard_text, array('class' => 'form-control', 'readonly' => 'true')) }}
+            @else
                 {{ Form::label('auditing_standard', __('Auditing Standard'), ['class' => 'form-label']) }}
                 {{ Form::text('auditing_standard', $auditing_standard_text, array('class' => 'form-control', 'readonly' => 'true')) }}
             @endif

@@ -6,6 +6,32 @@
 @push('css-page')
     <link rel="stylesheet" href="{{asset('css/summernote/summernote-bs4.css')}}">
     <link rel="stylesheet" href="{{ asset('assets/css/plugins/dragula.min.css') }}" id="main-style-link">
+    <style>
+        .formatted-text {
+            white-space: pre-wrap;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .typing-animation .text:after {
+            content: '|';
+            animation: blink-caret 0.75s infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blink-caret {
+            from, to { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes typing-text {
+            0% { width: 0; }
+            100% { width: 100%; }
+        }
+    </style>
 @endpush
 @push('script-page')
     <script src="{{asset('css/summernote/summernote-bs4.js')}}"></script>
@@ -146,6 +172,27 @@
 
 
     </script>
+    <script>
+        window.addEventListener('DOMContentLoaded', (event) => {
+            let answerText = document.querySelector('.formatted-text');
+            let answerTextContent = answerText.textContent.trim();
+            answerText.textContent = '';
+
+            let span = document.createElement('span');
+            span.classList.add('text');
+            answerText.appendChild(span);
+
+            let currentCharIndex = 0;
+            let typingTimer = setInterval(function() {
+                if (currentCharIndex < answerTextContent.length) {
+                    span.textContent += answerTextContent.charAt(currentCharIndex);
+                    currentCharIndex++;
+                } else {
+                    clearInterval(typingTimer);
+                }
+            }, 20);
+        });
+    </script>
 
 
 @endpush
@@ -162,6 +209,36 @@
 @endsection
 
 @section('content')
+{{ Form::open(['route' => ['send.respon.materialitas', [$project->id, $task->id]], 'method' => 'post']) }}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="col-12">
+                    <div class="card-header">
+                        <div class="float-end">
+                            <button type="submit" class="btn btn-sm btn-primary"> <i class="fas fa-robot"></i>{{__(' Generate Answers With AI')}}</>
+                        </div>
+                        <br>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                                <div class="col-sm-12 col-md-12">
+                                    <div class="form-group">
+                                        <div class="col-sm-12 col-md-12">
+                                                <div class="form-group">
+                                                    {{ Form::textarea('message', null, ['class' => 'form-control message']) }}
+                                                </div>
+                                        </div>
+                                    </div>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+{{ Form::close() }}
 {{ Form::open(['route' => ['summary.materialitas', $project->id], 'method' => 'post']) }}
     <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}">
     <input type="hidden" name="materialitas_id" class = "form-control materialitas_id">
@@ -599,6 +676,30 @@
         <div class="col-md-12">
             <div class="card">
                 <div class="col-12">
+                    <div class="card-header">
+                        <h6 class="mb-0">{{__('Response From AI')}}</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                                <div class="col-sm-12 col-md-12">
+                                    @if(isset($respons->response ))
+                                        <div class="form-group">
+                                            <p class="formatted-text">
+                                                {{ $respons->response }}
+                                            </p>
+                                        </div>
+                                    @endif
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="col-12">
                     <div class="card-header"><h6 class="mb-0">{{__('Auditor Notes')}}</h6>
                     <br>
                     <p>
@@ -607,7 +708,22 @@
                         </strong>
                     </p>
                     <p>
-                        Berdasarkan hasil diskusi, materialitas pada tingkat laporan keuangan ditentukan sebesar <strong> {{$valuemateriality->rate }}% </strong> dari  <strong> {{$valuemateriality->materiality->name }}. </strong>
+                        Berdasarkan hasil diskusi, materialitas pada tingkat laporan keuangan ditentukan sebesar
+                        <strong>
+                            @if(isset($valuemateriality) && is_object($valuemateriality))
+                                {{$valuemateriality->rate ?? ''}}
+                            @else
+                                N/A
+                            @endif
+                        %</strong>
+                        dari
+                        <strong>
+                            @if(isset($valuemateriality) && is_object($valuemateriality) && isset($valuemateriality->materiality))
+                                {{$valuemateriality->materiality->name ?? ''}}
+                            @else
+                                N/A
+                            @endif
+                        .</strong>
                     </p>
                     
                     </div>

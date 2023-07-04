@@ -534,4 +534,20 @@ class UserController extends Controller
 
     }
 
+    public function updateStatus(Request $request)
+    {
+        $userId = $request->input('user_id');
+        $isActive = $request->input('is_active');
+
+        // Lakukan validasi data dan perbarui status pengguna di database
+        // ...
+        // Contoh: menggunakan model User
+        $user = User::find($userId);
+        $user->is_active = $isActive;
+        $user->save();
+
+        return response()->json(['message' => 'User successfully updated.']);
+
+    }
+
 }

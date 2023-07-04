@@ -106,6 +106,7 @@ class ProjectTask extends Model
         'CURA' => 'CURRENT RATIO',
         'QURA' => 'QUICK RATIO',
         'CARA' => 'CASH RATIO',
+        'CATURA' => 'CASH TURNOVER RATIO',
     ];
 
     public static $rasio_profitabilitas = [
@@ -119,13 +120,13 @@ class ProjectTask extends Model
     public static $rasio_utang = [
         'DETERA' => 'DEBT TO EQUITY RATIO',
         'DETARA' => 'DEBT TO ASSET RATIO',
-        'NPM' => 'NET PROFIT MARGIN',
-        'ROA' => 'RETURN ON ASSET',
-        'ROE' => 'RETURN ON EQUITY',
-        'TATURA' => 'TOTAL ASSET TURNOVER RATIO',
-        'RETURA' => 'RECEIVABLE TURNOVER RATIO',
-        'RETURAH' => 'RECEIVABLE TURNOVER RATIO (HARI)',
-        'INTURA' => 'INVENTORY TURNOVER RATIO',
+        // 'NPM' => 'NET PROFIT MARGIN',
+        // 'ROA' => 'RETURN ON ASSET',
+        // 'ROE' => 'RETURN ON EQUITY',
+        // 'TATURA' => 'TOTAL ASSET TURNOVER RATIO',
+        // 'RETURA' => 'RECEIVABLE TURNOVER RATIO',
+        // 'RETURAH' => 'RECEIVABLE TURNOVER RATIO (HARI)',
+        // 'INTURA' => 'INVENTORY TURNOVER RATIO',
     ];
 
     public static $lancar = [
@@ -148,6 +149,24 @@ class ProjectTask extends Model
         'medium' => 'primary',
         'low' => 'info',
     ];
+
+    public static $period=[
+        'prior' => 'Prior',
+        'current' => 'Current',
+    ];
+
+    public static $type=[
+        'factual' => 'Factual',
+        'judgemental' => 'Judgemental',
+        'projected' => 'Projected',
+        'disclosure_misstatement' => 'Disclosure Misstatement'
+    ];
+
+    public static $corrected=[
+        'corrected' => 'Corrected',
+        'uncorrected' => 'Uncorrected',
+    ];
+
     public function milestone()
     {
         return $this->hasOne('App\Models\Milestone','id', 'milestone_id');

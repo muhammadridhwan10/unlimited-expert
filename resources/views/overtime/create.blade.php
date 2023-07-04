@@ -70,9 +70,9 @@
     var currentYear = currentDate.getFullYear();
     var maxDate;
 
-    if (currentDate.getDate() < 27 || currentMonth === 5) {
-      // Bulan ini belum melewati tanggal 27 atau bulan ini adalah May
-      maxDate = 27;
+    if (currentDate.getDate() < 28 || currentMonth === 5) {
+      // Bulan ini belum melewati tanggal 28 atau bulan ini adalah May
+      maxDate = 28;
     } else {
       maxDate = currentDate.getDate();
     }
@@ -97,7 +97,7 @@
       }
     });
 
-    if (currentDate.getDate() > 27) 
+    if (currentDate.getDate() > 28) 
     {
         $("#datepicker").datepicker("option", "disabled", true);
         $("#datepicker").attr("readonly", "readonly");

@@ -11,6 +11,27 @@
     <script src="{{asset('css/summernote/summernote-bs4.js')}}"></script>
     <script src="{{asset('js/jquery-ui.min.js')}}"></script>
     <script src="{{asset('js/jquery.repeater.min.js')}}"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', (event) => {
+            let answerText = document.querySelector('.formatted-text');
+            let answerTextContent = answerText.textContent.trim();
+            answerText.textContent = '';
+
+            let span = document.createElement('span');
+            span.classList.add('text');
+            answerText.appendChild(span);
+
+            let currentCharIndex = 0;
+            let typingTimer = setInterval(function() {
+                if (currentCharIndex < answerTextContent.length) {
+                    span.textContent += answerTextContent.charAt(currentCharIndex);
+                    currentCharIndex++;
+                } else {
+                    clearInterval(typingTimer);
+                }
+            }, 20);
+        });
+    </script>
 
 
 @endpush
@@ -22,6 +43,34 @@
     <li class="breadcrumb-item">{{__($task->name)}}</li>
 @endsection
 @push('script-page')
+@endpush
+@push('css-page')
+    <style>
+        .formatted-text {
+            white-space: pre-wrap;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .typing-animation .text:after {
+            content: '|';
+            animation: blink-caret 0.75s infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blink-caret {
+            from, to { opacity: 0; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes typing-text {
+            0% { width: 0; }
+            100% { width: 100%; }
+        }
+    </style>
 @endpush
 @section('action-btn')
 @endsection
@@ -916,45 +965,84 @@
             </div>
         </div>
     </div>
-{{ Form::open(['route' => ['notes.analysis', [$project->id, $task->id]], 'method' => 'post']) }}
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="col-12">
-                    <div class="card-header"><h6 class="mb-0">{{__('Auditor Notes')}}</h6>
-                    <br>
-                    <p>
-                        <strong>
-                                Reference : https://
-                        </strong>
-                    </p>
-                    
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                                <div class="col-sm-12 col-md-12">
-                                    <div class="form-group">
-                                        <div class="col-sm-12 col-md-12">
-                                                <div class="form-group">
-                                                @if(isset($notesanalysis->notes))
-                                                    {{ Form::textarea('notes', $notesanalysis->notes, ['class' => 'form-control notes']) }}
-                                                @else
-                                                    {{ Form::textarea('notes', null, ['class' => 'form-control notes']) }}
-                                                @endif
-                                                </div>
+    {{ Form::open(['route' => ['send.message', [$project->id, $task->id]], 'method' => 'post']) }}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="col-12">
+                        <div class="card-header">
+                            <div class="float-end">
+                                <button type="submit" class="btn btn-sm btn-primary"> <i class="fas fa-robot"></i>{{__(' Generate Answers With AI')}}</button>
+                            </div>
+                            <h6 class="mb-0">{{__('Response From AI')}}</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                    <div class="col-sm-12 col-md-12">
+                                        <div class="form-group">
+                                            <div class="col-sm-12 col-md-12">
+                                                    <div class="form-group">
+                                                        {{ Form::textarea('message', null, ['class' => 'form-control message']) }}
+                                                    </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                    <div class="col-sm-12 col-md-12">
+                                        @if(isset($respons->response ))
+                                            <div class="form-group">
+                                                <p class="formatted-text">
+                                                    {{ $respons->response }}
+                                                </p>
+                                            </div>
+                                        @endif
+                                    </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="modal-footer">
-        <input type="submit" value="{{__('Save')}}" class="btn btn-simpan  btn-primary">
-    </div>
-{{ Form::close() }}
+    {{ Form::close() }}
+
+    {{ Form::open(['route' => ['notes.analysis', [$project->id, $task->id]], 'method' => 'post']) }}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="col-12">
+                        <div class="card-header"><h6 class="mb-0">{{__('Auditor Notes')}}</h6>
+                        <br>
+                        <p>
+                            <strong>
+                                    Reference : https://
+                            </strong>
+                        </p>
+                        
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                    <div class="col-sm-12 col-md-12">
+                                        <div class="form-group">
+                                            <div class="col-sm-12 col-md-12">
+                                                    <div class="form-group">
+                                                    @if(isset($notesanalysis->notes))
+                                                        {{ Form::textarea('notes', $notesanalysis->notes, ['class' => 'form-control notes']) }}
+                                                    @else
+                                                        {{ Form::textarea('notes', null, ['class' => 'form-control notes']) }}
+                                                    @endif
+                                                    </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <input type="submit" value="{{__('Save')}}" class="btn btn-simpan  btn-primary">
+        </div>
+    {{ Form::close() }}
 
     
     {{-- <div class="row">

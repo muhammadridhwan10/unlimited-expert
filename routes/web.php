@@ -4010,6 +4010,20 @@ Route::post(
 ]
 );
 
+Route::post(
+    '/send-message/project/{pid}/task/{tid}', [
+    'as' => 'send.message',
+    'uses' => 'ProjectTaskController@getResponse',
+]
+);
+
+Route::post(
+    '/send-respon-materialitas/project/{pid}/task/{tid}', [
+    'as' => 'send.respon.materialitas',
+    'uses' => 'ProjectTaskController@getResponseMaterialitas',
+]
+);
+
 Route::get(
     '/projects/{id}/task/{tid}/audit-memorandum', [
     'as' => 'projects.tasks.audit.memorandum',
@@ -4048,6 +4062,76 @@ Route::get(
     ]
 );
 
+Route::get(
+    '/projects/{id}/task/{tid}/identifiedmisstatements', [
+    'as' => 'projects.tasks.identifiedmisstatements',
+    'uses' => 'ProjectTaskController@getidentifiedmisstatements',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::get(
+    '/projects/{pid}/task/{tid}/create-summary-identified-misstatements', [
+    'as' => 'projects.tasks.create.summary.identified.misstatements',
+    'uses' => 'ProjectTaskController@createSummaryIdentifiedMisstatements',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post(
+    '/projects/{pid}/task/{tid}/save-summary-identified-misstatements', [
+    'as' => 'save-summary-identified-misstatements',
+    'uses' => 'ProjectTaskController@saveSummaryIdentifiedMisstatements',
+]
+);
+
+Route::post(
+    '/update-period', [
+    'as' => 'update-period',
+    'uses' => 'ProjectTaskController@updatedperiod',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post(
+    '/update-type_misstatement', [
+    'as' => 'update-type_misstatement',
+    'uses' => 'ProjectTaskController@updatedtype_misstatement',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post(
+    '/update-corrected', [
+    'as' => 'update-corrected',
+    'uses' => 'ProjectTaskController@updatedcorrected',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::delete('projects/{pid}/task/{tid}/delete-summary-identified-misstatements/{id}', 'ProjectTaskController@destroySummaryIdentifiedMisstatements')->name('summary.identified.misstatements.delete');
+Route::get('projects/{pid}/task/{tid}/edit-summary-identified-misstatements/{id}', 'ProjectTaskController@editSummaryIdentifiedMisstatements')->name('summary.identified.misstatements.edit');
+Route::put('projects/{pid}/task/{tid}/update-summary-identified-misstatements/{id}', 'ProjectTaskController@updateSummaryIdentifiedMisstatements')->name('summary.identified.misstatements.update');
 Route::post('tasks/materialitas', 'ProjectTaskController@materialitas')->name('tasks.materialitas');
 Route::post('tasks/mappingaccountdata', 'ProjectTaskController@mappingaccountdata')->name('tasks.mappingaccount');
 Route::post('tasks/journaldata', 'ProjectTaskController@journaldata')->name('journal.data');
@@ -4055,3 +4139,36 @@ Route::post('/import/project-financial-statement/{pid}', 'ProjectTaskController@
 
 Route::post('reports-monthly-attendance/getdepartment', 'ReportController@getdepartment')->name('report.attendance.getdepartment')->middleware(['auth', 'XSS']);
 Route::post('reports-monthly-attendance/getemployee', 'ReportController@getemployee')->name('report.attendance.getemployee')->middleware(['auth', 'XSS']);
+Route::post(
+    '/users/update-status', [
+    'as' => 'update-active',
+    'uses' => 'UserController@updateStatus',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::resource('medical-allowance', 'MedicalAllowanceController')->middleware(
+    [
+        'auth',
+        'XSS',
+        'revalidate',
+    ]
+);
+Route::resource('reimbursment-personal', 'ReimbursmentPersonalController')->middleware(
+    [
+        'auth',
+        'XSS',
+        'revalidate',
+    ]
+);
+Route::resource('reimbursment-client', 'ReimbursmentClientController')->middleware(
+    [
+        'auth',
+        'XSS',
+        'revalidate',
+    ]
+);
+Route::post('medical-allowance/image-view', ['as' => 'medical-allowance.image.view','uses' => 'MedicalAllowanceController@getMedicalAllowanceImages']);

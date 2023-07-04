@@ -362,7 +362,9 @@
                             <div class="d-block d-sm-flex align-items-center justify-content-between">
                                 <div class="row align-items-center">
                                     <span class="text-white text-sm">{{__('Client')}}</span>
-                                    <h5 class="text-white text-nowrap">{{ $project->user->name }}</h5>
+                                    @if(isset($project->user))
+                                        <h5 class="text-white text-nowrap">{{ $project->user->name }}</h5>
+                                    @endif
                                 </div>
                             </div>
                             <div class="d-block d-sm-flex align-items-center justify-content-between">

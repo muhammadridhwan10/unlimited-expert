@@ -779,84 +779,67 @@ class ProjectController extends Controller
                 ]
             );
 
-            $template = Project::with('details')->get();
-            foreach ($template as $templates) 
-            {
-                $details = $templates->details;
-            }
+            // Menghapus ProjectTask yang terkait dengan project
+            ProjectTask::where('project_id', $project->id)->delete();
 
-            if($project->template_task_id !== NULL)
-            {
+
+            $template = Project::with('details')->find($project->id);
+            $details = $template->details;
+            // foreach ($template as $templates) {
+            //     $details = $templates->details;
+            // }
+
+            if ($project->template_task_id !== NULL){
                 $category = $request->items;
                 $category_id = $request->category_id;
-    
-                for($i = 0; $i < count($details); $i++)
-                {
-                    // dd($details);
-                    $tasks                 = new ProjectTask();
-                    $tasks->project_id     = $project->id;
-                    $tasks->assign_to      = 0;
-                    $tasks->stage_id       =  $details[$i]['stage_id'];
-                    $tasks->name           = $details[$i]['name'];
-                    $tasks->category_template_id      =  $details[$i]['category_template_id'];
-                    $tasks->start_date     = $project->start_date;
-                    $tasks->end_date       = $project->end_date;
-                    $tasks->estimated_hrs  = $details[$i]['estimated_hrs'];
-                    $tasks->description    = $details[$i]['description'];
-                    $tasks->created_by     = \Auth::user()->creatorId();
-                    $tasks->update();
-    
+
+                for ($i = 0; $i < count($details); $i++) {
+                    $tasks = new ProjectTask();
+                    $tasks->project_id = $project->id;
+                    $tasks->assign_to = 0;
+                    $tasks->stage_id = $details[$i]['stage_id'];
+                    $tasks->name = $details[$i]['name'];
+                    $tasks->category_template_id = $details[$i]['category_template_id'];
+                    $tasks->start_date = $project->start_date;
+                    $tasks->end_date = $project->end_date;
+                    $tasks->estimated_hrs = $details[$i]['estimated_hrs'];
+                    $tasks->description = $details[$i]['description'];
+                    $tasks->created_by = \Auth::user()->creatorId();
+                    $tasks->save();
                 }
-    
-                $category = Project::category_progress($count, $project->id); 
-    
+
+                $category = Project::category_progress($count, $project->id);
+
                 $Preengagement = $category['TotalPreengagement'];
                 $Riskassessment = $category['TotalRiskassessment'];
                 $Riskresponse = $category['TotalRiskresponse'];
                 $Conclutioncompletion = $category['TotalConclutioncompletion'];
-    
-                $task = ProjectTask::where('project_id','=', $project->id)->get();
-    
-                for($i = 0; $i < count($task); $i++)
-                {
-                    if($task[$i]['category_template_id'] == 1)
-                    {
+
+                $task = ProjectTask::where('project_id', '=', $project->id)->get();
+
+                for ($i = 0; $i < count($task); $i++) {
+                    if ($task[$i]['category_template_id'] == 1) {
                         $estimated_hrs = 0;
-                    }
-                    elseif($task[$i]['category_template_id'] == 2)
-                    {
+                    } elseif ($task[$i]['category_template_id'] == 2) {
                         $estimated_hrs = $Preengagement;
-                    }
-                    elseif($task[$i]['category_template_id'] == 3)
-                    {
+                    } elseif ($task[$i]['category_template_id'] == 3) {
                         $estimated_hrs = $Riskassessment;
-                    }
-                    elseif($task[$i]['category_template_id'] == 4)
-                    {
+                    } elseif ($task[$i]['category_template_id'] == 4) {
                         $estimated_hrs = $Riskresponse;
-                    }
-                    elseif($task[$i]['category_template_id'] == 5)
-                    {
+                    } elseif ($task[$i]['category_template_id'] == 5) {
                         $estimated_hrs = $Conclutioncompletion;
                     }
-    
+
                     ProjectTask::where(['id' => $task[$i]['id']])->update([
                         'estimated_hrs' => $estimated_hrs,
                     ]);
-    
-    
                 }
-
-            }
-            else
-            {
+            } else {
                 $project = Project::find($project->id);
 
-                $project->update(
-                    [
-                        'is_template' => 0,
-                    ]
-                );
+                $project->update([
+                    'is_template' => 0,
+                ]);
             }
 
             

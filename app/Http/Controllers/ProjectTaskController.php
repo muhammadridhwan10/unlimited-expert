@@ -32,9 +32,13 @@ use App\Models\ValueMaterialitas;
 use App\Models\SummaryMateriality;
 use App\Models\AuditMemorandum;
 use App\Models\SummaryJournalData;
+use App\Models\SummaryIdentifiedMisstatements;
 use App\Models\NotesAnalysis;
 use Illuminate\Support\Facades\Crypt;
 use App\Mail\CommentNotification;
+use App\Models\Respons;
+use HaoZiTeam\ChatGPT\V1 as ChatGPTV1;
+use App\Http\Library\ChatGPT\V1 as ChatGPT;
 
 class ProjectTaskController extends Controller
 {
@@ -1998,103 +2002,201 @@ class ProjectTaskController extends Controller
                 ];
             });
 
+            $summary_mapping = [];
+
             // dd($result);
+            if (!$result->isEmpty()) 
+            {
 
-            // Mengelompokkan hasil berdasarkan account_group
-            $grouped_result = $result->groupBy('account_group');
+                // Mengelompokkan hasil berdasarkan account_group
+                $grouped_result = $result->groupBy('account_group');
 
-            // Menghitung total masing-masing dari account_group
-            $summary = $grouped_result->map(function ($group) {
-                $accountGroup = $group->first()['account_group'];
-                $priorPeriod2Total = $group->sum('prior_period2');
-                $priorPeriodTotal = $group->sum('prior_period');
-                $inhouseTotal = $group->sum('inhouse');
-                $auditedTotal = $group->sum('audited');
-                
-                
-                
-                return [
-                    'account_group' => $accountGroup,
-                    'prior_period2_total' => $priorPeriod2Total,
-                    'prior_period_total' => $priorPeriodTotal,
-                    'inhouse_total' => $inhouseTotal,
-                    'audited_total' => $auditedTotal,
+                // Menghitung total masing-masing dari account_group
+                $summary = $grouped_result->map(function ($group) {
+                    $accountGroup = $group->first()['account_group'];
+                    $priorPeriod2Total = $group->sum('prior_period2');
+                    $priorPeriodTotal = $group->sum('prior_period');
+                    $inhouseTotal = $group->sum('inhouse');
+                    $auditedTotal = $group->sum('audited');
+                    
+                    
+                    
+                    return [
+                        'account_group' => $accountGroup,
+                        'prior_period2_total' => $priorPeriod2Total,
+                        'prior_period_total' => $priorPeriodTotal,
+                        'inhouse_total' => $inhouseTotal,
+                        'audited_total' => $auditedTotal,
+                    ];
+                });
+
+                // dd($summary);
+
+                $laba_kotor = [
+                    'account_group' => 'LABA BRUTO',
+                    'prior_period2_total' => isset($summary['PENDAPATAN']['prior_period2_total']) && isset($summary['BEBAN POKOK PENDAPATAN']['prior_period2_total']) ? $summary['PENDAPATAN']['prior_period2_total'] - $summary['BEBAN POKOK PENDAPATAN']['prior_period2_total'] : 0,
+                    'prior_period_total' => isset($summary['PENDAPATAN']['prior_period_total']) && isset($summary['BEBAN POKOK PENDAPATAN']['prior_period_total']) ? $summary['PENDAPATAN']['prior_period_total'] - $summary['BEBAN POKOK PENDAPATAN']['prior_period_total'] : 0,
+                    'inhouse_total' => isset($summary['PENDAPATAN']['inhouse_total']) && isset($summary['BEBAN POKOK PENDAPATAN']['inhouse_total']) ? $summary['PENDAPATAN']['inhouse_total'] - $summary['BEBAN POKOK PENDAPATAN']['inhouse_total'] : 0,
+                    'audited_total' => isset($summary['PENDAPATAN']['audited_total']) && isset($summary['BEBAN POKOK PENDAPATAN']['audited_total']) ? $summary['PENDAPATAN']['audited_total'] - $summary['BEBAN POKOK PENDAPATAN']['audited_total'] : 0,
                 ];
-            });
 
-            // dd($summary);
 
-            $laba_kotor = [
-                'account_group' => 'LABA BRUTO',
-                'prior_period2_total' => $summary['PENDAPATAN']['prior_period2_total'] - $summary['BEBAN POKOK PENDAPATAN']['prior_period2_total'],
-                'prior_period_total' => $summary['PENDAPATAN']['prior_period_total'] - $summary['BEBAN POKOK PENDAPATAN']['prior_period_total'],
-                'inhouse_total' => $summary['PENDAPATAN']['inhouse_total'] - $summary['BEBAN POKOK PENDAPATAN']['inhouse_total'],
-                'audited_total' => $summary['PENDAPATAN']['audited_total'] - $summary['BEBAN POKOK PENDAPATAN']['audited_total'],
-            ];
+                // Menambahkan perhitungan "TOTAL LABA OPERASI"
+                $laba_operasi = [
+                    'account_group' => 'LABA OPERASIONAL',
+                    'prior_period2_total' => isset($laba_kotor['prior_period2_total']) && isset($summary['BEBAN OPERASIONAL']['prior_period2_total']) ? $laba_kotor['prior_period2_total'] - $summary['BEBAN OPERASIONAL']['prior_period2_total'] : 0,
+                    'prior_period_total' => isset($laba_kotor['prior_period_total']) && isset($summary['BEBAN OPERASIONAL']['prior_period_total']) ? $laba_kotor['prior_period_total'] - $summary['BEBAN OPERASIONAL']['prior_period_total'] : 0,
+                    'inhouse_total' => isset($laba_kotor['inhouse_total']) && isset($summary['BEBAN OPERASIONAL']['inhouse_total']) ? $laba_kotor['inhouse_total'] - $summary['BEBAN OPERASIONAL']['inhouse_total'] : 0,
+                    'audited_total' => isset($laba_kotor['audited_total']) && isset($summary['BEBAN OPERASIONAL']['audited_total']) ? $laba_kotor['audited_total'] - $summary['BEBAN OPERASIONAL']['audited_total'] : 0,
+                ];                
 
-            // Menambahkan perhitungan "TOTAL LABA OPERASI"
-            $laba_operasi = [
-                'account_group' => 'LABA OPERASIONAL',
-                'prior_period2_total' => $laba_kotor['prior_period2_total'] - $summary['BEBAN OPERASIONAL']['prior_period2_total'],
-                'prior_period_total' =>  $laba_kotor['prior_period_total'] - $summary['BEBAN OPERASIONAL']['prior_period_total'],
-                'inhouse_total' => $laba_kotor['inhouse_total'] - $summary['BEBAN OPERASIONAL']['inhouse_total'],
-                'audited_total' => $laba_kotor['audited_total'] - $summary['BEBAN OPERASIONAL']['audited_total'],
-            ];
+                // Menambahkan perhitungan "TOTAL LABA SEBELUM PAJAK"
+                $laba_sebelum_pajak = [
+                    'account_group' => 'LABA SEBELUM PAJAK',
+                    'prior_period2_total' => isset($summary['PENDAPATAN / BEBAN KEUANGAN']['prior_period2_total']) ? $laba_operasi['prior_period2_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['prior_period2_total'] + isset($summary['PENDAPATAN / BEBAN LAIN-LAIN']['prior_period2_total']) : 0,
+                    'prior_period_total' => isset($summary['PENDAPATAN / BEBAN KEUANGAN']['prior_period_total']) ? $laba_operasi['prior_period_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['prior_period_total'] + isset($summary['PENDAPATAN / BEBAN LAIN-LAIN']['prior_period_total']) : 0,
+                    'inhouse_total' => isset($summary['PENDAPATAN / BEBAN KEUANGAN']['inhouse_total']) ? $laba_operasi['inhouse_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['inhouse_total'] + isset($summary['PENDAPATAN / BEBAN LAIN-LAIN']['inhouse_total']) : 0,
+                    'audited_total' => isset($summary['PENDAPATAN / BEBAN KEUANGAN']['audited_total']) ? $laba_operasi['audited_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['audited_total'] + isset($summary['PENDAPATAN / BEBAN LAIN-LAIN']['audited_total']) : 0,
+                ];                
 
-            // Menambahkan perhitungan "TOTAL LABA SEBELUM PAJAK"
-            $laba_sebelum_pajak = [
-                'account_group' => 'LABA SEBELUM PAJAK',
-                'prior_period2_total' => $laba_operasi['prior_period2_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['prior_period2_total'] + $summary['PENDAPATAN / BEBAN LAIN-LAIN']['prior_period2_total'],
-                'prior_period_total' => $laba_operasi['prior_period_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['prior_period_total'] + $summary['PENDAPATAN / BEBAN LAIN-LAIN']['prior_period_total'],
-                'inhouse_total' => $laba_operasi['inhouse_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['inhouse_total'] + $summary['PENDAPATAN / BEBAN LAIN-LAIN']['inhouse_total'],
-                'audited_total' => $laba_operasi['audited_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['audited_total'] + $summary['PENDAPATAN / BEBAN LAIN-LAIN']['audited_total'],
-            ];
+                // Menambahkan perhitungan "TOTAL LABA SETELAH PAJAK"
+                $laba_setelah_pajak = [
+                    'account_group' => 'LABA SETELAH PAJAK',
+                    'prior_period2_total' => isset($summary['BEBAN PAJAK PENGHASILAN']['prior_period2_total']) ? $summary['BEBAN PAJAK PENGHASILAN']['prior_period2_total'] + $laba_sebelum_pajak['prior_period2_total'] : 0,
+                    'prior_period_total' => isset($summary['BEBAN PAJAK PENGHASILAN']['prior_period_total']) ? $summary['BEBAN PAJAK PENGHASILAN']['prior_period_total'] + $laba_sebelum_pajak['prior_period_total'] : 0,
+                    'inhouse_total' => isset($summary['BEBAN PAJAK PENGHASILAN']['inhouse_total']) ? $summary['BEBAN PAJAK PENGHASILAN']['inhouse_total'] + $laba_sebelum_pajak['inhouse_total'] : 0,
+                    'audited_total' => isset($summary['BEBAN PAJAK PENGHASILAN']['audited_total']) ? $summary['BEBAN PAJAK PENGHASILAN']['audited_total'] + $laba_sebelum_pajak['audited_total'] : 0,
+                ];                
 
-            // Menambahkan perhitungan "TOTAL LABA SETELAH PAJAK"
-            $laba_setelah_pajak = [
-                'account_group' => 'LABA SETELAH PAJAK',
-                'prior_period2_total' => $summary['BEBAN PAJAK PENGHASILAN']['prior_period2_total'] + $laba_sebelum_pajak['prior_period2_total'],
-                'prior_period_total' => $summary['BEBAN PAJAK PENGHASILAN']['prior_period_total'] + $laba_sebelum_pajak['prior_period_total'],
-                'inhouse_total' => $summary['BEBAN PAJAK PENGHASILAN']['inhouse_total'] + $laba_sebelum_pajak['inhouse_total'],
-                'audited_total' => $summary['BEBAN PAJAK PENGHASILAN']['audited_total'] + $laba_sebelum_pajak['audited_total'],
-            ];
+                // Menambahkan perhitungan "LABA RUGI KOMPREHENSIF SETELAH PAJAK
+                $laba_rugi_komprehensif_setelah_pajak = [
+                    'account_group' => 'LABA RUGI KOMPREHENSIF SETELAH PAJAK',
+                    'prior_period2_total' => isset($summary['PENGHASILAN KOMPREHENSIF LAIN']['prior_period2_total']) ? $laba_setelah_pajak['prior_period2_total'] + $summary['PENGHASILAN KOMPREHENSIF LAIN']['prior_period2_total'] : 0,
+                    'prior_period_total' => isset($summary['PENGHASILAN KOMPREHENSIF LAIN']['prior_period_total']) ? $laba_setelah_pajak['prior_period_total'] + $summary['PENGHASILAN KOMPREHENSIF LAIN']['prior_period_total'] : 0,
+                    'inhouse_total' => isset($summary['PENGHASILAN KOMPREHENSIF LAIN']['inhouse_total']) ? $laba_setelah_pajak['inhouse_total'] + $summary['PENGHASILAN KOMPREHENSIF LAIN']['inhouse_total'] : 0,
+                    'audited_total' => isset($summary['PENGHASILAN KOMPREHENSIF LAIN']['audited_total']) ? $laba_setelah_pajak['audited_total'] + $summary['PENGHASILAN KOMPREHENSIF LAIN']['audited_total'] : 0,
+                ];                
 
-            // Menambahkan perhitungan "LABA RUGI KOMPREHENSIF SETELAH PAJAK
-            $laba_rugi_komprehensif_setelah_pajak = [
-                'account_group' => 'LABA RUGI KOMPREHENSIF SETELAH PAJAK',
-                'prior_period2_total' => $laba_setelah_pajak['prior_period2_total'] + $summary['PENGHASILAN KOMPREHENSIF LAIN']['prior_period2_total'] ,
-                'prior_period_total' => $laba_setelah_pajak['prior_period_total'] + $summary['PENGHASILAN KOMPREHENSIF LAIN']['prior_period_total'],
-                'inhouse_total' => $laba_setelah_pajak['inhouse_total'] + $summary['PENGHASILAN KOMPREHENSIF LAIN']['inhouse_total'],
-                'audited_total' => $laba_setelah_pajak['audited_total'] + $summary['PENGHASILAN KOMPREHENSIF LAIN']['audited_total'],
-            ];
+                // Menggabungkan hasil total masing-masing account_group dengan perhitungan "TOTAL LABA KOTOR"
+                $summaryWithLabaKotor = $summary->put('LABA BRUTO', $laba_kotor); 
+                $summaryWithBebanOperasi = $summary->put('LABA OPERASIONAL', $laba_operasi); 
+                $summaryWithLabaSebelumPajak = $summary->put('LABA SEBELUM PAJAK', $laba_sebelum_pajak); 
+                $summaryWithLabaSetelahPajak = $summary->put('LABA SETELAH PAJAK', $laba_setelah_pajak); 
+                $summaryWithLabaRugiKomprehensifSetelahPajak = $summary->put('LABA RUGI KOMPREHENSIF SETELAH PAJAK', $laba_rugi_komprehensif_setelah_pajak); 
 
-            // Menggabungkan hasil total masing-masing account_group dengan perhitungan "TOTAL LABA KOTOR"
-            $summaryWithLabaKotor = $summary->put('LABA BRUTO', $laba_kotor); 
-            $summaryWithBebanOperasi = $summary->put('LABA OPERASIONAL', $laba_operasi); 
-            $summaryWithLabaSebelumPajak = $summary->put('LABA SEBELUM PAJAK', $laba_sebelum_pajak); 
-            $summaryWithLabaSetelahPajak = $summary->put('LABA SETELAH PAJAK', $laba_setelah_pajak); 
-            $summaryWithLabaRugiKomprehensifSetelahPajak = $summary->put('LABA RUGI KOMPREHENSIF SETELAH PAJAK', $laba_rugi_komprehensif_setelah_pajak); 
+                $summary_mapping = [
+                    'ASET' => isset($summary['ASET']) ? $summary['ASET'] : [
+                        'account_group' => 'ASET',
+                        'prior_period2_total' => 0,
+                        'prior_period_total' => 0,
+                        'inhouse_total' => 0,
+                        'audited_total' => 0,
+                    ],
+                    'LIABILITAS' => isset($summary['LIABILITAS']) ? $summary['LIABILITAS'] : [
+                        'account_group' => 'LIABILITAS',
+                        'prior_period2_total' => 0,
+                        'prior_period_total' => 0,
+                        'inhouse_total' => 0,
+                        'audited_total' => 0,
+                    ],
+                    'EKUITAS' => isset($summary['EKUITAS']) ? $summary['EKUITAS'] : [
+                        'account_group' => 'EKUITAS',
+                        'prior_period2_total' => 0,
+                        'prior_period_total' => 0,
+                        'inhouse_total' => 0,
+                        'audited_total' => 0,
+                    ],
+                    'PENDAPATAN' => isset($summary['PENDAPATAN']) ? $summary['PENDAPATAN'] : [
+                        'account_group' => 'PENDAPATAN',
+                        'prior_period2_total' => 0,
+                        'prior_period_total' => 0,
+                        'inhouse_total' => 0,
+                        'audited_total' => 0,
+                    ],
+                    'BEBAN POKOK PENDAPATAN' => isset($summary['BEBAN POKOK PENDAPATAN']) ? $summary['BEBAN POKOK PENDAPATAN'] : [
+                        'account_group' => 'BEBAN POKOK PENDAPATAN',
+                        'prior_period2_total' => 0,
+                        'prior_period_total' => 0,
+                        'inhouse_total' => 0,
+                        'audited_total' => 0,
+                    ],
+                    'LABA BRUTO' => isset($summary['LABA BRUTO']) ? $summary['LABA BRUTO'] : [
+                        'account_group' => 'LABA BRUTO',
+                        'prior_period2_total' => 0,
+                        'prior_period_total' => 0,
+                        'inhouse_total' => 0,
+                        'audited_total' => 0,
+                    ],
+                    'BEBAN OPERASIONAL' => isset($summary['BEBAN OPERASIONAL']) ? $summary['BEBAN OPERASIONAL'] : [
+                        'account_group' => 'BEBAN OPERASIONAL',
+                        'prior_period2_total' => 0,
+                        'prior_period_total' => 0,
+                        'inhouse_total' => 0,
+                        'audited_total' => 0,
+                    ],
+                    'LABA OPERASIONAL' => isset($summary['LABA OPERASIONAL']) ? $summary['LABA OPERASIONAL'] : [
+                        'account_group' => 'LABA OPERASIONAL',
+                        'prior_period2_total' => 0,
+                        'prior_period_total' => 0,
+                        'inhouse_total' => 0,
+                        'audited_total' => 0,
+                    ],
+                    'PENDAPATAN / BEBAN KEUANGAN' => isset($summary['PENDAPATAN / BEBAN KEUANGAN']) ? $summary['PENDAPATAN / BEBAN KEUANGAN'] : [
+                        'account_group' => 'PENDAPATAN / BEBAN KEUANGAN',
+                        'prior_period2_total' => 0,
+                        'prior_period_total' => 0,
+                        'inhouse_total' => 0,
+                        'audited_total' => 0,
+                    ],
+                    'PENDAPATAN / BEBAN LAIN-LAIN' => isset($summary['PENDAPATAN / BEBAN LAIN-LAIN']) ? $summary['PENDAPATAN / BEBAN LAIN-LAIN'] : [
+                        'account_group' => 'PENDAPATAN / BEBAN LAIN-LAIN',
+                        'prior_period2_total' => 0,
+                        'prior_period_total' => 0,
+                        'inhouse_total' => 0,
+                        'audited_total' => 0,
+                    ],
+                    'LABA SEBELUM PAJAK' => isset($summary['LABA SEBELUM PAJAK']) ? $summary['LABA SEBELUM PAJAK'] : [
+                        'account_group' => 'LABA SEBELUM PAJAK',
+                        'prior_period2_total' => 0,
+                        'prior_period_total' => 0,
+                        'inhouse_total' => 0,
+                        'audited_total' => 0,
+                    ],
+                    'BEBAN PAJAK PENGHASILAN' => isset($summary['BEBAN PAJAK PENGHASILAN']) ? $summary['BEBAN PAJAK PENGHASILAN'] : [
+                        'account_group' => 'BEBAN PAJAK PENGHASILAN',
+                        'prior_period2_total' => 0,
+                        'prior_period_total' => 0,
+                        'inhouse_total' => 0,
+                        'audited_total' => 0,
+                    ],
+                    'LABA SETELAH PAJAK' => isset($summary['LABA SETELAH PAJAK']) ? $summary['LABA SETELAH PAJAK'] : [
+                        'account_group' => 'LABA SETELAH PAJAK',
+                        'prior_period2_total' => 0,
+                        'prior_period_total' => 0,
+                        'inhouse_total' => 0,
+                        'audited_total' => 0,
+                    ],
+                    'PENGHASILAN KOMPREHENSIF LAIN' => isset($summary['PENGHASILAN KOMPREHENSIF LAIN']) ? $summary['PENGHASILAN KOMPREHENSIF LAIN'] : [
+                        'account_group' => 'PENGHASILAN KOMPREHENSIF LAIN',
+                        'prior_period2_total' => 0,
+                        'prior_period_total' => 0,
+                        'inhouse_total' => 0,
+                        'audited_total' => 0,
+                    ],
+                    'LABA RUGI KOMPREHENSIF SETELAH PAJAK' => isset($summary['LABA RUGI KOMPREHENSIF SETELAH PAJAK']) ? $summary['LABA RUGI KOMPREHENSIF SETELAH PAJAK'] : [
+                        'account_group' => 'LABA RUGI KOMPREHENSIF SETELAH PAJAK',
+                        'prior_period2_total' => 0,
+                        'prior_period_total' => 0,
+                        'inhouse_total' => 0,
+                        'audited_total' => 0,
+                    ],
+                ];
+                
 
-            $summary_mapping = 
-            [
-                'ASET' => $summary['ASET'],
-                'LIABILITAS' => $summary['LIABILITAS'],
-                'EKUITAS' => $summary['EKUITAS'],
-                'PENDAPATAN' => $summary['PENDAPATAN'],
-                'BEBAN POKOK PENDAPATAN' => $summary['BEBAN POKOK PENDAPATAN'],
-                'LABA BRUTO' => $summary['LABA BRUTO'],
-                'BEBAN OPERASIONAL' => $summary['BEBAN OPERASIONAL'],
-                'LABA OPERASIONAL' => $summary['LABA OPERASIONAL'],
-                'PENDAPATAN / BEBAN KEUANGAN' => $summary['PENDAPATAN / BEBAN KEUANGAN'],
-                'PENDAPATAN / BEBAN LAIN-LAIN' => $summary['PENDAPATAN / BEBAN LAIN-LAIN'],
-                'LABA SEBELUM PAJAK' => $summary['LABA SEBELUM PAJAK'],
-                'BEBAN PAJAK PENGHASILAN' => $summary['BEBAN PAJAK PENGHASILAN'],
-                'LABA SETELAH PAJAK' => $summary['LABA SETELAH PAJAK'],
-                'PENGHASILAN KOMPREHENSIF LAIN' => $summary['PENGHASILAN KOMPREHENSIF LAIN'],
-                'LABA RUGI KOMPREHENSIF SETELAH PAJAK' => $summary['LABA RUGI KOMPREHENSIF SETELAH PAJAK'],
+                // dd($summary_mapping);
+                
+            }
 
-            ];
-            
             return view('project_task.financialStatement', compact('task','summary_mapping','project','financial_statement','mapping_accounts', 'result'));
         }
         else
@@ -2115,6 +2217,7 @@ class ProjectTaskController extends Controller
             $get_data_materialitas              = ValueMaterialitas::where('project_id', $project_id)->get();
             $valuemateriality                   = SummaryMateriality::where('project_id', $project_id)->orderBy('id', 'DESC')->first();
 
+            $respons                            = Respons::where('project_id', $project_id)->where('task_id', $id)->orderBy('id', 'DESC')->first();
             //data
             $data_m1 = FinancialStatement::where('project_id', $project_id)->where('m', '=', 'M.1')->get();
             $data_m2 = FinancialStatement::where('project_id', $project_id)->where('m', '=', 'M.2')->get();
@@ -2317,7 +2420,7 @@ class ProjectTaskController extends Controller
             return view('project_task.materialitas', compact(
                 'task','project','materialitas','financial_statement',
                 'data_array_2020','data_array_2021','data_array_in_2022',
-                'data_array_au_2022','get_data_materialitas','valuemateriality'
+                'data_array_au_2022','get_data_materialitas','valuemateriality','respons'
             ));
         }
         else
@@ -2801,9 +2904,10 @@ class ProjectTaskController extends Controller
             $materialitas                       = Materialitas::get();
             $get_data_materialitas              = ValueMaterialitas::where('project_id', $project_id)->get();
             $mapping_accounts                   = MappingAccount::where('project_id', $project_id)->get();
-            $summart_materialitas               = SummaryMateriality::where('project_id', $project_id)->orderBy('id', 'DESC')->first();
-            $data_initialmaterialityom          = $summart_materialitas->initialmaterialityom;
+            $summart_materialitas = SummaryMateriality::where('project_id', $project_id)->orderBy('id', 'DESC')->first();
+            $data_initialmaterialityom = isset($summart_materialitas) && is_object($summart_materialitas) ? $summart_materialitas->initialmaterialityom : null;
             $notesanalysis                      = NotesAnalysis::where('project_id', $project_id)->orderBy('id', 'DESC')->first();
+            $respons                            = Respons::where('project_id', $project_id)->where('task_id', $id)->orderBy('id', 'DESC')->first();
 
             $data_keuangan = $mapping_accounts->map(function ($mapping_account) use ($financial_statement, $data_initialmaterialityom) {
                 $account_code = $mapping_account->account_code;
@@ -2909,6 +3013,25 @@ class ProjectTaskController extends Controller
                     'kenaikan_penurunan_prior_period_persen_2' => $kenaikan_penurunan_prior_period_persen_2,
                 ];
             });
+
+            $tableData = [];
+
+            if (count(array($data_keuangan)) > 0) {
+                foreach ($data_keuangan as $data_keuangans) {
+                    // Lakukan pemrosesan data sesuai kebutuhan Anda
+                    // ...
+
+                    // Cek apakah nilai tidak kosong atau null sebelum menyimpan ke $tableData
+                    if (!empty($data_keuangans['filter_kenaikan_penurunan_prior_period_1'])) {
+                        $tableData[] = [
+                            'account_code' => $data_keuangans['account_code'],
+                            'name' => $data_keuangans['name'],
+                            'filter_kenaikan_penurunan_prior_period_1' => $data_keuangans['filter_kenaikan_penurunan_prior_period_1'],
+                        ];
+                    }
+                }
+            }
+
             
             
 
@@ -3983,9 +4106,11 @@ class ProjectTaskController extends Controller
             //         ]
             //     );
             // }
+
+            $request->session()->put('tableData', $tableData);
              
             return view('project_task.keuanganringkas', compact(
-                'task','project','materialitas','financial_statement','data_keuangan','notesanalysis',
+                'task','project','materialitas','financial_statement','data_keuangan','notesanalysis','tableData','respons',
             ));
         }
         else
@@ -4146,6 +4271,8 @@ class ProjectTaskController extends Controller
             $task                               = ProjectTask::find($id);
 
             $rasio_likuiditas = [];
+            $rasio_profitabilitas = [];
+            $rasio_utang = [];
             
             $financial_statement = FinancialStatement::where('project_id', $project_id)->whereIn('cn', ['CA', 'NCA', 'CL', 'NCL'])->get(['cn', 'prior_period2', 'prior_period', 'inhouse', 'audited',
             'jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec']);
@@ -4222,62 +4349,13 @@ class ProjectTaskController extends Controller
             $total_ca_au_2022 = $ca->sum('audited');
             $total_cl_au_2022 = $cl->sum('audited');
 
-            $total_aset_2020 = 0;
-            $total_aset_2021 = 0;
-            $total_aset_in_2022 = 0;
-            $total_aset_au_2022 = 0;
-            
-            for ($i = 1; $i <= 15; $i++) {
-                $m = 'LK.' . $i;
-                $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
 
-                $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
-                $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
-                
-                $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
-                $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
-                
-                $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
-                $total_in_2022[$m] = array_sum($data_in_2022[$m]);
-                
-                $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
-                $total_au_2022[$m] = array_sum($data_au_2022[$m]);
-
-                $total_aset_2020 += $total_lk_2020[$m];
-                $total_aset_2021 += $total_lk_2021[$m];
-                $total_aset_in_2022 += $total_in_2022[$m];
-                $total_aset_au_2022 += $total_au_2022[$m];
-            }
-
-
-            //Mencari nilai total liabitias
-            $total_liabilitas_2020 = 0;
-            $total_liabilitas_2021 = 0;
-            $total_liabilitas_in_2022 = 0;
-            $total_liabilitas_au_2022 = 0;
-            
-            for ($i = 16; $i <= 25; $i++) {
-                $m = 'LK.' . $i;
-                $data_lk = FinancialStatement::where('project_id', $project_id)->where('lk', '=', $m)->get();
-
-                $data_lk_2020[$m] = $data_lk->pluck('prior_period2')->toArray();
-                $total_lk_2020[$m] = array_sum($data_lk_2020[$m]);
-                
-                $data_lk_2021[$m] = $data_lk->pluck('prior_period')->toArray();
-                $total_lk_2021[$m] = array_sum($data_lk_2021[$m]);
-                
-                $data_in_2022[$m] = $data_lk->pluck('inhouse')->toArray();
-                $total_in_2022[$m] = array_sum($data_in_2022[$m]);
-                
-                $data_au_2022[$m] = $data_lk->pluck('audited')->toArray();
-                $total_au_2022[$m] = array_sum($data_au_2022[$m]);
-                
-
-                $total_liabilitas_2020 += $total_lk_2020[$m];
-                $total_liabilitas_2021 += $total_lk_2021[$m];
-                $total_liabilitas_in_2022 += $total_in_2022[$m];
-                $total_liabilitas_au_2022 += $total_au_2022[$m];
-            }
+            //Mencari nilai total liabilitas
+            $total_liabilitas                 = ValueMaterialitas::where('project_id', $project_id)->where('materialitas_id', 2)->first();
+            $total_liabilitas_2020            = $total_liabilitas->prior_period2;
+            $total_liabilitas_2021            = $total_liabilitas->prior_period;
+            $total_liabilitas_in_2022         = $total_liabilitas->inhouse;
+            $total_liabilitas_au_2022         = $total_liabilitas->audited;
 
             //Mencari nilai total aset
             $total_aset                 = ValueMaterialitas::where('project_id', $project_id)->where('materialitas_id', 1)->first();
@@ -4333,16 +4411,16 @@ class ProjectTaskController extends Controller
             $cash_ratio_au_2022 = ($total_cl_au_2022 != 0) ? $total_kas_setara_kas_au_2022 / ($total_cl_au_2022 * -1) : 0;
 
             //perhitungan debt to asset ratio
-            // $detara_2020 = ($total_aset_2020 != 0) ? ($total_liabilitas_2020 * -1) / $total_aset_2020 : 0;
-            // $detara_2021 = ($total_aset_2021 != 0) ? ($total_liabilitas_2021 * -1) / $total_aset_2021 : 0;
-            // $detara_in_2022 = ($total_aset_in_2022 != 0) ? ($total_liabilitas_in_2022 * -1) / $total_aset_in_2022 : 0;
-            // $detara_au_2022 = ($total_aset_au_2022 != 0) ? ($total_liabilitas_au_2022 * -1) / $total_aset_au_2022 : 0;
+            $detara_2020 = ($total_aset_2020 != 0) ? ($total_liabilitas_2020 * -1) / $total_aset_2020 : 0;
+            $detara_2021 = ($total_aset_2021 != 0) ? ($total_liabilitas_2021 * -1) / $total_aset_2021 : 0;
+            $detara_in_2022 = ($total_aset_in_2022 != 0) ? ($total_liabilitas_in_2022 * -1) / $total_aset_in_2022 : 0;
+            $detara_au_2022 = ($total_aset_au_2022 != 0) ? ($total_liabilitas_au_2022 * -1) / $total_aset_au_2022 : 0;
 
-            // //perhitungan debt to equity ratio
-            // $detera_2020 = ($total_ekuitas_2020 != 0) ? $total_liabilitas_2020 / $total_ekuitas_2020 : 0;
-            // $detera_2021 = ($total_ekuitas_2021 != 0) ? $total_liabilitas_2021 / $total_ekuitas_2021 : 0;
-            // $detera_in_2022 = ($total_ekuitas_in_2022 != 0) ? $total_liabilitas_in_2022 / $total_ekuitas_in_2022 : 0;
-            // $detera_au_2022 = ($total_ekuitas_au_2022 != 0) ? $total_liabilitas_au_2022 / $total_ekuitas_au_2022 : 0;
+            //perhitungan debt to equity ratio
+            $detera_2020 = ($total_ekuitas_2020 != 0) ? $total_liabilitas_2020 / $total_ekuitas_2020 : 0;
+            $detera_2021 = ($total_ekuitas_2021 != 0) ? $total_liabilitas_2021 / $total_ekuitas_2021 : 0;
+            $detera_in_2022 = ($total_ekuitas_in_2022 != 0) ? $total_liabilitas_in_2022 / $total_ekuitas_in_2022 : 0;
+            $detera_au_2022 = ($total_ekuitas_au_2022 != 0) ? $total_liabilitas_au_2022 / $total_ekuitas_au_2022 : 0;
 
             // //perhitungan total asset turnover ratio
             // $tatura_2020 = ($total_aset_2020 != 0) ? ($total_pendapatan_2020 * -1) / $total_aset_2020 : 0;
@@ -4418,6 +4496,14 @@ class ProjectTaskController extends Controller
             $roe_in_2022 = ($total_ekuitas_in_2022 != 0) ? $total_laba_bersih_c1 / $total_ekuitas_in_2022 : 0;
             $roe_au_2022 = ($total_ekuitas_au_2022 != 0) ? $total_laba_bersih_d1 / $total_ekuitas_au_2022 : 0;
 
+            //perhitungan cash turnover ratio (perlu ditanyakan)
+            $rata_rata_kas_setara_kas = ($total_kas_setara_kas_in_2022 + $total_kas_setara_kas_2021) / 2 ;
+
+            $catura_2020 = ($total_pendapatan_2020 != 0) ? $rata_rata_kas_setara_kas / $total_pendapatan_2020 : 0;
+            $catura_2021 = ($total_pendapatan_2021 != 0) ? $rata_rata_kas_setara_kas / $total_pendapatan_2021 : 0;
+            $catura_in_2022 = ($total_pendapatan_in_2022 != 0) ? $rata_rata_kas_setara_kas / $total_pendapatan_in_2022 : 0;
+            $catura_au_2022 = ($total_pendapatan_au_2022 != 0) ? $rata_rata_kas_setara_kas / $total_pendapatan_au_2022 : 0;
+
 
 
             $summary_2020_rasio_likuiditas = 
@@ -4425,6 +4511,7 @@ class ProjectTaskController extends Controller
                 'CURA' => number_format($current_ratio_2020,2),
                 'QURA' => number_format($quick_ratio_2020,2),
                 'CARA' => number_format($cash_ratio_2020,2),
+                'CATURA' => number_format($catura_2020,2),
             ];
 
             $summary_2020_rasio_profitabilitas = 
@@ -4441,12 +4528,19 @@ class ProjectTaskController extends Controller
                 'ROA' => number_format($roa_2020,2),
                 'ROE' => number_format($roe_2020,2),
             ];
+
+            $summary_2020_rasio_utang = 
+            [
+                'DETARA' => number_format($detara_2020,2),
+                'DETERA' => number_format($detera_2020,2),
+            ];
             
             $summary_2021_rasio_likuiditas = 
             [
                 'CURA' => number_format($current_ratio_2021,2),
                 'QURA' => number_format($quick_ratio_2021,2),
                 'CARA' => number_format($cash_ratio_2021,2),
+                'CATURA' => number_format($catura_2021,2),
             ];
 
             $summary_2021_rasio_profitabilitas = 
@@ -4464,11 +4558,18 @@ class ProjectTaskController extends Controller
                 'ROE' => number_format($roe_2021,2),
             ];
 
+            $summary_2021_rasio_utang = 
+            [
+                'DETARA' => number_format($detara_2021,2),
+                'DETERA' => number_format($detera_2021,2),
+            ];
+
             $summary_in_2022_rasio_likuiditas = 
             [
                 'CURA' => number_format($current_ratio_in_2022,2),
                 'QURA' => number_format($quick_ratio_in_2022,2),
                 'CARA' => number_format($cash_ratio_in_2022,2),
+                'CATURA' => number_format($catura_in_2022,2),
             ];
 
             $summary_in_2022_rasio_profitabilitas = 
@@ -4486,11 +4587,18 @@ class ProjectTaskController extends Controller
                 'ROE' => number_format($roe_in_2022,2),
             ];
 
+            $summary_in_2022_rasio_utang = 
+            [
+                'DETARA' => number_format($detara_in_2022,2),
+                'DETERA' => number_format($detera_in_2022,2),
+            ];
+
             $summary_au_2022_rasio_likuiditas = 
             [
                 'CURA' => number_format($current_ratio_au_2022,2),
                 'QURA' => number_format($quick_ratio_au_2022,2),
                 'CARA' => number_format($cash_ratio_au_2022,2),
+                'CATURA' => number_format($catura_au_2022,2),
             ];
 
             $summary_au_2022_rasio_profitabilitas = 
@@ -4508,8 +4616,15 @@ class ProjectTaskController extends Controller
                 'ROE' => number_format($roe_au_2022,2),
             ];
 
+            $summary_au_2022_rasio_utang = 
+            [
+                'DETARA' => number_format($detara_au_2022,2),
+                'DETERA' => number_format($detera_au_2022,2),
+            ];
+
             $data_summary_rasio_likuiditas = ProjectTask::$rasio_likuiditas;
             $data_summary_rasio_profitabilitas = ProjectTask::$rasio_profitabilitas;
+            $data_summary_rasio_utang = ProjectTask::$rasio_utang;
 
             foreach($data_summary_rasio_likuiditas as $a => $b)
             {
@@ -4537,7 +4652,20 @@ class ProjectTaskController extends Controller
 
             }
 
-            return view('project_task.rasiokeuangan', compact('project','task','rasio_likuiditas','rasio_profitabilitas'));
+            foreach($data_summary_rasio_utang as $a => $b)
+            {
+                $summaryrasioutang['kode']           = $a;
+                $summaryrasioutang['akun']           = $b;
+                $summaryrasioutang['data_2020']      =  isset($summary_2020_rasio_utang[$a]) ? $summary_2020_rasio_utang[$a] : 0;
+                $summaryrasioutang['data_2021']      =  isset($summary_2021_rasio_utang[$a]) ? $summary_2021_rasio_utang[$a] : 0;
+                $summaryrasioutang['data_in_2022']   =  isset($summary_in_2022_rasio_utang[$a]) ? $summary_in_2022_rasio_utang[$a] : 0;
+                $summaryrasioutang['data_au_2022']   =  isset($summary_au_2022_rasio_utang[$a]) ? $summary_au_2022_rasio_utang[$a] : 0;
+
+                $rasio_utang[] = $summaryrasioutang;
+
+            }
+
+            return view('project_task.rasiokeuangan', compact('project','task','rasio_likuiditas','rasio_profitabilitas','rasio_utang'));
         }
         else
         {
@@ -4625,4 +4753,351 @@ class ProjectTaskController extends Controller
         return json_encode($data);
 
     }
+
+    public function getResponse(Request $request, $project_id, $task_id)
+    {
+        
+        $tableData = $request->session()->get('tableData');
+
+        //kesimpulan secara keseluruhan dari data ... ada;
+
+        $prompt = $request->input('message');
+
+        $chatGPT = new ChatGPT();
+        $chatGPT->addAccount('eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik1UaEVOVUpHTkVNMVFURTRNMEZCTWpkQ05UZzVNRFUxUlRVd1FVSkRNRU13UmtGRVFrRXpSZyJ9.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiJtdWhhbW1hZC5yaWRod2FuLmtvbnN1bHRhbmt1QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwiaHR0cHM6Ly9hcGkub3BlbmFpLmNvbS9hdXRoIjp7InVzZXJfaWQiOiJ1c2VyLW84THNsSnE3WTRIczJLZ3BSTk9pNnBHeiJ9LCJpc3MiOiJodHRwczovL2F1dGgwLm9wZW5haS5jb20vIiwic3ViIjoiZ29vZ2xlLW9hdXRoMnwxMTA2NzA3MTc1Mzc0NjYxNTQ3ODYiLCJhdWQiOlsiaHR0cHM6Ly9hcGkub3BlbmFpLmNvbS92MSIsImh0dHBzOi8vb3BlbmFpLm9wZW5haS5hdXRoMGFwcC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNjg3MzMyMTQ1LCJleHAiOjE2ODg1NDE3NDUsImF6cCI6IlRkSkljYmUxNldvVEh0Tjk1bnl5d2g1RTR5T282SXRHIiwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCBtb2RlbC5yZWFkIG1vZGVsLnJlcXVlc3Qgb3JnYW5pemF0aW9uLnJlYWQgb3JnYW5pemF0aW9uLndyaXRlIn0.aWSFvVKOeZWTu24UA3eXMlP8nV1ol8-lIVHLrbb55aANcAxttTEnjzkzMddOL0tVjS9zLzbcr6iRV5zxD4SWGvslCEiNF_mIP7Duq3xAhxY86vGxfNb8Su59evFXVQ_YDuAJxOzeffREwNd1pZSok6LD7T5o26dwqo24UWtSYgIILmeSU-UKmYn1axZPieFxZQeTlZ2JvFmPVeIBUfrt2nQwkDXsYS_leRuzwYYYvFM8nvQuM-eIHlptTPeBHXaVmhhCtQ9xpFA0WtGzhCEn9JN_RNS-43Z8gcTQV4mL6WcGc57sqPZPMa3QPoEgum34CC5TPW4kA9NEHSiO8CPNNQ');
+        $ask = $chatGPT->ask($prompt . json_encode($tableData) . ' adalah');
+        foreach ($ask as $hasil) {
+            
+        }
+
+        $responseData = [
+            'hasil' => $hasil,
+        ];
+
+        $response = $hasil['answer'];
+        // dd($response);
+
+        $respons = new Respons();
+        $respons->project_id = $project_id; 
+        $respons->task_id = $task_id;
+        $respons->response = $response;
+        $respons->save();
+
+        return redirect()->back()->with('success', __('Answer By AI Successfully.'));
+    }
+
+    public function getResponseMaterialitas(Request $request, $project_id, $task_id)
+    {
+
+        $summary_materialitas              = ValueMaterialitas::where('project_id', $project_id)->get();
+        // dd($summary_materialitas);
+
+        $tableDataMaterialitas = [];
+
+        if (count(array($get_data_materialitas)) > 0) {
+            foreach ($get_data_materialitas as $summary_materialitass) {
+
+                $name = $summary_materialitass->materiality->name;
+
+                $tableDataMaterialitas[] = [
+                    'materialitas' => $name,
+                    'prior_period2' => $summary_materialitass['prior_period2'],
+                    'prior_period' => $summary_materialitass['prior_period'],
+                    'inhouse' => $summary_materialitass['inhouse'],
+                    'audited' => $summary_materialitass['audited'],
+                ];
+            }
+        }
+
+        //kesimpulan secara keseluruhan dari data ... ada;
+
+        $prompt = $request->input('message');
+
+        $chatGPT = new ChatGPT();
+        $chatGPT->addAccount('eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik1UaEVOVUpHTkVNMVFURTRNMEZCTWpkQ05UZzVNRFUxUlRVd1FVSkRNRU13UmtGRVFrRXpSZyJ9.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiJtdWhhbW1hZC5yaWRod2FuLmtvbnN1bHRhbmt1QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwiaHR0cHM6Ly9hcGkub3BlbmFpLmNvbS9hdXRoIjp7InVzZXJfaWQiOiJ1c2VyLW84THNsSnE3WTRIczJLZ3BSTk9pNnBHeiJ9LCJpc3MiOiJodHRwczovL2F1dGgwLm9wZW5haS5jb20vIiwic3ViIjoiZ29vZ2xlLW9hdXRoMnwxMTA2NzA3MTc1Mzc0NjYxNTQ3ODYiLCJhdWQiOlsiaHR0cHM6Ly9hcGkub3BlbmFpLmNvbS92MSIsImh0dHBzOi8vb3BlbmFpLm9wZW5haS5hdXRoMGFwcC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNjg3MzMyMTQ1LCJleHAiOjE2ODg1NDE3NDUsImF6cCI6IlRkSkljYmUxNldvVEh0Tjk1bnl5d2g1RTR5T282SXRHIiwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCBtb2RlbC5yZWFkIG1vZGVsLnJlcXVlc3Qgb3JnYW5pemF0aW9uLnJlYWQgb3JnYW5pemF0aW9uLndyaXRlIn0.aWSFvVKOeZWTu24UA3eXMlP8nV1ol8-lIVHLrbb55aANcAxttTEnjzkzMddOL0tVjS9zLzbcr6iRV5zxD4SWGvslCEiNF_mIP7Duq3xAhxY86vGxfNb8Su59evFXVQ_YDuAJxOzeffREwNd1pZSok6LD7T5o26dwqo24UWtSYgIILmeSU-UKmYn1axZPieFxZQeTlZ2JvFmPVeIBUfrt2nQwkDXsYS_leRuzwYYYvFM8nvQuM-eIHlptTPeBHXaVmhhCtQ9xpFA0WtGzhCEn9JN_RNS-43Z8gcTQV4mL6WcGc57sqPZPMa3QPoEgum34CC5TPW4kA9NEHSiO8CPNNQ');
+        $ask = $chatGPT->ask($prompt . json_encode($tableDataMaterialitas) . ' adalah');
+        foreach ($ask as $hasil) {
+            
+        }
+
+        $responseDataMaterialitas = [
+            'hasil' => $hasil,
+        ];
+
+        $response = $hasil['answer'];
+
+        $respons = new Respons();
+        $respons->project_id = $project_id; 
+        $respons->task_id = $task_id;
+        $respons->response = $response;
+        $respons->save();
+
+        // dd($response);   
+
+        return redirect()->back()->with('success', __('Answer By AI Successfully.'));
+    }
+
+    public function getidentifiedmisstatements(Request $request, $project_id, $task_id)
+    {
+        if(\Auth::user()->can('manage project task'))
+        {  
+            $id                                 = Crypt::decrypt($task_id);
+            $project                            = Project::find($project_id);
+            $task                               = ProjectTask::find($id);
+            $identifiedmisstatements            = SummaryIdentifiedMisstatements::where('project_id', $project_id)->where('task_id', $id)->get();
+            return view('project_task.identifiedmisstatements', compact(
+                'task','project','identifiedmisstatements',
+            ));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function createSummaryIdentifiedMisstatements($project_id, $task_id)
+    {
+        if(\Auth::user()->can('create project task'))
+        {
+            $project                       = Project::find($project_id);
+            $task                          = ProjectTask::find($task_id);
+
+            return view('project_task.createSummaryIdentifiedMisstatements', compact('project','task'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function saveSummaryIdentifiedMisstatements(Request $request, $project_id, $task_id)
+    {
+
+        if(\Auth::user()->can('create project task'))
+        {
+
+            $id                            = Crypt::decrypt($task_id);
+            $project                       = Project::find($project_id);
+            $task                          = ProjectTask::find($id);
+
+            $category = $request->items;
+
+            for($i = 0; $i < count($category); $i++)
+            {
+                $identifiedmisstatements                        = new SummaryIdentifiedMisstatements();
+                $identifiedmisstatements->project_id            = $project_id;
+                $identifiedmisstatements->task_id               = $id;
+                $identifiedmisstatements->description           = $category[$i]['description'];
+                $identifiedmisstatements->period                = $category[$i]['period'];
+                $identifiedmisstatements->type_misstatement     = $category[$i]['type_misstatement'];
+                $identifiedmisstatements->corrected             = $category[$i]['corrected'];
+                $identifiedmisstatements->assets                = $category[$i]['assets'];
+                $identifiedmisstatements->liability             = $category[$i]['liability'];
+                $identifiedmisstatements->equity                = $category[$i]['equity'];
+                $identifiedmisstatements->income                = $category[$i]['income'];
+                $identifiedmisstatements->re                    = $category[$i]['re'];
+                $identifiedmisstatements->cause_of_misstatement = $category[$i]['cause_of_misstatement'];
+                $identifiedmisstatements->managements_reason    = $category[$i]['managements_reason'];
+                $identifiedmisstatements->save();
+            }
+
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $project_id,
+                    'task_id' => $task_id,
+                    'log_type' => 'Create Summary Identified Misstatements',
+                    'remark' => json_encode(['title' => 'Create Summary Identified Misstatements']),
+                ]
+            );
+
+            return redirect()->route('projects.tasks.identifiedmisstatements', [$project_id, $task_id])->with('success', __('Summary Identified Misstatements Successfully created.'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
+
+    public function editSummaryIdentifiedMisstatements($project_id, $task_id, $ids)
+    {
+        if(\Auth::user()->can('edit project task'))
+        {
+            $id             = Crypt::decrypt($task_id);
+            $task           = ProjectTask::find($id);
+            $project        = Project::find($project_id);
+            $identifiedmisstatements = SummaryIdentifiedMisstatements::find($ids);
+
+            return view('project_task.editSummaryIdentifiedMisstatements', compact('task', 'identifiedmisstatements', 'project'));
+        }
+        else
+        {
+            return response()->json(['error' => __('Permission denied.')], 401);
+        }
+    }
+
+    public function updateSummaryIdentifiedMisstatements(Request $request, $project_id, $task_id, $ids)
+    {
+
+        if(\Auth::user()->can('edit project task'))
+        {
+
+            $category = $request->items;
+
+            for($i = 0; $i < count($category); $i++)
+            {
+                $identifiedmisstatements                        = SummaryIdentifiedMisstatements::find($ids);
+                $identifiedmisstatements->description           = $category[$i]['description'];
+                $identifiedmisstatements->period                = $category[$i]['period'];
+                $identifiedmisstatements->type_misstatement     = $category[$i]['type_misstatement'];
+                $identifiedmisstatements->corrected             = $category[$i]['corrected'];
+                $assets                                         = $category[$i]['assets'];
+                $liability                                      = $category[$i]['liability'];
+                $equity                                         = $category[$i]['equity'];
+                $income                                         = $category[$i]['income'];
+                $re                                             = $category[$i]['re'];
+                $identifiedmisstatements->assets = str_replace(',', '', $assets);
+                $identifiedmisstatements->liability = str_replace(',', '', $liability);
+                $identifiedmisstatements->equity = str_replace(',', '', $equity);
+                $identifiedmisstatements->income = str_replace(',', '', $income);
+                $identifiedmisstatements->re = str_replace(',', '', $re);
+                $identifiedmisstatements->cause_of_misstatement = $category[$i]['cause_of_misstatement'];
+                $identifiedmisstatements->managements_reason    = $category[$i]['managements_reason'];
+                $identifiedmisstatements->update();
+            }
+
+            // $identifiedmisstatement                        = SummaryIdentifiedMisstatements::find($ids);
+            // $identifiedmisstatement->description           = $request->description;
+            // $identifiedmisstatement->period                = $request->period;
+            // $identifiedmisstatement->type_misstatement     = $request->type_misstatement;
+            // $identifiedmisstatement->corrected             = $request->corrected;
+            // $identifiedmisstatement->assets                = $request->assets;
+            // $identifiedmisstatement->liability             = $request->liability;
+            // $identifiedmisstatement->equity                = $request->equity;
+            // $identifiedmisstatement->income                = $request->income;
+            // $identifiedmisstatement->re                    = $request->re;
+            // $identifiedmisstatement->cause_of_misstatement = $request->cause_of_misstatement;
+            // $identifiedmisstatement->managements_reason    = $request->managements_reason;
+            // $identifiedmisstatement->save();
+                  
+            return redirect()->route('projects.tasks.identifiedmisstatements', [$project_id, $task_id])->with('success', __('Summary Identified Misstatements updated.'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
+
+    public function destroySummaryIdentifiedMisstatements(Request $request, $project_id, $task_id, $id)
+    {
+
+        if(\Auth::user()->can('delete project task'))
+        {
+            $identifiedmisstatements = SummaryIdentifiedMisstatements::find($id);
+            $identifiedmisstatements->delete();
+                      
+            return redirect()->route('projects.tasks.identifiedmisstatements', [$project_id, $task_id])->with('success', __('Summary Identified Misstatements successfully deleted.'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
+
+    public function updateperiod(Request $request)
+    {
+
+        if(\Auth::user()->can('edit project task'))
+        {
+
+            $identifiedmisstatements_id = $request->get('id');
+            $period = $request->get('period');
+        
+            $data = SummaryIdentifiedMisstatements::find($identifiedmisstatements_id);
+            $data->period = $period;
+            $data->save();
+
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $data->project_id,
+                    'task_id' => $data->id,
+                    'log_type' => 'Update Period',
+                    'remark' => json_encode(['title' => $data->name]),
+                ]
+            );
+
+            return response()->json(['success' => __('Summary Identified Misstatements successfully updated.')], 200);
+            
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function updatedtype_misstatement(Request $request)
+    {
+
+        if(\Auth::user()->can('edit project task'))
+        {
+
+            $identifiedmisstatements_id = $request->get('id');
+            $type_misstatement = $request->get('type_misstatement');
+        
+            $data = SummaryIdentifiedMisstatements::find($identifiedmisstatements_id);
+            $data->type_misstatement = $type_misstatement;
+            $data->save();
+
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $data->project_id,
+                    'task_id' => $data->id,
+                    'log_type' => 'Update Type Misstatements',
+                    'remark' => json_encode(['title' => $data->name]),
+                ]
+            );
+
+            return response()->json(['success' => __('Summary Identified Misstatements successfully updated.')], 200);
+            
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function updatedcorrected(Request $request)
+    {
+
+        if(\Auth::user()->can('edit project task'))
+        {
+
+            $identifiedmisstatements_id = $request->get('id');
+            $corrected = $request->get('corrected');
+        
+            $data = SummaryIdentifiedMisstatements::find($identifiedmisstatements_id);
+            $data->corrected = $corrected;
+            $data->save();
+
+            ActivityLog::create(
+                [
+                    'user_id' => \Auth::user()->id,
+                    'project_id' => $data->project_id,
+                    'task_id' => $data->id,
+                    'log_type' => 'Update Corrected',
+                    'remark' => json_encode(['title' => $data->name]),
+                ]
+            );
+
+            return response()->json(['success' => __('Summary Identified Misstatements successfully updated.')], 200);
+            
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
 }

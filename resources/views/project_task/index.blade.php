@@ -633,6 +633,8 @@
                                                     <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.journal.entries',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>
                                                 @elseif($task->name == 'Prosedur Analitis')
                                                     <p class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.showproseduranalisis',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}}">{{$task->name}}</a></p>
+                                                @elseif($task->name == 'Summary Of Identified Misstatements')
+                                                    <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.identifiedmisstatements',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>
                                                 @else
                                                     <p class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.show',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}}">{{$task->name}}</a></p>
                                                 @endif
@@ -677,7 +679,7 @@
                                                 </div>
                                             </td>
                                             <td>
-                                            <select class="form-control select" name="priority" id="priority" onchange="updateStatus(this.value, {{ $task->id }})">
+                                            <select class="form-control select" name="priority" id="priority" style = "width: 100px;" onchange="updateStatus(this.value, {{ $task->id }})">
                                                 @foreach(\App\Models\ProjectTask::$priority as $key => $val)
                                                     <option value="{{ $key }}" {{ ($key == $task->priority) ? 'selected' : '' }} >{{ __($val) }}</option>
                                                 @endforeach
@@ -694,7 +696,7 @@
                                                 </div>
                                             </td>
                                             <td>
-                                            <select class="form-control select" name="stage_id" id="stage_id" onchange="updateStage(this.value, {{ $task->id }})">
+                                            <select class="form-control select" name="stage_id" id="stage_id" style = "width: 100px;" onchange="updateStage(this.value, {{ $task->id }})">
                                                 <option value="0" hidden>{{$task->stage->name}}</option>
                                                 @foreach($taskstage as $stage)
                                                     <option value="{{ $stage->id }}">{{ $stage->name }}</option>

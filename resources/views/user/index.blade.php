@@ -6,7 +6,35 @@
     {{__('Manage User')}}
 @endsection
 @push('script-page')
+    <script>
+        // Menggunakan jQuery untuk menangani perubahan toggle switch
+        $(document).ready(function() {
 
+            $('.form-check-input').change(function() {
+                var userId = $(this).data('user-id');
+                var isActive = $(this).is(':checked') ? 1 : 0;
+
+                // Mengirim permintaan Ajax ke server untuk memperbarui status pengguna
+                $.ajax({
+                    url: "{{route("update-active")}}",
+                    method: 'POST',
+                    data: {
+                        user_id: userId,
+                        is_active: isActive,
+                        _token: "{{ csrf_token() }}"
+                    },
+                    success: function(response) {
+                        // Tindakan sukses, misalnya memperbarui tampilan
+                        console.log('User successfully updated.');
+                    },
+                    error: function(xhr, status, error) {
+                        // Penanganan kesalahan, misalnya menampilkan pesan kesalahan
+                        console.error('Something Error: ' + error);
+                    }
+                });
+            });
+        });
+    </script>
 @endpush
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
@@ -70,16 +98,15 @@
                                 </div>
                             </div>
                             <div class="card-body full-card">
-                                <div class="img-fluid rounded-circle card-avatar">
-                                    <img src="{{(!empty($user->avatar))? asset(Storage::url("uploads/avatar/".$user->avatar)): asset(Storage::url("uploads/avatar/avatar.png"))}}"  class="img-user wid-80 rounded-circle">
+                                <div class="card-avatar">
+                                    <img src="{{ (!empty($user->avatar)) ? asset(Storage::url('uploads/avatar/'.$user->avatar)) : asset(Storage::url('uploads/avatar/avatar.png')) }}" class="wid-80" style="width: 72px; height: 72px; object-fit: cover; object-position: center; border-radius: 50%;">
                                 </div>
                                 <h4 class=" mt-2 text-primary">{{ $user->name }}</h4>
                                 <small class="text-primary">{{ $user->email }}</small>
-                                <p></p>
-
-
-                                <div class="col text-center d-block h6 mb-0" data-bs-toggle="tooltip" title="{{__('Last Login')}}">
-                                    {{ (!empty($user->last_login_at)) ? $user->last_login_at : '' }}
+                                <br>
+                                <br>
+                                <div class="col form-switch form-switch-left h6 mb-0">
+                                    <input type="checkbox" class="form-check-input" data-user-id="{{ $user->id }}" {{ $user->is_active ? 'checked' : '' }}>
                                 </div>
                             </div>
                         </div>

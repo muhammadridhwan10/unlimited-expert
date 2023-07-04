@@ -278,7 +278,7 @@
                                 </tr>
                                 </thead>
                                 <tbody class="list">
-                                @if(count(array($summary_mapping)) > 0)
+                                @if(count($summary_mapping) > 0)
                                     @foreach($summary_mapping as $summarys)
                                         <tr>
                                             @if($summarys['account_group'] == 'LABA BRUTO' || $summarys['account_group'] == 'LABA OPERASIONAL' || $summarys['account_group'] == 'LABA SEBELUM PAJAK' || $summarys['account_group'] == 'LABA SETELAH PAJAK' || $summarys['account_group'] == 'LABA BRUTO' || $summarys['account_group'] == 'LABA RUGI KOMPREHENSIF SETELAH PAJAK')
@@ -298,7 +298,7 @@
                                     @endforeach
                                 @else
                                     <tr>
-                                        <th scope="col" colspan="7"><h6 class="text-center">{{__('No Financial Data Found')}}</h6></th>
+                                        <th scope="col" colspan="7"><h6 class="text-center">{{__('No Financial Statements Summary Data Found')}}</h6></th>
                                     </tr>
                                 @endif
                                 </tbody>
