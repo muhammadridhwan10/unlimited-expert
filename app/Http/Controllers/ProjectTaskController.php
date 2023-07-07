@@ -201,38 +201,55 @@ class ProjectTaskController extends Controller
                     $tasks = ProjectTask::where('project_id', '=', $project_id)->get();
                 }
 
-                $data_task = ProjectTask::where('project_id', '=', $project_id)->where('name','=','Prosedur Analitis')->first();
+                $data_task = ProjectTask::where('project_id', '=', $project_id)->where('name','=','Prosedur Analitis')->get();
                 
                 if(!empty($data_task))
                 {
-                    $createSubTask = [
-                        [
-                            'name' => 'Perbandingan Data Antar Periode',
-                            'task_id' => $data_task->id,
-                            'project_id' => $project_id,
-                            'created_by' => 1,
-                            'user_type' => 'User',
-                            'status' => 0,
-                        ],
-                        [
-                            'name' => 'Rasio Keuangan',
-                            'task_id' => $data_task->id,
-                            'project_id' => $project_id,
-                            'created_by' => 1,
-                            'user_type' => 'User',
-                            'status' => 0,
-                        ],
-                        [
-                            'name' => 'Audit Memorandum',
-                            'task_id' => $data_task->id,
-                            'project_id' => $project_id,
-                            'created_by' => 1,
-                            'user_type' => 'User',
-                            'status' => 0,
-                        ],
-                    ];
-        
-                    $checklist = TaskChecklist::create($createSubTask);
+                    foreach($data_task as $data)
+                    {
+
+                        $createSubTask = [
+                            [
+                                'name' => 'Perbandingan Data Antar Periode',
+                                'task_id' => $data->id,
+                                'project_id' => $data->project_id,
+                                'created_by' => 1,
+                                'user_type' => 'User',
+                                'status' => 0,
+                            ],
+                            [
+                                'name' => 'Rasio Keuangan',
+                                'task_id' => $data->id,
+                                'project_id' => $data->project_id,
+                                'created_by' => 1,
+                                'user_type' => 'User',
+                                'status' => 0,
+                            ],
+                            [
+                                'name' => 'Audit Memorandum',
+                                'task_id' => $data->id,
+                                'project_id' => $data->project_id,
+                                'created_by' => 1,
+                                'user_type' => 'User',
+                                'status' => 0,
+                            ],
+                        ];
+
+                        foreach ($createSubTask as $subTask) {
+                            $checklist = TaskChecklist::where('name', $subTask['name'])->where('task_id', $subTask['task_id'])->first();
+
+                            if(!$checklist) {
+                                $checklist = new TaskChecklist();
+                                $checklist->name = $subTask['name'];
+                                $checklist->task_id = $subTask['task_id'];
+                                $checklist->project_id = $subTask['project_id'];
+                                $checklist->created_by = $subTask['created_by'];
+                                $checklist->user_type = $subTask['user_type'];
+                                $checklist->status = $subTask['status'];
+                                $checklist->save();
+                            }
+                        }
+                    }
                 }
                 
                 return view('project_task.index', compact('tasks','taskstage','category_template_id','project'));
@@ -4764,7 +4781,7 @@ class ProjectTaskController extends Controller
         $prompt = $request->input('message');
 
         $chatGPT = new ChatGPT();
-        $chatGPT->addAccount('eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik1UaEVOVUpHTkVNMVFURTRNMEZCTWpkQ05UZzVNRFUxUlRVd1FVSkRNRU13UmtGRVFrRXpSZyJ9.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiJtdWhhbW1hZC5yaWRod2FuLmtvbnN1bHRhbmt1QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwiaHR0cHM6Ly9hcGkub3BlbmFpLmNvbS9hdXRoIjp7InVzZXJfaWQiOiJ1c2VyLW84THNsSnE3WTRIczJLZ3BSTk9pNnBHeiJ9LCJpc3MiOiJodHRwczovL2F1dGgwLm9wZW5haS5jb20vIiwic3ViIjoiZ29vZ2xlLW9hdXRoMnwxMTA2NzA3MTc1Mzc0NjYxNTQ3ODYiLCJhdWQiOlsiaHR0cHM6Ly9hcGkub3BlbmFpLmNvbS92MSIsImh0dHBzOi8vb3BlbmFpLm9wZW5haS5hdXRoMGFwcC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNjg3MzMyMTQ1LCJleHAiOjE2ODg1NDE3NDUsImF6cCI6IlRkSkljYmUxNldvVEh0Tjk1bnl5d2g1RTR5T282SXRHIiwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCBtb2RlbC5yZWFkIG1vZGVsLnJlcXVlc3Qgb3JnYW5pemF0aW9uLnJlYWQgb3JnYW5pemF0aW9uLndyaXRlIn0.aWSFvVKOeZWTu24UA3eXMlP8nV1ol8-lIVHLrbb55aANcAxttTEnjzkzMddOL0tVjS9zLzbcr6iRV5zxD4SWGvslCEiNF_mIP7Duq3xAhxY86vGxfNb8Su59evFXVQ_YDuAJxOzeffREwNd1pZSok6LD7T5o26dwqo24UWtSYgIILmeSU-UKmYn1axZPieFxZQeTlZ2JvFmPVeIBUfrt2nQwkDXsYS_leRuzwYYYvFM8nvQuM-eIHlptTPeBHXaVmhhCtQ9xpFA0WtGzhCEn9JN_RNS-43Z8gcTQV4mL6WcGc57sqPZPMa3QPoEgum34CC5TPW4kA9NEHSiO8CPNNQ');
+        $chatGPT->addAccount('eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik1UaEVOVUpHTkVNMVFURTRNMEZCTWpkQ05UZzVNRFUxUlRVd1FVSkRNRU13UmtGRVFrRXpSZyJ9.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiJtdWhhbW1hZC5yaWRod2FuLmtvbnN1bHRhbmt1QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwiaHR0cHM6Ly9hcGkub3BlbmFpLmNvbS9hdXRoIjp7InVzZXJfaWQiOiJ1c2VyLW84THNsSnE3WTRIczJLZ3BSTk9pNnBHeiJ9LCJpc3MiOiJodHRwczovL2F1dGgwLm9wZW5haS5jb20vIiwic3ViIjoiZ29vZ2xlLW9hdXRoMnwxMTA2NzA3MTc1Mzc0NjYxNTQ3ODYiLCJhdWQiOlsiaHR0cHM6Ly9hcGkub3BlbmFpLmNvbS92MSIsImh0dHBzOi8vb3BlbmFpLm9wZW5haS5hdXRoMGFwcC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNjg4NTQyMjAxLCJleHAiOjE2ODk3NTE4MDEsImF6cCI6IlRkSkljYmUxNldvVEh0Tjk1bnl5d2g1RTR5T282SXRHIiwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCBtb2RlbC5yZWFkIG1vZGVsLnJlcXVlc3Qgb3JnYW5pemF0aW9uLnJlYWQgb3JnYW5pemF0aW9uLndyaXRlIn0.OG2lywbF7MuKasw9OxPJP6VCfdgtEjM6IT3rLolvws2jIHIjIajOpArDyethkUYRbQWaSB7U3PW0F6VPX0XllMnWxNy1btqeMF7Q9uhqURKFyfLPObnmuZ72PzLyeOLzcrsedLiNcbtp3tU8XkwKkA8nUPZNlM8Ct9w70Ui4wrPFnnoEDj8rGDGX085jDyNLHQFXNqAbCHn5Trr4VxL5QQHGZdGp7bl9EcjLg6GZ-56Unx7L5WU5mGlGU8SLwJgwwzHZjjp4lWd5f14CNeHkzrZ5AN_IAtsMLsC1XqgXv3eHtXA6iqj_SDnVkCIzTtNkpxH6AHSEusfBv3p3GYJ3_A');
         $ask = $chatGPT->ask($prompt . json_encode($tableData) . ' adalah');
         foreach ($ask as $hasil) {
             
@@ -4789,7 +4806,7 @@ class ProjectTaskController extends Controller
     public function getResponseMaterialitas(Request $request, $project_id, $task_id)
     {
 
-        $summary_materialitas              = ValueMaterialitas::where('project_id', $project_id)->get();
+        $get_data_materialitas              = ValueMaterialitas::where('project_id', $project_id)->get();
         // dd($summary_materialitas);
 
         $tableDataMaterialitas = [];
@@ -4814,7 +4831,7 @@ class ProjectTaskController extends Controller
         $prompt = $request->input('message');
 
         $chatGPT = new ChatGPT();
-        $chatGPT->addAccount('eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik1UaEVOVUpHTkVNMVFURTRNMEZCTWpkQ05UZzVNRFUxUlRVd1FVSkRNRU13UmtGRVFrRXpSZyJ9.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiJtdWhhbW1hZC5yaWRod2FuLmtvbnN1bHRhbmt1QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwiaHR0cHM6Ly9hcGkub3BlbmFpLmNvbS9hdXRoIjp7InVzZXJfaWQiOiJ1c2VyLW84THNsSnE3WTRIczJLZ3BSTk9pNnBHeiJ9LCJpc3MiOiJodHRwczovL2F1dGgwLm9wZW5haS5jb20vIiwic3ViIjoiZ29vZ2xlLW9hdXRoMnwxMTA2NzA3MTc1Mzc0NjYxNTQ3ODYiLCJhdWQiOlsiaHR0cHM6Ly9hcGkub3BlbmFpLmNvbS92MSIsImh0dHBzOi8vb3BlbmFpLm9wZW5haS5hdXRoMGFwcC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNjg3MzMyMTQ1LCJleHAiOjE2ODg1NDE3NDUsImF6cCI6IlRkSkljYmUxNldvVEh0Tjk1bnl5d2g1RTR5T282SXRHIiwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCBtb2RlbC5yZWFkIG1vZGVsLnJlcXVlc3Qgb3JnYW5pemF0aW9uLnJlYWQgb3JnYW5pemF0aW9uLndyaXRlIn0.aWSFvVKOeZWTu24UA3eXMlP8nV1ol8-lIVHLrbb55aANcAxttTEnjzkzMddOL0tVjS9zLzbcr6iRV5zxD4SWGvslCEiNF_mIP7Duq3xAhxY86vGxfNb8Su59evFXVQ_YDuAJxOzeffREwNd1pZSok6LD7T5o26dwqo24UWtSYgIILmeSU-UKmYn1axZPieFxZQeTlZ2JvFmPVeIBUfrt2nQwkDXsYS_leRuzwYYYvFM8nvQuM-eIHlptTPeBHXaVmhhCtQ9xpFA0WtGzhCEn9JN_RNS-43Z8gcTQV4mL6WcGc57sqPZPMa3QPoEgum34CC5TPW4kA9NEHSiO8CPNNQ');
+        $chatGPT->addAccount('eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6Ik1UaEVOVUpHTkVNMVFURTRNMEZCTWpkQ05UZzVNRFUxUlRVd1FVSkRNRU13UmtGRVFrRXpSZyJ9.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL3Byb2ZpbGUiOnsiZW1haWwiOiJtdWhhbW1hZC5yaWRod2FuLmtvbnN1bHRhbmt1QGdtYWlsLmNvbSIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlfSwiaHR0cHM6Ly9hcGkub3BlbmFpLmNvbS9hdXRoIjp7InVzZXJfaWQiOiJ1c2VyLW84THNsSnE3WTRIczJLZ3BSTk9pNnBHeiJ9LCJpc3MiOiJodHRwczovL2F1dGgwLm9wZW5haS5jb20vIiwic3ViIjoiZ29vZ2xlLW9hdXRoMnwxMTA2NzA3MTc1Mzc0NjYxNTQ3ODYiLCJhdWQiOlsiaHR0cHM6Ly9hcGkub3BlbmFpLmNvbS92MSIsImh0dHBzOi8vb3BlbmFpLm9wZW5haS5hdXRoMGFwcC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNjg4NTQyMjAxLCJleHAiOjE2ODk3NTE4MDEsImF6cCI6IlRkSkljYmUxNldvVEh0Tjk1bnl5d2g1RTR5T282SXRHIiwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCBtb2RlbC5yZWFkIG1vZGVsLnJlcXVlc3Qgb3JnYW5pemF0aW9uLnJlYWQgb3JnYW5pemF0aW9uLndyaXRlIn0.OG2lywbF7MuKasw9OxPJP6VCfdgtEjM6IT3rLolvws2jIHIjIajOpArDyethkUYRbQWaSB7U3PW0F6VPX0XllMnWxNy1btqeMF7Q9uhqURKFyfLPObnmuZ72PzLyeOLzcrsedLiNcbtp3tU8XkwKkA8nUPZNlM8Ct9w70Ui4wrPFnnoEDj8rGDGX085jDyNLHQFXNqAbCHn5Trr4VxL5QQHGZdGp7bl9EcjLg6GZ-56Unx7L5WU5mGlGU8SLwJgwwzHZjjp4lWd5f14CNeHkzrZ5AN_IAtsMLsC1XqgXv3eHtXA6iqj_SDnVkCIzTtNkpxH6AHSEusfBv3p3GYJ3_A');
         $ask = $chatGPT->ask($prompt . json_encode($tableDataMaterialitas) . ' adalah');
         foreach ($ask as $hasil) {
             
