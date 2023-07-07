@@ -2053,11 +2053,11 @@ class ProjectTaskController extends Controller
                 // Menambahkan perhitungan "TOTAL LABA SEBELUM PAJAK"
                 $laba_sebelum_pajak = [
                     'account_group' => 'LABA SEBELUM PAJAK',
-                    'prior_period2_total' => isset($summary['PENDAPATAN / BEBAN KEUANGAN']['prior_period2_total']) ? $laba_operasi['prior_period2_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['prior_period2_total'] + isset($summary['PENDAPATAN / BEBAN LAIN-LAIN']['prior_period2_total']) : 0,
-                    'prior_period_total' => isset($summary['PENDAPATAN / BEBAN KEUANGAN']['prior_period_total']) ? $laba_operasi['prior_period_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['prior_period_total'] + isset($summary['PENDAPATAN / BEBAN LAIN-LAIN']['prior_period_total']) : 0,
-                    'inhouse_total' => isset($summary['PENDAPATAN / BEBAN KEUANGAN']['inhouse_total']) ? $laba_operasi['inhouse_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['inhouse_total'] + isset($summary['PENDAPATAN / BEBAN LAIN-LAIN']['inhouse_total']) : 0,
-                    'audited_total' => isset($summary['PENDAPATAN / BEBAN KEUANGAN']['audited_total']) ? $laba_operasi['audited_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['audited_total'] + isset($summary['PENDAPATAN / BEBAN LAIN-LAIN']['audited_total']) : 0,
-                ];                
+                    'prior_period2_total' => isset($summary['PENDAPATAN / BEBAN KEUANGAN']['prior_period2_total']) ? $laba_operasi['prior_period2_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['prior_period2_total'] + $summary['PENDAPATAN / BEBAN LAIN-LAIN']['prior_period2_total'] : 0,
+                    'prior_period_total' => isset($summary['PENDAPATAN / BEBAN KEUANGAN']['prior_period_total']) ? $laba_operasi['prior_period_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['prior_period_total'] + $summary['PENDAPATAN / BEBAN LAIN-LAIN']['prior_period_total'] : 0,
+                    'inhouse_total' => isset($summary['PENDAPATAN / BEBAN KEUANGAN']['inhouse_total']) ? $laba_operasi['inhouse_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['inhouse_total'] + $summary['PENDAPATAN / BEBAN LAIN-LAIN']['inhouse_total'] : 0,
+                    'audited_total' => isset($summary['PENDAPATAN / BEBAN KEUANGAN']['audited_total']) ? $laba_operasi['audited_total'] + $summary['PENDAPATAN / BEBAN KEUANGAN']['audited_total'] + $summary['PENDAPATAN / BEBAN LAIN-LAIN']['audited_total'] : 0,
+                ];               
 
                 // Menambahkan perhitungan "TOTAL LABA SETELAH PAJAK"
                 $laba_setelah_pajak = [
@@ -2906,7 +2906,7 @@ class ProjectTaskController extends Controller
             $mapping_accounts                   = MappingAccount::where('project_id', $project_id)->get();
             $summart_materialitas = SummaryMateriality::where('project_id', $project_id)->orderBy('id', 'DESC')->first();
             $data_initialmaterialityom = isset($summart_materialitas) && is_object($summart_materialitas) ? $summart_materialitas->initialmaterialityom : null;
-            $notesanalysis                      = NotesAnalysis::where('project_id', $project_id)->orderBy('id', 'DESC')->first();
+            $notesanalysis                      = NotesAnalysis::where('project_id', $project_id)->where('task_id','=', $task_id)->orderBy('id', 'DESC')->first();
             $respons                            = Respons::where('project_id', $project_id)->where('task_id', $id)->orderBy('id', 'DESC')->first();
 
             $data_keuangan = $mapping_accounts->map(function ($mapping_account) use ($financial_statement, $data_initialmaterialityom) {
@@ -4845,8 +4845,9 @@ class ProjectTaskController extends Controller
             $project                            = Project::find($project_id);
             $task                               = ProjectTask::find($id);
             $identifiedmisstatements            = SummaryIdentifiedMisstatements::where('project_id', $project_id)->where('task_id', $id)->get();
+            $notesanalysis                      = NotesAnalysis::where('project_id', $project_id)->where('task_id','=', $task_id)->orderBy('id', 'DESC')->first();
             return view('project_task.identifiedmisstatements', compact(
-                'task','project','identifiedmisstatements',
+                'task','project','identifiedmisstatements','notesanalysis',
             ));
         }
         else
@@ -5099,5 +5100,4 @@ class ProjectTaskController extends Controller
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
     }
-
 }
