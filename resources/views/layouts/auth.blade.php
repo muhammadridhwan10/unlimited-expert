@@ -51,17 +51,17 @@
             align-items: center;
             justify-content: center;
             flex-direction: column;
-            z-index: 9999; /* Ubah nilai z-index menjadi lebih tinggi */
+            z-index: 9999; 
             left: 0;
             top: 0;
-            width: 100%;
-            height: 100vh;
+            width: 100vw; 
+            height: 100vh; 
             background: #DEDEDE;
             transition: 1s;
         }
 
         .intro img {
-            top: 150px;
+            top: 23vh;
             position: absolute;
             animation-name: flip;
             animation-duration: 2s;
@@ -71,12 +71,12 @@
 
         .intro p {
             color: gray;
-            font-size: 1.6rem;
+            font-size: 1.6vw;
             margin-top: 10px;
         }
 
         .logo-intro {
-            font-size: 2.5rem;
+            font-size: 2.5vw;
             color: #ffffff;
             animation: logoIntroAnimation 2s ease-in-out infinite;
         }
@@ -84,8 +84,9 @@
         .logo-parts {
             position: relative;
             display: inline-block;
-            bottom: -20px;
+            bottom: -2vh;
             opacity: 0;
+            font-size: 3.0vw;
             color: black;
             transition: ease-in-out 0.5s;
         }
@@ -96,7 +97,7 @@
         }
 
         .logo-parts.fade {
-            bottom: 250px;
+            bottom: 25vh;
             opacity: 0;
         }
 
@@ -120,13 +121,14 @@
                 transform: perspective(400px) rotateY(360deg);
             }
         }
+
     </style>
 
 </head>
 
 <body class="{{ $color }}">
 <div class="intro">
-        <img src="{{ asset('assets/images/auth/favicon.png') }}" style="width: 140px; height: 140px;">
+        <img src="{{ asset('assets/images/auth/favicon.png') }}" style="width: 120px; height: 120px;">
         <h1 class="logo-intro">
             <span class="logo-parts">Welcome</span>
              <span class="logo-parts">to</span>
