@@ -191,6 +191,13 @@
             if (!startTime) {
                 countdownStartTime = currentTime + (countdownHours * 60 * 60 * 1000);
                 sessionStorage.setItem("startTime_" + id, countdownStartTime);
+            } else {
+                var timeDifference = countdownStartTime - currentTime;
+                if (timeDifference <= 0) {
+                    document.getElementById("timer").innerHTML = "Your Working Time is Over";
+                    clearInterval(timerInterval);
+                    return;
+                }
             }
 
             timerInterval = setInterval(updateTimer, 1000);
@@ -203,7 +210,6 @@
             sessionStorage.removeItem("isPaused_" + id);
             sessionStorage.removeItem("pausedTime_" + id);
         @endif
-
 
     </script>
 

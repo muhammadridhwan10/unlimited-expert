@@ -90,7 +90,7 @@
         var year = date.getFullYear();
 
         if ((year === currentYear && month === currentMonth && day > maxDate) || 
-            (year === currentYear && month === currentMonth - 1 && day < 28)) {
+            (year === currentYear && month === currentMonth - 1 && day < 25)) {
           return [false];
         }
         return [true];

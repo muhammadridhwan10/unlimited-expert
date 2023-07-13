@@ -48,12 +48,22 @@
 </head>
 
 <body class="{{ $color }}">
+<div class="intro">
+        <img src="{{ asset('assets/images/auth/favicon.png') }}" style="width: 150px; height: 150px;" alt="clarkode logo">
+        <h1 class="logo-intro">
+            <span class="logo-parts">Welcome</span>
+             <span class="logo-parts">to</span>
+              <span class="logo-parts">AUP</span>
+               <span class="logo-parts">APPS</span>
+        </h1>
+        <p style="font-size: 20px; color: black;">Simplify and Streamline Your Work.</p>
+</div> 
 <div class="auth-wrapper auth-v3">
     <div class="bg-auth-side bg-primary">
     <img
                             src="{{ asset('assets/images/auth/background-working.png') }}"
                             alt=""
-                            class="img-fluid"
+                            class="img-fluid"  style="width: 800px; height: 800px;"
                         />
     </div>
     <div class="auth-content">
@@ -127,6 +137,37 @@
 <script src="{{ asset('assets/js/plugins/feather.min.js') }}"></script>
 <script>
     feather.replace();
+</script>
+<script>
+let intro = document.querySelector('.intro');
+let logo = document.querySelector('.logo');
+let logoSpan = document.querySelectorAll('.logo-parts');
+
+window.addEventListener('DOMContentLoaded', () => {
+
+    setTimeout(() => {
+       logoSpan.forEach((span, index) => {
+            setTimeout(() => {
+               span.classList.add('active');
+            }, (index + 1) * 100);
+       });
+
+       setTimeout(() => {
+          logoSpan.forEach((span, index) => {
+            setTimeout(() => {
+               span.classList.remove('active');
+               span.classList.add('fade'); 
+            }, (span + 1) * 50);
+          });
+       }, 2000);
+
+       setTimeout(() => {
+          intro.style.top  = '-100vh';
+       }, 2300);
+
+    });
+
+});
 </script>
 
 

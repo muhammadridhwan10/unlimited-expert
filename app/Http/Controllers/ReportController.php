@@ -39,6 +39,7 @@ use App\Models\UserDeal;
 use App\Models\Utility;
 use App\Models\Tax;
 use App\Models\LeaveType;
+use App\Models\Reimbursment;
 use App\Models\BankTransfer;
 use App\Models\Vender;
 use Carbon\Carbon;
@@ -5861,6 +5862,182 @@ class ReportController extends Controller
 
 
             return view('report.overtimeShow', compact('employee_overtime'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+
+
+    }
+
+    public function reimbursment(Request $request)
+    {
+        $user = Auth::user();
+        if(\Auth::user()->can('manage report'))
+        {
+            $branch = Branch::get()->pluck('name', 'id');
+            $branch->prepend('Select Branch', '');
+
+            $client = User::where('type','=','client')->get()->pluck('name', 'id');
+            $client->prepend('Select Client', '');
+
+            $employees = Employee::select('id', 'name');
+            if(!empty($request->employee_id) && $request->employee_id[0]!=0){
+                $employees->whereIn('id', $request->employee_id);
+            }
+            $employees=$employees;
+
+            if(!empty($request->branch))
+            {
+                $employees->where('branch_id', $request->branch);
+                $data['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
+            }
+
+            // if(!empty($request->department))
+            // {
+            //     $employees->where('department_id', $request->department);
+            //     $data['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
+            // }
+
+            $employees = $employees->get()->pluck('name', 'id');
+            // dd($employees);
+
+            // Filter berdasarkan reimbursment_type
+            if (!empty($request->reimbursment_type)) {
+                $reimbursmentType = $request->reimbursment_type;
+                $employees = $employees->filter(function ($value, $key) use ($reimbursmentType) {
+                    $reimbursments = Reimbursment::where('employee_id', $key)
+                        ->where('reimbursment_type', $reimbursmentType)
+                        ->exists();
+
+                    return $reimbursments;
+                });
+            }
+
+            if (!empty($request->client_id)) {
+                $reimbursmentclient = $request->client_id;
+                $employees = $employees->filter(function ($value, $key) use ($reimbursmentclient) {
+                    $reimbursments = Reimbursment::where('employee_id', $key)
+                        ->where('client_id', $reimbursmentclient)
+                        ->exists();
+
+                    return $reimbursments;
+                });
+            }
+
+            if(!empty($request->month))
+            {
+                $currentdate = strtotime($request->month);
+                $month       = date('m', $currentdate);
+                $year        = date('Y', $currentdate);
+                $curMonth    = date('M-Y', strtotime($request->month));
+
+            }
+            else
+            {
+                $month    = date('m');
+                $year     = date('Y');
+                $curMonth = date('M-Y', strtotime($year . '-' . $month));
+            }
+
+
+            $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
+            for($i = 1; $i <= $num_of_days; $i++)
+            {
+                $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
+            }
+
+            $employeesReimbursment = [];
+            $totalPresent = $totalLeave = $totalEarlyLeave = 0;
+            $ovetimeHours = $overtimeMins = $earlyleaveHours = $earlyleaveMins = $lateHours = $lateMins = 0;
+
+            foreach ($employees as $id => $employee) {
+                $reimbursments = [];
+                $reimbursments['id'] = $id;
+                $reimbursments['name'] = $employee;
+                $totalReimbursment = 0;
+                $totalPendingAmount = 0;
+                $totalReimbursmentCount = 0;
+
+                foreach ($dates as $date) {
+                    $dateFormat = $year . '-' . $month . '-' . $date;
+                    $reimbursmentType = $request->reimbursment_type;
+
+                    if ($dateFormat <= date('Y-m-d')) {
+                        $reimbursment = Reimbursment::where('employee_id', '=', $id)
+                            ->where('status', '=', 'Paid')
+                            ->where('date', $dateFormat)
+                            ->where('reimbursment_type', $reimbursmentType)
+                            ->get();
+
+                        // Hitung jumlah hari lembur berdasarkan start_date
+
+                        foreach ($reimbursment as $reimbursmentss) {
+                            if ($reimbursmentss->date == $dateFormat) {
+                                $totalReimbursment += $reimbursmentss->amount;
+                            }
+                        }
+
+                        $pendingReimbursments = Reimbursment::where('employee_id', '=', $id)
+                            ->where('status', '=', 'Pending')
+                            ->where('date', $dateFormat)
+                            ->where('reimbursment_type', $reimbursmentType)
+                            ->get();
+
+                        foreach ($pendingReimbursments as $pendingreimbursment) {
+                            if ($pendingreimbursment->date == $dateFormat) {
+                                $totalPendingAmount += $pendingreimbursment->amount;
+                            }
+                        }
+
+                        $total_reimbursment = Reimbursment::where('employee_id', '=', $id)
+                            ->where('date', $dateFormat)
+                            ->where('reimbursment_type', $reimbursmentType)
+                            ->get();
+
+                        // Hitung jumlah reimbursment berdasarkan start_date
+
+                        foreach ($total_reimbursment as $total_reimbursments) {
+                            if ($total_reimbursments->date == $dateFormat) {
+                                $totalReimbursmentCount++;
+                            }
+                        }
+
+                    }
+                }
+
+                $totalAmountReimbursment = $totalReimbursment;
+                $totalAmountPendingReimbursment = $totalPendingAmount;
+                $reimbursments['total_reimbursment'] = $totalAmountReimbursment + $totalAmountPendingReimbursment;
+                $reimbursments['paid_amount'] = $totalAmountReimbursment;
+                $reimbursments['unpaid_amount'] = $totalAmountPendingReimbursment;
+                $reimbursments['total_reimbursment_count'] = $totalReimbursmentCount;
+                $employeesReimbursment[] = $reimbursments;
+            }
+
+
+            return view('report.reimbursment', compact('employeesReimbursment', 'branch', 'dates', 'client'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
+
+    public function employeeReimbursment(Request $request, $employee_id, $month, $reimbursment_type)
+    {
+        if(\Auth::user()->can('manage report'))
+        {
+            $employee_reimbursment  = Reimbursment::where('employee_id', $employee_id)->where('reimbursment_type', $reimbursment_type);
+            $m = date('m', strtotime($month));
+            $y = date('Y', strtotime($month));
+
+            $employee_reimbursment->whereMonth('date', $m)->whereYear('date', $y);
+            $employee_reimbursment = $employee_reimbursment->get();
+
+
+            return view('report.reimbursmentShow', compact('employee_reimbursment'));
         }
         else
         {

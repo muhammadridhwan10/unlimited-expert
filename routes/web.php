@@ -4172,3 +4172,68 @@ Route::resource('reimbursment-client', 'ReimbursmentClientController')->middlewa
     ]
 );
 Route::post('medical-allowance/image-view', ['as' => 'medical-allowance.image.view','uses' => 'MedicalAllowanceController@getMedicalAllowanceImages']);
+Route::post('reimbursment-personal/image-view', ['as' => 'reimbursment-personal.image.view','uses' => 'ReimbursmentPersonalController@getMedicalAllowanceImages']);
+Route::post('reimbursment-client/image-view', ['as' => 'reimbursment-client.image.view','uses' => 'ReimbursmentClientController@getMedicalAllowanceImages']);
+Route::get('medical-allowance/{id}/action', 'MedicalAllowanceController@action')->name('medical-allowance.action')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post('medical-allowance/changeaction', 'MedicalAllowanceController@changeaction')->name('medical-allowance.changeaction')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('reimbursment-personal/{id}/action', 'ReimbursmentPersonalController@action')->name('reimbursment-personal.action')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post('reimbursment-personal/changeaction', 'ReimbursmentPersonalController@changeaction')->name('reimbursment-personal.changeaction')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('reimbursment-client/{id}/action', 'ReimbursmentClientController@action')->name('reimbursment-client.action')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post('reimbursment-client/changeaction', 'ReimbursmentClientController@changeaction')->name('reimbursment-client.changeaction')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('reports-reimbursment', 'ReportController@reimbursment')->name('report.reimbursment')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('employee/{id}/reimbursment/{month}/type/{reimbursment_type}', 'ReportController@employeeReimbursment')->name('report.employee.reimbursment')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::resource('reimbursmenttype', 'ReimbursmentTypeController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::post('medical-allowance/jsoncount', 'MedicalAllowanceController@jsoncount')->name('medical-allowance.jsoncount')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);

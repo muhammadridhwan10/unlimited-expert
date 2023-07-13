@@ -202,7 +202,7 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                         @if(\Auth::user()->show_hrm() == 1)
                             @if( Gate::check('manage employee') || Gate::check('manage setsalary'))
                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'holiday-calender' || Request::segment(1) == 'reports-monthly-attendance' ||
-                                        Request::segment(1) == 'reports-leave' || Request::segment(1) == 'reports-overtime' || Request::segment(1) == 'reports-projects' || Request::segment(1) == 'time-tracker' || Request::segment(1) == 'overtime' || Request::segment(1) == 'reports-payroll' || Request::segment(1) == 'leavetype' || Request::segment(1) == 'leave' ||
+                                        Request::segment(1) == 'reports-leave' || Request::segment(1) == 'reports-overtime' || Request::segment(1) == 'reports-projects' || Request::segment(1) == 'time-tracker' || Request::segment(1) == 'overtime' || Request::segment(1) == 'reports-payroll' || Request::segment(1) == 'leavetype' || Request::segment(1) == 'reimbursmenttype' || Request::segment(1) == 'leave' ||
                                         Request::segment(1) == 'attendanceemployee' || Request::segment(1) == 'document-upload' || Request::segment(1) == 'document' || Request::segment(1) == 'performanceType'  ||
                                             Request::segment(1) == 'branch' || Request::segment(1) == 'department' || Request::segment(1) == 'designation' || Request::segment(1) == 'employee'
                                             || Request::segment(1) == 'leave_requests' || Request::segment(1) == 'holidays' || Request::segment(1) == 'policies' || Request::segment(1) == 'leave_calender'
@@ -531,11 +531,14 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                                     </li>
                                                 </ul>
                                             </li>
+                                             <li class="dash-item {{ request()->is('reports-reimbursment') ? 'active' : '' }}">
+                                                <a class="dash-link" href="{{ route('report.reimbursment') }}">{{__('Report Reimbursment')}}</a>
+                                            </li>
                                         </ul>
                                     </li>
                                     @endcan
 
-                                    <li class="dash-item {{ (Request::segment(1) == 'leavetype' || Request::segment(1) == 'document' || Request::segment(1) == 'performanceType' || Request::segment(1) == 'branch' || Request::segment(1) == 'department'
+                                    <li class="dash-item {{ (Request::segment(1) == 'leavetype' || Request::segment(1) == 'reimbursmenttype' || Request::segment(1) == 'document' || Request::segment(1) == 'performanceType' || Request::segment(1) == 'branch' || Request::segment(1) == 'department'
                                                                             || Request::segment(1) == 'designation' || Request::segment(1) == 'job-stage'|| Request::segment(1) == 'performanceType'  || Request::segment(1) == 'job-category' || Request::segment(1) == 'terminationtype' ||
                                                                         Request::segment(1) == 'awardtype' || Request::segment(1) == 'trainingtype' || Request::segment(1) == 'goaltype' || Request::segment(1) == 'paysliptype' ||
                                                                         Request::segment(1) == 'allowanceoption' || Request::segment(1) == 'loanoption' || Request::segment(1) == 'deductionoption') ? 'active dash-trigger' : ''}}">
@@ -1068,13 +1071,13 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                 </ul>
                             </li>
                         @endif
-                        @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
+                        {{-- @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'event')?'active':''}}">
                                 <a href="{{route('event.index')}}" class="dash-link">
                                     <span class="dash-micon"><i class="ti ti-calendar"></i></span><span class="dash-mtext">{{__('Event')}}</span><sup style="color: red;">New</sup>
                                 </a>
                             </li>
-                        @endif
+                        @endif --}}
                         <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'zoom-meeting' || Request::segment(1) == 'zoom-meeting-calender')?'active':''}}">
                             <a href="{{route('zoom-meeting.index')}}" class="dash-link">
                                 <span class="dash-micon"><i class="ti ti-user-check"></i></span><span class="dash-mtext">{{__('Zoom Meeting')}}</span>

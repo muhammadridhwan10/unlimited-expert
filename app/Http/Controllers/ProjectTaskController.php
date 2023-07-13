@@ -2679,9 +2679,9 @@ class ProjectTaskController extends Controller
         if(\Auth::user()->can('create project task'))
         {
 
-            $id                            = Crypt::decrypt($task_id);
-            $project                       = Project::find($project_id);
-            $task                          = ProjectTask::find($id);
+            $id             = Crypt::decrypt($task_id);
+            $project        = Project::find($project_id);
+            $task           = ProjectTask::find($id);
 
             $journaldata = $request->items;
             $summary_journaldata = new SummaryJournalData();
@@ -2704,6 +2704,10 @@ class ProjectTaskController extends Controller
                 }
             }
 
+            $items = [];
+            $dr = 0;
+            $cr = 0;
+
             for ($i = 0; $i < count($journaldata); $i++) {
                 $summary_journaldata->project_id = $project_id;
                 $summary_journaldata->notes = $request->notes;
@@ -2722,7 +2726,54 @@ class ProjectTaskController extends Controller
                 $item->coa = $coaValues;
                 $items[] = $item;
 
-                $financial_data = FinancialStatement::where('project_id', $project_id)->where('coa', $coaValues)->first();
+                $data_keuangan = FinancialStatement::where('project_id', $project_id)
+                ->where('coa', $coaValues)
+                ->first();
+
+                $m = $data_keuangan->m;
+
+                // Cek apakah akun termasuk dalam M.4, M.5, M.6, M.7, M.8, M.9 (CE)
+                if (strpos($m, 'M.4') !== false || strpos($m, 'M.5') !== false ||
+                    strpos($m, 'M.6') !== false || strpos($m, 'M.7') !== false ||
+                    strpos($m, 'M.8') !== false || strpos($m, 'M.9') !== false) {
+
+                    $financial_data = FinancialStatement::where('project_id', $project_id)
+                        ->where('lk', 'LK.34')
+                        ->first();
+
+                    if ($financial_data) {
+                        // Data ditemukan, lakukan penambahan atau pengurangan nilai dr dan cr
+                        $dr += $item->dr;
+                        $cr += $item->cr;
+                        // $financial_data->dr += $item->dr;
+                        // $financial_data->cr += $item->cr;
+                        $financial_data->audited = $financial_data->inhouse + $dr - $cr;
+                        $financial_data->save();
+                    }
+                }
+
+                // Cek apakah akun termasuk dalam M.4, M.5, M.6, M.7, M.8, M.9 (OCI)
+                if (strpos($m, 'M.10') !== false) 
+                {
+
+                    $financial_data = FinancialStatement::where('project_id', $project_id)
+                        ->where('coa', 'OCI')
+                        ->first();
+
+                    if ($financial_data) {
+                        // Data ditemukan, lakukan penambahan atau pengurangan nilai dr dan cr
+                        $dr += $item->dr;
+                        $cr += $item->cr;
+                        // $financial_data->dr += $item->dr;
+                        // $financial_data->cr += $item->cr;
+                        $financial_data->audited = $financial_data->inhouse + $dr - $cr;
+                        $financial_data->save();
+                    }
+                }   
+
+                $financial_data = FinancialStatement::where('project_id', $project_id)
+                    ->where('coa', $coaValues)
+                    ->first();
 
                 if ($financial_data) {
                     // Data ditemukan, lakukan penambahan nilai dr dan cr
@@ -2740,8 +2791,6 @@ class ProjectTaskController extends Controller
                     $financial_data->audited = $financial_data->inhouse + $item->dr - $item->cr;
                     $financial_data->save();
                 }
-
-                
             }
 
             $adjCodeCounter++;
@@ -2792,11 +2841,24 @@ class ProjectTaskController extends Controller
 
     public function updateJournalData(Request $request, $project_id, $task_id, $id)
     {
-
-        if(\Auth::user()->can('edit project task'))
-        {
-
+        if (\Auth::user()->can('edit project task')) {
             $journaldata = $request->items;
+
+            // Mendapatkan nilai audited dari akun LK.34
+            $lk_account = FinancialStatement::where('project_id', $project_id)
+                ->where('lk', 'LK.34')
+                ->first();
+
+            $lk_inhouse = $lk_account->inhouse;
+            $lk_audited = $lk_account->audited;
+
+            // Mendapatkan nilai audited dari akun LK.35
+            $lk_account_35 = FinancialStatement::where('project_id', $project_id)
+                ->where('coa', 'OCI')
+                ->first();
+
+            $lk_inhouse_35 = $lk_account_35->inhouse;
+            $lk_audited_35 = $lk_account_35->audited;
 
             for ($i = 0; $i < count($journaldata); $i++) {
                 $summary_journaldata = SummaryJournalData::find($id);
@@ -2837,6 +2899,37 @@ class ProjectTaskController extends Controller
                                 // Perbarui nilai audited
                                 $financial_data->audited = $financial_data->inhouse + $financial_data->dr - $financial_data->cr;
 
+                                $m = $financial_data->m;
+
+                                // Jika akun berkode m = M.4, M.5, M.6, M.7, M.8, M.9, perbarui nilai audited pada akun lk = LK.34
+                                if (in_array($m, ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9'])) {
+
+                                    // Mendapatkan nilai cr dari akun yang memenuhi kriteria m = M.4, M.5, M.6, M.7, M.8, M.9
+                                    $cr_account = FinancialStatement::where('project_id', $project_id)
+                                    ->whereIn('m', ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9'])
+                                    ->sum('cr');
+
+                                    $cr_value = $cr_account ?? 0;
+
+                                    $lk_audited = $lk_inhouse + $financial_data->dr - $cr_value;
+                                    $lk_account->audited = $lk_audited;
+                                    $lk_account->save();
+                                }
+
+                                if (in_array($m, ['M.10'])) {
+
+                                    // Mendapatkan nilai cr dari akun yang memenuhi kriteria m = M.4, M.5, M.6, M.7, M.8, M.9
+                                    $cr_account_35 = FinancialStatement::where('project_id', $project_id)
+                                    ->whereIn('m', ['M.10'])
+                                    ->sum('cr');
+
+                                    $cr_value_35 = $cr_account_35 ?? 0;
+
+                                    $lk_audited_35 = $lk_inhouse_35 + $financial_data->dr - $cr_value_35;
+                                    $lk_account_35->audited = $lk_audited_35;
+                                    $lk_account_35->save();
+                                } 
+
                                 // Simpan perubahan di financial_data
                                 $financial_data->save();
                             }
@@ -2858,6 +2951,37 @@ class ProjectTaskController extends Controller
                                 // Perbarui nilai audited
                                 $financial_data->audited = $financial_data->inhouse + $financial_data->dr - $financial_data->cr;
 
+                                $m = $financial_data->m;
+
+                                // Jika akun berkode m = M.4, M.5, M.6, M.7, M.8, M.9, perbarui nilai audited pada akun lk = LK.34
+                                if (in_array($m, ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9'])) {
+
+                                    // Mendapatkan nilai cr dari akun yang memenuhi kriteria m = M.4, M.5, M.6, M.7, M.8, M.9
+                                    $dr_account = FinancialStatement::where('project_id', $project_id)
+                                    ->whereIn('m', ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9'])
+                                    ->sum('dr');
+
+                                    $dr_value = $dr_account ?? 0;
+
+                                    $lk_audited = $lk_inhouse + $dr_value - $financial_data->cr;
+                                    $lk_account->audited = $lk_audited;
+                                    $lk_account->save();
+                                }
+
+                                if (in_array($m, ['M.10'])) {
+
+                                    // Mendapatkan nilai cr dari akun yang memenuhi kriteria m = M.4, M.5, M.6, M.7, M.8, M.9
+                                    $dr_account_35 = FinancialStatement::where('project_id', $project_id)
+                                    ->whereIn('m', ['M.10'])
+                                    ->sum('dr');
+
+                                    $dr_value_35 = $dr_account_35 ?? 0;
+
+                                    $lk_audited_35 = $lk_inhouse_35 + $dr_value_35 - $financial_data->cr;
+                                    $lk_account_35->audited = $lk_audited_35;
+                                    $lk_account_35->save();
+                                } 
+
                                 // Simpan perubahan di financial_data
                                 $financial_data->save();
                             }
@@ -2869,21 +2993,15 @@ class ProjectTaskController extends Controller
                 $summary_journaldata->save();
             }
 
-
-                  
             return redirect()->route('projects.tasks.journal.entries', [$project_id, $task_id])->with('success', __('Journal Data successfully updated.'));
-        }
-        else
-        {
+        } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
     }
 
     public function destroyJournalData(Request $request, $project_id, $task_id, $id)
     {
-
-        if(\Auth::user()->can('delete project task'))
-        {
+        if (\Auth::user()->can('delete project task')) {
             $summary_journaldata = SummaryJournalData::find($id);
             $drToDelete = $summary_journaldata->dr;
             $crToDelete = $summary_journaldata->cr;
@@ -2893,19 +3011,78 @@ class ProjectTaskController extends Controller
             $financial_data = FinancialStatement::where('project_id', $project_id)
                 ->where('coa', $summary_journaldata->coa)
                 ->first();
-            
+
+            $lk_account = FinancialStatement::where('project_id', $project_id)
+                ->where('lk', 'LK.34')
+                ->first();
+
+            $lk_inhouse = $lk_account->inhouse;
+            $lk_audited = $lk_account->audited;
+
+            // Mendapatkan nilai audited dari akun LK.35
+            $lk_account_35 = FinancialStatement::where('project_id', $project_id)
+                ->where('coa', 'OCI')
+                ->first();
+
+            $lk_inhouse_35 = $lk_account_35->inhouse;
+            $lk_audited_35 = $lk_account_35->audited;
+
+            $m = $financial_data->m;
+
             if ($financial_data) {
                 $financial_data->dr -= $drToDelete;
                 $financial_data->cr -= $crToDelete;
                 $financial_data->audited = $financial_data->inhouse + $financial_data->dr - $financial_data->cr;
                 $financial_data->save();
             }
+
+            // Cek apakah akun termasuk dalam kriteria yang ditentukan
+            if (in_array($m, ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9'])) {
+
+                $dr_account = FinancialStatement::where('project_id', $project_id)
+                ->whereIn('m', ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9'])
+                ->sum('dr');
+
+                $dr_value = $dr_account ?? 0;
+
+                $cr_account = FinancialStatement::where('project_id', $project_id)
+                ->whereIn('m', ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9'])
+                ->sum('cr');
+
+                $cr_value = $cr_account ?? 0;
+
+                if ($lk_account) {
+                    $lk_audited = $lk_inhouse + $dr_value - $cr_value;
+                    // dd($lk_audited);
+                    $lk_account->audited = $lk_audited;
+                    $lk_account->save();
+                }
+            }
+
+            if (in_array($m, ['M.10'])) {
+
+                $dr_account_35 = FinancialStatement::where('project_id', $project_id)
+                ->whereIn('m', ['M.10',])
+                ->sum('dr');
+
+                $dr_value_35 = $dr_account_35 ?? 0;
+
+                $cr_account_35 = FinancialStatement::where('project_id', $project_id)
+                ->whereIn('m', ['M.10'])
+                ->sum('cr');
+
+                $cr_value_35 = $cr_account_35 ?? 0;
+
+                if ($lk_account_35) {
+                    $lk_audited_35 = $lk_inhouse_35 + $dr_value_35 - $cr_value_35;
+                    // dd($lk_audited);
+                    $lk_account_35->audited = $lk_audited_35;
+                    $lk_account_35->save();
+                }
+            }
             
-                            
-                return redirect()->route('projects.tasks.journal.entries', [$project_id, $task_id])->with('success', __('Journal Data successfully deleted.'));
-        }
-        else
-        {
+            return redirect()->route('projects.tasks.journal.entries', [$project_id, $task_id])->with('success', __('Journal Data successfully deleted.'));
+        } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
     }

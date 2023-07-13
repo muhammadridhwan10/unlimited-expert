@@ -110,7 +110,7 @@ class ApiController extends Controller
         $mins  = floor($totalLateSeconds / 60 % 60);
         $secs  = floor($totalLateSeconds % 60);
         $late  = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
-        dd($late);
+        // dd($late);
 
         $timesheet['clock_out']     = $time;
         $timesheet['time']          = $late;
