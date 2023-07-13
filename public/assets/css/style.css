@@ -28020,7 +28020,7 @@ table.dataTable tbody > tr.selected th.select-checkbox:after {
     margin-top: 10px;
 }
 
-.logo-intro {
+.logo {
     font-size: 2.5rem;
     color: #ffffff;
     animation: logoIntroAnimation 2s ease-in-out infinite;
@@ -28044,12 +28044,6 @@ table.dataTable tbody > tr.selected th.select-checkbox:after {
     bottom: 250px;
     opacity: 0;
     transition: ease-in-out 0.5s;
-}
-
-.content{
-    width: 100%;
-    padding: 50px;
-    font-size: 2rem;
 }
 
 @keyframes logoIntroAnimation {

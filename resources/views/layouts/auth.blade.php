@@ -50,7 +50,7 @@
 <body class="{{ $color }}">
 <div class="intro">
         <img src="{{ asset('assets/images/auth/favicon.png') }}" style="width: 150px; height: 150px;" alt="clarkode logo">
-        <h1 class="logo-intro">
+        <h1 class="logo">
             <span class="logo-parts">Welcome</span>
              <span class="logo-parts">to</span>
               <span class="logo-parts">AUP</span>
