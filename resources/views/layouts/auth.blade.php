@@ -44,7 +44,83 @@
         <link rel="stylesheet" href="{{ asset('assets/css/style.css')}}" id="main-style-link">
     @endif
     <link rel="stylesheet" href="{{ asset('assets/css/customizer.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/intro.css') }}">
+    <style>
+        .intro {
+            position: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 9999; /* Ubah nilai z-index menjadi lebih tinggi */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100vh;
+            background: #DEDEDE;
+            transition: 1s;
+        }
+
+        .intro img {
+            top: 150px;
+            position: absolute;
+            animation-name: flip;
+            animation-duration: 2s;
+            animation-timing-function: ease-in-out;
+            animation-iteration-count: infinite;
+        }
+
+        .intro p {
+            color: gray;
+            font-size: 1.6rem;
+            margin-top: 10px;
+        }
+
+        .logo-intro {
+            font-size: 2.5rem;
+            color: #ffffff;
+            animation: logoIntroAnimation 2s ease-in-out infinite;
+        }
+
+        .logo-parts {
+            position: relative;
+            display: inline-block;
+            bottom: -20px;
+            opacity: 0;
+            color: black;
+            transition: ease-in-out 0.5s;
+        }
+
+        .logo-parts.active {
+            bottom: 0;
+            opacity: 1;
+        }
+
+        .logo-parts.fade {
+            bottom: 250px;
+            opacity: 0;
+        }
+
+        @keyframes logoIntroAnimation {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes flip {
+            0% {
+                transform: perspective(400px) rotateY(0);
+            }
+            100% {
+                transform: perspective(400px) rotateY(360deg);
+            }
+        }
+    </style>
 
 </head>
 
@@ -140,35 +216,31 @@
     feather.replace();
 </script>
 <script>
-let intro = document.querySelector('.intro');
-let logo = document.querySelector('.logo-intro');
-let logoSpan = document.querySelectorAll('.logo-parts');
+    document.addEventListener('DOMContentLoaded', () => {
+        let intro = document.querySelector('.intro');
+        let logoSpan = document.querySelectorAll('.logo-parts');
 
-window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            logoSpan.forEach((span, index) => {
+                setTimeout(() => {
+                    span.classList.add('active');
+                }, (index + 1) * 100);
+            });
 
-    setTimeout(() => {
-       logoSpan.forEach((span, index) => {
             setTimeout(() => {
-               span.classList.add('active');
-            }, (index + 1) * 100);
-       });
+                logoSpan.forEach((span, index) => {
+                    setTimeout(() => {
+                        span.classList.remove('active');
+                        span.classList.add('fade'); 
+                    }, (index + 1) * 50);
+                });
+            }, 2000);
 
-       setTimeout(() => {
-          logoSpan.forEach((span, index) => {
             setTimeout(() => {
-               span.classList.remove('active');
-               span.classList.add('fade'); 
-            }, (span + 1) * 50);
-          });
-       }, 2000);
-
-       setTimeout(() => {
-          intro.style.top  = '-100vh';
-       }, 2300);
-
+                intro.style.top  = '-100vh';
+            }, 2300);
+        });
     });
-
-});
 </script>
 
 
