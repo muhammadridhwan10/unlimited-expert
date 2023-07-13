@@ -44,13 +44,14 @@
         <link rel="stylesheet" href="{{ asset('assets/css/style.css')}}" id="main-style-link">
     @endif
     <link rel="stylesheet" href="{{ asset('assets/css/customizer.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/intro.css') }}">
 
 </head>
 
 <body class="{{ $color }}">
 <div class="intro">
-        <img src="{{ asset('assets/images/auth/favicon.png') }}" style="width: 150px; height: 150px;" alt="clarkode logo">
-        <h1 class="logo">
+        <img src="{{ asset('assets/images/auth/favicon.png') }}" style="width: 140px; height: 140px;">
+        <h1 class="logo-intro">
             <span class="logo-parts">Welcome</span>
              <span class="logo-parts">to</span>
               <span class="logo-parts">AUP</span>
@@ -140,7 +141,7 @@
 </script>
 <script>
 let intro = document.querySelector('.intro');
-let logo = document.querySelector('.logo');
+let logo = document.querySelector('.logo-intro');
 let logoSpan = document.querySelectorAll('.logo-parts');
 
 window.addEventListener('DOMContentLoaded', () => {
