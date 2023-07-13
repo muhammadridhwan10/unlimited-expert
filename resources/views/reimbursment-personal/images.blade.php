@@ -13,8 +13,8 @@
             <div class="swiper-container product-slider mb-2 pb-2" style="border-bottom:solid 2px #f2f3f5">
                 <div class="swiper-wrapper">
                     @foreach ($images as $image)
-                        <div class="swiper-slide" id="slide-{{$image->id}}">
-                            <img src="{{ asset(Storage::url($image->reimbursment_image))}}" alt="..."  class="img-fluid">
+                        <div class="swiper-slide" id="slide-{{ $image->id }}">
+                            <img src="{{ Storage::disk('s3')->url($image->reimbursment_image) }}" alt="..." class="img-fluid">
                         </div>
                     @endforeach
                 </div>

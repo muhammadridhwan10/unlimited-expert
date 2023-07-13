@@ -247,7 +247,7 @@ class ReimbursmentPersonalController extends Controller
                                'date' => 'required',
                                'amount' => 'required',
                                'description' => 'required',
-                               'reimbursment_image' => 'required|mimes:png,jpeg,jpg',
+                               'reimbursment_image' => 'mimes:png,jpeg,jpg|max:5120',
                            ]
         );
         if($validator->fails())
@@ -272,7 +272,8 @@ class ReimbursmentPersonalController extends Controller
             {
                 mkdir($dir, 0777, true);
             }
-            $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
+            // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
+            $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
         }
 
         $date            = Carbon::now()->format('Y-m-d');
@@ -378,7 +379,7 @@ class ReimbursmentPersonalController extends Controller
                                'date' => 'required',
                                'amount' => 'required',
                                'description' => 'required',
-                               'reimbursment_image' => 'required|mimes:png,jpeg,jpg',
+                               'reimbursment_image' => 'mimes:png,jpeg,jpg|max:5120',
                            ]
         );
         if($validator->fails())
@@ -402,7 +403,8 @@ class ReimbursmentPersonalController extends Controller
             {
                 mkdir($dir, 0777, true);
             }
-            $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
+            // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
+            $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
         }
 
         $date            = Carbon::now()->format('Y-m-d');

@@ -48,7 +48,7 @@
             <tbody>
             @foreach($employee_reimbursment as $employee_reimbursments)
                 @php
-                    $documentPath=asset(Storage::url($employee_reimbursments->reimbursment_image));
+                    $documentPath = Storage::disk('s3')->url($employee_reimbursments->reimbursment_image);
                 @endphp
                 <tr>
                     <td>{{!empty($employee_reimbursments->client->name) ? $employee_reimbursments->client->name:'-'}}</td>
@@ -57,8 +57,8 @@
                     <td>{{!empty($employee_reimbursments->description)?$employee_reimbursments->description:'-'}}</td>
                     <td>
                                         @if(!empty($employee_reimbursments->reimbursment_image))
-                                            <a href="{{$documentPath}}" target="_blank">
-                                                {{$employee_reimbursments->reimbursment_image}}
+                                            <a href="{{ $documentPath }}" target="_blank">
+                                                {{ $employee_reimbursments->reimbursment_image }}
                                             </a>
                                         @else
                                             <p>-</p>
