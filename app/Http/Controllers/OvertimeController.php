@@ -113,7 +113,7 @@ class OvertimeController extends Controller
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $overtimes    = UserOvertime::where('user_id', '=', $employee->id)->get();
+            $overtimes    = UserOvertime::where('user_id', '=', $users->id)->get();
             $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
         }
         else
