@@ -95,7 +95,8 @@ class OvertimeController extends Controller
         elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
         {
 
-            $employee = Employee::all();
+            $users        = \Auth::user();
+            $employee     = Employee::where('user_id', '=', $users->id);
             $employee = $employee->pluck('id');
             $employeeOvertimes = UserOvertime::whereIn('user_id', $employee);
 
