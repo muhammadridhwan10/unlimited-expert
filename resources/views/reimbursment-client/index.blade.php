@@ -10,7 +10,7 @@
 
 @section('action-btn')
     <div class="float-end">
-        <a href="#" data-size="lg" data-url="{{ route('reimbursment-client.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create')}}" data-title="{{__('Create Reimbursment Personal')}}" class="btn btn-sm btn-primary">
+        <a href="#" data-size="lg" data-url="{{ route('reimbursment-client.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create')}}" data-title="{{__('Create Reimbursment Client')}}" class="btn btn-sm btn-primary">
             <i class="ti ti-plus"></i>
         </a>
     </div>
@@ -179,7 +179,7 @@
     </div>
 
 
-    @if(\Auth::user()->type == 'senior accounting')
+    @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior accounting')
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">

@@ -48,7 +48,7 @@ class ReimbursmentPersonalController extends Controller
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
+            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->where('approval', '=', $users->id)->where('status','=', 'Pending')->get();
         }
         elseif(\Auth::user()->type == 'company')
         {
@@ -79,7 +79,7 @@ class ReimbursmentPersonalController extends Controller
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
+            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->where('approval', '=', $users->id)->where('status','=', 'Pending')->get();
         }
         elseif(\Auth::user()->type == 'senior accounting')
         {

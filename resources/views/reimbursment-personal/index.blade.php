@@ -168,7 +168,7 @@
     </div>
 
 
-    @if(\Auth::user()->type == 'senior accounting')
+    @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior accounting')
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">

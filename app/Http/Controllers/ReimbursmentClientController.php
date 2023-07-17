@@ -53,7 +53,7 @@ class ReimbursmentClientController extends Controller
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
+            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('approval', '=', $users->id)->where('status','=', 'Pending')->get();
         }
         elseif(\Auth::user()->type == 'company')
         {
@@ -89,7 +89,7 @@ class ReimbursmentClientController extends Controller
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
+            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('approval', '=', $users->id)->where('status','=', 'Pending')->get();
         }
         elseif(\Auth::user()->type == 'senior accounting')
         {
@@ -358,7 +358,13 @@ class ReimbursmentClientController extends Controller
             $ids               = Crypt::decrypt($id);
             $reimbursment      = Reimbursment::find($ids);
             $employees         = Employee::get()->pluck('name', 'id');
-            $approval          = User::where('type', '=', 'senior accounting')->get()->pluck('name', 'id');                
+            $approval = User::where(function($query) {
+                $query->where('type', 'admin')
+                      ->orWhere('type', 'company')
+                      ->orWhere('type', 'senior accounting');
+            })
+            ->get()
+            ->pluck('name', 'id');              
             $client            = User::where('type', '=', 'client')->get()->pluck('name', 'id');                     
         }
         else
@@ -366,7 +372,13 @@ class ReimbursmentClientController extends Controller
             $ids               = Crypt::decrypt($id);
             $reimbursment      = Reimbursment::find($ids);
             $employees    = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
-            $approval     = User::where('type', '=', 'senior accounting')->get()->pluck('name', 'id');                
+            $approval = User::where(function($query) {
+                $query->where('type', 'admin')
+                      ->orWhere('type', 'company')
+                      ->orWhere('type', 'senior accounting');
+            })
+            ->get()
+            ->pluck('name', 'id');             
             $client       = User::where('type', '=', 'client')->get()->pluck('name', 'id');                     
         }
 
