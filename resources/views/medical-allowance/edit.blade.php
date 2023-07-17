@@ -14,8 +14,8 @@
     <div class="row">
         <div class="col-md-12">
             <div class="form-group">
-                {{Form::label('client_id',__('Client') ,['class'=>'form-label'])}}<span class="text-danger">*</span>
-                {{Form::select('client_id',$client,null,array('class'=>'form-control select2','required'=>'required','id'=>'client','placeholder'=>__('Select Client')))}}
+                {{Form::label('client_id',__('Branch') ,['class'=>'form-label'])}}<span class="text-danger">*</span>
+                {{Form::select('client_id',$client,null,array('class'=>'form-control select2','required'=>'required','id'=>'client','placeholder'=>__('Select Branch')))}}
             </div>
         </div>
     </div>
