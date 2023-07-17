@@ -5668,124 +5668,160 @@ class ReportController extends Controller
         if(\Auth::user()->can('manage report'))
         {
 
-            $branch = Branch::get()->pluck('name', 'id');
-            $branch->prepend('Select Branch', '');
+            // $branch = Branch::get()->pluck('name', 'id');
+            // $branch->prepend('Select Branch', '');
 
-            $department = Department::get()->pluck('name', 'id');
-            $department->prepend('Select Department', '');
+            // $department = Department::get()->pluck('name', 'id');
+            // $department->prepend('Select Department', '');
 
-            $filterYear['branch']        = __('All');
-            $filterYear['department']    = __('All');
-            $filterYear['type']          = __('Monthly');
-            $filterYear['dateYearRange'] = date('M-Y');
-            $employees                   = Employee::where('is_active', 1);
-            if(!empty($request->branch))
+            // $filterYear['branch']        = __('All');
+            // $filterYear['department']    = __('All');
+            // $filterYear['type']          = __('Monthly');
+            // $filterYear['dateYearRange'] = date('M-Y');
+            // $employees                   = Employee::where('is_active', 1);
+            // if(!empty($request->branch))
+            // {
+            //     $employees->where('branch_id', $request->branch);
+            //     $filterYear['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
+            // }
+            // if(!empty($request->department))
+            // {
+            //     $employees->where('department_id', $request->department);
+            //     $filterYear['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
+            // }
+
+
+            // $employees = $employees->get();
+
+            // $projects        = [];
+            // $totalProject  = 0;
+            // foreach($employees as $employee)
+            // {
+
+            //     $employeeProjects['id']          = $employee->id;
+            //     $employeeProjects['employee_id'] = $employee->employee_id;
+            //     $employeeProjects['employee']    = $employee->name;
+
+            //     $userDetail              = \Auth::user();
+            //     $user_projects           = $employee->projects()->pluck('project_id','project_id')->toArray();
+            //     $project                 = ProjectUser::with('project');
+
+            //     if($request->type == 'monthly' && !empty($request->month))
+            //     {
+            //         $month = date('m', strtotime($request->month));
+            //         $year  = date('Y', strtotime($request->month));
+
+            //         $project
+            //         ->where('user_id', $employee->user_id)
+            //         ->whereHas('project', function ($query) use ($month, $year) {
+            //             $query->whereMonth('start_date', $month)->whereYear('start_date', $year);
+            //         });
+
+            //         $filterYear['dateYearRange'] = date('M-Y', strtotime($request->month));
+            //         $filterYear['type']          = __('Monthly');
+
+            //     }
+            //     elseif(!isset($request->type))
+            //     {
+            //         $month     = date('m');
+            //         $year      = date('Y');
+            //         $monthYear = date('Y-m');
+
+            //         $project
+            //         ->where('user_id', $employee->user_id)
+            //         ->whereHas('project', function ($query) use ($month, $year) {
+            //             $query->whereMonth('start_date', $month)->whereYear('start_date', $year);
+            //         });
+
+            //         $filterYear['dateYearRange'] = date('M-Y', strtotime($monthYear));
+            //         $filterYear['type']          = __('Monthly');
+            //     }
+
+
+            //     if($request->type == 'yearly' && !empty($request->year))
+            //     {
+            //         $year      = date('Y');
+            //         $project
+            //         ->where('user_id', $employee->user_id)
+            //         ->whereHas('project', function ($query) use ($year) {
+            //             $query->whereYear('start_date', $year);
+            //         });
+
+            //         $filterYear['dateYearRange'] = $request->year;
+            //         $filterYear['type']          = __('Yearly');
+            //     }
+
+            //     // if($request->type == 'weekly' && !empty($request->week))
+            //     // {
+            //     //     $startOfWeek = date('Y-m-d', strtotime($request->week));
+            //     //     $endOfWeek = date('Y-m-d', strtotime('+6 days', strtotime($startOfWeek)));
+
+            //     //     $project
+            //     //     ->where('user_id', $employee->user_id)
+            //     //     ->whereHas('project', function ($query) use ($startOfWeek, $endOfWeek) {
+            //     //         $query->whereBetween('start_date', [$startOfWeek, $endOfWeek]);
+            //     //     });
+
+            //     //     $filterYear['dateYearRange'] = date('M-Y', strtotime($startOfWeek)).' - '.date('M-Y', strtotime($endOfWeek));
+            //     //     $filterYear['type']          = __('Weekly');
+            //     // }
+
+            //     $project = $project->count();
+
+            //     $totalProject += $project;
+
+            //     $employeeProjects['project'] = $project;
+
+
+            //     $projects[] = $employeeProjects;
+            // }
+
+            // $starting_year = date('Y', strtotime('-5 year'));
+            // $ending_year   = date('Y', strtotime('+5 year'));
+
+            // $filterYear['starting_year'] = $starting_year;
+            // $filterYear['ending_year']   = $ending_year;
+
+            // $filter['totalProject'] = $totalProject;
+
+            $employee = User::all();
+            $employee = $employee->pluck('id');
+            $employeeProjects = ProjectUser::whereIn('user_id', $employee);
+            $client =   User::where('type','=','client')->pluck('name','id');
+            $filter_clients = $request->client_id;
+            $employess =   User::where('type','!=','client')->pluck('name','id');
+
+            if(!empty($request->month))
             {
-                $employees->where('branch_id', $request->branch);
-                $filterYear['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
-            }
-            if(!empty($request->department))
-            {
-                $employees->where('department_id', $request->department);
-                $filterYear['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
-            }
+                $month = date('m', strtotime($request->month));
+                $year  = date('Y', strtotime($request->month));
 
+                $start_date = date($year . '-' . $month . '-01');
+                $end_date   = date($year . '-' . $month . '-t');
 
-            $employees = $employees->get();
+                $employeeProjects
+                ->whereHas('project', function ($query) use ($start_date, $end_date) {
+                    $query->whereBetween('start_date', [$start_date, $end_date]);
+                });
 
-            $projects        = [];
-            $totalProject  = 0;
-            foreach($employees as $employee)
-            {
-
-                $employeeProjects['id']          = $employee->id;
-                $employeeProjects['employee_id'] = $employee->employee_id;
-                $employeeProjects['employee']    = $employee->name;
-
-                $userDetail              = \Auth::user();
-                $user_projects           = $employee->projects()->pluck('project_id','project_id')->toArray();
-                $project                 = ProjectUser::with('project');
-
-                if($request->type == 'monthly' && !empty($request->month))
-                {
-                    $month = date('m', strtotime($request->month));
-                    $year  = date('Y', strtotime($request->month));
-
-                    $project
-                    ->where('user_id', $employee->user_id)
-                    ->whereHas('project', function ($query) use ($month, $year) {
-                        $query->whereMonth('start_date', $month)->whereYear('start_date', $year);
-                    });
-
-                    $filterYear['dateYearRange'] = date('M-Y', strtotime($request->month));
-                    $filterYear['type']          = __('Monthly');
-
-                }
-                elseif(!isset($request->type))
-                {
-                    $month     = date('m');
-                    $year      = date('Y');
-                    $monthYear = date('Y-m');
-
-                    $project
-                    ->where('user_id', $employee->user_id)
-                    ->whereHas('project', function ($query) use ($month, $year) {
-                        $query->whereMonth('start_date', $month)->whereYear('start_date', $year);
-                    });
-
-                    $filterYear['dateYearRange'] = date('M-Y', strtotime($monthYear));
-                    $filterYear['type']          = __('Monthly');
-                }
-
-
-                if($request->type == 'yearly' && !empty($request->year))
-                {
-                    $year      = date('Y');
-                    $project
-                    ->where('user_id', $employee->user_id)
-                    ->whereHas('project', function ($query) use ($year) {
-                        $query->whereYear('start_date', $year);
-                    });
-
-                    $filterYear['dateYearRange'] = $request->year;
-                    $filterYear['type']          = __('Yearly');
-                }
-
-                // if($request->type == 'weekly' && !empty($request->week))
-                // {
-                //     $startOfWeek = date('Y-m-d', strtotime($request->week));
-                //     $endOfWeek = date('Y-m-d', strtotime('+6 days', strtotime($startOfWeek)));
-
-                //     $project
-                //     ->where('user_id', $employee->user_id)
-                //     ->whereHas('project', function ($query) use ($startOfWeek, $endOfWeek) {
-                //         $query->whereBetween('start_date', [$startOfWeek, $endOfWeek]);
-                //     });
-
-                //     $filterYear['dateYearRange'] = date('M-Y', strtotime($startOfWeek)).' - '.date('M-Y', strtotime($endOfWeek));
-                //     $filterYear['type']          = __('Weekly');
-                // }
-
-                $project = $project->count();
-
-                $totalProject += $project;
-
-                $employeeProjects['project'] = $project;
-
-
-                $projects[] = $employeeProjects;
             }
 
-            $starting_year = date('Y', strtotime('-5 year'));
-            $ending_year   = date('Y', strtotime('+5 year'));
+            if (!empty($request->user_ids)) {
+                $selectedEmployees = $request->user_ids;
+                $employeeProjects->whereIn('user_id', $selectedEmployees);
+            }
 
-            $filterYear['starting_year'] = $starting_year;
-            $filterYear['ending_year']   = $ending_year;
+            if (!empty($request->client_id)) {
+                $employeeProjects
+                ->whereHas('project', function ($query) use ($filter_clients) {
+                    $query->where('client_id', $filter_clients);
+                });
+            }
 
-            $filter['totalProject'] = $totalProject;
+            $employeeProject = $employeeProjects->get();
+            
 
-
-            return view('report.projects', compact('department', 'branch', 'projects', 'filterYear', 'filter'));
+            return view('report.projects', compact('employeeProject','client','employess'));
         }
         else
         {

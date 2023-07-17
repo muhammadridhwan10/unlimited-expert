@@ -91,56 +91,24 @@
                     <div class="card-body">
                         {{ Form::open(array('route' => array('report.projects'),'method'=>'get','id'=>'report_projects')) }}
                         <div class="row align-items-center justify-content-end">
-                            <div class="col-xl-10">
+                            <div class="col-auto">
                                 <div class="row">
-                                    <div class="col-3 mt-2">
-                                        <label class="form-label">{{__('Type')}}</label> <br>
-                                        <div class="form-check form-check-inline form-group">
-                                            <input type="radio" id="monthly" value="monthly" name="type" class="form-check-input" {{isset($_GET['type']) && $_GET['type']=='monthly' ?'checked':'checked'}}>
-                                            <label class="form-check-label" for="monthly">{{__('Monthly')}}</label>
+                                    <div class="col-auto" style = "width:270px;">
+                                        <div class="btn-box">
+                                            {{ Form::label('client_id', __('Client'), ['class' => 'form-label']) }}
+                                            {{ Form::select('client_id', $client, isset($_GET['client_id']) ? $_GET['client_id'] : null, ['class' => 'form-control select2', 'placeholder' => 'Select Client']) }}
                                         </div>
-                                        {{-- <div class="form-check form-check-inline form-group">
-                                            <input type="radio" id="weekly" value="weekly" name="type" class="form-check-input" {{isset($_GET['type']) && $_GET['type']=='weekly' ?'checked':''}}>
-                                            <label class="form-check-label" for="weekly">{{__('Weekly')}}</label>
-                                        </div> --}}
-                                        {{-- <div class="form-check form-check-inline form-group">
-                                            <input type="radio" id="yearly" value="yearly" name="type" class="form-check-input" {{isset($_GET['type']) && $_GET['type']=='yearly' ?'checked':''}}>
-                                            <label class="form-check-label" for="yearly">{{__('Yearly')}}</label>
-                                        </div> --}}
                                     </div>
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 month">
+                                    <div class="col-auto" style = "width:270px;">
+                                        <div class="btn-box">
+                                            {{ Form::label('user_ids', __('Employee'), ['class' => 'form-label']) }}
+                                            {{ Form::select('user_ids[]', $employess, isset($_GET['user_ids']) ? $_GET['user_ids'] : null, ['class' => 'form-control select2','id'=>'choices-multiple1','multiple']) }}
+                                        </div>
+                                    </div>
+                                     <div class="col-auto">
                                         <div class="btn-box">
                                             {{Form::label('month',__('Month'),['class'=>'form-label'])}}
                                             {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
-                                        </div>
-                                    </div>
-                                    {{-- <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 week d-none">
-                                        <div class="btn-box">
-                                            {{Form::label('week',__('Week'),['class'=>'form-label'])}}
-                                            {{Form::week('week',isset($_GET['week'])?$_GET['week']:date('Y-W'),array('class'=>'week-btn form-control'))}}
-                                        </div>
-                                    </div> --}}
-
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 year d-none">
-                                        <div class="btn-box">
-                                            {{ Form::label('year', __('Year'),['class'=>'form-label']) }}
-                                            <select class="form-control select" id="year" name="year" tabindex="-1" aria-hidden="true">
-                                                @for($filterYear['starting_year']; $filterYear['starting_year'] <= $filterYear['ending_year']; $filterYear['starting_year']++)
-                                                    <option {{(isset($_GET['year']) && $_GET['year'] == $filterYear['starting_year'] ?'selected':'')}} {{(!isset($_GET['year']) && date('Y') == $filterYear['starting_year'] ?'selected':'')}} value="{{$filterYear['starting_year']}}">{{$filterYear['starting_year']}}</option>
-                                                @endfor
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
-                                        <div class="btn-box">
-                                            {{ Form::label('branch', __('Branch'),['class'=>'form-label']) }}
-                                            {{ Form::select('branch', $branch,isset($_GET['branch'])?$_GET['branch']:'', array('class' => 'form-control select')) }}
-                                        </div>
-                                    </div>
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
-                                        <div class="btn-box">
-                                            {{ Form::label('department', __('Department'),['class'=>'form-label'])}}
-                                            {{ Form::select('department', $department,isset($_GET['department'])?$_GET['department']:'', array('class' => 'form-control select')) }}
                                         </div>
                                     </div>
                                 </div>
@@ -166,91 +134,43 @@
     </div>
     <div id="printableArea" class="">
         <div class="row">
-            {{-- <div class="col">
-                <div class="card">
-                    <div class="card-body p-3">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center">
-                                <div class="theme-avtar bg-primary">
-                                    <i class="ti ti-report"></i>
-                                </div>
-                                <div class="ms-3">
-                                    <input type="hidden"
-                                           value="{{ $filterYear['branch'] . ' ' . __('Branch') . ' ' . $filterYear['dateYearRange'] . ' ' . $filterYear['type'] . ' ' . __('Leave Report of') . ' ' . $filterYear['department'] . ' ' . 'Department' }}"
-                                           id="filename">
-                                    <h5 class="mb-0">{{ __('Report') }}</h5>
-                                    <div>
-                                        <p class="text-muted text-sm mb-0">
-                                            {{ $filterYear['type'] . ' ' . __('Leave Summary') }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div> --}}
-            @if ($filterYear['branch'] != 'All')
-                <div class="col">
-                    <div class="card">
-                        <div class="card-body p-3">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div class="d-flex align-items-center">
-                                    <div class="theme-avtar bg-primary">
-                                        <i class="ti ti-sitemap"></i>
-                                    </div>
-                                    <div class="ms-3">
-                                        <h5 class="mb-0">{{ __('Branch') }}</h5>
-                                        <p class="text-muted text-sm mb-0">
-                                            {{ $filterYear['branch'] }} </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endif
-            @if ($filterYear['department'] != 'All')
-                <div class="col">
-                    <div class="card">
-                        <div class="card-body p-3">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div class="d-flex align-items-center">
-                                    <div class="theme-avtar bg-primary">
-                                        <i class="ti ti-template"></i>
-                                    </div>
-                                    <div class="ms-3">
-                                        <h5 class="mb-0">{{ __('Department') }}</h5>
-                                        <p class="text-muted text-sm mb-0">{{ $filterYear['department'] }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endif
-        </div>
-        <div class="row">
             <div class="col">
                 <div class="card">
                     <div class="card-body table-border-style">
                         <div class="table-responsive py-4">
-                            <table class="table mb-0" id="report-dataTable">
+                            <table class="table datatable" id="report-dataTable">
                                 <thead>
                                 <tr>
                                     <th>{{__('Employee')}}</th>
-                                    <th>{{__('List Projects')}}</th>
+                                    <th>{{__('Project Name')}}</th>
+                                    <th>{{__('Start Date')}}</th>
+                                    <th>{{__('Client Name')}}</th>
+                                    <th>{{__('Tags')}}</th>
+                                    <th>{{__('Status')}}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                @foreach($projects as $project)
-                                    <tr>
-                                        <td>{{$project['employee']}}</td>
-                                        <td>
-                                            <div class="m-view-btn badge bg-info p-2 px-3 rounded">{{$project['project']}}
-                                                <a href="#" class="text-white" data-url="{{ route('report.employee.projects',[$project['id'],isset($_GET['type']) ?$_GET['type']:'no',isset($_GET['month'])?$_GET['month']:date('Y-m'),isset($_GET['year'])?$_GET['year']:date('Y')]) }}" data-ajax-popup="true" data-title="{{__('Projects List Detail')}}" data-size="lg" data-bs-toggle="tooltip" title="{{__('View')}}" data-original-title="{{__('View')}}">{{__('View')}}</a>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                @foreach($employeeProject as $project_user)
+                                    @if(!empty($project_user->project->project_name))
+                                        <tr>
+                                            <td>{{!empty($project_user->user->name)?$project_user->user->name:'-'}}</td>
+                                            <td>{{!empty($project_user->project->project_name)?$project_user->project->project_name:'-'}}</td>
+                                            <td>{{!empty($project_user->project->start_date)?$project_user->project->start_date:'-'}}</td>
+                                            <td>{{!empty($project_user->project->user->name)?$project_user->project->user->name:'-'}}</td>
+                                            <td>{{!empty($project_user->project->tags)?$project_user->project->tags:'-'}}</td>
+                                            <td>
+                                                @if($project_user->project->status == "on_hold")
+                                                    <div class="status_badge badge bg-warning p-2 px-3 rounded">{{ $project_user->project->status }}</div>
+                                                @elseif($project_user->project->status=="complete")
+                                                    <div class="status_badge badge bg-success p-2 px-3 rounded">{{ $project_user->project->status }}</div>
+                                                @elseif($project_user->project->status=="in_progress")
+                                                    <div class="status_badge badge bg-info p-2 px-3 rounded">{{ $project_user->project->status }}</div>
+                                                @else($project_user->project->status =="canceled")
+                                                    <div class="status_badge badge bg-danger p-2 px-3 rounded">{{ $project_user->project->status }}</div>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endif
                                 @endforeach
                                 </tbody>
                             </table>
@@ -260,5 +180,6 @@
             </div>
         </div>
     </div>
+
 @endsection
 

@@ -271,7 +271,6 @@ class ReimbursmentClientController extends Controller
                                'approval' => 'required',
                                'date' => 'required',
                                'amount' => 'required',
-                               'description' => 'required',
                                'reimbursment_image' => 'mimes:png,jpeg,jpg|max:5120',
                            ]
         );
@@ -391,7 +390,6 @@ class ReimbursmentClientController extends Controller
                                'approval' => 'required',
                                'date' => 'required',
                                'amount' => 'required',
-                               'description' => 'required',
                                'reimbursment_image' => 'mimes:png,jpeg,jpg|max:5120',
                            ]
         );

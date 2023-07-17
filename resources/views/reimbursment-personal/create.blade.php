@@ -5,7 +5,7 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="form-group">
-                    {{Form::label('employee_id',__('Employee') ,['class'=>'form-label'])}}
+                    {{Form::label('employee_id',__('Employee') ,['class'=>'form-label'])}}<span class="text-danger">*</span>
                     {{Form::select('employee_id',$employees,null,array('class'=>'form-control select2','id'=>'employee_id','placeholder'=>__('Select Employee')))}}
                 </div>
             </div>
@@ -14,7 +14,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="form-group">
-                {{Form::label('client_id',__('Client') ,['class'=>'form-label'])}}
+                {{Form::label('client_id',__('Client') ,['class'=>'form-label'])}}<span class="text-danger">*</span>
                 {{Form::select('client_id',$client,null,array('class'=>'form-control select2','required'=>'required','id'=>'client','placeholder'=>__('Select Client')))}}
             </div>
         </div>
@@ -22,7 +22,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="form-group">
-                {{Form::label('approval',__('Approval By') ,['class'=>'form-label'])}}
+                {{Form::label('approval',__('Approval By') ,['class'=>'form-label'])}}<span class="text-danger">*</span>
                 {{Form::select('approval',$approval,null,array('class'=>'form-control select2','required'=>'required','id'=>'approval','placeholder'=>__('Select Approval')))}}
             </div>
         </div>
@@ -30,7 +30,7 @@
     <div class="row">
         <div class="col-md-6">
             <div class="form-group">
-                {{ Form::label('date', __('Date'),['class'=>'form-label']) }}
+                {{ Form::label('date', __('Date'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                 {{ Form::date('date', null, array('class'=>'form-control','required'=>'required'))}}
             </div>
         </div>
@@ -38,14 +38,14 @@
 
         <div class="col-md-6">
             <div class="form-group">
-                {{ Form::label('amount', __('Amount'),['class'=>'form-label']) }}
+                {{ Form::label('amount', __('Amount'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                 {{Form::text('amount',null,array('class'=>'form-control'))}}
             </div>
         </div>
     </div>
     <div class="row">
         <div class="form-group col-sm-12 col-md-12">
-                {{Form::label('reimbursment_image',__('Image'),['class'=>'form-label'])}}
+                {{Form::label('reimbursment_image',__('Image'),['class'=>'form-label'])}}<span class="text-danger">*</span>
                 <div class="choose-file form-group">
                     <label for="reimbursment_image" class="form-label">
                         <input type="file" accept=".png, .jpg, .jpeg" class="form-control" name="reimbursment_image" id="reimbursment_image" data-filename="reimbursment_image_create">

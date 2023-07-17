@@ -196,7 +196,7 @@ class ReimbursmentPersonalController extends Controller
             })
             ->get()
             ->pluck('name', 'id');  
-            $client                          = User::where('type', '=', 'client')->get()->pluck('name', 'id');                
+            $client                          = User::where('type', '=', 'client')->where('name','=','Kantor Pusat')->where('name','=','Kantor Cabang Bekasi')->where('name','=','Kantor Cabang Malang')->get()->pluck('name', 'id');
         }
         elseif(Auth::user()->type == 'admin')
         {
@@ -208,7 +208,7 @@ class ReimbursmentPersonalController extends Controller
             })
             ->get()
             ->pluck('name', 'id');
-            $client                          = User::where('type', '=', 'client')->get()->pluck('name', 'id');                     
+            $client                          = User::where('type', '=', 'client')->where('name','=','Kantor Pusat')->where('name','=','Kantor Cabang Bekasi')->where('name','=','Kantor Cabang Malang')->get()->pluck('name', 'id');
         }
         elseif(Auth::user()->type == 'company')
         {
@@ -220,13 +220,13 @@ class ReimbursmentPersonalController extends Controller
             })
             ->get()
             ->pluck('name', 'id');
-            $client                          = User::where('type', '=', 'client')->get()->pluck('name', 'id');                     
+            $client                          = User::where('type', '=', 'client')->where('name','=','Kantor Pusat')->where('name','=','Kantor Cabang Bekasi')->where('name','=','Kantor Cabang Malang')->get()->pluck('name', 'id');
         }
         else
         {
             $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $approval        = User::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $client                          = User::where('type', '=', 'client')->get()->pluck('name', 'id');      
+            $client                          = User::where('type', '=', 'client')->where('name','=','Kantor Pusat')->where('name','=','Kantor Cabang Bekasi')->where('name','=','Kantor Cabang Malang')->get()->pluck('name', 'id');
         }
 
         return view('reimbursment-personal.create', compact('employees', 'approval','client'));
@@ -246,7 +246,6 @@ class ReimbursmentPersonalController extends Controller
                                'approval' => 'required',
                                'date' => 'required',
                                'amount' => 'required',
-                               'description' => 'required',
                                'reimbursment_image' => 'mimes:png,jpeg,jpg|max:5120',
                            ]
         );
@@ -341,7 +340,7 @@ class ReimbursmentPersonalController extends Controller
             })
             ->get()
             ->pluck('name', 'id');              
-            $client            = User::where('type', '=', 'client')->get()->pluck('name', 'id');                     
+            $client                          = User::where('type', '=', 'client')->where('name','=','Kantor Pusat')->where('name','=','Kantor Cabang Bekasi')->where('name','=','Kantor Cabang Malang')->get()->pluck('name', 'id');                
         }
         else
         {
@@ -355,7 +354,7 @@ class ReimbursmentPersonalController extends Controller
             })
             ->get()
             ->pluck('name', 'id');             
-            $client       = User::where('type', '=', 'client')->get()->pluck('name', 'id');                     
+            $client                          = User::where('type', '=', 'client')->where('name','=','Kantor Pusat')->where('name','=','Kantor Cabang Bekasi')->where('name','=','Kantor Cabang Malang')->get()->pluck('name', 'id');              
         }
 
         return view('reimbursment-personal.edit', compact('reimbursment', 'employees', 'client', 'approval'));
@@ -378,7 +377,6 @@ class ReimbursmentPersonalController extends Controller
                                'approval' => 'required',
                                'date' => 'required',
                                'amount' => 'required',
-                               'description' => 'required',
                                'reimbursment_image' => 'mimes:png,jpeg,jpg|max:5120',
                            ]
         );

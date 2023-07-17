@@ -190,28 +190,28 @@ class MedicalAllowanceController extends Controller
         {
             $employees                       = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
             $approval                        = User::where('type', '=', 'senior accounting')->get()->pluck('name', 'id');                
-            $client                          = User::where('type', '=', 'client')->get()->pluck('name', 'id');
+            $client                          = User::where('type', '=', 'client')->where('name','=','Kantor Pusat')->where('name','=','Kantor Cabang Bekasi')->where('name','=','Kantor Cabang Malang')->get()->pluck('name', 'id');
             $reimbursment_type               = ReimbursmentType::where('created_by', '=', \Auth::user()->creatorId())->get();                
         }
         elseif(Auth::user()->type == 'admin')
         {
             $employees                       = Employee::all()->pluck('name', 'id');
             $approval                        = User::where('type', '=', 'senior accounting')->get()->pluck('name', 'id'); 
-            $client                          = User::where('type', '=', 'client')->get()->pluck('name', 'id');      
+            $client                          = User::where('type', '=', 'client')->where('name','=','Kantor Pusat')->where('name','=','Kantor Cabang Bekasi')->where('name','=','Kantor Cabang Malang')->get()->pluck('name', 'id');
             $reimbursment_type               = ReimbursmentType::where('created_by', '=', \Auth::user()->creatorId())->get();                               
         }
         elseif(Auth::user()->type == 'company')
         {
             $employees                       = Employee::all()->pluck('name', 'id');
             $approval                        = User::where('type', '=', 'senior accounting')->get()->pluck('name', 'id'); 
-            $client                          = User::where('type', '=', 'client')->get()->pluck('name', 'id');         
+            $client                          = User::where('type', '=', 'client')->where('name','=','Kantor Pusat')->where('name','=','Kantor Cabang Bekasi')->where('name','=','Kantor Cabang Malang')->get()->pluck('name', 'id');
             $reimbursment_type               = ReimbursmentType::where('created_by', '=', \Auth::user()->creatorId())->get();                            
         }
         else
         {
             $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $approval        = User::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            $client                          = User::where('type', '=', 'client')->get()->pluck('name', 'id');  
+            $client                           = User::where('type', '=', 'client')->where('name','=','Kantor Pusat')->where('name','=','Kantor Cabang Bekasi')->where('name','=','Kantor Cabang Malang')->get()->pluck('name', 'id');
             $reimbursment_type               = ReimbursmentType::where('created_by', '=', \Auth::user()->creatorId())->get();                    
         }
 
@@ -232,7 +232,6 @@ class MedicalAllowanceController extends Controller
                                'approval' => 'required',
                                'date' => 'required',
                                'amount' => 'required',
-                               'description' => 'required',
                                'reimbursment_image' => 'mimes:png,jpeg,jpg|max:5120',
                            ]
         );
@@ -321,7 +320,7 @@ class MedicalAllowanceController extends Controller
             $reimbursment      = Reimbursment::find($ids);
             $employees         = Employee::get()->pluck('name', 'id');
             $approval          = User::where('type', '=', 'senior accounting')->get()->pluck('name', 'id');                
-            $client            = User::where('type', '=', 'client')->get()->pluck('name', 'id');         
+            $client                          = User::where('type', '=', 'client')->where('name','=','Kantor Pusat')->where('name','=','Kantor Cabang Bekasi')->where('name','=','Kantor Cabang Malang')->get()->pluck('name', 'id');    
             $reimbursment_type               = ReimbursmentType::where('created_by', '=', \Auth::user()->creatorId())->get();                                           
         }
         else
@@ -330,7 +329,7 @@ class MedicalAllowanceController extends Controller
             $reimbursment      = Reimbursment::find($ids);
             $employees    = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
             $approval     = User::where('type', '=', 'senior accounting')->get()->pluck('name', 'id');                
-            $client       = User::where('type', '=', 'client')->get()->pluck('name', 'id');       
+            $client                          = User::where('type', '=', 'client')->where('name','=','Kantor Pusat')->where('name','=','Kantor Cabang Bekasi')->where('name','=','Kantor Cabang Malang')->get()->pluck('name', 'id');   
             $reimbursment_type               = ReimbursmentType::where('created_by', '=', \Auth::user()->creatorId())->get();                                             
         }
 
@@ -354,7 +353,6 @@ class MedicalAllowanceController extends Controller
                                'approval' => 'required',
                                'date' => 'required',
                                'amount' => 'required',
-                               'description' => 'required',
                                'reimbursment_image' => 'mimes:png,jpeg,jpg|max:5120',
                            ]
         );
