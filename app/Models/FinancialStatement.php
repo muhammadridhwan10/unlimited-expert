@@ -27,6 +27,11 @@ class FinancialStatement extends Model
         return $this->belongsTo('App\Models\Materialitas', 'm', 'code');
     }
 
+    public function summaryjournaldata()
+    {
+        return $this->belongsTo('App\Models\SummaryJournalData', 'coa', 'coa');
+    }
+
     public function summary()
     {
         return SummaryJournalData::whereIn('coa', explode(',', $this->id))->get();

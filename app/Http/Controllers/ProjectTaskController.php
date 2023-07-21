@@ -2742,13 +2742,54 @@ class ProjectTaskController extends Controller
                         ->first();
 
                     if ($financial_data) {
-                        // Data ditemukan, lakukan penambahan atau pengurangan nilai dr dan cr
-                        $dr += $item->dr;
-                        $cr += $item->cr;
-                        // $financial_data->dr += $item->dr;
-                        // $financial_data->cr += $item->cr;
-                        $financial_data->audited = $financial_data->inhouse + $dr - $cr;
-                        $financial_data->save();
+                        $data_relasi = FinancialStatement::where('project_id', $project_id)
+                            ->whereIn('m', ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9'])
+                            ->with('summaryJournalData')
+                            ->first();
+                    
+                        $summary_journal_data = $data_relasi->summaryJournalData;
+                    
+                        if ($summary_journal_data) {
+                            // Mendapatkan total nilai DR dan CR dari summaryjournaldata berdasarkan kondisi
+                            $previous_dr = $summary_journal_data->where('dr', '>', 0)
+                                ->whereIn('coa', function ($query) {
+                                    $query->select('coa')
+                                        ->from('financial_statement')
+                                        ->whereIn('m', ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9']);
+                                })
+                                ->sum('dr');
+                    
+                            $previous_cr = $summary_journal_data->where('cr', '>', 0)
+                                ->whereIn('coa', function ($query) {
+                                    $query->select('coa')
+                                        ->from('financial_statement')
+                                        ->whereIn('m', ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9']);
+                                })
+                                ->sum('cr');
+                    
+                            // Tambahkan nilai DR dan CR baru jika nilainya bukan 0
+                            if ($item->dr != 0) {
+                                $previous_dr += $item->dr;
+                            }
+                    
+                            if ($item->cr != 0) {
+                                $previous_cr += $item->cr;
+                            }
+                    
+                            // Hitung nilai audited berdasarkan DR dan CR yang baru
+                            $financial_data->audited = $financial_data->inhouse + $previous_dr - $previous_cr;
+                            $financial_data->save();
+                        }
+                        else
+                        {
+                             // Data ditemukan, lakukan penambahan atau pengurangan nilai dr dan cr
+                            $dr += $item->dr;
+                            $cr += $item->cr;
+                            // $financial_data->dr += $item->dr;
+                            // $financial_data->cr += $item->cr;
+                            $financial_data->audited = $financial_data->inhouse + $dr - $cr;
+                            $financial_data->save();
+                        }
                     }
                 }
 

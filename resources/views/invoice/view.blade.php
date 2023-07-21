@@ -240,7 +240,7 @@
                                     <i class="ti ti-plus text-primary"></i>
                                 </div>
                                 <h6 class="text-primary my-3">{{__('Create Invoice')}}</h6>
-                                <p class="text-muted text-sm mb-3"><i class="ti ti-clock mr-2"></i>{{__('Created on ')}}{{\Auth::user()->dateFormat($invoice->bill_date)}}</p>
+                                <p class="text-muted text-sm mb-3"><i class="ti ti-clock mr-2"></i>{{__('Created on ')}}{{\Auth::user()->dateFormat($invoice->created_at)}}</p>
                                 @can('edit invoice')
                                     <a href="{{ route('invoice.edit',\Crypt::encrypt($invoice->id)) }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-original-title="{{__('Edit')}}"><i class="ti ti-pencil mr-2"></i>{{__('Edit')}}</a>
                                 @endcan

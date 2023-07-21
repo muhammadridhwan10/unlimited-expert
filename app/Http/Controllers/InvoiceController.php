@@ -685,6 +685,10 @@ class InvoiceController extends Controller
             {
                 $resp = Utility::sendEmailTemplate('customer_invoice_send', [$customer->email], $customerArr);
             }
+            elseif(Auth::user()->type == 'company')
+            {
+                $resp = Utility::sendEmailTemplate('customer_invoice_send', [$customer->email], $customerArr);
+            }
             else
             {
                 $resp = Utility::sendEmailTemplate('customer_invoice_send', [$customer->id => $customer->email], $customerArr);
