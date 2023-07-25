@@ -4472,7 +4472,9 @@ class ReportController extends Controller
         $user = Auth::user();
         if(\Auth::user()->can('manage report'))
         {
-            $branch      = Branch::get();
+            $branch = Branch::get()->pluck('name', 'id');
+            $branch->prepend('Select Branch', '');
+            
             $department = Department::get();
 
             $data['branch']     = __('All');

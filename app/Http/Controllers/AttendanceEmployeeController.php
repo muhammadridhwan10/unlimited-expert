@@ -529,7 +529,7 @@ class AttendanceEmployeeController extends Controller
                 $endTime   = "17:00";
             }
 
-            if(Auth::user()->type == 'Employee' || Auth::user()->type == 'intern' || Auth::user()->type == 'intern' || Auth::user()->type =='junior audit' || Auth::user()->type =='senior audit' || Auth::user()->type =='junior accounting' || Auth::user()->type =='senior accounting' || Auth::user()->type =='staff IT' || Auth::user()->type =='partners' || Auth::user()->type =='manager audit' || Auth::user()->type =='manager accounting')
+            if(Auth::user()->type == 'Employee' || Auth::user()->type == 'intern' || Auth::user()->type == 'company' || Auth::user()->type == 'admin' || Auth::user()->type =='junior audit' || Auth::user()->type =='senior audit' || Auth::user()->type =='junior accounting' || Auth::user()->type =='senior accounting' || Auth::user()->type =='staff IT' || Auth::user()->type =='partners' || Auth::user()->type =='manager audit' || Auth::user()->type =='manager accounting')
             {
 
                 $date = date("Y-m-d");

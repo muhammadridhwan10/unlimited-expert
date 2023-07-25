@@ -115,10 +115,7 @@ class MedicalAllowanceController extends Controller
         elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
         {
 
-            $reimbursment   = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->where('employee_id', '=', $employee->id)->get();
-
-            $employee = Employee::all();
-            $employee = $employee->pluck('id');
+            $employee                      = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
             $employeeReimbursment = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->whereIn('employee_id', $employee);
 
             if (!empty($request->month)) {
@@ -142,14 +139,14 @@ class MedicalAllowanceController extends Controller
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
+            $reimbursment   = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->where('employee_id', '=', $employee->id)->get();
             $approval     = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->where('approval', '=', $users->id)->where('status','=', 'Pending')->get();
         }
         else
         {
             $reimbursment   = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->get();
 
-            $employee = Employee::all();
-            $employee = $employee->pluck('id');
+            $employee                      = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
             $employeeReimbursment = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->whereIn('employee_id', $employee);
 
             if (!empty($request->month)) {
