@@ -112,11 +112,11 @@ class ReimbursmentPersonalController extends Controller
             $employee     = Employee::where('user_id', '=', $users->id)->first();
             $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->where('approval', '=', $users->id)->where('status','=', 'Pending')->get();
         }
-        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
+        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff IT')
         {
 
 
-            $employee                      = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
+            $employee                      = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('id');
             $employeeReimbursment = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->whereIn('employee_id', $employee);
 
             if (!empty($request->month)) {
@@ -147,7 +147,7 @@ class ReimbursmentPersonalController extends Controller
         {
             $reimbursment   = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->get();
 
-            $employee                      = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
+            $employee                      = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('id');
             $employeeReimbursment = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->whereIn('employee_id', $employee);
 
             if (!empty($request->month)) {
