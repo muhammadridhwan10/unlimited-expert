@@ -9,6 +9,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Crypt;
+use App\Mail\ReimbursmentPersonalNotification;
+use App\Mail\ReimbursmentPersonalApprovalNotification;
+use Illuminate\Support\Facades\Mail;
 
 class ReimbursmentPersonalController extends Controller
 {
@@ -312,9 +315,9 @@ class ReimbursmentPersonalController extends Controller
         $reimbursment->save();
 
         //Email Notification
-        // $user = User::where('id', $leave->approval)->first();
-        // $email = $user->email;
-        // Mail::to($email)->send(new LeaveNotification($leave));
+        $user = User::where('id', $reimbursment->approval)->first();
+        $email = $user->email;
+        Mail::to($email)->send(new ReimbursmentPersonalNotification($reimbursment));
 
         return redirect()->route('reimbursment-personal.index')->with('success', __('Reimbursment Personal successfully created.'));
     }
@@ -479,6 +482,11 @@ class ReimbursmentPersonalController extends Controller
         }
 
         $reimbursment->save();
+
+        //Email Notification
+        $employee = Employee::where('id', $reimbursment->employee_id)->first();
+        $email = $employee->email;
+        Mail::to($email)->send(new ReimbursmentPersonalApprovalNotification($reimbursment));
 
         return redirect()->route('reimbursment-personal.index')->with('success', __('Reimbursment Personal successfully updated.'));
     }

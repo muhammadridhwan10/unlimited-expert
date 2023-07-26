@@ -9,6 +9,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Crypt;
+use App\Mail\ReimbursmentClientNotification;
+use App\Mail\ReimbursmentClientApprovalNotification;
+use Illuminate\Support\Facades\Mail;
 
 class ReimbursmentClientController extends Controller
 {
@@ -325,9 +328,9 @@ class ReimbursmentClientController extends Controller
         $reimbursment->save();
 
         //Email Notification
-        // $user = User::where('id', $leave->approval)->first();
-        // $email = $user->email;
-        // Mail::to($email)->send(new LeaveNotification($leave));
+        $user = User::where('id', $reimbursment->approval)->first();
+        $email = $user->email;
+        Mail::to($email)->send(new ReimbursmentClientNotification($reimbursment));
 
         return redirect()->route('reimbursment-client.index')->with('success', __('Reimbursment Client successfully created.'));
     }
@@ -486,6 +489,11 @@ class ReimbursmentClientController extends Controller
         }
 
         $reimbursment->save();
+
+        //Email Notification
+        $employee = Employee::where('id', $reimbursment->employee_id)->first();
+        $email = $employee->email;
+        Mail::to($email)->send(new ReimbursmentClientApprovalNotification($reimbursment));
 
         return redirect()->route('reimbursment-client.index')->with('success', __('Reimbursment Client successfully updated.'));
     }

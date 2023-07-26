@@ -10,6 +10,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\MedicalAllowanceNotification;
+use App\Mail\MedicalAllowanceApprovalNotification;
 
 class MedicalAllowanceController extends Controller
 {
@@ -297,6 +300,11 @@ class MedicalAllowanceController extends Controller
         $reimbursment->save();
 
         //Email Notification
+        $user = User::where('id', $reimbursment->approval)->first();
+        $email = $user->email;
+        Mail::to($email)->send(new MedicalAllowanceNotification($reimbursment));
+
+        //Email Notification
         // $user = User::where('id', $leave->approval)->first();
         // $email = $user->email;
         // Mail::to($email)->send(new LeaveNotification($leave));
@@ -454,6 +462,11 @@ class MedicalAllowanceController extends Controller
         }
 
         $reimbursment->save();
+
+        //Email Notification
+        $employee = Employee::where('id', $reimbursment->employee_id)->first();
+        $email = $employee->email;
+        Mail::to($email)->send(new MedicalAllowanceApprovalNotification($reimbursment));
 
         return redirect()->route('medical-allowance.index')->with('success', __('Medical Allowance successfully updated.'));
     }
