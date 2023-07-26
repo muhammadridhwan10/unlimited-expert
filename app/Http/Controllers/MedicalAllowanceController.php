@@ -241,7 +241,7 @@ class MedicalAllowanceController extends Controller
                                'approval' => 'required',
                                'date' => 'required',
                                'amount' => 'required',
-                               'reimbursment_image' => 'mimes:png,jpeg,jpg|max:5120',
+                               'reimbursment_image' => 'mimes:png,jpeg,jpg|max:10240',
                            ]
         );
         if($validator->fails())
@@ -368,7 +368,7 @@ class MedicalAllowanceController extends Controller
                                'approval' => 'required',
                                'date' => 'required',
                                'amount' => 'required',
-                               'reimbursment_image' => 'mimes:png,jpeg,jpg|max:5120',
+                               'reimbursment_image' => 'mimes:png,jpeg,jpg|max:10240',
                            ]
         );
         if($validator->fails())
