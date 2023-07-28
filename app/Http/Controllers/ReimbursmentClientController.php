@@ -130,7 +130,7 @@ class ReimbursmentClientController extends Controller
             $employee     = Employee::where('user_id', '=', $users->id)->first();
             $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('approval', '=', $users->id)->where('status','=', 'Pending')->get();
         }
-        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff IT')
+        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff IT' || \Auth::user()->type == 'intern')
         {
 
 
