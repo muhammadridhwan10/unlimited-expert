@@ -74,86 +74,60 @@
         IntitalizeFireBaseMessaging();
     </script>
     <script>
-        
+        function typeWriter(text, i, callback) {
+            if (i < text.length) {
+                document.getElementById("timer").innerHTML += text.charAt(i);
+                i++;
+                setTimeout(function() {
+                    typeWriter(text, i, callback);
+                }, 50);
+            } else {
+                callback();
+            }
+        }
+
         @if(!empty($employeeAttendance) && $employeeAttendance->clock_out == '00:00:00')
-            var id = {{ \Auth::user()->id }};
-            var startTime = sessionStorage.getItem("startTime_" + id);
-            var currentTime = new Date().getTime();
-            var timeDifference = startTime ? startTime - currentTime : countdownHours * 60 * 60 * 1000;
-            var isPaused = sessionStorage.getItem("isPaused_" + id) === "true";
-            var pausedTime = sessionStorage.getItem("pausedTime_" + id) || 0;
-            var timerInterval;
-            var countdownHours = 8;
+            var clockInTime = "{{ $employeeAttendance->clock_in }}";
+            var welcomeMessage = "Welcome back {{ \Auth::user()->name }}, Have a nice day!!! 😊💪. You are present at " + clockInTime;
 
-            var countdownStartTime = currentTime + timeDifference;
+            typeWriter(welcomeMessage, 0, function() {
+            });
+       @else
+            @if (!empty($employeeAttendance) && is_object($employeeAttendance))
+                var currentDate = new Date();
+                var employeeAttendanceDate = new Date("{{ $employeeAttendance->date }}");
 
-            function updateTimer() {
-                var currentTime = new Date().getTime();
-                var timeDifference = countdownStartTime - currentTime;
+                if (currentDate.toDateString() === employeeAttendanceDate.toDateString()) {
+                    var clockOutTime = new Date("{{ date('Y-m-d', strtotime($employeeAttendance->clock_out)) }}T{{ date('H:i:s', strtotime($employeeAttendance->clock_out)) }}");
+                    var clockInTime = new Date("{{ date('Y-m-d', strtotime($employeeAttendance->clock_in)) }}T{{ date('H:i:s', strtotime($employeeAttendance->clock_in)) }}");
+                    var timeDifference = clockOutTime - clockInTime;
+                    var hours = Math.floor(timeDifference / (1000 * 60 * 60));
+                    console.log(clockOutTime);
+                    var minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+                    var seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
 
-                if (isPaused) {
-                    timeDifference -= pausedTime;
+                    var workedDurationMessage = "You have worked today for " + hours + " hours, " + minutes + " minutes, and " + seconds + " seconds.";
+                    typeWriter(workedDurationMessage, 0, function() {
+                    });
+                } else {
+                    var notAttendedMessage = "You have not attended today, please clock in";
+                    typeWriter(notAttendedMessage, 0, function() {
+                    });
                 }
-
-                if (timeDifference <= 0) {
-                    clearInterval(timerInterval);
-                    document.getElementById("timer").innerHTML = "Your Working Time is Over";
-                    sessionStorage.removeItem("startTime_" + id);
-                    sessionStorage.removeItem("isPaused_" + id);
-                    sessionStorage.removeItem("pausedTime_" + id);
-                    return;
-                }
-
-                var hours = Math.floor(timeDifference / (1000 * 60 * 60)).toString().padStart(2, '0');
-                var minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
-                var seconds = Math.floor((timeDifference % (1000 * 60)) / 1000).toString().padStart(2, '0');
-
-                document.getElementById("timer").innerHTML = hours + ":" + minutes + ":" + seconds;
-            }
-
-            function checkTime() {
-                var currentTime = new Date();
-
-                if (currentTime.getHours() >= 12 && currentTime.getHours() < 13 && !isPaused) {
-                    clearInterval(timerInterval);
-                    isPaused = true;
-                    pausedTime = countdownStartTime - currentTime.getTime();
-                    sessionStorage.setItem("isPaused_" + id, "true");
-                    sessionStorage.setItem("pausedTime_" + id, pausedTime);
-                    document.getElementById("timer").innerHTML = "Time to Rest";
-                } else if (currentTime.getHours() >= 13 && currentTime.getMinutes() === 0 && isPaused) {
-                    isPaused = false;
-                    sessionStorage.removeItem("isPaused_" + id);
-                    countdownStartTime = currentTime.getTime() + pausedTime;
-                    sessionStorage.setItem("startTime_" + id, countdownStartTime);
-                    timerInterval = setInterval(updateTimer, 1000);
-                }
-            }
-
-            if (!startTime) {
-                countdownStartTime = currentTime + (countdownHours * 60 * 60 * 1000);
-                sessionStorage.setItem("startTime_" + id, countdownStartTime);
-            }
-
-            timerInterval = setInterval(updateTimer, 1000);
-            checkTime();
-
-            setInterval(checkTime, 1000);
-        @else
-            document.getElementById("timer").innerHTML = "00:00:00";
-            sessionStorage.removeItem("startTime_" + id);
-            sessionStorage.removeItem("isPaused_" + id);
-            sessionStorage.removeItem("pausedTime_" + id);
+            @else
+                var notAttendedMessage = "You have not attended today, please clock in";
+                typeWriter(notAttendedMessage, 0, function() {
+                });
+            @endif
         @endif
-
     </script>
 @endpush
 @push('css-page')
     <style>
         #timer 
         {
-            font-family: "Courier New", monospace;
-            font-size: 48px;
+            font-family: "Comic Sans MS";
+            font-size: 30px;
             font-weight: bold;
             color: #333;
             background-color: #f5f5f5;
@@ -215,7 +189,7 @@
                                 </center>
                                 <br>
                                 <div class="container">
-                                    <div id="message">Your Working Time:</div>
+                                    <div id="message"></div>
                                     <br>
                                     <div id="timer"></div> 
                                 </div>
