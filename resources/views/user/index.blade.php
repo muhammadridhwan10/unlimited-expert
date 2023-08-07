@@ -42,6 +42,11 @@
 @endsection
 @section('action-btn')
     <div class="float-end">
+        @if (\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+            <a href="{{ route('user.userlog') }}" class="btn btn-primary btn-sm {{ Request::segment(1) == 'user' }}"
+                   data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('User Logs History') }}"><i class="ti ti-user-check"></i>
+            </a>
+        @endif
         <a href="#" data-size="lg" data-url="{{ route('users.create') }}" data-ajax-popup="true"  data-bs-toggle="tooltip" title="{{__('Create New User')}}"  class="btn btn-sm btn-primary">
             <i class="ti ti-plus"></i>
         </a>

@@ -38,7 +38,8 @@
         "spatie/laravel-permission": "^3.13",
         "stichoza/google-translate-php": "^4.1",
         "stripe/stripe-php": "^7.36",
-        "twilio/sdk": "^6.32"
+        "twilio/sdk": "^6.32",
+        "whichbrowser/parser": "^2.1"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

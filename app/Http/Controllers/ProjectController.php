@@ -16,6 +16,7 @@ use App\Models\CategoryTemplate;
 use App\Models\Milestone;
 use App\Models\ProjectTaskTemplate;
 use App\Models\PublicAccountant;
+use App\Models\AppraisalEmployee;
 use App\Models\ProductServiceCategory;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ProjectNotification;
@@ -1124,7 +1125,32 @@ class ProjectController extends Controller
         if($request->ajax())
         {
             $project    = Project::find($request->project_id);
-            $returnHTML = view('projects.users', compact('project'))->render();
+            $project_users = ProjectUser::where('project_id', $project->id)
+                ->with('employee')
+                ->get()
+                ->pluck('employee.id');
+
+            $reviewedUsers = AppraisalEmployee::where('project_id', $project->id)
+            ->whereIn('employee_id', $project_users)->pluck('employee_id')->toArray();
+            
+            $ratingUsers = AppraisalEmployee::where('project_id', $project->id)
+                ->whereIn('employee_id', $project_users)
+                ->pluck('rating', 'employee_id')
+                ->toArray();
+
+            $ratingUser = [];
+            foreach ($ratingUsers as $employee_id => $rating) {
+                $ratingUser[$employee_id] = json_decode($rating, true);
+            }
+
+            $overallRatings = [];
+            foreach ($ratingUser as $employee_id => $ratings) {
+                $starsum = !empty($ratings) ? array_sum($ratings) : 0;
+                $overallrating = count($ratings) !== 0 ? $starsum / count($ratings) : 0;
+                $overallRatings[$employee_id] = $overallrating;
+            }
+    
+            $returnHTML = view('projects.users', compact('project','reviewedUsers','overallRatings'))->render();
 
             return response()->json(
                 [

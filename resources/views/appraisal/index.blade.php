@@ -53,7 +53,7 @@
     </script>
 @endpush
 
-@section('action-btn')
+{{-- @section('action-btn')
     <div class="float-end">
     @can('create appraisal')
        <a href="#" data-size="lg" data-url="{{ route('appraisal.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create')}}" data-title="{{__('Create New Appraisal')}}" class="btn btn-sm btn-primary">
@@ -61,7 +61,7 @@
         </a>
         @endcan
     </div>
-@endsection
+@endsection --}}
 
 @section('content')
     <div class="row">
@@ -72,10 +72,8 @@
                     <table class="table datatable">
                             <thead>
                             <tr>
-                                <th>{{__('Branch')}}</th>
-                                <th>{{__('Department')}}</th>
-                                <th>{{__('Designation')}}</th>
                                 <th>{{__('Employee')}}</th>
+                                <th>{{__('Project')}}</th>
                                 <th>{{__('Overall Rating')}}</th>
                                 <th>{{__('Appraisal Date')}}</th>
                                 @if( Gate::check('edit appraisal') ||Gate::check('delete appraisal') ||Gate::check('show appraisal'))
@@ -96,10 +94,8 @@
                                     }
                                 @endphp
                                 <tr>
-                                    <td>{{ !empty($appraisal->branches)?$appraisal->branches->name:'' }}</td>
-                                    <td>{{ !empty($appraisal->employees)?!empty($appraisal->employees->department)?$appraisal->employees->department->name:'':'' }}</td>
-                                    <td>{{ !empty($appraisal->employees)?!empty($appraisal->employees->designation)?$appraisal->employees->designation->name:'':'' }}</td>
                                     <td>{{!empty($appraisal->employees)?$appraisal->employees->name:'' }}</td>
+                                    <td>{{!empty($appraisal->project)?$appraisal->project->project_name:'' }}</td>
                                     <td>
 
                                         @for($i=1; $i<=5; $i++)
@@ -115,7 +111,7 @@
                                         @endfor
                                         <span class="theme-text-color">({{number_format($overallrating,1)}})</span>
                                     </td>
-                                    <td>{{ $appraisal->appraisal_date}}</td>
+                                     <td>{{date("l, d-m-Y",strtotime($appraisal->date))}}</td>
                                     @if( Gate::check('edit appraisal') ||Gate::check('delete appraisal') ||Gate::check('show appraisal'))
                                         <td>
                                             @can('show appraisal')

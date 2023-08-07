@@ -88,7 +88,7 @@
 
         @if(!empty($employeeAttendance) && $employeeAttendance->clock_out == '00:00:00')
             var clockInTime = "{{ $employeeAttendance->clock_in }}";
-            var welcomeMessage = "Welcome back {{ \Auth::user()->name }}, Have a nice day!!! 😊💪. You are present at " + clockInTime;
+            var welcomeMessage = "Hai {{ \Auth::user()->name }}, Have a nice day!!! 😊💪. You are present at " + clockInTime;
 
             typeWriter(welcomeMessage, 0, function() {
             });
@@ -102,9 +102,10 @@
                     var clockInTime = new Date("{{ date('Y-m-d', strtotime($employeeAttendance->clock_in)) }}T{{ date('H:i:s', strtotime($employeeAttendance->clock_in)) }}");
                     var timeDifference = clockOutTime - clockInTime;
                     var hours = Math.floor(timeDifference / (1000 * 60 * 60));
-                    console.log(clockOutTime);
                     var minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
                     var seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+
+                    hours = hours - 1;
 
                     var workedDurationMessage = "You have worked today for " + hours + " hours, " + minutes + " minutes, and " + seconds + " seconds.";
                     typeWriter(workedDurationMessage, 0, function() {

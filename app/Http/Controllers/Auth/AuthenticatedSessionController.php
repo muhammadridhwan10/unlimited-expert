@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\Vender;
 use  App\Models\Utility;
 use Carbon\Carbon;
+use App\Models\LoginDetail;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Providers\RouteServiceProvider;
@@ -99,6 +100,43 @@ class AuthenticatedSessionController extends Controller
                 'last_login_at' => Carbon::now()->toDateTimeString(),
             ]
         );
+
+        if($user->type != 'staff_client' && $user->type != 'super admin')
+        {
+                    $ip = $_SERVER['REMOTE_ADDR'];
+                    $query = @unserialize(file_get_contents('http://ip-api.com/php/182.253.233.168'));
+
+                    $whichbrowser = new \WhichBrowser\Parser($_SERVER['HTTP_USER_AGENT']);
+                    if ($whichbrowser->device->type == 'bot') {
+                        return;
+                    }
+                    $referrer = isset($_SERVER['HTTP_REFERER']) ? parse_url($_SERVER['HTTP_REFERER']) : null;
+
+                    /* Detect extra details about the user */
+                    $query['browser_name'] = $whichbrowser->browser->name ?? null;
+                    $query['os_name'] = $whichbrowser->os->name ?? null;
+                    $query['browser_language'] = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? mb_substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : null;
+                    $query['device_type'] = get_device_type($_SERVER['HTTP_USER_AGENT']);
+                    $query['referrer_host'] = !empty($referrer['host']);
+                    $query['referrer_path'] = !empty($referrer['path']);
+
+                    
+
+
+                    isset($query['timezone'])?date_default_timezone_set($query['timezone']):'';
+
+
+                    $json = json_encode($query);
+
+                    $login_detail = new LoginDetail();
+                    $login_detail->user_id = Auth::user()->id;
+                    $login_detail->ip = $ip;
+                    $login_detail->date = date('Y-m-d H:i:s');
+                    $login_detail->Details = $json;
+                    $login_detail->created_by = \Auth::user()->creatorId();
+                    $login_detail->save();
+
+        }
 
 
 
@@ -502,5 +540,22 @@ class AuthenticatedSessionController extends Controller
 
         return redirect('/login')->with('message', 'Your password has been changed.');
 
+    }
+}
+
+if (!function_exists('get_device_type')) {
+    function get_device_type($user_agent)
+    {
+        $mobile_regex = '/(?:phone|windows\s+phone|ipod|blackberry|(?:android|bb\d+|meego|silk|googlebot) .+? mobile|palm|windows\s+ce|opera mini|avantgo|mobilesafari|docomo)/i';
+        $tablet_regex = '/(?:ipad|playbook|(?:android|bb\d+|meego|silk)(?! .+? mobile))/i';
+        if (preg_match_all($mobile_regex, $user_agent)) {
+            return 'mobile';
+        } else {
+            if (preg_match_all($tablet_regex, $user_agent)) {
+                return 'tablet';
+            } else {
+                return 'desktop';
+            }
+        }
     }
 }

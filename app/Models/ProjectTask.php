@@ -167,6 +167,77 @@ class ProjectTask extends Model
         'uncorrected' => 'Uncorrected',
     ];
 
+    public static $profilPenggunaJasa = [
+        '0' => 'Please select a profile',
+        'a' => 'Pengusaha',
+        'b' => 'Korporasi Non UMKM',
+        'c' => 'Pedagang Valuta Asing',
+        'd' => 'Pegawai Bank dan Lembaga Keuangan Lain',
+        'e' => 'Yayasan',
+        'f' => 'Pegawai BUMN / BUMD',
+        'g' => 'Anggota TNI / Polri',
+        'h' => 'Pengurus Lembaga Swadaya Masyarakat',
+        'i' => 'Perkumpulan',
+        'j' => 'Korporasi UMKM',
+        'k' => 'Instansi Pemerintah',
+        'l' => 'Pegawai Swasta',
+        'm' => 'Profesional',
+        'n' => 'Pedagang',
+        'o' => 'Ibu Rumah Tangga',
+        'p' => 'Pengrajin',
+        'q' => 'Petani / Nelayan',
+    ];
+
+    public static $profilBisnisPenggunaJasa = [
+        '0' => 'Please select a profile businness',
+        'a' => 'Perbankan',
+        'b' => 'Properti',
+        'c' => 'Asuransi',
+        'd' => 'Valuta Asing',
+        'e' => 'Pertambangan dan Energi',
+        'f' => 'Dana Pensiun',
+        'g' => 'Jasa Pembiayaan',
+        'h' => 'Kehutanan',
+        'i' => 'Manufaktur',
+        'j' => 'Perdagangan',
+        'k' => 'Konstruksi',
+        'l' => 'Transportasi dan Telekomunikasi',
+        'm' => 'Hotel dan Pariwisata',
+        'n' => 'Pertanian, Peternakan & Perikanan',
+    ];
+
+    public static $Domisili = [
+        '0' => 'Please select a domisili',
+        'a' => 'DKI Jakarta (Domestik)',
+        'b' => 'Sumatera Utara (Domestik)',
+        'c' => 'Jawa Timur (Domestik)',
+        'd' => 'Jawa Barat (Domestik)',
+        'e' => 'Papua (Domestik)',
+        'f' => 'Riau (Domestik)',
+        'g' => 'Bali (Domestik)',
+        'h' => 'Daerah lainnya (Domestik)',
+        'i' => 'Tax Haven Country (Luar Negeri)',
+        'j' => 'RRT (Tiongkok) (Luar Negeri)',
+        'k' => 'Singapura (Luar Negeri)',
+        'l' => 'Negara Lainnya (Luar Negeri)',
+    ];
+
+    public static $expose_person = [
+        '0' => 'Please select a expose person',
+        'a' => 'Ya - Pejabat Negara',
+        'b' => 'Ya - Pimpinan Instansi Pemerintah setingkat atau setara eselon I',
+        'c' => 'Ya - Pejabat yang memiliki fungsi strategis (Direksi,Komisaris,Pejabat BUMN atau BUMD,Pimpinan perguruan tinggi negeri, Pejabat eselon 1, Jaksa, Penyidik, Panitera Pengadilan, Pimpinan dan bendaharawan proyek, Pejabat yang membidangi sektor minyak dan gas, Pejabat yang membidangi sektor mineral dan batu bara,Pimpinan komisi yang dibentuk berdasarkan peraturan perundang-undangan.)',
+        'd' => 'Ya - Pejabat yang berdasarkan ketentuan diwajibkan menyampaikan Laporan Harta Kekayaan Penyelenggara Negara (Pejabat Eselon II, Semua kepala kantor di lingkungan Kementerian Keuangan, Pemeriksa bea dan cukai, Pemeriksa pajak, Auditor, Pejabat yang mengeluarkan perizinan, Pejabat atau kepala unit pelayanan masyarakat, Pejabat pembuat regulasi, Pejabat yang menduduki jabatan yang ditetapkan oleh pimpinan instansi sebagai jabatan rawan korupsi)',
+        'e' => 'Ya - Pengurus partai politik atau anggota partai politik',
+        'f' => 'Tidak',
+    ];
+
+    public static $fatf = [
+        '0' => 'Yes or No',
+        'yes' => 'Yes',
+        'no' => 'No',
+    ];
+
     public function milestone()
     {
         return $this->hasOne('App\Models\Milestone','id', 'milestone_id');

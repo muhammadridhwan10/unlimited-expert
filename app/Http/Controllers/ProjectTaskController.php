@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\Pmpj;
 use App\Models\Utility;
 use App\Models\TaskFile;
 use App\Models\Timesheet;
@@ -2083,7 +2084,7 @@ class ProjectTaskController extends Controller
                     'prior_period_total' => isset($summary['BEBAN PAJAK PENGHASILAN']['prior_period_total']) ? $summary['BEBAN PAJAK PENGHASILAN']['prior_period_total'] + $laba_sebelum_pajak['prior_period_total'] : 0,
                     'inhouse_total' => isset($summary['BEBAN PAJAK PENGHASILAN']['inhouse_total']) ? $summary['BEBAN PAJAK PENGHASILAN']['inhouse_total'] + $laba_sebelum_pajak['inhouse_total'] : 0,
                     'audited_total' => isset($summary['BEBAN PAJAK PENGHASILAN']['audited_total']) ? $summary['BEBAN PAJAK PENGHASILAN']['audited_total'] + $laba_sebelum_pajak['audited_total'] : 0,
-                ];                
+                ];
 
                 // Menambahkan perhitungan "LABA RUGI KOMPREHENSIF SETELAH PAJAK
                 $laba_rugi_komprehensif_setelah_pajak = [
@@ -2521,8 +2522,9 @@ class ProjectTaskController extends Controller
         if(\Auth::user()->can('create project task'))
         {
             $materialitas   = Materialitas::all()->pluck('code', 'code');
+            $project = Project::find($project_id);
 
-            return view('project_task.createFinancialStatement', compact('project_id','task_id', 'materialitas'));
+            return view('project_task.createFinancialStatement', compact('project_id','task_id', 'materialitas','project'));
         }
         else
         {
@@ -2707,6 +2709,8 @@ class ProjectTaskController extends Controller
             $items = [];
             $dr = 0;
             $cr = 0;
+            $previous_dr = 0;
+            $previous_cr = 0;
 
             for ($i = 0; $i < count($journaldata); $i++) {
                 $summary_journaldata->project_id = $project_id;
@@ -2742,55 +2746,31 @@ class ProjectTaskController extends Controller
                         ->first();
 
                     if ($financial_data) {
-                        $data_relasi = FinancialStatement::where('project_id', $project_id)
-                            ->whereIn('m', ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9'])
-                            ->with('summaryJournalData')
-                            ->first();
-                    
-                        $summary_journal_data = $data_relasi->summaryJournalData;
-                    
-                        if ($summary_journal_data) {
-                            // Mendapatkan total nilai DR dan CR dari summaryjournaldata berdasarkan kondisi
-                            $previous_dr = $summary_journal_data->where('dr', '>', 0)
-                                ->whereIn('coa', function ($query) {
-                                    $query->select('coa')
-                                        ->from('financial_statement')
-                                        ->whereIn('m', ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9']);
-                                })
-                                ->sum('dr');
-                    
-                            $previous_cr = $summary_journal_data->where('cr', '>', 0)
-                                ->whereIn('coa', function ($query) {
-                                    $query->select('coa')
-                                        ->from('financial_statement')
-                                        ->whereIn('m', ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9']);
-                                })
-                                ->sum('cr');
-                    
-                            // Tambahkan nilai DR dan CR baru jika nilainya bukan 0
-                            if ($item->dr != 0) {
-                                $previous_dr += $item->dr;
-                            }
-                    
-                            if ($item->cr != 0) {
-                                $previous_cr += $item->cr;
-                            }
-                    
-                            // Hitung nilai audited berdasarkan DR dan CR yang baru
-                            $financial_data->audited = $financial_data->inhouse + $previous_dr - $previous_cr;
-                            $financial_data->save();
+
+                        $coaCodes = ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9'];
+
+                        $summary_journal_data = FinancialStatement::where('project_id', $project_id)
+                        ->whereIn('m', $coaCodes)
+                        ->get();
+
+                        // Menghitung total 'dr' dan 'cr' dari SummaryJournalData yang memiliki COA sesuai dengan $coaCodes
+                        $previous_dr = $summary_journal_data->sum('dr');
+                        $previous_cr = $summary_journal_data->sum('cr');
+
+                        // Tambahkan nilai DR dan CR baru jika nilainya bukan 0
+                        if ($item->dr != 0) {
+                            $previous_dr += $item->dr;
                         }
-                        else
-                        {
-                             // Data ditemukan, lakukan penambahan atau pengurangan nilai dr dan cr
-                            $dr += $item->dr;
-                            $cr += $item->cr;
-                            // $financial_data->dr += $item->dr;
-                            // $financial_data->cr += $item->cr;
-                            $financial_data->audited = $financial_data->inhouse + $dr - $cr;
-                            $financial_data->save();
+
+                        if ($item->cr != 0) {
+                            $previous_cr += $item->cr;
                         }
+
+                        // Hitung nilai audited berdasarkan DR dan CR yang baru
+                        $financial_data->audited = $financial_data->inhouse + $previous_dr - $previous_cr;
+                        $financial_data->save();
                     }
+
                 }
 
                 // Cek apakah akun termasuk dalam M.4, M.5, M.6, M.7, M.8, M.9 (OCI)
@@ -2802,12 +2782,28 @@ class ProjectTaskController extends Controller
                         ->first();
 
                     if ($financial_data) {
-                        // Data ditemukan, lakukan penambahan atau pengurangan nilai dr dan cr
-                        $dr += $item->dr;
-                        $cr += $item->cr;
-                        // $financial_data->dr += $item->dr;
-                        // $financial_data->cr += $item->cr;
-                        $financial_data->audited = $financial_data->inhouse + $dr - $cr;
+
+                        $coaCodes = ['M.10'];
+
+                        $summary_journal_data = FinancialStatement::where('project_id', $project_id)
+                        ->whereIn('m', $coaCodes)
+                        ->get();
+
+                        // Menghitung total 'dr' dan 'cr' dari SummaryJournalData yang memiliki COA sesuai dengan $coaCodes
+                        $previous_dr = $summary_journal_data->sum('dr');
+                        $previous_cr = $summary_journal_data->sum('cr');
+
+                        // Tambahkan nilai DR dan CR baru jika nilainya bukan 0
+                        if ($item->dr != 0) {
+                            $previous_dr += $item->dr;
+                        }
+
+                        if ($item->cr != 0) {
+                            $previous_cr += $item->cr;
+                        }
+
+                        // Hitung nilai audited berdasarkan DR dan CR yang baru
+                        $financial_data->audited = $financial_data->inhouse + $previous_dr - $previous_cr;
                         $financial_data->save();
                     }
                 }   
@@ -2950,9 +2946,18 @@ class ProjectTaskController extends Controller
                                     ->whereIn('m', ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9'])
                                     ->sum('cr');
 
-                                    $cr_value = $cr_account ?? 0;
+                                    $dr_account = FinancialStatement::where('project_id', $project_id)
+                                    ->whereIn('m', ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9'])
+                                    ->sum('dr');
 
-                                    $lk_audited = $lk_inhouse + $financial_data->dr - $cr_value;
+                                    $cr_value = $cr_account ?? 0;
+                                    $dr_value = $dr_account ?? 0;
+
+                                    $previous_dr_data = SummaryJournalData::find($id); 
+                                    $previous_dr = $dr_value + $financial_data->dr - $previous_dr_data->dr;
+
+                                    $lk_audited = $lk_inhouse + $previous_dr - $cr_value;
+                                    // dd($lk_inhouse, $dr_value, $financial_data->dr, $previous_dr, $cr_value);
                                     $lk_account->audited = $lk_audited;
                                     $lk_account->save();
                                 }
@@ -2964,9 +2969,17 @@ class ProjectTaskController extends Controller
                                     ->whereIn('m', ['M.10'])
                                     ->sum('cr');
 
-                                    $cr_value_35 = $cr_account_35 ?? 0;
+                                    $dr_account_35 = FinancialStatement::where('project_id', $project_id)
+                                    ->whereIn('m', ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9'])
+                                    ->sum('dr');
 
-                                    $lk_audited_35 = $lk_inhouse_35 + $financial_data->dr - $cr_value_35;
+                                    $cr_value_35 = $cr_account_35 ?? 0;
+                                    $dr_value_35 = $dr_account_35 ?? 0;
+
+                                    $previous_dr_data_35 = SummaryJournalData::find($id); 
+                                    $previous_dr_35 = $dr_value_35 + $financial_data->dr - $previous_dr_data_35->dr;
+
+                                    $lk_audited_35 = $lk_inhouse_35 + $previous_dr_35 - $cr_value_35;
                                     $lk_account_35->audited = $lk_audited_35;
                                     $lk_account_35->save();
                                 } 
@@ -3002,9 +3015,18 @@ class ProjectTaskController extends Controller
                                     ->whereIn('m', ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9'])
                                     ->sum('dr');
 
+                                    // Mendapatkan nilai cr dari akun yang memenuhi kriteria m = M.4, M.5, M.6, M.7, M.8, M.9
+                                    $cr_account = FinancialStatement::where('project_id', $project_id)
+                                    ->whereIn('m', ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9'])
+                                    ->sum('cr');
+
+                                    $cr_value = $cr_account ?? 0;
                                     $dr_value = $dr_account ?? 0;
 
-                                    $lk_audited = $lk_inhouse + $dr_value - $financial_data->cr;
+                                    $previous_cr_data = SummaryJournalData::find($id); 
+                                    $previous_cr = $cr_value + $financial_data->cr - $previous_cr_data->cr;
+
+                                    $lk_audited = $lk_inhouse + $dr_value - $previous_cr;
                                     $lk_account->audited = $lk_audited;
                                     $lk_account->save();
                                 }
@@ -3016,9 +3038,18 @@ class ProjectTaskController extends Controller
                                     ->whereIn('m', ['M.10'])
                                     ->sum('dr');
 
-                                    $dr_value_35 = $dr_account_35 ?? 0;
+                                    // Mendapatkan nilai cr dari akun yang memenuhi kriteria m = M.4, M.5, M.6, M.7, M.8, M.9
+                                    $cr_account_35 = FinancialStatement::where('project_id', $project_id)
+                                    ->whereIn('m', ['M.4', 'M.5', 'M.6', 'M.7', 'M.8', 'M.9'])
+                                    ->sum('cr');
 
-                                    $lk_audited_35 = $lk_inhouse_35 + $dr_value_35 - $financial_data->cr;
+                                    $cr_value_35 = $cr_account_35 ?? 0;
+                                    $dr_value_35 = $dr_account_35 ?? 0;
+                                    
+                                    $previous_cr_data_35 = SummaryJournalData::find($id); 
+                                    $previous_cr_35 = $cr_value + $financial_data->cr - $previous_cr_data_35->cr;
+
+                                    $lk_audited_35 = $lk_inhouse_35 + $dr_value_35 - $previous_cr_35;
                                     $lk_account_35->audited = $lk_audited_35;
                                     $lk_account_35->save();
                                 } 
@@ -5333,6 +5364,89 @@ class ProjectTaskController extends Controller
         else
         {
             return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function getpmpj(Request $request, $project_id, $task_id)
+    {
+        if(\Auth::user()->can('manage project task'))
+        {  
+            $id                                 = Crypt::decrypt($task_id);
+            $project                            = Project::find($project_id);
+            $task                               = ProjectTask::find($id);
+            $task                               = ProjectTask::find($id);
+            $value_pmpj                         = Pmpj::where('project_id', $project_id)->orderBy('id', 'DESC')->first();
+            return view('project_task.pmpj', compact(
+                'task','project','value_pmpj',
+            ));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function storePmpj(Request $request, $project_id, $task_id)
+    {
+
+        if(\Auth::user()->can('create project task'))
+        {
+
+            $pmpj                       = new Pmpj();
+            $pmpj->project_id       = $project_id;
+            $pmpj->task_id          = $task_id;
+            $pmpj->ruang_lingkup_jasa         = $request->ruang_lingkup_jasa;
+            $pmpj->profil_pengguna_jasa         = $request->profil_pengguna_jasa;
+            $pmpj->risiko_ppj         = $request->risiko_ppj;
+            $pmpj->profil_bisnis_pengguna_jasa         = $request->profil_bisnis_pengguna_jasa;
+            $pmpj->risiko_pbpj         = $request->risiko_pbpj;
+            $pmpj->domisili_pengguna_jasa         = $request->domisili_pengguna_jasa;
+            $pmpj->risiko_domisili         = $request->risiko_domisili;
+            $pmpj->politically_exposed_person         = $request->politically_exposed_person;
+            $pmpj->risiko_exposeperson         = $request->risiko_exposeperson;
+            $pmpj->transaksi_negara_risiko_tinggi         = $request->transaksi_negara_risiko_tinggi;
+            $pmpj->risiko_exposeperson         = $request->risiko_exposeperson;
+            $pmpj->risiko_fatf         = $request->risiko_fatf;
+            $pmpj->prosedur_pmpj         = $request->prosedur_pmpj;
+            $pmpj->link_surat_pernyataan         = $request->link_surat_pernyataan;
+            $pmpj->kesimpulan         = $request->input('kesimpulan');
+            $pmpj->pmpj_sederhana = $request->input('pmpj_sederhana');
+            $pmpj->jenis_pengguna_jasa         = $request->jenis_pengguna_jasa;
+            $pmpj->pengguna_jasa_bertindak_untuk         = $request->pengguna_jasa_bertindak_untuk;
+            $pmpj->namapenggunajasa         = $request->namapenggunajasa;
+            $pmpj->nib         = $request->nib;
+            $pmpj->alamatpengguna         = $request->alamatpengguna;
+            $pmpj->no_telp         = $request->no_telp;
+            $pmpj->namapihak         = $request->namapihak;
+            $pmpj->jabatanpihak         = $request->jabatanpihak;
+            $pmpj->noidentitaspihak         = $request->noidentitaspihak;
+            $pmpj->namabo         = $request->namabo;
+            $pmpj->nibbo         = $request->nibbo;
+            $pmpj->alamatbo         = $request->alamatbo;
+            $pmpj->no_telpbo         = $request->no_telpbo;
+            $pmpj->namapihakbo         = $request->namapihakbo;
+            $pmpj->jabatanpihakbo         = $request->jabatanpihakbo;
+            $pmpj->noidentitaspihakbo         = $request->noidentitaspihakbo;
+            $pmpj->link_arsip         = $request->link_arsip;
+            $pmpj->verifikasi         = $request->verifikasi;
+            $pmpj->ptransaksi         = $request->ptransaksi;
+            $pmpj->dokumentasi         = $request->dokumentasi;
+            $pmpj->save();
+    
+            return redirect()->back()->with('success', 'Data has been saved successfully!.');
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function fetchConclusion($project_id, $task_id)
+    {
+        $pmpj = Pmpj::where('project_id', $project_id)->orderBy('id', 'DESC')->first();
+
+        if ($pmpj && $pmpj->kesimpulan) {
+            return response()->json(['kesimpulan' => $pmpj->kesimpulan]);
         }
     }
 }

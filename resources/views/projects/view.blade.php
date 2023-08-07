@@ -2,6 +2,25 @@
 @section('page-title')
     {{ucwords($project->project_name)}}
 @endsection
+@push('css-page')
+    <style>
+        @import url({{ asset('css/font-awesome.css') }});
+    </style>
+@endpush
+@push('script-page')
+    <script src="{{ asset('js/bootstrap-toggle.js') }}"></script>
+    <script>
+        $('document').ready(function () {
+            $('.toggleswitch').bootstrapToggle();
+            $("fieldset[id^='demo'] .stars").click(function () {
+                alert($(this).val());
+                $(this).attr("checked");
+            });
+        });
+
+
+    </script>
+@endpush
 @push('script-page')
     <script>
         (function () {

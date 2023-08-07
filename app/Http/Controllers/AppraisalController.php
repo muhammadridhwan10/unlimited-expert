@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Appraisal;
+use App\Models\AppraisalEmployee;
+use App\Models\Project;
+use App\Models\User;
 use App\Models\Branch;
-use App\Models\Competencies;
 use App\Models\Employee;
 use App\Models\PerformanceType;
 use Illuminate\Http\Request;
@@ -17,18 +18,14 @@ class AppraisalController extends Controller
         if(\Auth::user()->can('manage appraisal'))
         {
             $user = \Auth::user();
-            if($user->type == 'employee')
+            if($user->type == 'admin' || $user->type == 'company')
             {
-                $employee   = Employee::where('user_id', $user->id)->first();
-                $appraisals = Appraisal::where('created_by', '=', \Auth::user()->creatorId())->where('branch', $employee->branch_id)->where('employee', $employee->id)->get();
-            }
-            elseif($user->type == 'admin' || $user->type == 'company')
-            {
-                $appraisals = Appraisal::all();
+                $appraisals = AppraisalEmployee::all();
             }
             else
             {
-                $appraisals = Appraisal::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $employee   = Employee::where('user_id', $user->id)->first();
+                $appraisals = AppraisalEmployee::where('created_by', '=', \Auth::user()->creatorId())->get();
             }
 
             return view('appraisal.index', compact('appraisals'));
@@ -40,7 +37,7 @@ class AppraisalController extends Controller
     }
 
 
-    public function create()
+    public function create($uid, $pid)
     {
         if(\Auth::user()->can('create appraisal'))
         {
@@ -51,17 +48,17 @@ class AppraisalController extends Controller
             $user = \Auth::user();
             if($user->type == 'admin')
             {
+                $project                       = Project::find($pid);
+                $user                          = User::find($uid);
                 $performance    = PerformanceType::get();
-                $brances = Branch::get()->pluck('name', 'id');
-                $brances->prepend('Select Branch', '');
             }
             else
             {
+                $project                       = Project::find($pid);
+                $user                          = User::find($uid);
                 $performance     = PerformanceType::where('created_by', '=', \Auth::user()->creatorId())->get();
-                $brances = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                $brances->prepend('Select Branch', '');
             }
-            return view('appraisal.create', compact('brances', 'performance'));
+            return view('appraisal.create', compact('user','project','performance'));
         }
         else
         {
@@ -70,15 +67,14 @@ class AppraisalController extends Controller
     }
 
 
-    public function store(Request $request)
+    public function store(Request $request, $uid, $pid)
     {
 
         if(\Auth::user()->can('create appraisal'))
         {
             $validator = \Validator::make(
                 $request->all(), [
-                                   'branch' => 'required',
-                                   'employee' => 'required',
+                                   'date' => 'required',
                                ]
             );
             if($validator->fails())
@@ -88,20 +84,22 @@ class AppraisalController extends Controller
                 return redirect()->back()->with('error', $messages->first());
             }
 
-            $appraisal                 = new Appraisal();
-            $appraisal->branch         = $request->branch;
-            $appraisal->employee       = $request->employee;
-            $appraisal->appraisal_date = $request->appraisal_date;
-            $appraisal->rating         = json_encode($request->rating, true);
-            $appraisal->remark         = $request->remark;
-            $appraisal->created_by     = \Auth::user()->creatorId();
+            $employee = Employee::where('user_id', $uid)->first();
+
+            $appraisal                    = new AppraisalEmployee();
+            $appraisal->employee_id       = $employee->id;
+            $appraisal->project_id        = $pid;
+            $appraisal->date              = $request->date;
+            $appraisal->rating            = json_encode($request->rating, true);
+            $appraisal->remark            = $request->remark;
+            $appraisal->created_by        = \Auth::user()->id;
             $appraisal->save();
 
-            return redirect()->route('appraisal.index')->with('success', __('Appraisal successfully created.'));
+            return redirect()->route('projects.show', [$pid])->with('success', __('Appraisal successfully created.'));
         }
     }
 
-    public function show(Appraisal $appraisal)
+    public function show(AppraisalEmployee $appraisal)
     {
         $ratings = json_decode($appraisal->rating, true);
         if(\Auth::user()->type = 'admin')
@@ -125,7 +123,7 @@ class AppraisalController extends Controller
 
 
 
-    public function edit(Appraisal $appraisal)
+    public function edit(AppraisalEmployee $appraisal)
     {
         if(\Auth::user()->can('edit appraisal'))
         {
@@ -169,14 +167,13 @@ class AppraisalController extends Controller
     }
 
 
-    public function update(Request $request, Appraisal $appraisal)
+    public function update(Request $request, AppraisalEmployee $appraisal)
     {
         if(\Auth::user()->can('edit appraisal'))
         {
             $validator = \Validator::make(
                 $request->all(), [
-                                   'branch' => 'required',
-                                   'employee' => 'required',
+                                   'date' => 'required',
                                ]
             );
             if($validator->fails())
@@ -186,9 +183,7 @@ class AppraisalController extends Controller
                 return redirect()->back()->with('error', $messages->first());
             }
 
-            $appraisal->branch         = $request->branch;
-            $appraisal->employee       = $request->employee;
-            $appraisal->appraisal_date = $request->appraisal_date;
+            $appraisal->date = $request->date;
             $appraisal->rating         = json_encode($request->rating, true);
             $appraisal->remark         = $request->remark;
             $appraisal->save();
@@ -196,7 +191,7 @@ class AppraisalController extends Controller
             return redirect()->route('appraisal.index')->with('success', __('Appraisal successfully updated.'));
         }
     }
-    public function destroy(Appraisal $appraisal)
+    public function destroy(AppraisalEmployee $appraisal)
     {
         if(\Auth::user()->can('delete appraisal'))
         {

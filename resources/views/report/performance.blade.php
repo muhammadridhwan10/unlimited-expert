@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 @section('page-title')
-    {{__('Manage Report Overtime')}}
+    {{__('Manage Report Performance')}}
 @endsection
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('Report Overtime')}}</li>
+    <li class="breadcrumb-item">{{__('Report Performance')}}</li>
 @endsection
 @push('script-page')
     <script type="text/javascript" src="{{ asset('js/html2pdf.bundle.min.js') }}"></script>
@@ -123,7 +123,7 @@
             <div class=" mt-2 " id="multiCollapseExample1">
                 <div class="card">
                     <div class="card-body">
-                        {{ Form::open(array('route' => array('report.overtime'),'method'=>'get','id'=>'report_overtime')) }}
+                        {{ Form::open(array('route' => array('report.performance'),'method'=>'get','id'=>'report_overtime')) }}
                         <div class="row align-items-center justify-content-end">
                             <div class="col-auto">
                                 <div class="row">
@@ -170,7 +170,7 @@
                                         <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_overtime').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
                                             <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
                                         </a>
-                                        <a href="{{route('report.overtime')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
+                                        <a href="{{route('report.performance')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
                                             <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
                                         </a>
                                     </div>
@@ -228,34 +228,26 @@
                                 <thead>
                                 <tr>
                                     <th class="active">{{__('Name Employee')}}</th>
-                                    <th class="active">{{__('Total Working Days')}}</th>
-                                    <th class="active">{{__('Total Overtime Days')}}</th>
-                                    <th class="active">{{__('Total Hours Overtime')}}</th>
-                                    <th class="active">{{__('Detail Overtime')}}</th>
+                                    <th class="active">{{__('Rating')}}</th>
+                                    <th class="active">{{__('Total Project')}}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
 
-                                    @foreach($employeesAttendance as $attendance)
-                                    <?php
-                                        $totalOvertime = $attendance['total_overtime'];
-                                        // Mengubah format "08:120:00" menjadi jumlah detik
-                                        list($hours, $minutes, $seconds) = explode(':', $totalOvertime);
-                                        $totalSeconds = ($hours * 3600) + ($minutes * 60) + $seconds;
-
-                                        // Memformat kembali ke dalam "10:00:00"
-                                        $formattedTime = sprintf('%02d:%02d:%02d', floor($totalSeconds / 3600), floor(($totalSeconds % 3600) / 60), ($totalSeconds % 60));
-                                    ?>
-
+                                    @foreach($employeesRating as $appraisal)
                                         <tr>
-                                            <td>{{$attendance['name']}}</td>
-                                            <td>{{$attendance['present']}}</td>
-                                            <td>{{$attendance['overtime']}}</td>
-                                            <td>{{$formattedTime}}</td>
+                                            <td>{{$appraisal['name']}}</td>
                                             <td>
-                                            <div class="m-view-btn badge bg-info p-2 px-3 rounded">{{$attendance['overtime']}}
-                                                <a href="#" class="text-white" data-url="{{ route('report.employee.overtime',[$attendance['id'],isset($_GET['month']) ? $_GET['month']:date('Y-m')]) }}" data-ajax-popup="true" data-title="{{__('Overtime List Detail')}}" data-size="lg" data-bs-toggle="tooltip" title="{{__('View')}}" data-original-title="{{__('View')}}">{{__('View')}}</a>
-                                            </div>
+                                                @if ($appraisal['total_rating'] >= 5.0)
+                                                    <i class="text-warning fas fa-star"></i>
+                                                @elseif ($appraisal['total_rating'] >= 1.0)
+                                                    <i class="text-warning fas fa-star-half-alt"></i>
+                                                @else
+                                                    <i class="far fa-star"></i>
+                                                @endif
+                                                <span class="theme-text-color">({{ number_format($appraisal['total_rating'], 1) }})</span>
+                                            </td>
+                                            <td>{{$appraisal['num_of_projects']}}</td>
                                         </td>
                                         </tr>
                                     @endforeach

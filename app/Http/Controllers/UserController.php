@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\ProjectUser;
 use App\Models\ProjectTask;
 use App\Models\UserCompany;
+use App\Models\LoginDetail;
 use Auth;
 use File;
 use App\Models\Utility;
@@ -539,15 +540,55 @@ class UserController extends Controller
         $userId = $request->input('user_id');
         $isActive = $request->input('is_active');
 
-        // Lakukan validasi data dan perbarui status pengguna di database
-        // ...
-        // Contoh: menggunakan model User
         $user = User::find($userId);
         $user->is_active = $isActive;
         $user->save();
 
         return response()->json(['message' => 'User successfully updated.']);
 
+    }
+
+    //start for user login details
+    public function userLog(Request $request)
+    {
+        $filteruser = User::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+        $filteruser->prepend('Select User', '');
+
+        $query = DB::table('login_details')
+            ->join('users', 'login_details.user_id', '=', 'users.id')
+            ->select(DB::raw('login_details.*, users.id as user_id , users.name as user_name , users.email as user_email ,users.type as user_type'))
+            ;
+
+        if(!empty($request->month))
+        {
+            $query->whereMonth('date', date('m',strtotime($request->month)));
+            $query->whereYear('date', date('Y',strtotime($request->month)));
+        }else{
+            $query->whereMonth('date', date('m'));
+            $query->whereYear('date', date('Y'));
+        }
+
+        if(!empty($request->users))
+        {
+            $query->where('user_id', '=', $request->users);
+        }
+        $userdetails = $query->get();
+        $last_login_details = LoginDetail::where('created_by', \Auth::user()->creatorId())->get();
+
+        return view('user.userlog', compact( 'userdetails','last_login_details','filteruser'));
+    }
+
+    public function userLogView($id)
+    {
+        $users = LoginDetail::find($id);
+
+        return view('user.userlogview', compact('users'));
+    }
+
+    public function userLogDestroy($id)
+    {
+        $users = LoginDetail::where('user_id', $id)->delete();
+        return redirect()->back()->with('success', 'User successfully deleted.');
     }
 
 }

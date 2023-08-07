@@ -281,11 +281,11 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                     <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'indicator' || Request::segment(1) == 'appraisal' || Request::segment(1) == 'goaltracking') ? 'active dash-trigger' : ''}}" href="#navbar-performance" data-toggle="collapse" role="button" aria-expanded="{{ (Request::segment(1) == 'indicator' || Request::segment(1) == 'appraisal' || Request::segment(1) == 'goaltracking') ? 'true' : 'false'}}">
                                         <a class="dash-link" href="#">{{__('Performance')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                         <ul class="dash-submenu {{ (Request::segment(1) == 'indicator' || Request::segment(1) == 'appraisal' || Request::segment(1) == 'goaltracking') ? 'show' : 'collapse'}}">
-                                            @can('manage indicator')
+                                            {{-- @can('manage indicator')
                                             <li class="dash-item {{ (request()->is('indicator*') ? 'active' : '')}}">
                                                 <a class="dash-link" href="{{route('indicator.index')}}">{{__('Indicator')}}</a>
                                             </li>
-                                            @endcan
+                                            @endcan --}}
                                             @can('manage appraisal')
                                             <li class="dash-item {{ (request()->is('appraisal*') ? 'active' : '')}}">
                                                 <a class="dash-link" href="{{route('appraisal.index')}}">{{__('Appraisal')}}</a>
@@ -531,8 +531,11 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                                     </li>
                                                 </ul>
                                             </li>
-                                             <li class="dash-item {{ request()->is('reports-reimbursment') ? 'active' : '' }}">
+                                            <li class="dash-item {{ request()->is('reports-reimbursment') ? 'active' : '' }}">
                                                 <a class="dash-link" href="{{ route('report.reimbursment') }}">{{__('Report Reimbursment')}}</a>
+                                            </li>
+                                            <li class="dash-item {{ request()->is('reports-performance') ? 'active' : '' }}">
+                                                <a class="dash-link" href="{{ route('report.performance') }}">{{__('Report Perfomance')}}</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -988,10 +991,10 @@ $emailTemplate = \App\Models\EmailTemplate::first();
 
                         @if(\Auth::user()->type!='super admin' && ( Gate::check('manage user') || Gate::check('manage role') || Gate::check('manage client')))
                             <li class="dash-item dash-hasmenu">
-                                <a href="#!" class="dash-link {{ (Request::segment(1) == 'users' || Request::segment(1) == 'roles' || Request::segment(1) == 'clients')?' active dash-trigger':''}}"><span class="dash-micon"><i class="ti ti-users"></i></span><span class="dash-mtext">{{__('User Management')}}</span><span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
+                                <a href="#!" class="dash-link {{ (Request::segment(1) == 'users' || Request::segment(1) == 'roles' || Request::segment(1) == 'clients' || Request::segment(1) == 'userlogs')?' active dash-trigger':''}}"><span class="dash-micon"><i class="ti ti-users"></i></span><span class="dash-mtext">{{__('User Management')}}</span><span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                 <ul class="dash-submenu">
                                     @can('manage user')
-                                    <li class="dash-item {{ (Request::route()->getName() == 'users.index' || Request::route()->getName() == 'users.create' || Request::route()->getName() == 'users.edit') ? ' active' : '' }}">
+                                    <li class="dash-item {{ (Request::route()->getName() == 'users.index' || Request::route()->getName() == 'users.create' || Request::route()->getName() == 'users.edit' || Request::route()->getName() == 'user.userlog') ? ' active' : '' }}">
                                         <a class="dash-link" href="{{ route('users.index') }}">{{__('User')}}</a>
                                     </li>
                                     @endcan
@@ -1005,6 +1008,11 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                         <a class="dash-link" href="{{ route('clients.index') }}">{{__('Client')}}</a>
                                     </li>
                                     @endcan
+{{--                                @can('manage user')
+{{--                                        <li class="dash-item {{ (Request::route()->getName() == 'users.index' || Request::segment(1) == 'users' || Request::route()->getName() == 'users.edit') ? ' active' : '' }}">--}}
+{{--                                            <a class="dash-link" href="{{ route('user.userlog') }}">{{__('User Logs')}}</a>--}}
+{{--                                        </li>--}}
+{{--                                @endcan--}}
                                 </ul>
                             </li>
                         @endif

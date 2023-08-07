@@ -2,29 +2,10 @@
 <div class="modal-body">
 
     <div class="row">
-        <div class="col-md-12">
-            <div class="form-group">
-                {{Form::label('branch',__('Branch'),['class'=>'form-label'])}}
-                {{Form::select('branch',$brances,null,array('class'=>'form-control select','required'=>'required','id'=>'branch'))}}
-            </div>
-        </div>
         <div class="col-md-6">
             <div class="form-group">
-                {{Form::label('employee',__('Employee'),['class'=>'form-label'])}}
-                <select class="select form-control select2-multiple" id="employee" name="employee" data-toggle="select2" data-placeholder="{{ __('Select Employee') }}" required>
-                </select>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="form-group">
-                {{Form::label('appraisal_date',__('Select Month'),['class'=>'form-label'])}}
-                {{ Form::date('appraisal_date',null, array('class' => 'form-control')) }}
-            </div>
-        </div>
-        <div class="col-md-12">
-            <div class="form-group">
-                {{Form::label('remark',__('Remarks'),['class'=>'form-label'])}}
-                {{Form::textarea('remark',null,array('class'=>'form-control'))}}
+                {{Form::label('date',__('Select Month'),['class'=>'form-label'])}}
+                {{ Form::date('date',null, array('class' => 'form-control')) }}
             </div>
         </div>
     </div>
@@ -57,6 +38,14 @@
         @endforeach
     </div>
     @endforeach
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">
+                {{Form::label('remark',__('Remarks'),['class'=>'form-label'])}}
+                {{Form::textarea('remark',null,array('class'=>'form-control'))}}
+            </div>
+        </div>
+    </div>
     </div>
     <div class="modal-footer">
     <input type="button" value="{{__('Cancel')}}" class="btn btn-light" data-bs-dismiss="modal">

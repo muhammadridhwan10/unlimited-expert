@@ -41,6 +41,7 @@ use App\Models\Tax;
 use App\Models\LeaveType;
 use App\Models\Reimbursment;
 use App\Models\BankTransfer;
+use App\Models\AppraisalEmployee;
 use App\Models\Vender;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -6083,6 +6084,104 @@ class ReportController extends Controller
         }
 
 
+    }
+
+    public function performance(Request $request)
+    {
+        $user = Auth::user();
+        if(\Auth::user()->can('manage report'))
+        {
+            $branch = Branch::get()->pluck('name', 'id');
+            $branch->prepend('Select Branch', '');
+
+            $employees = Employee::select('id', 'name');
+            if(!empty($request->employee_id) && $request->employee_id[0]!=0){
+                $employees->whereIn('id', $request->employee_id);
+            }
+            $employees=$employees;
+
+            if(!empty($request->branch))
+            {
+                $employees->where('branch_id', $request->branch);
+                $data['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
+            }
+
+            // if(!empty($request->department))
+            // {
+            //     $employees->where('department_id', $request->department);
+            //     $data['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
+            // }
+
+            $employees = $employees->get()->pluck('name', 'id');
+            // dd($employees);
+
+            if(!empty($request->month))
+            {
+                $currentdate = strtotime($request->month);
+                $month       = date('m', $currentdate);
+                $year        = date('Y', $currentdate);
+                $curMonth    = date('M-Y', strtotime($request->month));
+
+            }
+            else
+            {
+                $month    = date('m');
+                $year     = date('Y');
+                $curMonth = date('M-Y', strtotime($year . '-' . $month));
+            }
+
+
+            $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
+            for($i = 1; $i <= $num_of_days; $i++)
+            {
+                $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
+            }
+
+            $employeesRating = [];
+
+            foreach ($employees as $id => $employee) {
+                $employeeRating = [
+                    'id' => $id,
+                    'name' => $employee,
+                    'total_rating' => 0,
+                    'num_of_projects' => 0,
+                ];
+
+                $appraisals = AppraisalEmployee::where('employee_id', $id)
+                    ->whereYear('date', $year)
+                    ->whereMonth('date', $month)
+                    ->get();
+
+                $totalRating = 0;
+                $totalRaters = 0;
+                $overallRating = 0;
+                $numOfProjects = 0;
+
+                foreach ($appraisals as $appraisal) {
+                    // Assuming the rating field in the AppraisalEmployee model contains the JSON array of ratings.
+                    $rating = json_decode($appraisal->rating, true);
+                    $starSum = !empty($rating) ? array_sum($rating) : 0;
+                    $totalRating += $starSum;
+                    $totalRaters += count($rating);
+                    $numOfProjects++;
+                }
+
+                if ($totalRaters > 0) {
+                    $overallRating = $totalRating / $totalRaters;
+                }
+
+                $employeeRating['total_rating'] = $overallRating;
+                $employeeRating['num_of_projects'] = $numOfProjects;
+
+                $employeesRating[] = $employeeRating;
+            }
+
+            return view('report.performance', compact('employeesRating', 'branch', 'dates'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
     }
 
 

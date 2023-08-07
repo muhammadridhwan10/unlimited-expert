@@ -31,6 +31,11 @@ class ProjectUser extends Model
     {
         return $this->belongsTo(Project::class, "project_id", "id");
     }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class, 'user_id', 'user_id');
+    }
     
 }
 

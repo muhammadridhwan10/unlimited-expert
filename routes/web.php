@@ -4074,6 +4074,7 @@ Route::get(
     ]
 );
 
+
 Route::get(
     '/projects/{pid}/task/{tid}/create-summary-identified-misstatements', [
     'as' => 'projects.tasks.create.summary.identified.misstatements',
@@ -4091,6 +4092,18 @@ Route::post(
     'as' => 'save-summary-identified-misstatements',
     'uses' => 'ProjectTaskController@saveSummaryIdentifiedMisstatements',
 ]
+);
+
+Route::get(
+    '/projects/{id}/task/{tid}/pmpj', [
+    'as' => 'projects.tasks.pmpj',
+    'uses' => 'ProjectTaskController@getpmpj',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
 );
 
 Route::post(
@@ -4232,6 +4245,54 @@ Route::resource('reimbursmenttype', 'ReimbursmentTypeController')->middleware(
     ]
 );
 Route::post('medical-allowance/jsoncount', 'MedicalAllowanceController@jsoncount')->name('medical-allowance.jsoncount')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('appraisal/create/{uid}/{pid}', 'AppraisalController@create')->name('appraisal.create')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post(
+    '/appraisal/{uid}/project/{pid}/save-appraisal', [
+    'as' => 'save-appraisal',
+    'uses' => 'AppraisalController@store',
+]
+);
+Route::get('projects/{project}', 'ProjectController@show')->name('projects.show')->middleware(['auth', 'XSS']);
+Route::post(
+    '/projects/{pid}/task/{tid}/save-pmpj', [
+    'as' => 'save-pmpj',
+    'uses' => 'ProjectTaskController@storePmpj',
+]
+);
+Route::get('/projects/{id}/task/{tid}/fetch-conclusion', 'ProjectTaskController@fetchConclusion')->name('get.kesimpulan')->middleware(['auth', 'XSS']);
+Route::get('reports-performance', 'ReportController@performance')->name('report.performance')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::get('/userlogs', 'UserController@userLog')->name('user.userlog')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::get('/userlogs/{id}', 'UserController@userLogView')->name('user.userlogview')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::delete('userlogs/{id}', 'UserController@userLogDestroy')->name('user.userlogdestroy')->middleware(
     [
         'auth',
         'XSS',

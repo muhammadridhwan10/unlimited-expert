@@ -635,6 +635,8 @@
                                                     <p class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.showproseduranalisis',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}}">{{$task->name}}</a></p>
                                                 @elseif($task->name == 'Summary Of Identified Misstatements')
                                                     <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.identifiedmisstatements',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>
+                                                @elseif($task->name == 'Prosedur PMPJ')
+                                                    <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.pmpj',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>
                                                 @else
                                                     <p class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.show',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}}">{{$task->name}}</a></p>
                                                 @endif
