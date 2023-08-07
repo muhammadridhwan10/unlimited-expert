@@ -104,7 +104,7 @@ class AuthenticatedSessionController extends Controller
         if($user->type != 'staff_client' && $user->type != 'super admin')
         {
                     $ip = $_SERVER['REMOTE_ADDR'];
-                    $query = @unserialize(file_get_contents('http://ip-api.com/php/182.253.233.168'));
+                    $query = @unserialize(file_get_contents('http://ip-api.com/php/' . $ip));
 
                     $whichbrowser = new \WhichBrowser\Parser($_SERVER['HTTP_USER_AGENT']);
                     if ($whichbrowser->device->type == 'bot') {
