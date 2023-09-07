@@ -88,6 +88,34 @@
                                         <input type="checkbox" class="form-check-input" name="applicant[]" value="country" id="check-country" {{(in_array('country',$job->applicant)?'checked':'')}}>
                                         <label class="form-check-label" for="check-country">{{__('Country')}}</label>
                                     </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="applicant[]" value="latest_education" id="check-latest-education" {{(in_array('latest_education',$job->applicant)?'checked':'')}}>
+                                        <label class="form-check-label" for="check-latest-education">{{__('Latest Education')}}</label>
+                                    </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="applicant[]" value="year_graduated" id="check-year-graduated" {{(in_array('year_graduated',$job->applicant)?'checked':'')}}>
+                                        <label class="form-check-label" for="check-year-graduated">{{__('Year Graduated')}}</label>
+                                    </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="applicant[]" value="university" id="check-university" {{(in_array('university',$job->applicant)?'checked':'')}}>
+                                        <label class="form-check-label" for="check-university">{{__('Univercity')}}</label>
+                                    </div>
+                                     <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="applicant[]" value="major" id="check-major" {{(in_array('major',$job->applicant)?'checked':'')}}>
+                                        <label class="form-check-label" for="check-major">{{__('Major')}}</label>
+                                    </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="applicant[]" value="ipk" id="check-ipk" {{(in_array('ipk',$job->applicant)?'checked':'')}}>
+                                        <label class="form-check-label" for="check-ipk">{{__('Final Ipk or Temporary Ipk')}}</label>
+                                    </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="applicant[]" value="latest_work_experience" id="check-latest-work-experience" {{(in_array('latest_work_experience',$job->applicant)?'checked':'')}}>
+                                        <label class="form-check-label" for="check-latest-work-experience">{{__('Latest Work Experience')}}</label>
+                                    </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="applicant[]" value="length_of_last_job" id="check-length-of-last-job" {{(in_array('length_of_last_job',$job->applicant)?'checked':'')}}>
+                                        <label class="form-check-label" for="check-length-of-last-job">{{__('Length of Last Job')}}</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -102,6 +130,26 @@
                                     <div class="form-check custom-checkbox">
                                         <input type="checkbox" class="form-check-input" name="visibility[]" value="resume" id="check-resume" {{(in_array('resume',$job->visibility)?'checked':'')}}>
                                         <label class="form-check-label" for="check-resume">{{__('Resume')}}</label>
+                                    </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="visibility[]" value="kk" id="check-kk" {{(in_array('kk',$job->visibility)?'checked':'')}}>
+                                        <label class="form-check-label" for="check-kk">{{__('KK')}}</label>
+                                    </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="visibility[]" value="ktp" id="check-ktp" {{(in_array('ktp',$job->visibility)?'checked':'')}}>
+                                        <label class="form-check-label" for="check-ktp">{{__('KTP')}}</label>
+                                    </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="visibility[]" value="transkrip_nilai" id="check-transkrip_nilai" {{(in_array('transkrip_nilai',$job->visibility)?'checked':'')}}>
+                                        <label class="form-check-label" for="check-transkrip_nilai">{{__('Transkrip Nilai')}}</label>
+                                    </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="visibility[]" value="ijazah" id="check-ijazah" {{(in_array('ijazah',$job->visibility)?'checked':'')}}>
+                                        <label class="form-check-label" for="check-ijazah">{{__('Ijazah')}}</label>
+                                    </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="visibility[]" value="certificate" id="check-certificate" {{(in_array('certificate',$job->visibility)?'checked':'')}}>
+                                        <label class="form-check-label" for="check-certificate">{{__('Certificate')}}</label>
                                     </div>
                                     <div class="form-check custom-checkbox">
                                         <input type="checkbox" class="form-check-input" name="visibility[]" value="letter" id="check-letter" {{(in_array('letter',$job->visibility)?'checked':'')}}>

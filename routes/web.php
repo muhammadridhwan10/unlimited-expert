@@ -4298,3 +4298,17 @@ Route::delete('userlogs/{id}', 'UserController@userLogDestroy')->name('user.user
         'XSS',
     ]
 );
+Route::post(
+    '/update-stage-job', [
+    'as' => 'update-stage-job',
+    'uses' => 'JobApplicationController@updatedropdownstage',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::get('/get-states-by-country', 'JobController@getStatesByCountry')->name('get.states.by.country');
+Route::get('/get-cities-by-state', 'JobController@getCitiesByState')->name('get.cities.by.state');

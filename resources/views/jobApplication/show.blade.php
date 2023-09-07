@@ -231,6 +231,56 @@
                                 -
                             @endif
                         </dd>
+                        <dt class="col-sm-3"><span class="h6 text-sm mb-0">{{__('KK')}}</span></dt>
+                        <dd class="col-sm-9">
+                            @if(!empty($jobApplication->kk))
+                                <span class="text-sm action-btn bg-primary ms-2 ">
+                                <a href="{{asset(Storage::url('uploads/job/kk')).'/'.$jobApplication->kk}}" target="_blank"><i class="ti ti-download text-white"></i></a>
+                            </span>
+                            @else
+                                -
+                            @endif
+                        </dd>
+                        <dt class="col-sm-3"><span class="h6 text-sm mb-0">{{__('KTP')}}</span></dt>
+                        <dd class="col-sm-9">
+                            @if(!empty($jobApplication->ktp))
+                                <span class="text-sm action-btn bg-primary ms-2 ">
+                                <a href="{{asset(Storage::url('uploads/job/ktp')).'/'.$jobApplication->ktp}}" target="_blank"><i class="ti ti-download text-white"></i></a>
+                            </span>
+                            @else
+                                -
+                            @endif
+                        </dd>
+                        <dt class="col-sm-3"><span class="h6 text-sm mb-0">{{__('Transkrip Nilai')}}</span></dt>
+                        <dd class="col-sm-9">
+                            @if(!empty($jobApplication->transkrip_nilai))
+                                <span class="text-sm action-btn bg-primary ms-2 ">
+                                <a href="{{asset(Storage::url('uploads/job/transkrip_nilai')).'/'.$jobApplication->transkrip_nilai}}" target="_blank"><i class="ti ti-download text-white"></i></a>
+                            </span>
+                            @else
+                                -
+                            @endif
+                        </dd>
+                        <dt class="col-sm-3"><span class="h6 text-sm mb-0">{{__('Ijazah')}}</span></dt>
+                        <dd class="col-sm-9">
+                            @if(!empty($jobApplication->ijazah))
+                                <span class="text-sm action-btn bg-primary ms-2 ">
+                                <a href="{{asset(Storage::url('uploads/job/ijazah')).'/'.$jobApplication->ijazah}}" target="_blank"><i class="ti ti-download text-white"></i></a>
+                            </span>
+                            @else
+                                -
+                            @endif
+                        </dd>
+                        <dt class="col-sm-3"><span class="h6 text-sm mb-0">{{__('Certificate')}}</span></dt>
+                        <dd class="col-sm-9">
+                            @if(!empty($jobApplication->certificate))
+                                <span class="text-sm action-btn bg-primary ms-2 ">
+                                <a href="{{asset(Storage::url('uploads/job/certificate')).'/'.$jobApplication->certificate}}" target="_blank"><i class="ti ti-download text-white"></i></a>
+                            </span>
+                            @else
+                                -
+                            @endif
+                        </dd>
                         <dt class="col-sm-3"><span class="h6 text-sm mb-0">{{__('Cover Letter')}}</span></dt>
                         <dd class="col-sm-9"><span class="text-sm">{{$jobApplication->cover_letter}}</span></dd>
 

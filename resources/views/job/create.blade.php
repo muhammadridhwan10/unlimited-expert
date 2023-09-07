@@ -87,6 +87,34 @@
                                         <input type="checkbox" class="form-check-input" name="applicant[]" value="country" id="check-country">
                                         <label class="form-check-label" for="check-country">{{__('Country')}}</label>
                                     </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="applicant[]" value="latest_education" id="check-latest-education">
+                                        <label class="form-check-label" for="check-latest-education">{{__('Latest Education')}}</label>
+                                    </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="applicant[]" value="year_graduated" id="check-year-graduated">
+                                        <label class="form-check-label" for="check-year-graduated">{{__('Year Graduated')}}</label>
+                                    </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="applicant[]" value="university" id="check-university">
+                                        <label class="form-check-label" for="check-university">{{__('Univercity')}}</label>
+                                    </div>
+                                      <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="applicant[]" value="major" id="check-major">
+                                        <label class="form-check-label" for="check-major">{{__('Major')}}</label>
+                                    </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="applicant[]" value="ipk" id="check-ipk">
+                                        <label class="form-check-label" for="check-ipk">{{__('Final Ipk or Temporary Ipk')}}</label>
+                                    </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="applicant[]" value="latest_work_experience" id="check-latest-work-experience">
+                                        <label class="form-check-label" for="check-latest-work-experience">{{__('Latest Work Experience')}}</label>
+                                    </div>
+                                    <div class="form-check custom-checkbox">
+                                        <input type="checkbox" class="form-check-input" name="applicant[]" value="length_of_last_job" id="check-length-of-last-job">
+                                        <label class="form-check-label" for="check-length-of-last-job">{{__('Length of Last Job')}}</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -101,6 +129,26 @@
                                    <div class="form-check custom-checkbox">
                                        <input type="checkbox" class="form-check-input" name="visibility[]" value="resume" id="check-resume">
                                        <label class="form-check-label" for="check-resume">{{__('Resume')}}</label>
+                                   </div>
+                                   <div class="form-check custom-checkbox">
+                                       <input type="checkbox" class="form-check-input" name="visibility[]" value="kk" id="check-kk">
+                                       <label class="form-check-label" for="check-kk">{{__('KK')}}</label>
+                                   </div>
+                                   <div class="form-check custom-checkbox">
+                                       <input type="checkbox" class="form-check-input" name="visibility[]" value="ktp" id="check-ktp">
+                                       <label class="form-check-label" for="check-ktp">{{__('Ktp')}}</label>
+                                   </div>
+                                   <div class="form-check custom-checkbox">
+                                       <input type="checkbox" class="form-check-input" name="visibility[]" value="transkrip_nilai" id="check-transkrip_nilai">
+                                       <label class="form-check-label" for="check-transkrip_nilai">{{__('Transkrip Nilai')}}</label>
+                                   </div>
+                                   <div class="form-check custom-checkbox">
+                                       <input type="checkbox" class="form-check-input" name="visibility[]" value="ijazah" id="check-ijazah">
+                                       <label class="form-check-label" for="check-ijazah">{{__('Ijazah')}}</label>
+                                   </div>
+                                   <div class="form-check custom-checkbox">
+                                       <input type="checkbox" class="form-check-input" name="visibility[]" value="certificate" id="check-certificate">
+                                       <label class="form-check-label" for="check-certificate">{{__('Certificate')}}</label>
                                    </div>
                                    <div class="form-check custom-checkbox">
                                        <input type="checkbox" class="form-check-input" name="visibility[]" value="letter" id="check-letter">

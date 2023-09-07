@@ -20,6 +20,8 @@ use App\Models\Mail\UserCreate;
 use App\Models\Plan;
 use App\Models\User;
 use App\Models\Utility;
+use App\Models\Country;
+use App\Models\University;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
@@ -35,107 +37,50 @@ class JobApplicationController extends Controller
         if(\Auth::user()->can('manage job application'))
         {
             if($user->type = 'admin'){
-                $stages = JobStage::orderBy('order', 'asc')->get();
+                $stages = JobStage::all();
 
                 $jobs = Job::all()->pluck('title', 'id');
                 $jobs->prepend('All', '');
+                $univercity =   University::get()->pluck('name','name');
+
+                $applicants      = JobApplication::where('created_by', 1); 
+
+                $ipk = JobApplication::$ipk;
+
+                if (!empty($request->university)) {
+                
+                    $applicants->where('university', $request->university);
+                }
+
+                if (!empty($request->ipk)) {
+                    $selectedIpk = $request->ipk;
+                    $applicants->where('ipk', 'like', $selectedIpk.'%');
+                }
+
+                $applicants = $applicants->get();
     
-                if(isset($request->start_date) && !empty($request->start_date))
-                {
-                    $filter['start_date'] = $request->start_date;
-                }
-                else
-                {
-                    $filter['start_date'] = date("Y-m-d", strtotime("-1 month"));
-                }
-    
-                if(isset($request->end_date) && !empty($request->end_date))
-                {
-                    $filter['end_date'] = $request->end_date;
-                }
-                else
-                {
-                    $filter['end_date'] = date("Y-m-d H:i:s", strtotime("+1 hours"));
-                }
-    
-                if(isset($request->job) && !empty($request->job))
-                {
-                    $filter['job'] = $request->job;
-                }
-                else
-                {
-                    $filter['job'] = '';
-                }
     
             }elseif($user->type = 'company')
             {
-                $stages = JobStage::orderBy('order', 'asc')->get();
+                $stages = JobStage::all();
 
                 $jobs = Job::all()->pluck('title', 'id');
                 $jobs->prepend('All', '');
+                $univercity =   University::get()->pluck('name','id');
     
-                if(isset($request->start_date) && !empty($request->start_date))
-                {
-                    $filter['start_date'] = $request->start_date;
-                }
-                else
-                {
-                    $filter['start_date'] = date("Y-m-d", strtotime("-1 month"));
-                }
-    
-                if(isset($request->end_date) && !empty($request->end_date))
-                {
-                    $filter['end_date'] = $request->end_date;
-                }
-                else
-                {
-                    $filter['end_date'] = date("Y-m-d H:i:s", strtotime("+1 hours"));
-                }
-    
-                if(isset($request->job) && !empty($request->job))
-                {
-                    $filter['job'] = $request->job;
-                }
-                else
-                {
-                    $filter['job'] = '';
-                }
+                $applicants      = JobApplication::all();  
             }
             else{
-                $stages = JobStage::where('created_by', '=', \Auth::user()->creatorId())->orderBy('order', 'asc')->get();
+                $stages = JobStage::where('created_by', '=', \Auth::user()->creatorId())->get();
 
                 $jobs = Job::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
                 $jobs->prepend('All', '');
+                $univercity =   University::get()->pluck('name','id');
     
-                if(isset($request->start_date) && !empty($request->start_date))
-                {
-                    $filter['start_date'] = $request->start_date;
-                }
-                else
-                {
-                    $filter['start_date'] = date("Y-m-d", strtotime("-1 month"));
-                }
-    
-                if(isset($request->end_date) && !empty($request->end_date))
-                {
-                    $filter['end_date'] = $request->end_date;
-                }
-                else
-                {
-                    $filter['end_date'] = date("Y-m-d H:i:s", strtotime("+1 hours"));
-                }
-    
-                if(isset($request->job) && !empty($request->job))
-                {
-                    $filter['job'] = $request->job;
-                }
-                else
-                {
-                    $filter['job'] = '';
-                }
+                $applicants      = JobApplication::all();  
     
             }
-            return view('jobApplication.index', compact('stages', 'jobs', 'filter'));
+            return view('jobApplication.index', compact('stages', 'jobs', 'applicants', 'univercity', 'ipk'));
         }
         else
         {
@@ -149,28 +94,31 @@ class JobApplicationController extends Controller
         {
             $jobs = Job::all()->pluck('title', 'id');
             $jobs->prepend('--', '');
+            $countries = Country::all();
     
             $questions = CustomQuestion::all();
     
-            return view('jobApplication.create', compact('jobs', 'questions'));
+            return view('jobApplication.create', compact('jobs', 'questions','countries'));
         }
         elseif(\Auth::user()->type = 'company')
         {
             $jobs = Job::all()->pluck('title', 'id');
             $jobs->prepend('--', '');
+            $countries = Country::all();
     
             $questions = CustomQuestion::all();
     
-            return view('jobApplication.create', compact('jobs', 'questions'));
+            return view('jobApplication.create', compact('jobs', 'questions','countries'));
         }
         else
         {
             $jobs = Job::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
             $jobs->prepend('--', '');
+            $countries = Country::all();
     
             $questions = CustomQuestion::where('created_by', \Auth::user()->creatorId())->get();
     
-            return view('jobApplication.create', compact('jobs', 'questions'));
+            return view('jobApplication.create', compact('jobs', 'questions','countries'));
         }
     }
 
@@ -187,6 +135,11 @@ class JobApplicationController extends Controller
                                    'phone' => 'required',
                                    'profile' => 'mimes:jpeg,png,jpg|max:20480',
                                    'resume' => 'mimes:jpeg,png,jpg,pdf,|max:20480',
+                                   'kk' => 'mimes:jpeg,png,jpg,pdf,|max:20480',
+                                   'ktp' => 'mimes:jpeg,png,jpg,pdf,|max:20480',
+                                   'transkrip_nilai' => 'mimes:jpeg,png,jpg,pdf,|max:20480',
+                                   'ijazah' => 'mimes:jpeg,png,jpg,pdf,|max:20480',
+                                   'certificate' => 'mimes:jpeg,png,jpg,pdf,|max:20480',
                                ]
             );
 
@@ -238,24 +191,144 @@ class JobApplicationController extends Controller
                 }
                 $path = $request->file('resume')->storeAs('uploads/job/resume/', $fileNameToStore1);
             }
+
+            if(!empty($request->kk))
+            {
+                $filenameWithExt1   = $request->file('kk')->getClientOriginalName();
+                $filename1          = pathinfo($filenameWithExt1, PATHINFO_FILENAME);
+                $extension1         = $request->file('kk')->getClientOriginalExtension();
+                $fileNameToStoreKK  = $filename1 . '_' . time() . '.' . $extension1;
+
+                $dir        = storage_path('uploads/job/kk');
+                $image_path = $dir . $filenameWithExt1;
+
+                if(\File::exists($image_path))
+                {
+                    \File::delete($image_path);
+                }
+                if(!file_exists($dir))
+                {
+                    mkdir($dir, 0777, true);
+                }
+                $path = $request->file('kk')->storeAs('uploads/job/kk/', $fileNameToStoreKK);
+            }
+
+            if(!empty($request->ktp))
+            {
+                $filenameWithExt1   = $request->file('ktp')->getClientOriginalName();
+                $filename1          = pathinfo($filenameWithExt1, PATHINFO_FILENAME);
+                $extension1         = $request->file('ktp')->getClientOriginalExtension();
+                $fileNameToStoreKTP = $filename1 . '_' . time() . '.' . $extension1;
+
+                $dir        = storage_path('uploads/job/ktp');
+                $image_path = $dir . $filenameWithExt1;
+
+                if(\File::exists($image_path))
+                {
+                    \File::delete($image_path);
+                }
+                if(!file_exists($dir))
+                {
+                    mkdir($dir, 0777, true);
+                }
+                $path = $request->file('ktp')->storeAs('uploads/job/ktp/', $fileNameToStoreKTP);
+            }
+
+            if(!empty($request->transkrip_nilai))
+            {
+                $filenameWithExt1               = $request->file('transkrip_nilai')->getClientOriginalName();
+                $filename1                      = pathinfo($filenameWithExt1, PATHINFO_FILENAME);
+                $extension1                     = $request->file('transkrip_nilai')->getClientOriginalExtension();
+                $fileNameToStoreTranskripNilai  = $filename1 . '_' . time() . '.' . $extension1;
+
+                $dir        = storage_path('uploads/job/transkrip_nilai');
+                $image_path = $dir . $filenameWithExt1;
+
+                if(\File::exists($image_path))
+                {
+                    \File::delete($image_path);
+                }
+                if(!file_exists($dir))
+                {
+                    mkdir($dir, 0777, true);
+                }
+                $path = $request->file('transkrip_nilai')->storeAs('uploads/job/transkrip_nilai/', $fileNameToStoreTranskripNilai);
+            }
+
+            if(!empty($request->ijazah))
+            {
+                $filenameWithExt1       = $request->file('ijazah')->getClientOriginalName();
+                $filename1              = pathinfo($filenameWithExt1, PATHINFO_FILENAME);
+                $extension1             = $request->file('ijazah')->getClientOriginalExtension();
+                $fileNameToStoreIjazah  = $filename1 . '_' . time() . '.' . $extension1;
+
+                $dir        = storage_path('uploads/job/ijazah');
+                $image_path = $dir . $filenameWithExt1;
+
+                if(\File::exists($image_path))
+                {
+                    \File::delete($image_path);
+                }
+                if(!file_exists($dir))
+                {
+                    mkdir($dir, 0777, true);
+                }
+                $path = $request->file('ijazah')->storeAs('uploads/job/ijazah/', $fileNameToStoreIjazah);
+            }
+
+            if(!empty($request->certificate))
+            {
+                $filenameWithExt1           = $request->file('certificate')->getClientOriginalName();
+                $filename1                  = pathinfo($filenameWithExt1, PATHINFO_FILENAME);
+                $extension1                 = $request->file('certificate')->getClientOriginalExtension();
+                $fileNameToStoreCertificate = $filename1 . '_' . time() . '.' . $extension1;
+
+                $dir        = storage_path('uploads/job/certificate');
+                $image_path = $dir . $filenameWithExt1;
+
+                if(\File::exists($image_path))
+                {
+                    \File::delete($image_path);
+                }
+                if(!file_exists($dir))
+                {
+                    mkdir($dir, 0777, true);
+                }
+                $path = $request->file('rescertificateume')->storeAs('uploads/job/certificate/', $fileNameToStoreCertificate);
+            }
+
             $stages = JobStage::where('created_by',\Auth::user()->creatorId())->first();
 
-            $job                  = new JobApplication();
-            $job->job             = $request->job;
-            $job->name            = $request->name;
-            $job->email           = $request->email;
-            $job->phone           = $request->phone;
-            $job->profile         = !empty($request->profile) ? $fileNameToStore : '';
-            $job->resume          = !empty($request->resume) ? $fileNameToStore1 : '';
-            $job->cover_letter    = $request->cover_letter;
-            $job->dob             = $request->dob;
-            $job->gender          = $request->gender;
-            $job->country         = $request->country;
-            $job->state           = $request->state;
-            $job->city            = $request->city;
-            $job->stage           = !empty($stages)?$stages->id:1;
-            $job->custom_question = json_encode($request->question);
-            $job->created_by      = \Auth::user()->creatorId();
+            $job                            = new JobApplication();
+            $job->job                       = $request->job;
+            $job->name                      = $request->name;
+            $job->email                     = $request->email;
+            $job->phone                     = $request->phone;
+            $job->profile                   = !empty($request->profile) ? $fileNameToStore : '';
+            $job->resume                    = !empty($request->resume) ? $fileNameToStore1 : '';
+            $job->kk                        = !empty($request->kk) ? $fileNameToStoreKK : '';
+            $job->ktp                       = !empty($request->ktp) ? $fileNameToStoreKTP : '';
+            $job->transkrip_nilai           = !empty($request->transkrip_nilai) ? $fileNameToStoreTranskripNilai : '';
+            $job->ijazah                    = !empty($request->ijazah) ? $fileNameToStoreIjazah : '';
+            $job->certificate               = !empty($request->certificate) ? $fileNameToStoreCertificate : '';
+            $job->cover_letter              = $request->cover_letter;
+            $job->dob                       = $request->dob;
+            $job->gender                    = $request->gender;
+            $selectedCountry                 = Country::where('code', $request->selected_country)->first();
+            $jobApplication->country         = $selectedCountry->name;
+            $selectedState                   = State::where('district', $request->selected_state)->first();
+            $jobApplication->state           = $selectedState->name;
+            $selectedCity                    = City::find($request->selected_city);
+            $job->year_graduated            = $request->year_graduated;
+            $job->last_education            = $request->last_education;
+            $job->major                     = $request->major;
+            $job->university                = $request->university;
+            $job->latest_work_experience    = $request->latest_work_experience;
+            $job->length_of_last_job        = $request->length_of_last_job;
+            $job->ipk                       = $request->ipk;
+            $job->stage             = !empty($stages)?$stages->id:1;
+            $job->custom_question   = json_encode($request->question);
+            $job->created_by        = \Auth::user()->creatorId();
             $job->save();
 
             return redirect()->route('job-application.index')->with('success', __('Job application successfully created.'));
@@ -822,5 +895,28 @@ class JobApplicationController extends Controller
             ], 200
         );
 
+    }
+
+    public function updatedropdownstage(Request $request)
+    {
+
+        if(\Auth::user()->can('create job application'))
+        {
+
+            $applicants_id = $request->get('id');
+            $stage = $request->get('stage');
+        
+            $data = JobApplication::find($applicants_id);
+            $data->stage = $stage;
+
+            $data->save();
+        
+            return response()->json(['success' => __('Applicant Status Updated Successfully.')], 200);
+            
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
     }
 }

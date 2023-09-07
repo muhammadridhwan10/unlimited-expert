@@ -50,7 +50,7 @@
 
 <div class="main-content">
     <!-- Spotlight -->
-    <section class="slice " data-offset-top="#header-main">
+    <section class="slice bg-secondary" data-offset-top="#header-main">
         <div class="container">
             <div class="row row-grid justify-content-center">
                 <div class="col-lg-8 text-center">
@@ -76,20 +76,20 @@
             </div>
         </div>
     </section>
-    <section class="slice slice-lg bg-section-secondary delimiter-top delimiter-bottom">
+    <section class="slice slice-lg bg-secondary delimiter-top delimiter-bottom">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-10">
                     <div class="card shadow">
                         <div class="card-body px-lg-5 py-lg-5">
-                            <h4 class="">{{__('Requirements')}}</h4>
-                            {!! $job->requirement !!}
+                            <h4 class="">{{__('Description')}}</h4>
+                            {!! $job->description !!}
                         </div>
                     </div>
                     <div class="card shadow">
                         <div class="card-body px-lg-5 py-lg-5">
-                            <h4 class="">{{__('Description')}}</h4>
-                            {!! $job->description !!}
+                            <h4 class="">{{__('Requirements')}}</h4>
+                            {!! $job->requirement !!}
                         </div>
                     </div>
                     {{--                    @if($job->end_date >= date('Y-m-d'))--}}

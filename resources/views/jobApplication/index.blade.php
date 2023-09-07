@@ -40,6 +40,16 @@
                         '.profile').addClass('d-none');
                     (visibility.indexOf("resume") != -1) ? $('.resume').removeClass('d-none') : $(
                         '.resume').addClass('d-none');
+                    (visibility.indexOf("kk") != -1) ? $('.kk').removeClass('d-none') : $(
+                        '.kk').addClass('d-none');
+                    (visibility.indexOf("ktp") != -1) ? $('.ktp').removeClass('d-none') : $(
+                        '.ktp').addClass('d-none');
+                    (visibility.indexOf("transkrip_nilai") != -1) ? $('.transkrip_nilai').removeClass('d-none') : $(
+                        '.transkrip_nilai').addClass('d-none');
+                    (visibility.indexOf("ijazah") != -1) ? $('.ijazah').removeClass('d-none') : $(
+                        '.ijazah').addClass('d-none');
+                    (visibility.indexOf("certificate") != -1) ? $('.certificate').removeClass('d-none') : $(
+                        '.certificate').addClass('d-none');
                     (visibility.indexOf("letter") != -1) ? $('.letter').removeClass('d-none') : $(
                         '.letter').addClass('d-none');
 
@@ -141,11 +151,11 @@
         {{--            <i class="ti ti-filter"></i>--}}
         {{--        </a>--}}
 
-        @can('create job application')
+        {{-- @can('create job application')
             <a href="#" data-size="lg" data-url="{{ route('job-application.create')}}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create')}}" data-title="{{__('Create New Job Application')}}" class="btn btn-sm btn-primary">
                 <i class="ti ti-plus"></i>
             </a>
-        @endcan
+        @endcan --}}
 
     </div>
 @endsection
@@ -154,156 +164,144 @@
 
     <div class="row">
         <div class="col-sm-12">
-            <div class="mt-2 " id="multiCollapseExample1">
+            <div class=" mt-2 " id="multiCollapseExample1">
                 <div class="card">
                     <div class="card-body">
-                        {{ Form::open(array('route' => array('job-application.index'),'method'=>'get','id'=>'applicarion_filter')) }}
-
-                        <div class="row d-flex align-items-center justify-content-end">
-
-                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
-                                <div class="btn-box">
-                                    {{Form::label('start_date',__('Start Date'),['class'=>'form-label'])}}
-                                    {{Form::date('start_date',$filter['start_date'],array('class'=>'month-btn form-control '))}}
+                        {{ Form::open(array('route' => array('job-application.index'),'method'=>'get','id'=>'job_application')) }}
+                        <div class="row align-items-center justify-content-end">
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col-auto" style = "width:500px;">
+                                        <div class="btn-box">
+                                            {{ Form::label('university', __('Univercity'), ['class' => 'form-label']) }}
+                                            {{ Form::select('university', $univercity, isset($_GET['university']) ? $_GET['university'] : null, ['class' => 'form-control select2', 'placeholder' => 'Select Univercity']) }}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto" style = "width:200px;">
+                                        <div class="btn-box">
+                                            {{ Form::label('ipk', __('Ipk'), ['class' => 'form-label']) }}
+                                            {{ Form::select('ipk', $ipk, isset($_GET['ipk']) ? $_GET['ipk'] : null, ['class' => 'form-control select2', 'placeholder' => 'Select Ipk']) }}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
-                                <div class="btn-box">
-                                    {{Form::label('end_date',__('End Date'),['class'=>'form-label'])}}
-                                    {{Form::date('end_date',$filter['end_date'],array('class'=>'month-btn form-control '))}}
+                            <div class="col-auto mt-4">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('job_application').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
+                                            <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
+                                        </a>
+                                        <a href="{{route('job-application.index')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
+                                            <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
-                                <div class="btn-box">
-                                    {{ Form::label('job', __('Job'),['class'=>'form-label']) }}
-                                    {{ Form::select('job', $jobs,$filter['job'], array('class' => 'form-control select')) }}
-                                </div>
-                            </div>
-                            <div class="col-auto float-end ms-2 mt-4">
-
-                                <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('applicarion_filter').submit(); return false;" data-bs-toggle="tooltip" data-original-title="{{__('apply')}}">
-                                    <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
-                                </a>
-                                <a href="{{ route('job-application.index') }}" class="btn btn-sm btn-danger" data-bs-toggle="tooltip"
-                                   title="{{ __('Reset') }}">
-                                    <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
-                                </a>
-                            </div>
-
                         </div>
-                        {{ Form::close() }}
                     </div>
+                    {{ Form::close() }}
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card overflow-hidden mt-0">
-        <div class="container-kanban">
-            @php
-
-                $json = [];
-                foreach ($stages as $stage){
-                    $json[] = 'task-list-'.$stage->id;
-                }
-            @endphp
-            <div class="row kanban-wrapper horizontal-scroll-cards" data-plugin="dragula" data-containers='{!! json_encode($json) !!}'>
-                @foreach($stages as $stage)
-                    @php $applications = $stage->applications($filter) @endphp
-
-                    <div class="col">
-                        <div class="card">
-
-                            <div class="card-header">
-                                <div class="float-end">
-                                    <span class="btn btn-sm btn-primary btn-icon count">
-                                        {{count($applications)}}
-                                    </span>
-                                </div>
-                                <h4 class="mb-0">{{$stage->title}}</h4>
-                            </div>
-
-                            <div class="card-body kanban-box" id="task-list-{{$stage->id}}" data-id="{{$stage->id}}">
-                                @foreach($applications as $application)
-                                    <div class="card" data-id="{{$application->id}}">
-                                        <div class="pt-3 ps-3">
-                                        </div>
-                                        <div class="card-header border-0 pb-0 position-relative">
-                                            <h5><a href="{{ route('job-application.show',\Crypt::encrypt($application->id)) }}">{{$application->name}}</a></h5>
-                                            <div class="card-header-right">
-                                                @if(Auth::user()->type != 'client')
-                                                    <div class="btn-group card-option">
-                                                        <button type="button" class="btn dropdown-toggle"
-                                                                data-bs-toggle="dropdown" aria-haspopup="true"
-                                                                aria-expanded="false">
-                                                            <i class="ti ti-dots-vertical"></i>
-                                                        </button>
-                                                        <div class="dropdown-menu dropdown-menu-end">
-                                                            @can('show job application')
-
-                                                                <a class="dropdown-item" href="{{ route('job-application.show',\Crypt::encrypt($application->id)) }}" class="dropdown-item"> <i class="ti ti-bookmark"></i>{{__('View')}}</a>
-
-                                                            @endcan
-                                                            @can('delete lead')
-                                                                {!! Form::open(['method' => 'DELETE', 'route' => ['job-application.destroy', $application->id],'id'=>'delete-form-'.$application->id]) !!}
-                                                                <a href="#!" class="dropdown-item bs-pass-para"><i class="ti ti-archive"></i>
-                                                                    <span> {{__('Delete')}} </span>
-                                                                </a>
-                                                                {!! Form::close() !!}
-                                                            @endcan
-
-
-                                                        </div>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                        </div>
-
-                                        <div class="card-body">
-                                            <div class="d-flex align-items-center justify-content-between">
-                                                <ul class="list-inline mb-0 mt-0">
-                                                    <div class="row align-items-center">
-                                                        <div class="col-md-12">
-                                                            <span class="static-rating static-rating-sm d-block">
-                                                            @for($i=1; $i<=5; $i++)
-                                                                    @if($i <= $application->rating)
-                                                                        <i class="star fas fa-star voted"></i>
-                                                                    @else
-                                                                        <i class="star fas fa-star"></i>
-                                                                    @endif
-                                                                @endfor
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <small class="text-md">{{ !empty($application->jobs)?$application->jobs->title:'' }}</small><br>
-
-
-                                                    <li class="list-inline-item d-inline-flex align-items-center" data-bs-toggle="tooltip" title="{{__('Product')}}">
-                                                        <i class="ti ti-clock me-1" data-ajax-popup="true" data-title="{{__('Applied at')}}"></i>{{\Auth::user()->dateFormat($application->created_at)}}
-
-                                                    </li>
-
-                                                    <li class="list-inline-item d-inline-flex align-items-center" data-bs-toggle="tooltip" title="{{__('Source')}}">
-                                                        {{--                                                        <i class="f-16 text-primary ti ti-social"></i>{{count($sources)}}--}}
-                                                    </li>
-                                                </ul>
-                                                <div class="user-group">
-
-                                                    <img @if($application->profile) src="{{asset('/storage/uploads/job/profile/'.$application->profile)}}" @else src="{{asset('/storage/uploads/avatar/avatar.png')}}" @endif class="hweb">
-
-
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="col-12">
+                    <div class="card-body table-border-style">
+                        <div class="table-responsive">
+                            <table class="table datatable">
+                                <thead>
+                                <tr>
+                                    <th scope="col">{{__('Name')}}</th>
+                                    <th scope="col">{{__('DoB')}}</th>
+                                    <th scope="col">{{__('Gender')}}</th>
+                                    <th scope="col">{{__('Phone')}}</th>
+                                    <th scope="col">{{__('Email')}}
+                                    <th scope="col">{{__('City')}}</th>
+                                    <th scope="col">{{__('Status')}}</th>
+                                    <th scope="col">{{ __('Action') }}</th>
+                                </tr>
+                                </thead>
+                                <tbody class="list">
+                                @if(count($applicants) > 0)
+                                    @foreach($applicants as $applicant)
+                                        <tr>
+                                            <td>
+                                                <div class="avatar-group">
+                                                    <a href="#" class="avatar rounded-circle avatar-sm">
+                                                        <img data-original-title="{{(!empty($applicant)?$applicant->name:'')}}" @if($applicant->profile) src="{{asset('/storage/uploads/job/profile'.$applicant->profile)}}" @else src="{{asset('/storage/uploads/avatar/avatar.png')}}" @endif title="{{ $applicant->name }}" class="hweb">
+                                                    </a>
+                                                    {{ $applicant->name }}
                                                 </div>
+                                            </td>
+                                            <td>{{!empty($applicant->dob)?$applicant->dob:'-'}}</td>
+                                            <td>{{!empty($applicant->gender)?$applicant->gender:'-'}}</td>
+                                            <td>{{!empty($applicant->phone)?$applicant->phone:'-'}}</td>
+                                            <td>{{!empty($applicant->email)?$applicant->email:'-'}}</td>
+                                            <td>{{!empty($applicant->city)?$applicant->city:'-'}}</td>
+                                            <td>
+                                           <select class="form-control select" name="stage" id="stage" style = "width: 100px;" onchange="updateStage(this.value, {{ $applicant->id }})">
+                                                <option value="0" hidden>{{$applicant->stage_status->title}}</option>
+                                                @foreach($stages as $stage)
+                                                    <option value="{{ $stage->id }}">{{ $stage->title }}</option>
+                                                @endforeach
+                                            </select>
+                                            </td>
+                                            <td class="Action">
+                                                <span>
+                                                    @can('show job application')
+                                                        <div class="action-btn bg-primary ms-2">
+                                                            <a href="{{ route('job-application.show',\Crypt::encrypt($applicant->id)) }}" 
+                                                            class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" data-bs-original-title="{{__('View ').$applicant->name}}">
+                                                                <i class="ti ti-eye text-white"></i>
+                                                            </a>
+                                                        </div>
+                                                    @endcan
+                                                    @can('delete job application')
+                                                        <div class="action-btn bg-danger ms-2">
+                                                        {!! Form::open(['method' => 'DELETE', 'route' => ['job-application.destroy', $applicant->id],'id'=>'delete-form-'.$applicant->id]) !!}
+                                                            <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para" data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-bs-toggle="tooltip" title="{{__('Delete')}}" data-original-title="{{__('Delete')}}" data-confirm-yes="document.getElementById('delete-form-{{$applicant->id}}').submit();">
+                                                            <i class="ti ti-trash text-white"></i></a>
+                                                            {!! Form::close() !!}
+                                                        </div>
+                                                    @endcan
+    
+                                                </span>
+                                        </td>
+                                        </tr>
+                                    @endforeach
+                                @else
+                                    <tr>
+                                        <th scope="col" colspan="7"><h6 class="text-center">{{__('No applicants found')}}</h6></th>
+                                    </tr>
+                                @endif
+                                </tbody>
+                            </table>
 
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                            <span class="empty-container" data-placeholder="Empty"></span>
+                            <script>
+
+                                function updateStage(stage, id) {
+                                    // Kirim request POST ke server dengan nilai status dan id data yang dipilih
+                                    $.ajax({
+                                        url: "{{route("update-stage-job")}}",
+                                        type: "POST",
+                                        data: { 
+                                            id: id,
+                                            stage: stage,
+                                            // Add the CSRF token to the request data
+                                            _token: "{{ csrf_token() }}"
+                                        },
+                                        success: function (data) {
+                                            console.log(data);
+                                        },
+                                    });
+                                }
+                            </script>
                         </div>
                     </div>
-                @endforeach
+                </div>
             </div>
         </div>
     </div>

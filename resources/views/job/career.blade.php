@@ -35,7 +35,7 @@
                     aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbar-main-collapse">
+            {{-- <div class="collapse navbar-collapse" id="navbar-main-collapse">
 
                 <ul class="navbar-nav align-items-lg-center ml-lg-auto">
                     <li class="nav-item">
@@ -56,35 +56,121 @@
                         </div>
                     </li>
                 </ul>
-            </div>
+            </div> --}}
         </div>
     </nav>
 </header>
 
 <div class="main-content">
     <!-- Header (v16) -->
-    <section class="slice " data-offset-top="#header-main">
-        <div class="container">
-            <div class="row row-grid justify-content-center">
-                <div class="col-lg-8 text-center">
-                    <h6 class="text-sm text-uppercase ls-2 text-muted font-weight-700">{{ __('Careers') }}</h6>
-                    <h2 class="h1">{{ __('Job openings') }}</h2>
-                    <p class="lead lh-180">{{ __('Work there. Find the dream job you’ve always wanted..') }}</p>
 
+    <section class="slice d-flex align-items-center" style="background-image: url('{{ asset('assets/images/career/career-page.png') }}'); background-size: cover; background-position: center; height: 500px;">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="text-left">
+                        <h3 class="mt-12 text-white">{{ __('Discover Your Path to Achieving Dreams.') }}</h3>
+                        <p class="lead lh-180 text-white">
+                            {{ __('Embark on a journey to uncover the path that leads to your aspirations,') }}<br>
+                            {{ __('and muster the strength to transform them into reality') }}<br>
+                            {{ __('with an unshakable resolve.') }}
+                        </p>
+                    </div>
                 </div>
             </div>
-
         </div>
     </section>
+
+
+
+
+    
+    <section class="slice" style="background-image: url('{{ asset('assets/images/career/about.png') }}'); background-size: cover; background-position: center; height: 700px;">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h3 class="mt-6">{{ __('ABOUT TGS AU PARTNERS') }}</h3>
+                    <p class="lead lh-180">
+                    {{ __('We are dedicated to creating an environment where innovation thrives and employees are empowered to make a difference.') }}
+                    <br>
+                    {{ __('Here are some reasons to join us:') }}
+                    </p>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="card card-fluid">
+                        <img src="{{ asset('assets/images/career/project.jpeg') }}" class="card-img-top" alt="Innovative Projects" style="max-width: auto; height: 250px;">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ __('Innovative Projects') }}</h5>
+                            <p class="card-text">{{ __('Be part of cutting-edge projects that challenge the status quo and push boundaries.') }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card card-fluid">
+                        <img src="{{ asset('assets/images/career/team.png') }}" class="card-img-top" alt="Collaborative Team" style="max-width: auto; height: 250px;">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ __('Collaborative Team') }}</h5>
+                            <p class="card-text">{{ __('Work with a diverse and talented team that fosters collaboration and creativity.') }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card card-fluid">
+                        <img src="{{ asset('assets/images/career/karir.jpeg') }}" class="card-img-top" alt="Career Growth" style="max-width: auto; height: 250px;">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ __('Career Growth') }}</h5>
+                            <p class="card-text">{{ __('Opportunities for personal and professional growth to help you advance in your career.') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="slice" style="background-image: url('{{ asset('assets/images/career/ourlife.png') }}'); background-size: cover; background-position: center; height: 800px;">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12 text-center">
+                    <h3 class="mt-3">{{ __('OUR LIFE IN THE COMPANY') }}</h3>
+                    <p class="lead lh-180">{{ __('Discover the vibrant culture and daily experiences that make TGS AU Partners a great place to work:') }}</p>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card card-fluid">
+                        <img src="{{ asset('assets/images/career/worklifebalance.jpg') }}" class="card-img-top animate__animated animate__fadeInLeft" alt="Work-Life Balance">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ __('Work-Life Balance') }}</h5>
+                            <p class="card-text">{{ __('Understanding the interplay between work demands and personal life is our foremost priority. Hence, we offer a range of flexible options to create a well-rounded balance between your professional commitments and personal needs.') }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card card-fluid">
+                        <img src="{{ asset('assets/images/career/charity.jpg') }}" class="card-img-top animate__animated animate__fadeInRight" alt="Employee Events" style="max-width: auto; height: auto;">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ __('Employee Events') }}</h5>
+                            <p class="card-text">{{ __('Engage in a wide array of exhilarating events and collaborative team activities meticulously designed to foster unity and camaraderie among employees, creating an environment where colleagues can forge strong bonds while enjoying memorable experiences together') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+
     <!-- Table (v1) -->
-    <section class="slice slice-lg bg-secondary">
-        <span class="tongue tongue-top"><i class="ti ti-angle-up"></i></span>
+    <section class="slice bg-secondary">
         <div class="container">
             <div class="mb-4 text-center">
-                <h3 class=" mt-3">{{ __('We help businesses grow') }}</h3>
+                <h3 class=" mt-4">{{ __('Be Part of Our Team') }}</h3>
                 <div class="fluid-paragraph mt-3">
                     <p class="lead lh-180 ">
-                        {{ __('Always looking for better ways to do things, innovate and help people achieve their goals.') }}
+                        {{ __('Join our dynamic and innovative company, and contribute your talents and expertise to achieve success together.') }}
                     </p>
                 </div>
             </div>
@@ -98,7 +184,7 @@
                                     <th scope="row">
                                         <div class="media align-items-center">
                                             <div>
-                                                <span class="avatar bg-primary text-white mr-4"
+                                                <span class="avatar bg-primary text-white mr-4" style="color:red;"
                                                       title="{{ __('Job Position') }}">{{ $job->position }}</span>
                                             </div>
                                             <div class="media-body media-body-custom">

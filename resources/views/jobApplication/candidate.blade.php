@@ -21,6 +21,11 @@
                                 <th>{{__('Rating')}}</th>
                                 <th>{{__('Applied at')}}</th>
                                 <th>{{__('CV / Resume')}}</th>
+                                <th>{{__('KK')}}</th>
+                                <th>{{__('Ktp')}}</th>
+                                <th>{{__('Transkrip Nilai')}}</th>
+                                <th>{{__('Ijazah')}}</th>
+                                <th>{{__('Certificate')}}</th>
                                 <th>{{__('Action')}}</th>
                             </tr>
                             </thead>
@@ -45,6 +50,51 @@
                                         @if(!empty($application->resume))
                                             <span class="text-sm action-btn bg-primary ms-2">
                                                 <a href="{{asset(Storage::url('uploads/job/resume')).'/'.$application->resume}}" target="_blank"><i class="ti ti-download text-white mx-3 btn btn-sm  align-items-center"></i></a>
+                                            </span>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if(!empty($application->kk))
+                                            <span class="text-sm action-btn bg-primary ms-2">
+                                                <a href="{{asset(Storage::url('uploads/job/kk')).'/'.$application->kk}}" target="_blank"><i class="ti ti-download text-white mx-3 btn btn-sm  align-items-center"></i></a>
+                                            </span>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if(!empty($application->ktp))
+                                            <span class="text-sm action-btn bg-primary ms-2">
+                                                <a href="{{asset(Storage::url('uploads/job/ktp')).'/'.$application->ktp}}" target="_blank"><i class="ti ti-download text-white mx-3 btn btn-sm  align-items-center"></i></a>
+                                            </span>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if(!empty($application->transkrip_nilai))
+                                            <span class="text-sm action-btn bg-primary ms-2">
+                                                <a href="{{asset(Storage::url('uploads/job/transkrip_nilai')).'/'.$application->transkrip_nilai}}" target="_blank"><i class="ti ti-download text-white mx-3 btn btn-sm  align-items-center"></i></a>
+                                            </span>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if(!empty($application->ijazah))
+                                            <span class="text-sm action-btn bg-primary ms-2">
+                                                <a href="{{asset(Storage::url('uploads/job/ijazah')).'/'.$application->ijazah}}" target="_blank"><i class="ti ti-download text-white mx-3 btn btn-sm  align-items-center"></i></a>
+                                            </span>
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if(!empty($application->certificate))
+                                            <span class="text-sm action-btn bg-primary ms-2">
+                                                <a href="{{asset(Storage::url('uploads/job/certificate')).'/'.$application->certificate}}" target="_blank"><i class="ti ti-download text-white mx-3 btn btn-sm  align-items-center"></i></a>
                                             </span>
                                         @else
                                             -
