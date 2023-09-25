@@ -70,10 +70,23 @@
     var currentYear = currentDate.getFullYear();
     var maxDate;
 
-    if (currentDate.getDate() < 28 || currentMonth === 5) {
+    if (currentMonth === 9) {
       // Bulan ini belum melewati tanggal 28 atau bulan ini adalah May
-      maxDate = 28;
-    } else {
+        maxDate = 25;
+    }
+    else if (currentMonth === 10)
+    {
+        maxDate = 26;
+    }
+    else if (currentMonth === 11)
+    {
+        maxDate = 27;
+    }
+    else if (currentMonth === 12)
+    {
+        maxDate = 26;
+    } 
+    else {
       maxDate = currentDate.getDate();
     }
 
