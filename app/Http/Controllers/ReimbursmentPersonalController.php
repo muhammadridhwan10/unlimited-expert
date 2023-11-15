@@ -501,4 +501,24 @@ class ReimbursmentPersonalController extends Controller
 
         return view('reimbursment-personal.action', compact('reimbursment', 'user', 'client'));
     }
+
+    public function approveMultiple(Request $request)
+    {
+
+        $selectedIds = $request->input('selectedIds');
+
+        Reimbursment::whereIn('id', $selectedIds)->update(['status' => 'Paid']);
+
+        foreach ($selectedIds as $reimbursmentId) {
+            $reimbursment = Reimbursment::find($reimbursmentId);
+            $employee = Employee::find($reimbursment->employee_id);
+    
+            if ($employee) {
+                $email = $employee->email;
+                Mail::to($email)->send(new ReimbursmentPersonalApprovalNotification($reimbursment));
+            }
+        }
+
+        return redirect()->route('reimbursment-personal.index')->with('success', __('Reimbursment Personal successfully updated.'));
+    }
 }

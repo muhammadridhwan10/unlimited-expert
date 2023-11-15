@@ -4206,6 +4206,12 @@ Route::get('reimbursment-personal/{id}/action', 'ReimbursmentPersonalController@
         'XSS',
     ]
 );
+Route::post('reimbursment-personal/approve-multiple', 'ReimbursmentPersonalController@approveMultiple')->name('approve-multiple')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
 
 Route::post('reimbursment-personal/changeaction', 'ReimbursmentPersonalController@changeaction')->name('reimbursment-personal.changeaction')->middleware(
     [

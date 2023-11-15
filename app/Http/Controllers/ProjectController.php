@@ -502,7 +502,7 @@ class ProjectController extends Controller
                 $totaltime                  = str_replace(':', '.', Utility::timeToHr($times));
                 $project_data['time_spent'] = [
                     'total' => number_format($totaltime) . '/' . number_format($totaltime),
-                    'percentage' => Utility::getPercentage(number_format($totaltime), $totaltime),
+                    'percentage' => Utility::getPercentage($totaltime, $totaltime),
                 ];
                 // end time spent
 
@@ -1337,6 +1337,10 @@ class ProjectController extends Controller
                 if(!empty($request->tags))
                 {
                     $projects->whereIn('tags', $request->tags);
+                }
+                if(!empty($request->label))
+                {
+                    $projects->whereIn('label', $request->label);
                 }
                 $projects   = $projects->get();
                 $returnHTML = view('projects.' . $request->view, compact('projects', 'user_projects'))->render();

@@ -109,7 +109,7 @@
                 </div>
                 <div class="col-md-4">
                     <div class="card card-fluid">
-                        <img src="{{ asset('assets/images/career/team.png') }}" class="card-img-top" alt="Collaborative Team" style="max-width: auto; height: 250px;">
+                        <img src="{{ asset('assets/images/career/collaborative-team.png') }}" class="card-img-top" alt="Collaborative Team" style="max-width: auto; height: 250px;">
                         <div class="card-body">
                             <h5 class="card-title">{{ __('Collaborative Team') }}</h5>
                             <p class="card-text">{{ __('Work with a diverse and talented team that fosters collaboration and creativity.') }}</p>
@@ -140,7 +140,7 @@
             <div class="row mt-4">
                 <div class="col-md-6">
                     <div class="card card-fluid">
-                        <img src="{{ asset('assets/images/career/worklifebalance.jpg') }}" class="card-img-top animate__animated animate__fadeInLeft" alt="Work-Life Balance">
+                        <img src="{{ asset('assets/images/career/worklifebalance.png') }}" class="card-img-top animate__animated animate__fadeInLeft" alt="Work-Life Balance">
                         <div class="card-body">
                             <h5 class="card-title">{{ __('Work-Life Balance') }}</h5>
                             <p class="card-text">{{ __('Understanding the interplay between work demands and personal life is our foremost priority. Hence, we offer a range of flexible options to create a well-rounded balance between your professional commitments and personal needs.') }}</p>
@@ -149,7 +149,7 @@
                 </div>
                 <div class="col-md-6">
                     <div class="card card-fluid">
-                        <img src="{{ asset('assets/images/career/charity.jpg') }}" class="card-img-top animate__animated animate__fadeInRight" alt="Employee Events" style="max-width: auto; height: auto;">
+                        <img src="{{ asset('assets/images/career/charity.png') }}" class="card-img-top animate__animated animate__fadeInRight" alt="Employee Events" style="max-width: auto; height: auto;">
                         <div class="card-body">
                             <h5 class="card-title">{{ __('Employee Events') }}</h5>
                             <p class="card-text">{{ __('Engage in a wide array of exhilarating events and collaborative team activities meticulously designed to foster unity and camaraderie among employees, creating an environment where colleagues can forge strong bonds while enjoying memorable experiences together') }}</p>

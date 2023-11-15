@@ -862,7 +862,7 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                             @if( Gate::check('manage project'))
                             <li class="dash-item dash-hasmenu {{ ( Request::segment(1) == 'project' || Request::segment(1) == 'bugs-report' || Request::segment(1) == 'bugstatus' || Request::segment(1) == 'project-task-stages' || Request::segment(1) == 'tasktemplate' || Request::segment(1) == 'calendar' || Request::segment(1) == 'timesheet-list' || Request::segment(1) == 'taskboard' || Request::segment(1) == 'timesheet-list' || Request::segment(1) == 'taskboard' || Request::segment(1) == 'project' || Request::segment(1) == 'projects')
                                     ? 'active dash-trigger' : ''}}">
-                                <a href="#!" class="dash-link"><span class="dash-micon"><i class="ti ti-share"></i></span><span class="dash-mtext">{{__('Project System')}}</span><span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
+                                <a href="#!" class="dash-link"><span class="dash-micon"><i class="ti ti-share"></i></span><span class="dash-mtext">{{__('Project Management')}}</span><span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                 <ul class="dash-submenu">
                                     @can('manage project')
                                     <li class="dash-item  {{Request::segment(1) == 'project' || Request::route()->getName() == 'projects.list' || Request::route()->getName() == 'projects.list' ||Request::route()->getName() == 'projects.index' || Request::route()->getName() == 'projects.show' || request()->is('projects/*') ? 'active' : ''}}">
@@ -908,7 +908,7 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                     @endif
                                     @if(Gate::check('manage project task stage') || Gate::check('manage bug status') || Gate::check('manage project task template') || Gate::check('manage mapping account data'))
                                     <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'bugstatus' || Request::segment(1) == 'project-task-stages' || Request::segment(1) == 'tasktemplate') ? 'active dash-trigger' : ''}}">
-                                        <a class="dash-link" href="#">{{__('Project System')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
+                                        <a class="dash-link" href="#">{{__('Project Settings')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                         <ul class="dash-submenu">
                                             @can('manage project task stage')
                                             <li class="dash-item  {{ (Request::route()->getName() == 'project-task-stages.index') ? 'active' : '' }}">

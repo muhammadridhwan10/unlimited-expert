@@ -76,18 +76,6 @@
                 </div>
             {{------------ End Status Filter ----------------}}
 
-            {{------------ Start Label Filter ----------------}}
-                <a href="#" class="btn btn-sm btn-primary action-item" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="btn-inner--icon">{{__('Label')}}</span>
-                </a>
-                <div class="dropdown-menu  project-filter-actions-label dropdown-steady" id="label">
-                    <a class="dropdown-item filter-action-label filter-show-all-label pl-4 active" href="#">{{__('Show All')}}</a>
-                    @foreach(\App\Models\Project::$label as $key => $val)
-                        <a class="dropdown-item filter-action-label pl-4" href="#" data-val="{{ $key }}">{{__($val)}}</a>
-                    @endforeach
-                </div>
-            {{------------ End Label Filter ----------------}}
-
         @can('create project')
             <a href="#" data-size="lg" data-url="{{ route('projects.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create New Project')}}" class="btn btn-sm btn-primary">
                 <i class="ti ti-plus"></i>
@@ -106,7 +94,6 @@
             var sort = 'created_at-desc';
             var status = '';
             var tags = '';
-            var label = '';
             ajaxFilterProjectView('created_at-desc');
             $(".project-filter-actions").on('click', '.filter-action', function (e) {
                 if ($(this).hasClass('filter-show-all')) {
@@ -130,7 +117,7 @@
 
                 status = filterArray;
 
-                ajaxFilterProjectView(sort, $('#project_keyword').val(), status, tags, label);
+                ajaxFilterProjectView(sort, $('#project_keyword').val(), status, tags);
             });
 
             $(".project-filter-actions-tags").on('click', '.filter-action-tags', function (e) {
@@ -155,45 +142,20 @@
 
                 tags = filterArray;
 
-                ajaxFilterProjectView(sort, $('#project_keyword').val(), status, tags, label);
-            });
-
-            $(".project-filter-actions-label").on('click', '.filter-action-label', function (e) {
-                if ($(this).hasClass('filter-show-all-label')) {
-                    $('.filter-action-label').removeClass('active');
-                    $(this).addClass('active');
-                } else {
-                    $('.filter-show-all-label').removeClass('active');
-                    if ($(this).hasClass('active')) {
-                        $(this).removeClass('active');
-                        $(this).blur();
-                    } else {
-                        $(this).addClass('active');
-                    }
-                }
-
-                var filterArray = [];
-                var url = $(this).parents('.project-filter-actions-label').attr('data-url');
-                $('div.project-filter-actions-label').find('.active').each(function () {
-                    filterArray.push($(this).attr('data-val'));
-                });
-
-                label = filterArray;
-
-                ajaxFilterProjectView(sort, $('#project_keyword').val(), status,tags,label);
+                ajaxFilterProjectView(sort, $('#project_keyword').val(), status, tags);
             });
 
             // when change sorting order
             $('#project_sort').on('click', 'a', function () {
                 sort = $(this).attr('data-val');
-                ajaxFilterProjectView(sort, $('#project_keyword').val(), status, tags, label);
+                ajaxFilterProjectView(sort, $('#project_keyword').val(), status, tags);
                 $('#project_sort a').removeClass('active');
                 $(this).addClass('active');
             });
 
             // when searching by project name
             $(document).on('keyup', '#project_keyword', function () {
-                ajaxFilterProjectView(sort, $(this).val(), status, tags, label);
+                ajaxFilterProjectView(sort, $(this).val(), status, tags);
             });
 
 
@@ -273,7 +235,7 @@
 
         var currentRequest = null;
 
-        function ajaxFilterProjectView(project_sort, keyword = '', status = '', tags = '',  label = '') {
+        function ajaxFilterProjectView(project_sort, keyword = '', status = '', tags = '') {
             var mainEle = $('#project_view');
             var view = '{{$view}}';
             var data = {
@@ -282,7 +244,6 @@
                 keyword: keyword,
                 status: status,
                 tags: tags,
-                label: label,
             }
 
             currentRequest = $.ajax({

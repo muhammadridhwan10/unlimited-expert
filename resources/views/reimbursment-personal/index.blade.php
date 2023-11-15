@@ -174,10 +174,14 @@
                 <div class="card">
                 <div class="card-header"><h6 class="mb-0">{{__('Request Approval Reimbursment')}}</h6></div>
                 <div class="card-body table-border-style">
+                    <div class="float-end">
+                        <button class="btn btn-primary" id="approve-selected">Approve Selected</button>
+                    </div>
                         <div class="table-responsive">
                         <table class="table datatables">
                                 <thead>
                                 <tr>
+                                    <th></th>
                                     @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
                                         <th>{{__('Employee')}}</th>
                                     @endif
@@ -194,6 +198,7 @@
                                 <tbody>
                                 @foreach ($approval as $approvals)
                                     <tr>
+                                    <td><input type="checkbox" class="approval-checkbox" data-id="{{ $approvals->id }}"></td>
                                     @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
                                         <td>{{!empty($approvals->employee->name)?$approvals->employee->name:'-'}}</td>
                                     @endif
@@ -251,5 +256,39 @@
         });
 
 
+    </script>
+    <script>
+        $(document).ready(function () {
+            $('#approve-selected').click(function () {
+                var selectedIds = [];
+                $('.approval-checkbox:checked').each(function () {
+                    selectedIds.push($(this).data('id'));
+                });
+
+                if (selectedIds.length === 0) {
+                    alert('Pilih setidaknya satu item untuk di-approve.');
+                    return;
+                }
+
+                var url = "{{ route('approve-multiple') }}";
+                var data = {
+                    selectedIds: selectedIds,
+                    _token: "{{ csrf_token() }}"
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: data,
+                    success: function (response) {
+                        alert('Items have been approved successfully.');
+                        window.location.reload();
+                    },
+                    error: function () {
+                        alert('Something went wrong. Please try again later.');
+                    },
+                });
+            });
+        });
     </script>
 @endpush
