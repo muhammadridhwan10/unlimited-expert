@@ -25,7 +25,10 @@ class ProjectsExport implements FromArray, WithHeadings
             'Employee',
             'Start Date',
             'Project Name',
+            'Label Project',
+            'Client Name',
             'Logged Hours',
+            'Status'
         ];
     }
 }

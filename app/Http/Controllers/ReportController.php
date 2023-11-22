@@ -5713,7 +5713,15 @@ class ReportController extends Controller
             if (!empty($request->client_id)) {
                 $employeeProjects
                 ->whereHas('project', function ($query) use ($filter_clients) {
-                    $query->where('client_id', $filter_clients);
+                    $query->whereIn('client_id', $filter_clients);
+                });
+            }
+
+            if (!empty($request->label)) {
+                $filteredLabels = $request->label;
+        
+                $employeeProjects->whereHas('project', function ($query) use ($filteredLabels) {
+                    $query->whereIn('label', $filteredLabels);
                 });
             }
 
@@ -6100,8 +6108,10 @@ class ReportController extends Controller
                 'Employee' => !empty($project_user->user->name) ? $project_user->user->name : '-',
                 'Start Date' => !empty($project_user->project->start_date) ? $project_user->project->start_date : '-',
                 'Project Name' => !empty($project_user->project->project_name) ? $project_user->project->project_name : '-',
+                'Label Project' => !empty($project_user->project->label) ? $project_user->project->label : '-',
+                'Client Name' => !empty($project_user->project->user->name) ? $project_user->project->user->name : '-',
                 'Logged Hours' => $this->calculateLoggedHours($project_user->project_id, $project_user->user_id),
-                'Status' => $this->getStatusBadge($project_user->project->status),
+                'Status' => !empty($project_user->project->status) ? $project_user->project->status : '-',
             ];
 
             $exportData->push($data);
@@ -6123,21 +6133,6 @@ class ReportController extends Controller
         }
 
         return number_format($logged_hours, 2, '.', '') . ' Hours';
-    }
-
-    public function getStatusBadge($status)
-    {
-        if ($status == "on_hold") {
-            return $status;
-        } elseif ($status == "complete") {
-            return $status;
-        } elseif ($status == "in_progress") {
-            return $status;
-        } elseif ($status == "canceled") {
-            return $status;
-        }
-
-        return '-';
     }
 
 

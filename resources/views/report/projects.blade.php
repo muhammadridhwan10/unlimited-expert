@@ -106,13 +106,19 @@
                                     <div class="col-auto" style = "width:400px;">
                                         <div class="btn-box">
                                             {{ Form::label('client_id', __('Client'), ['class' => 'form-label']) }}
-                                            {{ Form::select('client_id', $client, isset($_GET['client_id']) ? $_GET['client_id'] : null, ['class' => 'form-control select2', 'placeholder' => 'Select Client']) }}
+                                            {{ Form::select('client_id[]', $client, isset($_GET['client_id']) ? $_GET['client_id'] : null, ['class' => 'form-control select2','id'=>'choices-multiple1','multiple']) }}
                                         </div>
                                     </div>
                                     <div class="col-auto" style = "width:400px;">
                                         <div class="btn-box">
                                             {{ Form::label('user_ids', __('Employee'), ['class' => 'form-label']) }}
-                                            {{ Form::select('user_ids[]', $employess, isset($_GET['user_ids']) ? $_GET['user_ids'] : null, ['class' => 'form-control select2','id'=>'choices-multiple1','multiple']) }}
+                                            {{ Form::select('user_ids[]', $employess, isset($_GET['user_ids']) ? $_GET['user_ids'] : null, ['class' => 'form-control select2','id'=>'choices-multiple2','multiple']) }}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto" style = "width:400px;">
+                                        <div class="btn-box">
+                                            {{ Form::label('label', __('Label'), ['class' => 'form-label']) }}
+                                            {{ Form::select('label[]', \App\Models\Project::$label, isset($request->label) ? $request->label : null, ['class' => 'form-control select2', 'id'=>'choices-multiple3','multiple']) }}
                                         </div>
                                     </div>
                                     <div class="col-auto" style = "width:400px;">
@@ -161,6 +167,8 @@
                                     <th>{{__('Employee')}}</th>
                                     <th>{{__('Start Date')}}</th>
                                     <th>{{__('Project Name')}}</th>
+                                    <th>{{__('Label Project')}}</th>
+                                    <th>{{__('Client Name')}}</th>
                                     <th>{{__('Logged Hours')}}</th>
                                     <th>{{__('Status')}}</th>
                                 </tr>
@@ -192,6 +200,8 @@
                                             <td>{{!empty($project_user->user->name)?$project_user->user->name:'-'}}</td>
                                             <td>{{!empty($project_user->project->start_date)?$project_user->project->start_date:'-'}}</td>
                                             <td>{{!empty($project_user->project->project_name)?$project_user->project->project_name:'-'}}</td>
+                                            <td>{{!empty($project_user->project->label)?$project_user->project->label:'-'}}</td>
+                                             <td>{{!empty($project_user->project->user->name)?$project_user->project->user->name:'-'}}</td>
                                             <td>{{$hours_format_number . ' Hours'}}</td>
                                             <td>
                                                 @if($project_user->project->status == "on_hold")
