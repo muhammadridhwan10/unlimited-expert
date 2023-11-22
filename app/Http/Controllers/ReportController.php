@@ -38,6 +38,7 @@ use App\Models\User;
 use App\Models\UserDeal;
 use App\Models\Utility;
 use App\Models\Tax;
+use App\Models\Timesheet;
 use App\Models\LeaveType;
 use App\Models\Reimbursment;
 use App\Models\BankTransfer;
@@ -47,6 +48,8 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\ProjectsExport;
+use Illuminate\Support\Collection;
 
 class ReportController extends Controller
 {
@@ -5671,122 +5674,6 @@ class ReportController extends Controller
         if(\Auth::user()->can('manage report'))
         {
 
-            // $branch = Branch::get()->pluck('name', 'id');
-            // $branch->prepend('Select Branch', '');
-
-            // $department = Department::get()->pluck('name', 'id');
-            // $department->prepend('Select Department', '');
-
-            // $filterYear['branch']        = __('All');
-            // $filterYear['department']    = __('All');
-            // $filterYear['type']          = __('Monthly');
-            // $filterYear['dateYearRange'] = date('M-Y');
-            // $employees                   = Employee::where('is_active', 1);
-            // if(!empty($request->branch))
-            // {
-            //     $employees->where('branch_id', $request->branch);
-            //     $filterYear['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
-            // }
-            // if(!empty($request->department))
-            // {
-            //     $employees->where('department_id', $request->department);
-            //     $filterYear['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
-            // }
-
-
-            // $employees = $employees->get();
-
-            // $projects        = [];
-            // $totalProject  = 0;
-            // foreach($employees as $employee)
-            // {
-
-            //     $employeeProjects['id']          = $employee->id;
-            //     $employeeProjects['employee_id'] = $employee->employee_id;
-            //     $employeeProjects['employee']    = $employee->name;
-
-            //     $userDetail              = \Auth::user();
-            //     $user_projects           = $employee->projects()->pluck('project_id','project_id')->toArray();
-            //     $project                 = ProjectUser::with('project');
-
-            //     if($request->type == 'monthly' && !empty($request->month))
-            //     {
-            //         $month = date('m', strtotime($request->month));
-            //         $year  = date('Y', strtotime($request->month));
-
-            //         $project
-            //         ->where('user_id', $employee->user_id)
-            //         ->whereHas('project', function ($query) use ($month, $year) {
-            //             $query->whereMonth('start_date', $month)->whereYear('start_date', $year);
-            //         });
-
-            //         $filterYear['dateYearRange'] = date('M-Y', strtotime($request->month));
-            //         $filterYear['type']          = __('Monthly');
-
-            //     }
-            //     elseif(!isset($request->type))
-            //     {
-            //         $month     = date('m');
-            //         $year      = date('Y');
-            //         $monthYear = date('Y-m');
-
-            //         $project
-            //         ->where('user_id', $employee->user_id)
-            //         ->whereHas('project', function ($query) use ($month, $year) {
-            //             $query->whereMonth('start_date', $month)->whereYear('start_date', $year);
-            //         });
-
-            //         $filterYear['dateYearRange'] = date('M-Y', strtotime($monthYear));
-            //         $filterYear['type']          = __('Monthly');
-            //     }
-
-
-            //     if($request->type == 'yearly' && !empty($request->year))
-            //     {
-            //         $year      = date('Y');
-            //         $project
-            //         ->where('user_id', $employee->user_id)
-            //         ->whereHas('project', function ($query) use ($year) {
-            //             $query->whereYear('start_date', $year);
-            //         });
-
-            //         $filterYear['dateYearRange'] = $request->year;
-            //         $filterYear['type']          = __('Yearly');
-            //     }
-
-            //     // if($request->type == 'weekly' && !empty($request->week))
-            //     // {
-            //     //     $startOfWeek = date('Y-m-d', strtotime($request->week));
-            //     //     $endOfWeek = date('Y-m-d', strtotime('+6 days', strtotime($startOfWeek)));
-
-            //     //     $project
-            //     //     ->where('user_id', $employee->user_id)
-            //     //     ->whereHas('project', function ($query) use ($startOfWeek, $endOfWeek) {
-            //     //         $query->whereBetween('start_date', [$startOfWeek, $endOfWeek]);
-            //     //     });
-
-            //     //     $filterYear['dateYearRange'] = date('M-Y', strtotime($startOfWeek)).' - '.date('M-Y', strtotime($endOfWeek));
-            //     //     $filterYear['type']          = __('Weekly');
-            //     // }
-
-            //     $project = $project->count();
-
-            //     $totalProject += $project;
-
-            //     $employeeProjects['project'] = $project;
-
-
-            //     $projects[] = $employeeProjects;
-            // }
-
-            // $starting_year = date('Y', strtotime('-5 year'));
-            // $ending_year   = date('Y', strtotime('+5 year'));
-
-            // $filterYear['starting_year'] = $starting_year;
-            // $filterYear['ending_year']   = $ending_year;
-
-            // $filter['totalProject'] = $totalProject;
-
             $employee = User::all();
             $employee = $employee->pluck('id');
             $employeeProjects = ProjectUser::whereIn('user_id', $employee);
@@ -5794,19 +5681,28 @@ class ReportController extends Controller
             $filter_clients = $request->client_id;
             $employess =   User::where('type','!=','client')->pluck('name','id');
 
-            if(!empty($request->month))
-            {
-                $month = date('m', strtotime($request->month));
-                $year  = date('Y', strtotime($request->month));
-
-                $start_date = date($year . '-' . $month . '-01');
-                $end_date   = date($year . '-' . $month . '-t');
-
-                $employeeProjects
-                ->whereHas('project', function ($query) use ($start_date, $end_date) {
+            if (!empty($request->start_month) && !empty($request->end_month)) {
+                $start_month = date('m', strtotime($request->start_month));
+                $end_month = date('m', strtotime($request->end_month));
+                $start_year = date('Y', strtotime($request->start_month));
+                $end_year = date('Y', strtotime($request->end_month));
+        
+                $start_date = date($start_year . '-' . $start_month . '-01');
+                $end_date = date($end_year . '-' . $end_month . '-t');
+        
+                $employeeProjects->whereHas('project', function ($query) use ($start_date, $end_date) {
                     $query->whereBetween('start_date', [$start_date, $end_date]);
                 });
-
+            } elseif (!empty($request->month)) {
+                $month = date('m', strtotime($request->month));
+                $year = date('Y', strtotime($request->month));
+        
+                $start_date = date($year . '-' . $month . '-01');
+                $end_date = date($year . '-' . $month . '-t');
+        
+                $employeeProjects->whereHas('project', function ($query) use ($start_date, $end_date) {
+                    $query->whereBetween('start_date', [$start_date, $end_date]);
+                });
             }
 
             if (!empty($request->user_ids)) {
@@ -5822,6 +5718,17 @@ class ReportController extends Controller
             }
 
             $employeeProject = $employeeProjects->get();
+
+            if (!empty($request->export_excel)) {
+                // Persiapkan data untuk diekspor
+                $exportData = $this->prepareExportData($employeeProject);
+        
+                // Convert the collection to an array
+                $exportDataArray = $exportData->toArray();
+
+                // Ekspor ke Excel
+                return Excel::download(new ProjectsExport($exportDataArray), 'projects_report.xlsx');
+            }
             
 
             return view('report.projects', compact('employeeProject','client','employess'));
@@ -6182,6 +6089,55 @@ class ReportController extends Controller
         {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
+    }
+
+    public function prepareExportData($employeeProject)
+    {
+        $exportData = new Collection();
+
+        foreach ($employeeProject as $project_user) {
+            $data = [
+                'Employee' => !empty($project_user->user->name) ? $project_user->user->name : '-',
+                'Start Date' => !empty($project_user->project->start_date) ? $project_user->project->start_date : '-',
+                'Project Name' => !empty($project_user->project->project_name) ? $project_user->project->project_name : '-',
+                'Logged Hours' => $this->calculateLoggedHours($project_user->project_id, $project_user->user_id),
+                'Status' => $this->getStatusBadge($project_user->project->status),
+            ];
+
+            $exportData->push($data);
+        }
+
+        return $exportData;
+    }
+
+    public function calculateLoggedHours($projectId, $userId)
+    {
+        $logged_hours = 0;
+        $timesheets = Timesheet::where('project_id', $projectId)->where('created_by', $userId)->get();
+
+        foreach ($timesheets as $timesheet) {
+            $hours = date('H', strtotime($timesheet->time));
+            $minutes = date('i', strtotime($timesheet->time));
+            $total_hours = $hours + ($minutes / 60);
+            $logged_hours += $total_hours;
+        }
+
+        return number_format($logged_hours, 2, '.', '') . ' Hours';
+    }
+
+    public function getStatusBadge($status)
+    {
+        if ($status == "on_hold") {
+            return $status;
+        } elseif ($status == "complete") {
+            return $status;
+        } elseif ($status == "in_progress") {
+            return $status;
+        } elseif ($status == "canceled") {
+            return $status;
+        }
+
+        return '-';
     }
 
 

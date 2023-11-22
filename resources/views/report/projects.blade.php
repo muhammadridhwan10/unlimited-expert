@@ -69,6 +69,12 @@
         $('input[name="type"]:radio:checked').trigger('change');
 
     </script>
+    <script>
+        function exportToExcel() {
+            $('#export_excel').val(1);
+            document.getElementById('report_projects').submit();
+        }
+    </script>
 @endpush
 @section('action-btn')
     <div class="float-end">
@@ -80,6 +86,9 @@
         <a href="#" class="btn btn-sm btn-primary" onclick="saveAsPDF()"data-bs-toggle="tooltip" title="{{__('Download')}}" data-original-title="{{__('Download')}}">
             <span class="btn-inner--icon"><i class="ti ti-download"></i></span>
         </a>
+        <a href="#" class="btn btn-sm btn-success" onclick="exportToExcel()" data-bs-toggle="tooltip" title="{{__('Export to Excel')}}" data-original-title="{{__('Export to Excel')}}">
+            <span class="btn-inner--icon"><i class="ti ti-file"></i></span>
+        </a>
     </div>
 @endsection
 
@@ -90,27 +99,35 @@
                 <div class="card">
                     <div class="card-body">
                         {{ Form::open(array('route' => array('report.projects'),'method'=>'get','id'=>'report_projects')) }}
+                        {{ Form::hidden('export_excel', 0, ['id' => 'export_excel']) }}
                         <div class="row align-items-center justify-content-end">
                             <div class="col-auto">
                                 <div class="row">
-                                    <div class="col-auto" style = "width:270px;">
+                                    <div class="col-auto" style = "width:400px;">
                                         <div class="btn-box">
                                             {{ Form::label('client_id', __('Client'), ['class' => 'form-label']) }}
                                             {{ Form::select('client_id', $client, isset($_GET['client_id']) ? $_GET['client_id'] : null, ['class' => 'form-control select2', 'placeholder' => 'Select Client']) }}
                                         </div>
                                     </div>
-                                    <div class="col-auto" style = "width:270px;">
+                                    <div class="col-auto" style = "width:400px;">
                                         <div class="btn-box">
                                             {{ Form::label('user_ids', __('Employee'), ['class' => 'form-label']) }}
                                             {{ Form::select('user_ids[]', $employess, isset($_GET['user_ids']) ? $_GET['user_ids'] : null, ['class' => 'form-control select2','id'=>'choices-multiple1','multiple']) }}
                                         </div>
                                     </div>
-                                     <div class="col-auto">
+                                    <div class="col-auto" style = "width:400px;">
                                         <div class="btn-box">
-                                            {{Form::label('month',__('Month'),['class'=>'form-label'])}}
-                                            {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
+                                            {{ Form::label('start_month', __('Start Month'), ['class' => 'form-label']) }}
+                                            {{ Form::month('start_month', isset($_GET['start_month']) ? $_GET['start_month'] : null, ['class' => 'month-btn form-control']) }}
                                         </div>
                                     </div>
+                                    <div class="col-auto" style = "width:400px;">
+                                        <div class="btn-box">
+                                            {{ Form::label('end_month', __('End Month'), ['class' => 'form-label']) }}
+                                            {{ Form::month('end_month', isset($_GET['end_month']) ? $_GET['end_month'] : null, ['class' => 'month-btn form-control']) }}
+                                        </div>
+                                    </div>
+
                                 </div>
                             </div>
                             <div class="col-auto mt-4">
@@ -142,22 +159,40 @@
                                 <thead>
                                 <tr>
                                     <th>{{__('Employee')}}</th>
-                                    <th>{{__('Project Name')}}</th>
                                     <th>{{__('Start Date')}}</th>
-                                    <th>{{__('Client Name')}}</th>
-                                    <th>{{__('Tags')}}</th>
+                                    <th>{{__('Project Name')}}</th>
+                                    <th>{{__('Logged Hours')}}</th>
                                     <th>{{__('Status')}}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 @foreach($employeeProject as $project_user)
+                                    @php
+                                        $hours_format_number = 0;
+                                        $total_hours = 0;
+                                        $hourdiff_late = 0;
+                                        $esti_late_hour =0;
+                                        $esti_late_hour_chart=0;
+
+                                        $logged_hours = 0;
+                                        $timesheets = App\Models\Timesheet::where('project_id',$project_user->project_id)->where('created_by' ,$project_user->user_id)->get();
+                                    @endphp
+                                    @foreach($timesheets as $timesheet)
+                                        @php
+
+                                            $hours =  date('H', strtotime($timesheet->time));
+                                            $minutes =  date('i', strtotime($timesheet->time));
+                                            $total_hours = $hours + ($minutes/60) ;
+                                            $logged_hours += $total_hours ;
+                                            $hours_format_number = number_format($logged_hours, 2, '.', '');
+                                        @endphp
+                                    @endforeach
                                     @if(!empty($project_user->project->project_name))
                                         <tr>
                                             <td>{{!empty($project_user->user->name)?$project_user->user->name:'-'}}</td>
-                                            <td>{{!empty($project_user->project->project_name)?$project_user->project->project_name:'-'}}</td>
                                             <td>{{!empty($project_user->project->start_date)?$project_user->project->start_date:'-'}}</td>
-                                            <td>{{!empty($project_user->project->user->name)?$project_user->project->user->name:'-'}}</td>
-                                            <td>{{!empty($project_user->project->tags)?$project_user->project->tags:'-'}}</td>
+                                            <td>{{!empty($project_user->project->project_name)?$project_user->project->project_name:'-'}}</td>
+                                            <td>{{$hours_format_number . ' Hours'}}</td>
                                             <td>
                                                 @if($project_user->project->status == "on_hold")
                                                     <div class="status_badge badge bg-warning p-2 px-3 rounded">{{ $project_user->project->status }}</div>

@@ -520,9 +520,6 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'reports-projects') ? 'active dash-trigger' : ''}}" href="#navbar-attendance" data-toggle="collapse" role="button" aria-expanded="{{ (Request::segment(1) == 'reports-projects') ? 'true' : 'false'}}">
                                                 <a class="dash-link" href="#">{{__('Projects')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                                 <ul class="dash-submenu">
-                                                    <li class="dash-item {{ request()->is('reports-projects') ? 'active' : '' }}">
-                                                        <a class="dash-link" href="{{ route('report.projects') }}">{{ __('Project Reports User') }}</a>
-                                                    </li>
                                                     <li class="dash-item {{ request()->is('time-tracker') ? 'active' : '' }}">
                                                         <a class="dash-link" href="{{ route('time.tracker') }}">{{__('Project Tracker')}}</a>
                                                     </li>
@@ -904,6 +901,11 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                     @if(\Auth::user()->type !== 'admin' && \Auth::user()->type !== 'company')
                                     <li class="dash-item  {{(Request::route()->getName() == 'project_report.index' || Request::route()->getName() == 'project_report.show') ? 'active' : ''}}">
                                         <a class="dash-link" href="{{route('project_report.index') }}">{{__('Project Report')}}</a>
+                                    </li>
+                                    @endif
+                                    @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'senior audit')
+                                    <li class="dash-item {{ request()->is('reports-projects') ? 'active' : '' }}">
+                                        <a class="dash-link" href="{{ route('report.projects') }}">{{ __('Project Reports User') }}</a>
                                     </li>
                                     @endif
                                     @if(Gate::check('manage project task stage') || Gate::check('manage bug status') || Gate::check('manage project task template') || Gate::check('manage mapping account data'))
