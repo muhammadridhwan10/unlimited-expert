@@ -3,7 +3,7 @@
     $profile=asset(Storage::url('uploads/avatar/'));
 @endphp
 @section('page-title')
-    {{__('Manage User Assigned')}}
+    {{__('Manage User Assigment')}}
 @endsection
 @push('script-page')
 
@@ -35,8 +35,8 @@
                                     @foreach($users as $user)
                                         <tr>
                                             <td>
-                                                <div class="avatar-group">
-                                                    <a href="#" class="avatar rounded-circle avatar-sm">
+                                                <div class="user-group">
+                                                    <a href="#" class="img-fluid rounded-circle">
                                                         <img data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset(Storage::url($user->name . ".png"))}}" @endif title="{{ $user->name }}" class="hweb">
                                                     </a>
                                                         {{ $user->name }}

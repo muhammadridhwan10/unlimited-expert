@@ -23,8 +23,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui"/>
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta name="description" content="Dashboard Template Description"/>
-    <meta name="keywords" content="Dashboard Template"/>
-    <meta name="author" content="Rajodiya Infotech"/>
+    <meta name="robots" content="noindex, nofollow">
 
     <!-- Favicon icon -->
     <link rel="icon" href="{{$logo.'/'.(isset($company_favicon) && !empty($company_favicon)?$company_favicon:'favicon.png')}}" type="image/x-icon"/>

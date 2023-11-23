@@ -6,6 +6,8 @@ $setting = \App\Models\Utility::colorset();
 $mode_setting = \App\Models\Utility::mode_layout();
 $emailTemplate = \App\Models\EmailTemplate::first();
 
+$employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
+
 @endphp
 
 {{--<nav class="dash-sidebar light-sidebar {{(isset($mode_setting['cust_theme_bg']) && $mode_setting['cust_theme_bg'] == 'on')?'transprent-bg':''}}">--}}
@@ -524,7 +526,7 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                                         <a class="dash-link" href="{{ route('time.tracker') }}">{{__('Project Tracker')}}</a>
                                                     </li>
                                                     <li class="dash-item  {{(Request::route()->getName() == 'project_report.index' || Request::route()->getName() == 'project_report.show') ? 'active' : ''}}">
-                                                        <a class="dash-link" href="{{route('project_report.index') }}">{{__('Project Reports Detail')}}</a>
+                                                        <a class="dash-link" href="{{route('project_report.index') }}">{{__('Project Progress Reports')}}</a>
                                                     </li>
                                                 </ul>
                                             </li>
@@ -869,7 +871,7 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                     @if (\Auth::user()->type !== 'client' || \Auth::user()->type !== 'staff_client')
                                         @can('manage project task')
                                         <li class="dash-item {{ (Request::route()->getName() == 'project.listUsers') ? ' active' : '' }}">
-                                            <a class="dash-link" href="{{ route('project.listUsers') }}">{{__('User Assigned')}}</a>
+                                            <a class="dash-link" href="{{ route('project.listUsers') }}">{{__('User Assignment')}}</a>
                                         </li>
                                         @endcan
                                     @endif
@@ -883,11 +885,11 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                         <a class="dash-link" href="{{route('timesheet.list')}}">{{__('Timesheet')}}</a>
                                     </li>
                                     @endcan
-                                    @can('manage bug report')
+                                    {{-- @can('manage bug report')
                                     <li class="dash-item {{ (request()->is('bugs-report*') ? 'active' : '')}}">
                                         <a class="dash-link" href="{{route('bugs.view','list')}}">{{__('Bug')}}</a>
                                     </li>
-                                    @endcan
+                                    @endcan --}}
                                     <!-- @can('manage project task')
                                                 <li class="dash-item {{ (request()->is('calendar*') ? 'active' : '')}}">
                                                     <a class="dash-link" href="{{ route('task.calendar',['all']) }}">{{__('Task Calendar')}}</a>
@@ -900,12 +902,12 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                     @endif
                                     @if(\Auth::user()->type !== 'admin' && \Auth::user()->type !== 'company')
                                     <li class="dash-item  {{(Request::route()->getName() == 'project_report.index' || Request::route()->getName() == 'project_report.show') ? 'active' : ''}}">
-                                        <a class="dash-link" href="{{route('project_report.index') }}">{{__('Project Report')}}</a>
+                                        <a class="dash-link" href="{{route('project_report.index') }}">{{__('Project Progress Report')}}</a>
                                     </li>
                                     @endif
                                     @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'senior audit')
                                     <li class="dash-item {{ request()->is('reports-projects') ? 'active' : '' }}">
-                                        <a class="dash-link" href="{{ route('report.projects') }}">{{ __('Project Reports User') }}</a>
+                                        <a class="dash-link" href="{{ route('report.projects') }}">{{ __('Project Time Report') }}</a>
                                     </li>
                                     @endif
                                     @if(Gate::check('manage project task stage') || Gate::check('manage bug status') || Gate::check('manage project task template') || Gate::check('manage mapping account data'))
@@ -949,7 +951,7 @@ $emailTemplate = \App\Models\EmailTemplate::first();
 
                         <!--------------------- Start Audit Managaement System ----------------------------------->
 
-                        @if(( Gate::check('manage user')))
+                        {{-- @if(( Gate::check('manage user')))
                             <li class="dash-item dash-hasmenu">
                                 <a href="#!" class="dash-link {{ (Request::segment(1) == 'users' || Request::segment(1) == 'roles' || Request::segment(1) == 'clients')?' active dash-trigger':''}}"><span class="dash-micon"><i class="ti ti-book"></i></span><span class="dash-mtext">{{__('Audit Management')}}</span><span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                 <ul class="dash-submenu">
@@ -985,7 +987,7 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                     @endcan
                                 </ul>
                             </li>
-                        @endif
+                        @endif --}}
 
                         <!--------------------- End Audit Managaement System----------------------------------->
 
@@ -1068,9 +1070,11 @@ $emailTemplate = \App\Models\EmailTemplate::first();
                                 <a href="#!" class="dash-link {{ (Request::segment(1) == 'medical-allowance' || Request::segment(1) == 'reimbursment-personal' || Request::segment(1) == 'reimbursment-client')?' active dash-trigger':''}}"><span class="dash-micon"><i class="ti ti-receipt"></i></span><span class="dash-mtext">{{__('Reimbursement')}}</span><sup style="color: red;">New</sup><span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                 <ul class="dash-submenu">
                                     @if(Auth::user()->type !== 'staff_client' || Auth::user()->type !== 'intern')
+                                        @if($employee->branch_id == 1)
                                         <li class="dash-item {{ (Request::route()->getName() == 'medical-allowance.index' || Request::route()->getName() == 'medical-allowance.create' || Request::route()->getName() == 'medical-allowance.edit') ? ' active' : '' }}">
                                             <a class="dash-link" href="{{ route('medical-allowance.index') }}">{{__('Medical Allowance')}}</a>
                                         </li>
+                                        @endif
                                     @endif
                                         <li class="dash-item {{ (Request::route()->getName() == 'reimbursment-personal.index' || Request::route()->getName() == 'reimbursment-personal.create' || Request::route()->getName() == 'reimbursment-personal.edit') ? ' active' : '' }} ">
                                             <a class="dash-link" href="{{route('reimbursment-personal.index')}}">{{__('Reimbursment Personal')}}</a>

@@ -352,6 +352,58 @@ class UserController extends Controller
         return redirect()->back()->with('success', __('Profile successfully updated.'));
     }
 
+    public function editphotoprofile(Request $request)
+    {
+
+        $userDetail = \Auth::user();
+        $user       = User::findOrFail($userDetail['id']);
+
+        $validator = \Validator::make(
+            $request->all(), [
+                        'profile' => 'image|mimes:jpeg,png,jpg|max:2048',
+                        ]
+        );
+
+        if($validator->fails())
+        {
+            $messages = $validator->getMessageBag();
+
+            return redirect()->back()->with('error', $messages->first());
+        }
+
+        if($request->hasFile('profile'))
+        {
+            $filenameWithExt = $request->file('profile')->getClientOriginalName();
+            $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+            $extension       = $request->file('profile')->getClientOriginalExtension();
+            $fileNameToStore = $filename . '_' . time() . '.' . $extension;
+            $dir        = storage_path('uploads/avatar/');
+            $image_path = $dir . $userDetail['avatar'];
+
+            if(File::exists($image_path))
+            {
+                File::delete($image_path);
+            }
+
+            if(!file_exists($dir))
+            {
+                mkdir($dir, 0777, true);
+            }
+            $path = $request->file('profile')->storeAs('uploads/avatar/', $fileNameToStore);
+
+
+        }
+
+        if(!empty($request->profile))
+        {
+            $user['avatar'] = $fileNameToStore;
+        }
+        $user->save();
+        CustomField::saveData($user, $request->customField);
+
+        return redirect()->back()->with('success', __('Photo Profile successfully updated.'));
+    }
+
     public function updatePassword(Request $request)
     {
 

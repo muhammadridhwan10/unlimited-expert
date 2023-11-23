@@ -58,9 +58,20 @@
                             @if(isset($project->users) && !empty($project->users) && count($project->users) > 0)
                                 @foreach($project->users as $key => $user)
                                     @if($key < 3)
-                                        <a href="#" class="avatar rounded-circle avatar-sm">
-                                            <img @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset(Storage::url($user->name . ".png"))}}" @endif  alt="image" data-bs-toggle="tooltip" title="{{ $user->name }}">
+                                        <a href="#" class="img-fluid rounded-circle">
+                                            <img 
+                                                @if($user->avatar) 
+                                                    src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" 
+                                                @else 
+                                                    src="{{asset(Storage::url($user->name . ".png"))}}" 
+                                                @endif  
+                                                alt="image" 
+                                                data-bs-toggle="tooltip" 
+                                                title="{{ $user->name }}"
+                                                style="width: 40px; height: 40px;"
+                                            >
                                         </a>
+
                                     @else
                                         @break
                                     @endif

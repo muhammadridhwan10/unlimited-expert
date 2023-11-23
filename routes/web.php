@@ -95,6 +95,14 @@ Route::post('edit-profile', 'UserController@editprofile')->name('update.account'
     ]
 );
 
+Route::post('edit-photo-profile', 'UserController@editphotoprofile')->name('update.photo.profile')->middleware(
+    [
+        'auth',
+        'XSS',
+        'revalidate',
+    ]
+);
+
 Route::post('save-token', 'DashboardController@saveToken')->name('save-token');
 Route::resource('users', 'UserController')->middleware(
     [

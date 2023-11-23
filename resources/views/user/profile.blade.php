@@ -44,10 +44,31 @@
                     <div class="row">
                         <div class="col-md-6 col-xxl-6">
                                 <div class="card-header border-0 pb-0 img-fluid rounded-circle">
-                                    <div class="d-flex align-items-center">
-                                        <img src="{{(!empty($userDetail->avatar))? asset(Storage::url("uploads/avatar/".$userDetail->avatar)): asset(Storage::url($userDetail->name . ".png"))}}"  class="img-user wid-150 rounded-circle">
+                                    <div class="d-flex align-items-center ">
+                                        <img src="{{(!empty($userDetail->avatar))? asset(Storage::url("uploads/avatar/".$userDetail->avatar)): asset(Storage::url($userDetail->name . ".png"))}}"  class="img-fluid wid-150 rounded-circle">
                                     </div>
                                     
+                                </div>
+                                <br>
+                                {{Form::model($userDetail,array('route' => array('update.photo.profile'), 'method' => 'post', 'enctype' => "multipart/form-data"))}}
+                                @csrf
+                                <div class="row">
+                                    <div class="col-md-6 col-xxl-6">
+                                        <div class="form-group">
+                                            <div class="choose-files">
+                                                <label for="avatar">
+                                                    <div class=" bg-primary profile_update"> <i class="ti ti-upload px-1"></i>{{__('Choose file here')}}</div>
+                                                    <input type="file" class="form-control file" accept=".png, .jpg, .jpeg" name="profile" id="avatar" data-filename="profile_update">
+                                                </label>
+                                            </div>
+                                            <span class="text-xs text-muted">{{ __('Please upload a valid image file. Size of image should not be more than 2MB.')}}</span>
+                                            @error('avatar')
+                                            <span class="invalid-feedback text-danger text-xs" role="alert">{{ $message }}</span>
+                                            @enderror
+                                        </div>
+
+                                    </div>
+                                   
                                 </div>
                         </div>
                         <div class="col-md-6 col-xxl-6">
@@ -77,6 +98,10 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-lg-12 text-end">
+                            <input type="submit" value="{{__('Save Changes')}}" class="btn btn-print-invoice  btn-primary m-r-10">
+                        </div>
+                        </form>
                         <div class="col-sm-12 mt-3">
                             <div class="card">
                                 <div class="card-header">
@@ -292,7 +317,7 @@
                                 {{Form::textarea('personal_description',null,array('class'=>'form-control','placeholder'=>__('Enter Description')))}}
                                 </div>
                             </div>
-                            <div class="col-lg-6 col-md-6">
+                            {{-- <div class="col-lg-6 col-md-6">
                                 <div class="form-group">
                                     <div class="choose-files">
                                         <label for="avatar">
@@ -307,7 +332,7 @@
 
                                 </div>
 
-                            </div>
+                            </div> --}}
                             <div class="col-lg-12 text-end">
                                 <input type="submit" value="{{__('Save Changes')}}" class="btn btn-print-invoice  btn-primary m-r-10">
                             </div>
