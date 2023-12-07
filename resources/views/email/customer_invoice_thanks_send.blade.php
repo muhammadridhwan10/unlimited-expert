@@ -38,7 +38,7 @@ elseif($invoice->company == "XGA")
 
 ?>
 <div style="background-color:#f6f6f6;font-family:sans-serif;font-size:14px;line-height:1.4;margin:0;padding:0">
-    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Dear {{ $invoice->customer->name }} Thank you for the payment of the invoice. Your collaboration is an honor for us, and we deeply appreciate the trust you have placed in {{ $company }}.</span>
+    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Dear {{ $invoice->customer->name }} Thank you for the payment of the invoice. Your collaboration is an honor for us, and we deeply appreciate the trust you have placed.</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse:separate;background-color:#f6f6f6;width:100%" width="100%" bgcolor="#f6f6f6">
         <tbody>
             <tr>
