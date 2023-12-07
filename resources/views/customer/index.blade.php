@@ -51,12 +51,13 @@ table-border-style">
                             <thead>
                             <tr>
                                 <th>#</th>
-                                <th> {{__('Name')}}</th>
+                                <th> {{__('Name For Invoice')}}</th>
                                 <th> {{__('Position')}}</th>
-                                <th> {{__('Contact')}}</th>
+                                <th> {{__('Name For Email')}}</th>
+                                {{-- <th> {{__('Contact')}}</th> --}}
                                 <th> {{__('Email')}}</th>
-                                <th> {{__('Balance')}}</th>
-                                <th> {{__('Last Login')}}</th>
+                                {{-- <th> {{__('Balance')}}</th>
+                                <th> {{__('Last Login')}}</th> --}}
                                 <th>{{__('Action')}}</th>
                             </tr>
                             </thead>
@@ -74,14 +75,14 @@ table-border-style">
                                             </a>
                                         @endcan
                                     </td>
-                                    <td class="font-style">{{$customer['name']}}</td>
+                                    <td class="font-style">{{$customer['name_invoice']}}</td>
                                     <td>{{$customer['position']}}</td>
-                                    <td>{{$customer['contact']}}</td>
+                                    <td>{{$customer['name']}}</td>
                                     <td>{{$customer['email']}}</td>
-                                    <td>{{\Auth::user()->priceFormat($customer['balance'])}}</td>
+                                    {{-- <td>{{\Auth::user()->priceFormat($customer['balance'])}}</td>
                                     <td>
                                         {{ (!empty($customer->last_login_at)) ? $customer->last_login_at : '-' }}
-                                    </td>
+                                    </td> --}}
                                     <td class="Action">
                                         <span>
                                         @if($customer['is_active']==0)

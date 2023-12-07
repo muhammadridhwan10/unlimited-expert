@@ -305,7 +305,7 @@
                     <div class="row">
                         <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
                             <div class="form-group" id="customer-box">
-                                {{ Form::label('customer_id', __('Customer'),['class'=>'form-label']) }}
+                                {{ Form::label('customer_id', __('Customer'),['class'=>'form-label']) }}<span class="text-danger">*</span>  <a style="font-size:10px" href="#" data-size="lg" data-url="{{ route('customer.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="" data-bs-original-title="{{__('Create Customer')}}">{{__('Create Customer')}}</a>
                                 {{ Form::select('customer_id', $customers,$customerId, array('class' => 'form-control select','id'=>'customer','data-url'=>route('invoice.customer'),'required'=>'required')) }}
 
                             </div>
@@ -317,7 +317,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        {{ Form::label('issue_date', __('Issue Date'),['class'=>'form-label']) }}
+                                        {{ Form::label('issue_date', __('Issue Date'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                                         <div class="form-icon-user">
                                             {{Form::date('issue_date',null,array('class'=>'form-control','required'=>'required'))}}
 
@@ -326,7 +326,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        {{ Form::label('due_date', __('Due Date'),['class'=>'form-label']) }}
+                                        {{ Form::label('due_date', __('Due Date'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                                         <div class="form-icon-user">
                                             {{Form::date('due_date',null,array('class'=>'form-control','required'=>'required'))}}
 
@@ -335,16 +335,33 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        {{ Form::label('invoice_number', __('Invoice Number'),['class'=>'form-label']) }}
+                                        {{ Form::label('invoice_number', __('Invoice Number'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                                         <div class="form-icon-user">
-                                            <input name="invoice_id" type="text" class="form-control" value="{{$invoice_number}}">
+                                            <input name="invoice_id" type="text" class="form-control">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        {{ Form::label('category_id', __('Category'),['class'=>'form-label']) }}
+                                        {{ Form::label('category_id', __('Category'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                                         {{ Form::select('category_id', $category,null, array('class' => 'form-control select','required'=>'required')) }}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ Form::label('user_id', __('Partners'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                                        {{ Form::select('user_id', $partners,null, array('class' => 'form-control select','required'=>'required')) }}
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-md-6">
+                                    <div class="form-group">
+                                        {{ Form::label('Company', __('company'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                        <select name="company" id="company" class="form-control main-element" required>
+                                            <option value="0">{{__('Select Company')}}</option>
+                                            @foreach(\App\Models\Invoice::$company as $k => $v)
+                                                <option value="{{$k}}">{{__($k)}}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
@@ -408,19 +425,19 @@
                             <tbody class="ui-sortable" data-repeater-item>
                             <tr>
 
-                                <td width="25%" class="form-group pt-0">
+                                <td width="25%">
                                     {{ Form::select('item', $product_services,'', array('class' => 'form-control select2 item','data-url'=>route('invoice.product'),'required'=>'required')) }}
                                 </td>
-                                <td>
-                                    <div class="form-group price-input input-group search-form">
+                                <td width="20%">
+                                    <div class=" price-input input-group search-form">
                                         {{ Form::text('quantity','', array('class' => 'form-control quantity','required'=>'required','placeholder'=>__('Qty'),'required'=>'required')) }}
                                         <span class="unit input-group-text bg-transparent"></span>
                                     </div>
                                 </td>
 
 
-                                <td>
-                                    <div class="form-group price-input input-group search-form">
+                                <td width="30%">
+                                    <div class="price-input input-group search-form">
                                         {{ Form::text('price','', array('class' => 'form-control price','required'=>'required','placeholder'=>__('Price'),'required'=>'required')) }}
                                         <span class="input-group-text bg-transparent">{{\Auth::user()->currencySymbol()}}</span>
                                     </div>
@@ -429,17 +446,15 @@
 
 
                                 <td>
-                                    <div class="form-group">
                                         <div class="input-group colorpickerinput">
                                             <div class="taxes"></div>
                                             {{ Form::hidden('tax','', array('class' => 'form-control tax text-dark')) }}
                                             {{ Form::hidden('itemTaxPrice','', array('class' => 'form-control itemTaxPrice')) }}
                                             {{ Form::hidden('itemTaxRate','', array('class' => 'form-control itemTaxRate')) }}
                                         </div>
-                                    </div>
                                 </td>
                                 <td>
-                                    <div class="form-group price-input input-group search-form">
+                                    <div class="price-input input-group search-form">
                                         {{ Form::text('discount','', array('class' => 'form-control discount','required'=>'required','placeholder'=>__('Discount'))) }}
                                         <span class="input-group-text bg-transparent">{{\Auth::user()->currencySymbol()}}</span>
                                     </div>

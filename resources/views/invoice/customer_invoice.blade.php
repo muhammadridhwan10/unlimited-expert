@@ -321,7 +321,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-12">
+        {{-- <div class="col-12">
             <h5 class="h4 d-inline-block font-weight-400 mb-4">{{__('Receipt Summary')}}</h5>
             <div class="card">
                 <div class="card-body table-border-style">
@@ -364,7 +364,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
     </div>
 
     @if($invoice->getDue() > 0)

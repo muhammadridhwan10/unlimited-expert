@@ -76,7 +76,7 @@
                                 <th>{{__('Tax')}}</th>
                                 <th>{{__('Category')}}</th>
                                 <th>{{__('Unit')}}</th>
-                                <th>{{__('Quantity')}}</th>
+                                {{-- <th>{{__('Quantity')}}</th> --}}
                                 <th>{{__('Type')}}</th>
                                 <th>{{__('Action')}}</th>
                             </tr>
@@ -86,7 +86,7 @@
                                 <tr class="font-style">
                                     <td>{{ $productService->name}}</td>
                                     <td>{{ $productService->sku }}</td>
-                                    <td>{{ Utility::getDateFormatedInvoice($productService->periode) }}</td>
+                                    <td>{{ $productService->periode }}</td>
                                     <td>{{ \Auth::user()->priceFormat($productService->sale_price) }}</td>
                                     <td>{{  \Auth::user()->priceFormat($productService->purchase_price )}}</td>
                                     <td>
@@ -104,7 +104,7 @@
                                     </td>
                                     <td>{{ !empty($productService->category)?$productService->category->name:'' }}</td>
                                     <td>{{ !empty($productService->unit())?$productService->unit()->name:'' }}</td>
-                                    <td>{{$productService->quantity}}</td>
+                                    {{-- <td>{{$productService->quantity}}</td> --}}
                                     <td>{{ $productService->type }}</td>
 
                                     @if(Gate::check('edit product & service') || Gate::check('delete product & service'))

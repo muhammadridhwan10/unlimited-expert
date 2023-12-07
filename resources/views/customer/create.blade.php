@@ -1,13 +1,13 @@
 {{Form::open(array('url'=>'customer','method'=>'post'))}}
 <div class="modal-body">
 
-    <h6 class="sub-title">{{__('Basic Info')}}</h6>
+    <h6 class="sub-title">{{__('Basic Info (Invoice)')}}</h6>
     <div class="row">
         <div class="col-lg-4 col-md-4 col-sm-6">
             <div class="form-group">
-                {{Form::label('name',__('Name'),array('class'=>'form-label')) }}
+                {{Form::label('name_invoice',__('Name For Invoice'),array('class'=>'form-label')) }}
                 <div class="form-icon-user">
-                    {{Form::text('name',null,array('class'=>'form-control','required'=>'required'))}}
+                    {{Form::text('name_invoice',null,array('class'=>'form-control','required'=>'required'))}}
                 </div>
             </div>
         </div>
@@ -19,7 +19,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-4 col-md-4 col-sm-6">
+        {{-- <div class="col-lg-4 col-md-4 col-sm-6">
             <div class="form-group">
                 {{Form::label('contact',__('Contact'),['class'=>'form-label'])}}
                 <div class="form-icon-user">
@@ -43,7 +43,59 @@
                     {{Form::text('tax_number',null,array('class'=>'form-control'))}}
                 </div>
             </div>
+        </div> --}}
+        @if(!$customFields->isEmpty())
+            <div class="col-lg-4 col-md-4 col-sm-6">
+                <div class="tab-pane fade show" id="tab-2" role="tabpanel">
+                    @include('customFields.formBuilder')
+                </div>
+            </div>
+        @endif
+    </div>
+
+    <h6 class="sub-title">{{__('Basic Info (Email)')}}</h6>
+    <div class="row">
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('name',__('Name For Email'),array('class'=>'form-label')) }}
+                <div class="form-icon-user">
+                    {{Form::text('name',null,array('class'=>'form-control','required'=>'required'))}}
+                </div>
+            </div>
         </div>
+        {{-- <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('position',__('Position'),['class'=>'form-label'])}}
+                <div class="form-icon-user">
+                    {{Form::text('position',null,array('class'=>'form-control'))}}
+                </div>
+            </div>
+        </div> --}}
+        {{-- <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('contact',__('Contact'),['class'=>'form-label'])}}
+                <div class="form-icon-user">
+                    {{Form::text('contact',null,array('class'=>'form-control','required'=>'required'))}}
+                </div>
+            </div>
+        </div> --}}
+        <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('email',__('Email'),['class'=>'form-label'])}}
+                <div class="form-icon-user">
+                    {{Form::text('email',null,array('class'=>'form-control'))}}
+                </div>
+            </div>
+        </div>
+
+        {{-- <div class="col-lg-4 col-md-4 col-sm-6">
+            <div class="form-group">
+                {{Form::label('tax_number',__('Tax Number'),['class'=>'form-label'])}}
+                <div class="form-icon-user">
+                    {{Form::text('tax_number',null,array('class'=>'form-control'))}}
+                </div>
+            </div>
+        </div> --}}
         @if(!$customFields->isEmpty())
             <div class="col-lg-4 col-md-4 col-sm-6">
                 <div class="tab-pane fade show" id="tab-2" role="tabpanel">
@@ -186,4 +238,16 @@
     <input type="button" value="{{__('Cancel')}}" class="btn btn-light" data-bs-dismiss="modal">
     <input type="submit" value="{{__('Create')}}" class="btn btn-primary">
 </div>
+ <script>
+        $(document).on('click', '#billing_data', function () {
+            $("[name='shipping_name']").val($("[name='billing_name']").val());
+            $("[name='shipping_country']").val($("[name='billing_country']").val());
+            $("[name='shipping_state']").val($("[name='billing_state']").val());
+            $("[name='shipping_city']").val($("[name='billing_city']").val());
+            $("[name='shipping_phone']").val($("[name='billing_phone']").val());
+            $("[name='shipping_zip']").val($("[name='billing_zip']").val());
+            $("[name='shipping_address']").val($("[name='billing_address']").val());
+        })
+
+    </script>
 {{Form::close()}}

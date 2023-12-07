@@ -62,7 +62,7 @@ class TaxController extends Controller
         {
             $validator = \Validator::make(
                 $request->all(), [
-                                   'name' => 'required|max:20',
+                                   'name' => 'required|max:225',
                                    'rate' => 'required|numeric',
                                ]
             );
@@ -129,7 +129,7 @@ class TaxController extends Controller
             {
                 $validator = \Validator::make(
                     $request->all(), [
-                                       'name' => 'required|max:20',
+                                       'name' => 'required|max:225',
                                        'rate' => 'required|numeric',
                                    ]
                 );

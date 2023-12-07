@@ -371,9 +371,11 @@ class Utility extends Model
             '000',
         ];
         $arr['templates'] = [
-            "template1" => "Template Pusat 1",
+            "template1" => "Template KAP",
             "template2" => "Template Pusat 2",
             "template3" => "Template Bekasi 1",
+            "template4" => "Template ARA",
+            "template5" => "Template XGA",
         ];
 
         return $arr;
@@ -1034,7 +1036,13 @@ class Utility extends Model
             '{customer_name}',
             '{customer_email}',
             '{invoice_name}',
+            '{invoice_company_name}',
             '{invoice_number}',
+            '{invoice_date}',
+            '{invoice_products_name}',
+            '{invoice_products_periods}',
+            '{invoice_due_date}',
+            '{total_amount}',
             '{invoice_url}',
             '{invoice_payment_name}',
             '{invoice_payment_amount}',
@@ -1182,6 +1190,12 @@ class Utility extends Model
             'customer_email' =>'-',
             'invoice_name' => '-',
             'invoice_number' => '-',
+            'invoice_company_name' => '-',
+            'invoice_date' => '-',
+            'invoice_products_name' => '-',
+            'invoice_products_periods' => '-',
+            'invoice_due_date' => '-',
+            'total_amount' => '-',
             'invoice_url' =>'-',
             'invoice_payment_name' =>'-',
             'invoice_payment_amount' =>'-',

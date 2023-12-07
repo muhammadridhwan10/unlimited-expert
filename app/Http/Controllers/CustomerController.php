@@ -81,7 +81,6 @@ class CustomerController extends Controller
 
             $rules = [
                 'name' => 'required',
-                'contact' => 'required|regex:/^([0-9\s\-\+\(\)]*)$/',
                 'email' => 'required|email|unique:customers',
             ];
 
@@ -104,10 +103,11 @@ class CustomerController extends Controller
                 $customer                  = new Customer();
                 $customer->customer_id     = $this->customerNumber();
                 $customer->name            = $request->name;
+                $customer->name_invoice    = $request->name_invoice;
                 $customer->position        = $request->position;
-                $customer->contact         = $request->contact;
+                // $customer->contact         = $request->contact;
                 $customer->email           = $request->email;
-                $customer->tax_number      =$request->tax_number;
+                // $customer->tax_number      =$request->tax_number;
                 $customer->created_by      = \Auth::user()->creatorId();
                 $customer->billing_name    = $request->billing_name;
                 $customer->billing_country = $request->billing_country;
@@ -195,10 +195,11 @@ class CustomerController extends Controller
             }
 
             $customer->name             = $request->name;
+            $customer->name_invoice    = $request->name_invoice;
             $customer->position         = $request->position;
-            $customer->contact          = $request->contact;
+            // $customer->contact          = $request->contact;
             $customer->email           = $request->email;
-            $customer->tax_number      =$request->tax_number;
+            // $customer->tax_number      =$request->tax_number;
             $customer->created_by       = \Auth::user()->creatorId();
             $customer->billing_name     = $request->billing_name;
             $customer->billing_country  = $request->billing_country;

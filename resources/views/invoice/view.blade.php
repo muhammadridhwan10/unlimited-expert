@@ -262,7 +262,10 @@
 
                                 @if($invoice->status==0)
                                     @can('send bill')
-                                        <a href="{{ route('invoice.sent',$invoice->id) }}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" data-original-title="{{__('Mark Sent')}}"><i class="ti ti-send mr-2"></i>{{__('Send')}}</a>
+                                        <a href="#" data-size="lg" data-url="{{ route('invoice.languages',$invoice->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Select Languages')}}" class="btn btn-sm btn-primary">
+                                            <i class="ti ti-send mr-2"></i>{{__('Send')}}
+                                        </a>
+                                        {{-- <a href="{{ route('invoice.sent',$invoice->id) }}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" data-original-title="{{__('Mark Sent')}}"><i class="ti ti-send mr-2"></i>{{__('Send')}}</a> --}}
                                     @endcan
                                 @endif
                             </div>
@@ -272,11 +275,11 @@
                                 </div>
                                 <h6 class="text-info my-3">{{__('Get Paid')}}</h6>
                                 <p class="text-muted text-sm mb-3">{{__('Status')}} : {{__('Awaiting payment')}} </p>
-                                @if($invoice->status!=0)
+                                {{-- @if($invoice->status!=0)
                                     @can('create payment invoice')
                                         <a href="#" data-url="{{ route('invoice.payment',$invoice->id) }}" data-ajax-popup="true" data-title="{{__('Add Payment')}}" class="btn btn-sm btn-info" data-original-title="{{__('Add Payment')}}"><i class="ti ti-report-money mr-2"></i>{{__('Add Payment')}}</a> <br>
                                     @endcan
-                                @endif
+                                @endif --}}
 
                             </div>
                         </div>
@@ -299,20 +302,43 @@
                     @endif
                     @if($invoice->status!=4)
                         <div class="all-button-box mr-2">
-                            <a href="{{ route('invoice.payment.reminder',$invoice->id)}}" class="btn btn-sm btn-primary me-2">{{__('Receipt Reminder')}}</a>
+                            <a href="{{ route('invoice.payment.reminder',$invoice->id)}}" class="btn btn-sm btn-primary me-2">{{__('Invoice Reminder')}}</a>
                         </div>
                     @endif
                     <div class="all-button-box mr-2">
-                        <a href="{{ route('invoice.resent',$invoice->id)}}" class="btn btn-sm btn-primary me-2">{{__('Resend Invoice')}}</a>
+                        <a href="#" data-size="lg" data-url="{{ route('invoice.recent.languages',$invoice->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Select Languages')}}" class="btn btn-sm btn-primary  me-2">
+                        {{__('Resend Invoice')}}
+                        </a>
+                        {{-- <a href="{{ route('invoice.resent',$invoice->id)}}" class="btn btn-sm btn-primary me-2">{{__('Resend Invoice')}}</a> --}}
                     </div>
-                    <div class="all-button-box">
+                    <div class="all-button-box mr-2">
                         <a href="{{ route('invoice.pdf', Crypt::encrypt($invoice->id))}}" target="_blank" class="btn btn-sm btn-primary">{{__('Download')}}</a>
                     </div>
                 </div>
             </div>
         @endif
-
+            <div class="row justify-content-between align-items-center mb-3">
+                <div class="col-md-12 d-flex align-items-center justify-content-between justify-content-md-end">
+                    <div class="all-button-box mx-2">
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-primary dropdown-toggle" type="button" id="changeStatusDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                {{__('Change Status')}}
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="changeStatusDropdown">
+                                @foreach(\App\Models\Invoice::$statues as $key => $status)
+                                    @if($key != $invoice->status)
+                                        <a class="dropdown-item" href="{{ route('invoice.change-status', ['invoice' => $invoice->id, 'status' => $key]) }}">
+                                            {{ $status }}
+                                        </a>
+                                    @endif
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
     @endif
+
 
     <div class="row">
         <div class="col-12">
@@ -401,10 +427,6 @@
                                             <span class="badge bg-warning">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                         @elseif($invoice->status == 2)
                                             <span class="badge bg-danger">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
-                                        @elseif($invoice->status == 3)
-                                            <span class="badge bg-info">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
-                                        @elseif($invoice->status == 4)
-                                            <span class="badge bg-success">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                         @endif
                                     </small>
                                 </div>
@@ -437,8 +459,7 @@
                                                 <th class="text-dark">{{__('Tax')}}</th>
                                                 <th class="text-dark">@if($invoice->discount_apply==1){{__('Discount')}}@endif</th>
                                                 <th class="text-dark">{{__('Description')}}</th>
-                                                <th class="text-end text-dark" width="12%">{{__('Price')}}<br>
-                                                    <small class="text-danger font-weight-bold">{{__('after tax')}}</small>
+                                                <th class="text-end text-dark" width="12%">{{__('Price')}}
                                                 </th>
                                             </tr>
                                             @php
@@ -567,7 +588,7 @@
             </div>
         </div>
     </div>
-    <div class="row">
+    {{-- <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-body table-border-style">
@@ -630,8 +651,8 @@
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row">
+    </div> --}}
+    {{-- <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-body table-border-style">
@@ -685,9 +706,9 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> --}}
 
-    @auth('customer')
+    {{-- @auth('customer')
         @if($invoice->getDue() > 0)
             <div class="modal fade" id="paymentModal" tabindex="-1" role="dialog" aria-labelledby="paymentModalLabel" aria-hidden="true">
                 <div class="modal-dialog modal-lg" role="document">
@@ -1084,6 +1105,6 @@
                 </div>
             </div>
         @endif
-    @endauth
+    @endauth --}}
 
 @endsection

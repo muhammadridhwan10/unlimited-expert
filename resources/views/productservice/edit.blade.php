@@ -18,10 +18,14 @@
             </div>
         </div>
         <div class="col-md-6">
-            <div class="form-group">
-                {{ Form::label('periode', __('Periode (dalam tahun)'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                <div class="form-icon-user">
-                {{ Form::select('periode', $year, null, ['class' => 'form-control select']) }}
+            <div id="periode" class="form-group">
+                {{ Form::label('periode', __('Periode'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                <div class="input-group">
+                    {{ Form::date('start_date', '', array('class' => 'form-control datepicker', 'placeholder' => 'Start Date', 'required'=>'required')) }}
+                    <div class="input-group-prepend">
+                        <span class="input-group-text">to</span>
+                    </div>
+                    {{ Form::date('end_date', '', array('class' => 'form-control datepicker', 'placeholder' => 'End Date', 'required'=>'required')) }}
                 </div>
             </div>
         </div>
@@ -37,14 +41,14 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
+        {{-- <div class="col-md-6">
             <div class="form-group">
                 {{ Form::label('purchase_price', __('Purchase Price'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                 <div class="form-icon-user">
                     {{ Form::number('purchase_price', null, array('class' => 'form-control','required'=>'required','step'=>'0.01')) }}
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         <div class="form-group  col-md-6">
             {{ Form::label('tax_id', __('Tax'),['class'=>'form-label']) }}

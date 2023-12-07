@@ -369,6 +369,9 @@ Route::group(
     Route::post('invoice/product', 'InvoiceController@product')->name('invoice.product');
     Route::post('invoice/customer', 'InvoiceController@customer')->name('invoice.customer');
     Route::get('invoice/{id}/sent', 'InvoiceController@sent')->name('invoice.sent');
+    Route::get('invoice/{id}/sent/languages', 'InvoiceController@languages')->name('invoice.languages');
+    Route::get('invoice/{id}/recent/languages', 'InvoiceController@recentlanguages')->name('invoice.recent.languages');
+    Route::get('invoice/{invoice}/change-status/{status}', 'InvoiceController@changeStatus')->name('invoice.change-status');
     Route::get('invoice/{id}/resent', 'InvoiceController@resent')->name('invoice.resent');
     Route::get('invoice/{id}/payment', 'InvoiceController@payment')->name('invoice.payment');
     Route::post('invoice/{id}/payment', 'InvoiceController@createPayment')->name('invoice.payment');

@@ -566,13 +566,13 @@
                                         <div data-v-f2a183a6="" class="break-25"></div>
                                         <!-- <p data-v-f2a183a6="">@if($settings['company_name']){{$settings['company_name']}}@endif</p>
                                         <p data-v-f2a183a6="">
-                                            @if($settings['company_email']){{$settings['company_email']}}@endif<br>
+                                            {{-- @if($settings['company_email']){{$settings['company_email']}}@endif<br>
                                             @if($settings['company_telephone']){{$settings['company_telephone']}}@endif<br>
                                             @if($settings['company_address']){{$settings['company_address']}}@endif
                                             @if($settings['company_city']) <br> {{$settings['company_city']}}, @endif @if($settings['company_state']){{$settings['company_state']}}@endif @if($settings['company_zipcode']) - {{$settings['company_zipcode']}}@endif
                                             @if($settings['company_country']) <br>{{$settings['company_country']}}@endif <br>
                                             @if(!empty($settings['registration_number'])){{__('Registration Number')}} : {{$settings['registration_number']}} @endif<br>
-                                            @if(!empty($settings['tax_type']) && !empty($settings['vat_number'])){{$settings['tax_type'].' '. __('Number')}} : {{$settings['vat_number']}} <br>@endif
+                                            @if(!empty($settings['tax_type']) && !empty($settings['vat_number'])){{$settings['tax_type'].' '. __('Number')}} : {{$settings['vat_number']}} <br>@endif --}}
 
                                         </p> -->
                                     </div>
@@ -631,7 +631,7 @@
                                             <div class="ship_to">
                                                 <strong data-v-f2a183a6="">{{__('Attention To')}}:</strong>
                                                 <p>
-                                                    {{!empty($customer->shipping_name)?$customer->shipping_name:''}}<br>
+                                                    {{!empty($customer->name_invoice)?$customer->name_invoice:''}}<br>
                                                     {{!empty($customer->position)?$customer->position:''}}<br>
                                                     <!-- {{!empty($customer->shipping_address)?$customer->shipping_address:''}}<br>
                                                     {{!empty($customer->shipping_zip)?$customer->shipping_zip:''}}<br>
@@ -651,9 +651,7 @@
                                                 <div class="d-table-th w-4">{{__('Discount')}}</div> -->
 
 {{--                                                <div class="d-table-th w-6">{{__('Description')}}</div>--}}
-                                                <div class="d-table-th w-2 text-right">{{__('Amount')}}<br>
-                                                <small
-                                                        class="text-danger">{{ __('after tax') }}</small>
+                                                <div class="d-table-th w-2 text-right">{{__('Amount')}}
                                                 
                                                 </div>
                                             </div>
@@ -663,12 +661,12 @@
                                                     @foreach($invoice->itemData as $key => $item)
 
                                                         <div class="d-table-tr" style="border-bottom:1px solid black;">
-                                                            <div class="d-table-td w-15">
+                                                            <div class="d-table-td w-13">
                                                                 <pre data-v-f2a183a6="">{{$item->name}}</pre>
                                                                 <br>
                                                                 {{"Engagement Letter No : " . $invoices->sku}}
                                                             </div>
-                                                            <div class="d-table-td w-5">
+                                                            <div class="d-table-td w-8">
                                                                 <pre data-v-f2a183a6="">{{$invoices->periode}}</pre>
                                                             </div>
                                                             <!-- <div class="d-table-td w-5">

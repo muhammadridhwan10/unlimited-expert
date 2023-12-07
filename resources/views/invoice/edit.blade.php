@@ -437,6 +437,23 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
+                                        {{ Form::label('user_id', __('Partners'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                                        {{ Form::select('user_id', $partners,null, array('class' => 'form-control select','required'=>'required')) }}
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-md-6">
+                                    <div class="form-group">
+                                        {{ Form::label('Company', __('company'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                        <select name="company" id="company" class="form-control main-element" required>
+                                            <option value="0">{{__('Select Company')}}</option>
+                                            @foreach(\App\Models\Invoice::$company as $k => $v)
+                                                <option value="{{$k}}">{{__($k)}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
                                         {{ Form::label('ref_number', __('Ref Number'),['class'=>'form-label']) }}
                                         <div class="form-icon-user">
                                             <span><i class="ti ti-joint"></i></span>

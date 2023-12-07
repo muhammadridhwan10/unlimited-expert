@@ -368,10 +368,10 @@
                         </div>
                     </div>
                 @endif
-@php
-$lastStage=\App\Models\TaskStage::where('created_by',\Auth::user()->creatorId())->orderby('id','desc')->first();
+                @php
+                $lastStage=\App\Models\TaskStage::where('created_by',\Auth::user()->creatorId())->orderby('id','desc')->first();
 
-@endphp
+                @endphp
                 <div class="col-md-12">
                     <div class="card ">
                         <div class="card-header">

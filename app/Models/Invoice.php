@@ -15,14 +15,20 @@ class Invoice extends Model
         'status',
         'category_id',
         'created_by',
+        'user_id',
+        'company',
     ];
 
     public static $statues = [
         'Draft',
-        'Sent',
         'Unpaid',
-        'Partialy Paid',
         'Paid',
+    ];
+
+    public static $company=[
+        'ARA' => 'AllRich Associate',
+        'XGA' => 'X Group Advisory',
+        'KAP' => 'KAP Agus Ubaidillah',
     ];
 
 
@@ -44,6 +50,11 @@ class Invoice extends Model
     public function customer()
     {
         return $this->hasOne('App\Models\Customer', 'id', 'customer_id');
+    }
+
+    public function user()
+    {
+        return $this->hasOne('App\Models\User', 'id', 'user_id');
     }
 
     public function getSubTotal()

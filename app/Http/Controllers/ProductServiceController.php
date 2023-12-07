@@ -88,17 +88,6 @@ class ProductServiceController extends Controller
         {
             if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
-                $year = [
-                                    '2022' => '2022',
-                                    '2023' => '2023',
-                                    '2024' => '2024',
-                                    '2025' => '2025',
-                                    '2026' => '2026',
-                                    '2027' => '2027',
-                                    '2028' => '2028',
-                                    '2029' => '2029',
-                                    '2030' => '2030',
-                                ];
                 $customFields = CustomField::where('module', '=', 'product')->get();
                 $category     = ProductServiceCategory::where('type', '=', 0)->get()->pluck('name', 'id');
                 $unit         = ProductServiceUnit::all()->pluck('name', 'id');
@@ -106,24 +95,13 @@ class ProductServiceController extends Controller
             }
             else
             {
-                $year = [
-                    '2022' => '2022',
-                    '2023' => '2023',
-                    '2024' => '2024',
-                    '2025' => '2025',
-                    '2026' => '2026',
-                    '2027' => '2027',
-                    '2028' => '2028',
-                    '2029' => '2029',
-                    '2030' => '2030',
-                ];
                 $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'product')->get();
                 $category     = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 0)->get()->pluck('name', 'id');
                 $unit         = ProductServiceUnit::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $tax          = Tax::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             }
 
-            return view('productservice.create', compact('category', 'year', 'unit', 'tax', 'customFields'));
+            return view('productservice.create', compact('category', 'unit', 'tax', 'customFields'));
         }
         else
         {
@@ -141,9 +119,7 @@ class ProductServiceController extends Controller
             $rules = [
                 'name' => 'required',
                 'sku' => 'required|unique:product_services,sku',
-                'periode' => 'required',
                 'sale_price' => 'required|numeric',
-                'purchase_price' => 'required|numeric',
                 'category_id' => 'required',
                 'unit_id' => 'required',
                 'type' => 'required',
@@ -162,9 +138,8 @@ class ProductServiceController extends Controller
             $productService->name           = $request->name;
             $productService->description    = $request->description;
             $productService->sku            = $request->sku;
-            $productService->periode        =  date("Y", strtotime($request->periode));
+            $productService->periode        = $request->start_date . ' to ' . $request->end_date;
             $productService->sale_price     = $request->sale_price;
-            $productService->purchase_price = $request->purchase_price;
             $productService->tax_id         = !empty($request->tax_id) ? implode(',', $request->tax_id) : '';
             $productService->unit_id        = $request->unit_id;
             $productService->quantity        = $request->quantity;
@@ -191,17 +166,6 @@ class ProductServiceController extends Controller
         {
             if($productService->created_by == \Auth::user()->creatorId())
             {
-                $year = [
-                    '2022' => '2022',
-                    '2023' => '2023',
-                    '2024' => '2024',
-                    '2025' => '2025',
-                    '2026' => '2026',
-                    '2027' => '2027',
-                    '2028' => '2028',
-                    '2029' => '2029',
-                    '2030' => '2030',
-                ];
                 $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 0)->get()->pluck('name', 'id');
                 $unit     = ProductServiceUnit::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $tax      = Tax::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
@@ -210,21 +174,10 @@ class ProductServiceController extends Controller
                 $customFields                = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'product')->get();
                 $productService->tax_id      = explode(',', $productService->tax_id);
 
-                return view('productservice.edit', compact('category', 'year', 'unit', 'tax', 'productService', 'customFields'));
+                return view('productservice.edit', compact('category','unit', 'tax', 'productService', 'customFields'));
             }
             elseif(\Auth::user()->type = 'admin')
             {
-                $year = [
-                    '2022' => '2022',
-                    '2023' => '2023',
-                    '2024' => '2024',
-                    '2025' => '2025',
-                    '2026' => '2026',
-                    '2027' => '2027',
-                    '2028' => '2028',
-                    '2029' => '2029',
-                    '2030' => '2030',
-                ];
                 $category = ProductServiceCategory::where('type', '=', 0)->get()->pluck('name', 'id');
                 $unit     = ProductServiceUnit::get()->pluck('name', 'id');
                 $tax      = Tax::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
@@ -233,21 +186,10 @@ class ProductServiceController extends Controller
                 $customFields                = CustomField::where('module', '=', 'product')->get();
                 $productService->tax_id      = explode(',', $productService->tax_id);
 
-                return view('productservice.edit', compact('category', 'year', 'unit', 'tax', 'productService', 'customFields'));
+                return view('productservice.edit', compact('category','unit', 'tax', 'productService', 'customFields'));
             }
             elseif(\Auth::user()->type = 'company')
             {
-                $year = [
-                    '2022' => '2022',
-                    '2023' => '2023',
-                    '2024' => '2024',
-                    '2025' => '2025',
-                    '2026' => '2026',
-                    '2027' => '2027',
-                    '2028' => '2028',
-                    '2029' => '2029',
-                    '2030' => '2030',
-                ];
                 $category = ProductServiceCategory::where('type', '=', 0)->get()->pluck('name', 'id');
                 $unit     = ProductServiceUnit::get()->pluck('name', 'id');
                 $tax      = Tax::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
@@ -256,7 +198,7 @@ class ProductServiceController extends Controller
                 $customFields                = CustomField::where('module', '=', 'product')->get();
                 $productService->tax_id      = explode(',', $productService->tax_id);
 
-                return view('productservice.edit', compact('category', 'year', 'unit', 'tax', 'productService', 'customFields'));
+                return view('productservice.edit', compact('category', 'unit', 'tax', 'productService', 'customFields'));
             }
             else
             {
@@ -282,9 +224,7 @@ class ProductServiceController extends Controller
                 $rules = [
                     'name' => 'required',
                     'sku' => 'required', Rule::unique('product_services')->ignore($productService->id),
-                    'periode' => 'required',
                     'sale_price' => 'required|numeric',
-                    'purchase_price' => 'required|numeric',
                     'category_id' => 'required',
                     'unit_id' => 'required',
                     'type' => 'required',
@@ -302,9 +242,8 @@ class ProductServiceController extends Controller
                 $productService->name           = $request->name;
                 $productService->description    = $request->description;
                 $productService->sku            = $request->sku;
-                $productService->periode        =  date("Y", strtotime($request->periode));
+                $productService->periode        = $request->start_date . ' to ' . $request->end_date;
                 $productService->sale_price     = $request->sale_price;
-                $productService->purchase_price = $request->purchase_price;
                 $productService->tax_id         = !empty($request->tax_id) ? implode(',', $request->tax_id) : '';
                 $productService->unit_id        = $request->unit_id;
                 $productService->quantity        = $request->quantity;
@@ -323,7 +262,6 @@ class ProductServiceController extends Controller
                     'sku' => 'required', Rule::unique('product_services')->ignore($productService->id),
                     'periode' => 'required',
                     'sale_price' => 'required|numeric',
-                    'purchase_price' => 'required|numeric',
                     'category_id' => 'required',
                     'unit_id' => 'required',
                     'type' => 'required',
@@ -341,9 +279,8 @@ class ProductServiceController extends Controller
                 $productService->name           = $request->name;
                 $productService->description    = $request->description;
                 $productService->sku            = $request->sku;
-                $productService->periode        =  date("Y", strtotime($request->periode));
+                $productService->periode        = $request->start_date . ' to ' . $request->end_date;
                 $productService->sale_price     = $request->sale_price;
-                $productService->purchase_price = $request->purchase_price;
                 $productService->tax_id         = !empty($request->tax_id) ? implode(',', $request->tax_id) : '';
                 $productService->unit_id        = $request->unit_id;
                 $productService->quantity        = $request->quantity;
@@ -362,7 +299,6 @@ class ProductServiceController extends Controller
                     'sku' => 'required', Rule::unique('product_services')->ignore($productService->id),
                     'periode' => 'required',
                     'sale_price' => 'required|numeric',
-                    'purchase_price' => 'required|numeric',
                     'category_id' => 'required',
                     'unit_id' => 'required',
                     'type' => 'required',
@@ -380,9 +316,8 @@ class ProductServiceController extends Controller
                 $productService->name           = $request->name;
                 $productService->description    = $request->description;
                 $productService->sku            = $request->sku;
-                $productService->periode        =  date("Y", strtotime($request->periode));
+                $productService->periode        = $request->start_date . ' to ' . $request->end_date;
                 $productService->sale_price     = $request->sale_price;
-                $productService->purchase_price = $request->purchase_price;
                 $productService->tax_id         = !empty($request->tax_id) ? implode(',', $request->tax_id) : '';
                 $productService->unit_id        = $request->unit_id;
                 $productService->quantity        = $request->quantity;
