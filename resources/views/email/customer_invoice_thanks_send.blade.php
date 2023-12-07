@@ -25,15 +25,15 @@ $invoice_url  = route('invoice.pdf', $invoiceId);
 
 if($invoice->company == "KAP")
 {
-    $company = "Kap Agus Ubaidillah & Rekan"
+    $company = "Kap Agus Ubaidillah & Rekan";
 }
 elseif($invoice->company == "ARA")
 {
-    $company = "AllRich Associate"
+    $company = "AllRich Associate";
 }
 elseif($invoice->company == "XGA")
 {
-    $company = "X Group Advisory"
+    $company = "X Group Advisory";
 }
 
 ?>

@@ -49,7 +49,7 @@ $invoice_url  = route('invoice.pdf', $invoiceId);
                                                         </div>
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Dear {{ $invoice->customer->name }}</p>
-                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">We wanted to send a friendly reminder about your monthly payment. Please make sure to submit payment confirmation to avoid late fees.</p>
+                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">We wanted to send a friendly reminder about your monthly payment. Please make sure to submit payment confirmation.</p>
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">If you have already made the payment, please disregard this reminder and accept our gratitude. Feel free to submit a ticket at the link below if you have any questions.</p>
                                                         <br>
