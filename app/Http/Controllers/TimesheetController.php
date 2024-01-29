@@ -23,12 +23,9 @@ class TimesheetController extends Controller
             if(in_array($project_id, $project_ids))
             {
                 $project = Project::where('id', $project_id)->first();
+
+                return view('projects.timesheets.index', compact('project'));
             }
-            else
-            {
-                $project = Project::where('id', $project_id)->first();
-            }
-            return view('projects.timesheets.index', compact('project'));
         }
         else
         {
@@ -38,7 +35,9 @@ class TimesheetController extends Controller
 
     public function appendTimesheetTaskHTML(Request $request)
     {
+
         $project_id     = $request->has('project_id') ? $request->project_id : null;
+
         $task_id        = $request->has('task_id') ? $request->task_id : null;
         $selected_dates = $request->has('selected_dates') ? $request->selected_dates : null;
 
@@ -59,14 +58,18 @@ class TimesheetController extends Controller
 
                 $period = CarbonPeriod::create($first_day, $seventh_day);
 
-                $returnHTML .= '<tr><td><span class="task-name">' . $task->name . '</span></td>';
+                $returnHTML .= '<tr><td class="task-name">' . $task->name . '</td>';
 
                 foreach($period as $key => $dateobj)
                 {
-                    $returnHTML .= '<td><span class="task-time" data-ajax-timesheet-popup="true" data-type="create" data-task-id="' . $task->id . '" data-date="' . $dateobj->format('Y-m-d') . '" data-url="' . route('timesheet.create', $project_id) . '">-</span></td>';
+                    $returnHTML .= '<td>
+ <input class="form-control border-dark wid-120 task-time day-time1 task-time" data-ajax-timesheet-popup="true" data-type="create" data-task-id="' . $task->id . '" data-date="' . $dateobj->format('Y-m-d') . '" data-url="' . route('timesheet.create', $project_id) . '" value="00:00">';
+
+
                 }
 
-                $returnHTML .= '<td><span class="total-task-time">00:00</span></td></tr>';
+                $returnHTML .= '<td>
+<input class="form-control border-dark wid-120 task-time total-task-time"  type="text" value="00:00" disabled>';
             }
         }
 
@@ -81,21 +84,28 @@ class TimesheetController extends Controller
     public function filterTimesheetTableView(Request $request)
     {
         $sectionTaskArray = [];
-        $authuser         = Auth::user();
+//        $authuser         = Auth::user();
+
+        $project = Project::find($request->project_id);
+        if(Auth::user() != null){
+            $authuser         = Auth::user();
+        }else{
+            $authuser         = User::where('id',$project->created_by)->first();
+        }
+
         $week             = $request->week;
         $project_id       = $request->project_id;
         $timesheet_type   = 'task';
+
         if($request->has('week') && $request->has('project_id'))
         {
-            if(\Auth::user()->type == 'client')
-            {
-                $project_ids = Project::where('client_id',\Auth::user()->id)->pluck('id','id')->toArray();
-            }
-            else
-            {
-                $project_ids = $authuser->projects()->pluck('project_id','project_id')->toArray();
-            }
+          if($authuser->type == 'client'){
 
+            $project_ids = Project::where('client_id',\Auth::user()->id)->pluck('id','id')->toArray();
+          }else{
+
+            $project_ids = $authuser->projects()->pluck('project_id','project_id')->toArray();
+          }
             $timesheets  = Timesheet::select('timesheets.*')->join('projects', 'projects.id', '=', 'timesheets.project_id');
 
             if($timesheet_type == 'task')
@@ -109,8 +119,8 @@ class TimesheetController extends Controller
             else if(in_array($project_id, $project_ids))
             {
                 $projects_timesheet = $timesheets->where('timesheets.project_id', $project_id);
-            }
 
+            }
 
             $days               = Utility::getFirstSeventhWeekDay($week);
             $first_day          = $days['first_day'];
@@ -118,6 +128,7 @@ class TimesheetController extends Controller
             $onewWeekDate       = $first_day->format('M d') . ' - ' . $seventh_day->format('M d, Y');
             $selectedDate       = $first_day->format('Y-m-d') . ' - ' . $seventh_day->format('Y-m-d');
             $projects_timesheet = $projects_timesheet->whereDate('date', '>=', $first_day->format('Y-m-d'))->whereDate('date', '<=', $seventh_day->format('Y-m-d'));
+
             if($project_id == '0')
             {
                 $timesheets = $projects_timesheet->get()->groupBy(
@@ -129,14 +140,8 @@ class TimesheetController extends Controller
             }
             else if(in_array($project_id, $project_ids))
             {
-                if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
-                {
-                    $timesheets = $projects_timesheet->get()->groupBy('task_id')->toArray();
-                }
-                elseif(\Auth::user()->type !== 'client' && \Auth::user()->type !== 'staff_client')
-                {
-                    $timesheets = $projects_timesheet->get()->where('created_by', $authuser->id)->groupBy('task_id')->toArray();
-                }
+                $timesheets = $projects_timesheet->get()->groupBy('task_id')->toArray();
+
             }
 
             $returnHTML = Project::getProjectAssignedTimesheetHTML($projects_timesheet, $timesheets, $days, $project_id);
@@ -145,13 +150,17 @@ class TimesheetController extends Controller
             if($project_id != '0')
             {
                 $task_ids = array_keys($timesheets);
+
                 $project  = Project::find($project_id);
+
                 $sections = ProjectTask::getAllSectionedTaskList($request, $project, [], $task_ids);
+
                 foreach($sections as $key => $section)
                 {
                     $taskArray                              = [];
                     $sectionTaskArray[$key]['section_id']   = $section['section_id'];
                     $sectionTaskArray[$key]['section_name'] = $section['section_name'];
+
                     foreach($section['sections'] as $taskkey => $task)
                     {
                         $taskArray[$taskkey]['task_id']   = $task['id'];

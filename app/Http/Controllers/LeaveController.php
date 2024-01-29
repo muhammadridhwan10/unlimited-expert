@@ -429,7 +429,12 @@ class LeaveController extends Controller
         $leave_counts=[];
         $leave_types = LeaveType::where('created_by',\Auth::user()->creatorId())->get();
         foreach ($leave_types as  $type) {
-            $counts=Leave::select(\DB::raw('COALESCE(SUM(leaves.total_leave_days),0) AS total_leave'))->where('leave_type_id',$type->id)->groupBy('leaves.leave_type_id')->where('employee_id',$request->employee_id)->first();
+            $counts = Leave::select(\DB::raw('COALESCE(SUM(leaves.total_leave_days), 0) AS total_leave'))
+            ->where('leave_type_id', $type->id)
+            ->where('employee_id', $request->employee_id)
+            ->whereYear('created_at', now()->year)
+            ->groupBy('leaves.leave_type_id')
+            ->first();
 
             $leave_count['total_leave']=!empty($counts)?$counts['total_leave']:0;
             $leave_count['title']=$type->title;

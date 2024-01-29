@@ -8,53 +8,23 @@
     <li class="breadcrumb-item">{{__('Timesheet')}}</li>
 @endsection
 
-
+@section('action-btn')
+    <div class="row justify-content-end align-items-end text-end">
+        <div class="col-xl-3 col-lg-4 col-md-3 col-sm-6 weekly-dates-div me-2">
+            <a href="#" class="action-item previous"><i class="ti ti-arrow-left"></i></a>
+            <span class="weekly-dates"></span>
+            <input type="hidden" id="weeknumber" value="0">
+            <input type="hidden" id="selected_dates">
+            <a href="#" class="action-item next"><i class="ti ti-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+@endsection
 
 @section('content')
-    <style type="text/css">
-        /*.task-name{*/
-        /*    padding: 1.5rem 1.5rem !important;*/
-        /*}*/
-
-
-
-        .table thead th {
-            border-bottom: 1px solid #000 !important;
-
-            background: #fff !important;
-        }
-
-        .day-time, .total-value, .value {
-            /* display: inline-block; */
-            border: 1px solid #afafaf !important;
-            padding: 3px 19px !important;
-            border-radius: 30px !important;
-            /*width: 80px !important;*/
-            color: #afafaf;
-            text-align: center !important;
-        }
-
-        .table thead th {
-            padding: 0.9rem 3rem !important;
-        }
-
-
-    </style>
     <div class="row mt-4">
         <div class="col-12">
             <div class="card ">
-                <div class="card-header">
-                    <div class="row">
-                        <div class="col-md-6 weekly-dates-div pt-1">
-                            <a href="#" class="action-item previous"><i class="ti ti-arrow-left"></i></a>
-                            <span class="weekly-dates"></span>
-                            <input type="hidden" id="weeknumber" value="0">
-                            <input type="hidden" id="selected_dates">
-                            <a href="#" class="action-item next"><i class="ti ti-arrow-right"></i></a>
-                        </div>
-
-                    </div>
-                </div>
                 <div class="card-wrapper project-timesheet overflow-auto"></div>
                 <div class="text-center notfound-timesheet">
                     <div class="empty-project-text text-center p-3 min-h-300">
@@ -159,7 +129,6 @@
         $(document).on('click', '.timesheet-owner .owner-timesheet-status', function (e) {
             ajaxFilterTimesheetTableView();
         });
-
 
 
         $(document).on('click', '[data-ajax-timesheet-popup="true"]', function (e) {

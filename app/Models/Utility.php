@@ -1683,7 +1683,7 @@ class Utility extends Model
         if(isset($week))
         {
             $first_day   = Carbon::now()->addWeeks($week)->startOfWeek();
-            $seventh_day = Carbon::now()->addWeeks($week)->endOfWeek();
+            $seventh_day = Carbon::now()->addWeeks(3)->endOfWeek();
         }
         $dateCollection['first_day']   = $first_day;
         $dateCollection['seventh_day'] = $seventh_day;

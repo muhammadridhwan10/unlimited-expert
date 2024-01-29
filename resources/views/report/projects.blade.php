@@ -202,7 +202,7 @@
                                             <td>{{!empty($project_user->project->project_name)?$project_user->project->project_name:'-'}}</td>
                                             <td>{{!empty($project_user->project->label)?$project_user->project->label:'-'}}</td>
                                              <td>{{!empty($project_user->project->user->name)?$project_user->project->user->name:'-'}}</td>
-                                            <td>{{$hours_format_number . ' Hours'}}</td>
+                                            <td>{{$hours_format_number}}</td>
                                             <td>
                                                 @if($project_user->project->status == "on_hold")
                                                     <div class="status_badge badge bg-warning p-2 px-3 rounded">{{ $project_user->project->status }}</div>

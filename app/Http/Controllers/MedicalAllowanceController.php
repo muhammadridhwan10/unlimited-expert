@@ -486,9 +486,16 @@ class MedicalAllowanceController extends Controller
     {
 
         $reimbusment_counts=[];
+        $currentYear = now()->year;
         $reimbursment_types = ReimbursmentType::where('created_by',\Auth::user()->creatorId())->get();
         foreach ($reimbursment_types as  $type) {
-            $counts = Reimbursment::select(\DB::raw('COALESCE(SUM(reimbursment.amount),0) AS total_amount'))->where('reimbursment_type',$type->title)->groupBy('reimbursment.reimbursment_type')->where('employee_id',$request->employee_id)->where('status','=', 'Paid')->first();
+            $counts = Reimbursment::select(\DB::raw('COALESCE(SUM(reimbursment.amount),0) AS total_amount'))
+            ->where('reimbursment_type',$type->title)
+            ->whereYear('date', $currentYear) 
+            ->groupBy('reimbursment.reimbursment_type')
+            ->where('employee_id',$request->employee_id)
+            ->where('status','=', 'Paid')
+            ->first();
 
             $reimbusment_count['total_amount']=!empty($counts)?$counts['total_amount']:0;
             $reimbusment_count['title']=$type->title;
