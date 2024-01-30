@@ -20,6 +20,11 @@ class Timesheet extends Model
         return $this->hasOne('App\Models\Project', 'id', 'project_id');
     }
 
+    public function user()
+    {
+        return $this->hasOne('App\Models\User', 'id', 'created_by');
+    }
+
     public function task()
     {
         return $this->hasOne('App\Models\ProjectTask', 'id', 'task_id');

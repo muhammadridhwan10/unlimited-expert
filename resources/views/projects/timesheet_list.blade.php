@@ -1,7 +1,6 @@
 @extends('layouts.admin')
-
 @section('page-title')
-    {{__('Timesheet List')}}
+    {{__('Manage Timesheet')}}
 @endsection
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
@@ -9,169 +8,258 @@
 @endsection
 
 @section('action-btn')
-    <div class="row justify-content-end align-items-end text-end">
-        <div class="col-xl-3 col-lg-4 col-md-3 col-sm-6 weekly-dates-div me-2">
-            <a href="#" class="action-item previous"><i class="ti ti-arrow-left"></i></a>
-            <span class="weekly-dates"></span>
-            <input type="hidden" id="weeknumber" value="0">
-            <input type="hidden" id="selected_dates">
-            <a href="#" class="action-item next"><i class="ti ti-arrow-right"></i>
+    <div class="float-end">
+        @can('create timesheet')
+            <a href="{{ route('timesheet.create') }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="{{__('Create')}}">
+                <i class="ti ti-plus"></i>
             </a>
-        </div>
+        @endcan
     </div>
 @endsection
 
+
+
+@push('css-page')
+    <link rel="stylesheet" href="{{url('css/swiper.min.css')}}">
+
+    <link rel="stylesheet" href="{{url('css/swiper.min.css')}}">
+
+
+    <style>
+        .product-thumbs .swiper-slide img {
+        border:2px solid transparent;
+        object-fit: cover;
+        cursor: pointer;
+        }
+        .product-thumbs .swiper-slide-active img {
+        border-color: #bc4f38;
+        }
+
+        .product-slider .swiper-button-next:after,
+        .product-slider .swiper-button-prev:after {
+            font-size: 20px;
+            color: #000;
+            font-weight: bold;
+        }
+        .modal-dialog.modal-md {
+            background-color: #fff !important;
+        }
+
+        .no-image{
+            min-height: 300px;
+            align-items: center;
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+@endpush
+
+
 @section('content')
-    <div class="row mt-4">
+
+    <div class="row">
+        <div class="col-sm-12">
+            <div class=" mt-2 " id="multiCollapseExample1">
+                <div class="card">
+                    <div class="card-body">
+                        {{ Form::open(array('route' => array('timesheet.list'),'method'=>'get','id'=>'report_monthly_tracker')) }}
+                        <div class="row align-items-center justify-content-end">
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <div class="btn-box">
+                                            {{Form::label('month',__('Month'),['class'=>'form-label'])}}
+                                            {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col-auto mt-4">
+                                        <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_monthly_tracker').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
+                                            <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
+                                        </a>
+                                        <a href="{{route('time.tracker')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
+                                            <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{ Form::close() }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
         <div class="col-12">
-            <div class="card ">
-                <div class="card-wrapper project-timesheet overflow-auto"></div>
-                <div class="text-center notfound-timesheet">
-                    <div class="empty-project-text text-center p-3 min-h-300">
-                        <h5 class="pt-5">{{ __("We couldn't find any data") }}</h5>
-                        <p class="m-0">{{ __("Sorry we can't find any timesheet records on this week.") }}</p>
-                        <p class="m-0">{{ __("To add timesheet record go to ") }}<a href="{{route('projects.index')}}">{{__('projects')}}</a>.</p>
+            <div class="card">
+                <div class="card-body table-border-style mt-2">
+                    <div class="table-responsive">
+                        <table class="table datatable">
+                            <thead>
+                            <tr>
+
+                                <!-- <th> {{__('Description')}}</th> -->
+                                <th> {{__('Employee')}}</th>
+                                <th> {{__('Project')}}</th>
+                                <th> {{__('Date')}}</th>
+                                <th> {{__('Time')}}</th>
+                                <th>{{__('Action')}}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach ($employeeTimesheet as $timesheet)
+                                <tr>
+                                    <td>{{!empty($timesheet->user->name)?$timesheet->user->name:'-'}}</td>
+                                    <td>{{!empty($timesheet->project->project_name)?$timesheet->project->project_name:'-'}}</td>
+                                    <td>{{date("l, d-m-Y",strtotime($timesheet->date))}}</td>
+                                    <td>{{date("H:i:s",strtotime($timesheet->time))}}</td>
+                                    @if (Gate::check('edit timesheet') || Gate::check('delete timesheet'))
+                                        <td class="Action">
+                                                <span>
+                                                    @can('edit timesheet')
+                                                        <div class="action-btn bg-primary ms-2">
+                                                            <a href="#!" data-size="lg" data-url="{{ route('timesheet.edit',\Crypt::encrypt($timesheet->id)) }}" data-ajax-popup="true" 
+                                                            class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" data-bs-original-title="{{__('Edit Timesheet')}}">
+                                                                <i class="ti ti-pencil text-white"></i>
+                                                            </a>
+                                                        </div>
+                                                    @endcan
+                                                    @can('delete timesheet')
+                                                        <div class="action-btn bg-danger ms-2">
+                                                        {!! Form::open(['method' => 'DELETE', 'route' => ['timesheet.destroy', $timesheet->id]]) !!}
+                                                                    <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para " data-bs-toggle="tooltip" title="{{__('Delete')}}"
+                                                                       data-original-title="{{ __('Delete') }}"
+                                                                       data-confirm="{{ __('Are You Sure?') . '|' . __('This action can not be undone. Do you want to continue?') }}"
+                                                                       data-confirm-yes="document.getElementById('delete-form-{{ $timesheet->id }}').submit();">
+                                                                        <i class="ti ti-trash text-white"></i>
+                                                                    </a>
+                                                                {!! Form::close() !!}
+                                                            </div>
+                                                    @endcan
+                                                </span>
+                                        </td>
+                                    @endif
+                                </tr>
+                            @endforeach
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg ss_modale " role="document">
+          <div class="modal-content image_sider_div">
+
+          </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('script-page')
-    <script>
-        function ajaxFilterTimesheetTableView() {
-            var mainEle = $('.project-timesheet');
-            var notfound = $('.notfound-timesheet');
-            var week = parseInt($('#weeknumber').val());
-            var project_id = '0';
-            var data = {
-                week: week,
-                project_id: project_id,
-            }
 
-            $.ajax({
-                url: '{{ route('filter.timesheet.table.view') }}',
-                data: data,
-                success: function (data) {
-                    $('.weekly-dates-div .weekly-dates').text(data.onewWeekDate);
-                    $('.weekly-dates-div #selected_dates').val(data.selectedDate);
+<script src="{{url('js/swiper.min.js')}}"></script>
 
-                    $.each(data.sectiontasks, function (i, item) {
 
-                        var optionhtml = '';
+<script type="text/javascript">
 
-                        if (item.section_id != 0 && item.section_name != '' && item.tasks.length > 0) {
-                            optionhtml += `<a href="#" class="dropdown-item select-sub-heading" data-tasks-count="` + item.tasks.length + `">` + item.section_name + `</a>`;
-                        }
-                        $.each(item.tasks, function (ji, jitem) {
-                            optionhtml += `<a href="#" class="dropdown-item select-task" data-task-id="` + jitem.task_id + `">` + jitem.task_name + `</a>`;
-                        });
+    function init_slider(){
+            if($(".product-left").length){
+                    var productSlider = new Swiper('.product-slider', {
+                        spaceBetween: 0,
+                        centeredSlides: false,
+                        loop:false,
+                        direction: 'horizontal',
+                        loopedSlides: 5,
+                        navigation: {
+                            nextEl: ".swiper-button-next",
+                            prevEl: ".swiper-button-prev",
+                        },
+                        resizeObserver:true,
                     });
-
-                    if (data.totalrecords == 0) {
-                        mainEle.hide();
-                        notfound.css('display', 'block');
-                    } else {
-                        notfound.hide();
-                        mainEle.show();
-                    }
-                    mainEle.html(data.html);
-                }
-            });
+                var productThumbs = new Swiper('.product-thumbs', {
+                    spaceBetween: 0,
+                    centeredSlides: true,
+                    loop: false,
+                    slideToClickedSlide: true,
+                    direction: 'horizontal',
+                    slidesPerView: 7,
+                    loopedSlides: 5,
+                });
+                productSlider.controller.control = productThumbs;
+                productThumbs.controller.control = productSlider;
+            }
         }
 
-        $(function () {
-            ajaxFilterTimesheetTableView();
-        });
 
-        $(document).on('click', '.weekly-dates-div .action-item', function () {
-            var weeknumber = parseInt($('#weeknumber').val());
-            if ($(this).hasClass('previous')) {
-                weeknumber--;
-                $('#weeknumber').val(weeknumber);
-            } else if ($(this).hasClass('next')) {
-                weeknumber++;
-                $('#weeknumber').val(weeknumber);
-            }
-            ajaxFilterTimesheetTableView();
-        });
+    $(document).on('click', '.view-images', function () {
 
+            var p_url = "{{route('tracker.image.view')}}";
+            var data = {
+                'id': $(this).attr('data-id')
+            };
+            postAjax(p_url, data, function (res) {
+                $('.image_sider_div').html(res);
+                $('#exampleModalCenter').modal('show');
+                setTimeout(function(){
+                    var total = $('.product-left').find('.product-slider').length
+                    if(total > 0){
+                        init_slider();
+                    }
 
-        $(document).on('change', '#time_hour, #time_minute', function () {
+                },200);
 
-            var hour = $('#time_hour').children("option:selected").val();
-            var minute = $('#time_minute').children("option:selected").val();
-            var total = $('#totaltasktime').val().split(':');
-
-            if (hour == '00' && minute == '00') {
-                $(this).val('');
-                return;
-            }
-
-            hour = hour != '' ? hour : 0;
-            hour = parseInt(hour) + parseInt(total[0]);
-
-            minute = minute != '' ? minute : 0;
-            minute = parseInt(minute) + parseInt(total[1]);
-
-            if (minute > 50) {
-                minute = minute - 60;
-                hour++;
-            }
-
-            hour = hour < 10 ? '0' + hour : hour;
-            minute = minute < 10 ? '0' + minute : minute;
-
-            $('.display-total-time small').text('{{ __("Total Time worked on this task") }} : ' + hour + ' {{ __("Hours") }} ' + minute + ' {{ __("Minutes") }}');
-        });
-
-        $(document).on('click', '.timesheet-owner .owner-timesheet-status', function (e) {
-            ajaxFilterTimesheetTableView();
-        });
-
-
-        $(document).on('click', '[data-ajax-timesheet-popup="true"]', function (e) {
-            e.preventDefault();
-
-            var data = {};
-            var url = $(this).data('url');
-            var type = $(this).data('type');
-            var date = $(this).data('date');
-            var task_id = $(this).data('task-id');
-            var user_id = $(this).data('user-id');
-            var p_id = $(this).data('project-id');
-
-            data.date = date;
-            data.task_id = task_id;
-
-            if (user_id != undefined) {
-                data.user_id = user_id;
-            }
-
-            if (type == 'create') {
-                var title = 'Create Timesheet';
-                data.p_id = '-1';
-                data.project_id = data.p_id != '-1' ? data.p_id : p_id;
-
-            } else if (type == 'edit') {
-                var title = 'Edit Timesheet';
-            }
-
-            $("#commonModal .modal-title").html(title + ` <small>(` + moment(date).format("ddd, Do MMM YYYY") + `)</small>`);
-
-            $.ajax({
-                url: url,
-                data: data,
-                dataType: 'html',
-                success: function (data) {
-                    $('#commonModal .body').html(data);
-                    // $('#commonModal .modal-body').html(data);
-                    $("#commonModal").modal('show');
-                    commonLoader();
-                    loadConfirm();
-                }
             });
-        });
-    </script>
+            });
+
+
+            // ============================ Remove Track Image ===============================//
+            $(document).on("click", '.track-image-remove', function () {
+            var rid = $(this).attr('data-pid');
+            $('.confirm_yes').addClass('image_remove');
+            $('.confirm_yes').attr('image_id', rid);
+            $('#cModal').modal('show');
+            var total = $('.product-left').find('.swiper-slide').length
+            });
+
+            function removeImage(id){
+                var p_url = "{{route('tracker.image.remove')}}";
+                var data = {id: id};
+                deleteAjax(p_url, data, function (res) {
+
+                    if(res.flag){
+                        $('#slide-thum-'+id).remove();
+                        $('#slide-'+id).remove();
+                        setTimeout(function(){
+                            var total = $('.product-left').find('.swiper-slide').length
+                            if(total > 0){
+                                init_slider();
+                            }else{
+                                $('.product-left').html('<div class="no-image"><h5 class="text-muted">Images Not Available .</h5></div>');
+                            }
+                        },200);
+                    }
+
+                    $('#cModal').modal('hide');
+                    show_toastr('error',res.msg,'error');
+                });
+            }
+
+            // $(document).on("click", '.remove-track', function () {
+            // var rid = $(this).attr('data-id');
+            // $('.confirm_yes').addClass('t_remove');
+            // $('.confirm_yes').attr('uid', rid);
+            // $('#cModal').modal('show');
+        // });
+
+
+</script>
 @endpush

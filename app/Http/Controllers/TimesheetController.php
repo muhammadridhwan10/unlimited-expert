@@ -6,9 +6,12 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Utility;
 use App\Models\Timesheet;
+use App\Models\Branch;
+use App\Models\Department;
 use App\Models\ProjectTask;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Auth;
 
 class TimesheetController extends Controller
@@ -518,6 +521,202 @@ class TimesheetController extends Controller
                     'html' => $returnHTML,
                 ]
             );
+        }
+    }
+
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        if($user->type == 'admin' || $user->type == 'company')
+        {
+            $timesheet = Timesheet::all();
+            $branch      = Branch::get();
+            $department = Department::get();
+
+            $data['branch']     = __('All');
+            $data['department'] = __('All');
+
+            $employee = User::all();
+            $employee = $employee->pluck('id');
+            $employeeTimesheet = Timesheet::whereIn('created_by', $employee);
+
+            if (!empty($request->month)) {
+                $month = date('m', strtotime($request->month));
+                $year  = date('Y', strtotime($request->month));
+
+                $start_date = date($year . '-' . $month . '-01');
+                $end_date   = date($year . '-' . $month . '-t');
+
+                $employeeTimesheet->whereBetween('date', [$start_date, $end_date]);
+            } 
+
+            $employeeTimesheet = $employeeTimesheet->get();
+
+        }
+        elseif($user->type == 'partners')
+        {
+            $branch      = Branch::get();
+            $department = Department::get();
+
+            $data['branch']     = __('All');
+            $data['department'] = __('All');
+
+            $employee = Employee::where('user_id', \Auth::user()->id)->first();
+            $employeebranch = Employee::where('branch_id', $employee->branch_id);
+            $employees = $employeebranch->pluck('user_id');
+            $employeeTimesheet = Timesheet::whereIn('created_by', $employees);
+
+            if (!empty($request->month)) {
+                $month = date('m', strtotime($request->month));
+                $year  = date('Y', strtotime($request->month));
+
+                $start_date = date($year . '-' . $month . '-01');
+                $end_date   = date($year . '-' . $month . '-t');
+
+                $employeeTimesheet->whereBetween('date', [$start_date, $end_date]);
+            } 
+
+            $employeeTimesheet = $employeeTimesheet->get();
+
+        }
+        else
+        {
+            $branch      = Branch::get();
+            $department = Department::get();
+
+            $data['branch']     = __('All');
+            $data['department'] = __('All');
+            $employeeTimesheet = Timesheet::where('created_by',\Auth::user()->id);
+
+            if (!empty($request->month)) {
+                $month = date('m', strtotime($request->month));
+                $year  = date('Y', strtotime($request->month));
+
+                $start_date = date($year . '-' . $month . '-01');
+                $end_date   = date($year . '-' . $month . '-t');
+
+                $employeeTimesheet->whereBetween('date', [$start_date, $end_date]);
+            } 
+
+            $employeeTimesheet = $employeeTimesheet->get();
+        }
+        return view('projects.timesheet_list',compact('employeeTimesheet','branch', 'department'));
+
+    }
+
+    public function create()
+    {
+
+        if(\Auth::user()->can('create timesheet'))
+        {
+            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            {
+                $projects = Project::all();
+            }
+            else
+            {
+                $projects = Project::all();
+            }
+        
+            return view('projects.timesheets.create', compact('projects'));
+        }
+        else
+        {
+            return response()->json(['error' => __('Permission denied.')], 401);
+        }
+    }
+
+    public function store(Request $request)
+    {
+
+        if(\Auth::user()->can('create timesheet'))
+        {
+
+            $timesheet = $request->items;
+            $project_id = $request->project_id;
+
+            for($i = 0; $i < count($timesheet); $i++)
+            {
+                $timesheets                = new Timesheet();
+                $timesheets->project_id    = $project_id;
+                $timesheets->date          = $timesheet[$i]['date'];
+                $hour                      = $timesheet[$i]['time_hour'];
+                $minute                    = $timesheet[$i]['time_minute'];
+                $formattedHour             = ($hour != '' ? ($hour < 10 ? '0' . $hour : $hour) : '00');
+                $formattedMinute           = ($minute != '' ? ($minute < 10 ? '0' . $minute : $minute) : '00');
+                $timesheets->time          = $formattedHour . ':' . $formattedMinute;
+                $timesheets->date          = $timesheet[$i]['date'];
+                $timesheets->task_id       = 0;
+                $timesheets->created_by    = \Auth::user()->id;
+                $timesheets->save();
+            }
+
+
+            return redirect()->route('timesheet.list')->with('success', __('Timesheet successfully created.'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
+
+    public function edit($timesheet_id)
+    {
+        if(\Auth::user()->can('edit timesheet'))
+        {
+            $id           = Crypt::decrypt($timesheet_id);
+            $timesheet    = Timesheet::find($id);
+            $projects = Project::all();
+
+            return view('projects.timesheets.edit', compact('timesheet','projects'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function update(Request $request, $timesheet_id)
+    {
+
+        if(\Auth::user()->can('edit timesheet'))
+        {
+
+            $authuser = Auth::user();
+            $post = $request->all();
+
+            $timesheet = Timesheet::find($timesheet_id);
+            $hour = $request->input('time_hour');
+            $minute = $request->input('time_minute');
+
+            $formattedHour = ($hour != '' ? ($hour < 10 ? '0' . $hour : $hour) : '00');
+            $formattedMinute = ($minute != '' ? ($minute < 10 ? '0' . $minute : $minute) : '00');
+            $formattedTime = $formattedHour . ':' . $formattedMinute;
+
+            $timesheet->time = $formattedTime;
+
+            $timesheet->update($post);
+
+            return redirect()->back()->with('success', __('Timesheet Updated successfully.'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
+    public function destroy($timesheet_id)
+    {
+        if(\Auth::user()->can('delete timesheet'))
+        {
+            $timesheet    = Timesheet::find($timesheet_id);
+            $timesheet->delete();
+
+            return redirect()->back()->with('success', __('Time successfully deleted!'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
         }
     }
 
