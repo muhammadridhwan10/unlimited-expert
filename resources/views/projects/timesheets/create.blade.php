@@ -303,12 +303,7 @@
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="form-group">
-                                        <select name="project_id" id="project_id" class="form-control select2 main-element">
-                                            @foreach($projects as $project)
-                                                <option value="0">Select Project</option>
-                                                <option value="{{$project->id}}">{{__($project->project_name)}}</option>
-                                            @endforeach
-                                        </select>
+                                        {{ Form::date('date', null, array('class'=>'form-control','required'=>'required'))}}
                                     </div>
                                 </div>
                             </div>
@@ -336,7 +331,7 @@
                         <table class="table  mb-0 table-custom-style" data-repeater-list="items" id="sortable-table">
                             <thead>
                             <tr>
-                                <th>{{__('Date')}}</th>
+                                <th>{{__('Project')}}</th>
                                 <th>{{__('Hours')}} </th>
                                 <th>{{__('Minutes')}} </th>
                                 <th></th>
@@ -347,7 +342,12 @@
                             <tr>
                                 <td>
                                     <div class="form-group price-input input-group search-form">
-                                        {{ Form::date('date', null, array('class'=>'form-control','required'=>'required'))}}
+                                        <select name="project_id" id="project_id" class="form-control select main-element">
+                                            @foreach($projects as $project)
+                                                <option value="0">Select Project</option>
+                                                <option value="{{$project->id}}">{{__($project->project_name)}}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                 </td>
 

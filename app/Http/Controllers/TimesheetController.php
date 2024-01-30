@@ -612,6 +612,18 @@ class TimesheetController extends Controller
             if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $projects = Project::all();
+
+                $assign_pro_ids = ProjectUser::where('user_id',\Auth::user()->id)->pluck('project_id');
+
+                $project_s      = Project::with(['tasks' => function($query)
+                {
+                    $user = auth()->user();
+                    $query->whereRaw("find_in_set('" . $user->id . "',assign_to)")->get();
+        
+                }])->whereIn('id', $assign_pro_ids)->get();
+
+                dd($project_s);
+                
             }
             else
             {
@@ -633,19 +645,18 @@ class TimesheetController extends Controller
         {
 
             $timesheet = $request->items;
-            $project_id = $request->project_id;
+            $date = $request->date;
 
             for($i = 0; $i < count($timesheet); $i++)
             {
                 $timesheets                = new Timesheet();
-                $timesheets->project_id    = $project_id;
-                $timesheets->date          = $timesheet[$i]['date'];
+                $timesheets->date          = $date;
+                $timesheets->project_id    = $timesheet[$i]['project_id'];
                 $hour                      = $timesheet[$i]['time_hour'];
                 $minute                    = $timesheet[$i]['time_minute'];
                 $formattedHour             = ($hour != '' ? ($hour < 10 ? '0' . $hour : $hour) : '00');
                 $formattedMinute           = ($minute != '' ? ($minute < 10 ? '0' . $minute : $minute) : '00');
                 $timesheets->time          = $formattedHour . ':' . $formattedMinute;
-                $timesheets->date          = $timesheet[$i]['date'];
                 $timesheets->task_id       = 0;
                 $timesheets->created_by    = \Auth::user()->id;
                 $timesheets->save();
