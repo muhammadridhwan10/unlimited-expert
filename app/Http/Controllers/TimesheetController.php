@@ -9,6 +9,7 @@ use App\Models\Timesheet;
 use App\Models\Branch;
 use App\Models\Department;
 use App\Models\ProjectTask;
+use App\Models\ProjectUser;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -611,23 +612,27 @@ class TimesheetController extends Controller
         {
             if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
-                $projects = Project::all();
 
                 $assign_pro_ids = ProjectUser::where('user_id',\Auth::user()->id)->pluck('project_id');
 
-                $project_s      = Project::with(['tasks' => function($query)
+                $projects      = Project::with(['tasks' => function($query)
                 {
                     $user = auth()->user();
                     $query->whereRaw("find_in_set('" . $user->id . "',assign_to)")->get();
         
                 }])->whereIn('id', $assign_pro_ids)->get();
-
-                dd($project_s);
                 
             }
             else
             {
-                $projects = Project::all();
+                $assign_pro_ids = ProjectUser::where('user_id',\Auth::user()->id)->pluck('project_id');
+
+                $projects      = Project::with(['tasks' => function($query)
+                {
+                    $user = auth()->user();
+                    $query->whereRaw("find_in_set('" . $user->id . "',assign_to)")->get();
+        
+                }])->whereIn('id', $assign_pro_ids)->get();
             }
         
             return view('projects.timesheets.create', compact('projects'));
@@ -677,7 +682,14 @@ class TimesheetController extends Controller
         {
             $id           = Crypt::decrypt($timesheet_id);
             $timesheet    = Timesheet::find($id);
-            $projects = Project::all();
+            $assign_pro_ids = ProjectUser::where('user_id',\Auth::user()->id)->pluck('project_id');
+
+            $projects      = Project::with(['tasks' => function($query)
+            {
+                $user = auth()->user();
+                $query->whereRaw("find_in_set('" . $user->id . "',assign_to)")->get();
+    
+            }])->whereIn('id', $assign_pro_ids)->get();
 
             return view('projects.timesheets.edit', compact('timesheet','projects'));
         }
