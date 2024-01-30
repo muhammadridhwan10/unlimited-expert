@@ -868,6 +868,7 @@ class ProjectController extends Controller
                 Utility::checkFileExistsnDelete([$project->project_image]);
             }
             $project->delete();
+            ProjectUser::where('project_id', '=', $project->id)->delete();
             ActivityLog::create(
                 [
                     'user_id' => \Auth::user()->id,

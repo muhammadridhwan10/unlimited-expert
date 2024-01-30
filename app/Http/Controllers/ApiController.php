@@ -29,6 +29,7 @@ class ApiController extends Controller
 
     public function login(Request $request)
     {
+
         $attr = $request->validate([
             'email' => 'required|string|email|',
             'password' => 'required|string'
@@ -38,16 +39,21 @@ class ApiController extends Controller
             return $this->error('Credentials not match', 401);
         }
 
-        $settings              = Utility::settings(1);
+        $settings              = Utility::settings(auth()->user()->id);
+
+        // $employee = Employee::where('user_id', auth()->user()->id)->where('created_by', '=', \Auth::user()->creatorId())->first();
+
+        // $branch_rest_time = Settings::where('name', 'branch_' . $employee->branch_id . '_rest_time')->value('value');
 
         $settings = [
             'shot_time'=> isset($settings['interval_time'])?$settings['interval_time']:0.5,
         ];
+
         return $this->success([
             'token' => auth()->user()->createToken('API Token')->plainTextToken,
-            'user'=> auth()->user()->id,
-            'name' => auth()->user()->name,
-//            'user'=> auth()->user()->id,
+            'user'=> auth()->user()->name,
+            // 'rest_time'=> $branch_rest_time,
+            'avatar'=> auth()->user()->avatar,
             'settings' =>$settings,
         ],'Login successfully.');
     }
@@ -59,15 +65,16 @@ class ApiController extends Controller
 
     public function getProjects(Request $request){
         $user = auth()->user();
-        $status = ["in_progress", "on_hold"];
+        $status = ["in_progress"];
 
-        if($user->isUser())
+        if($user->type!='company')
         {
             $assign_pro_ids = ProjectUser::where('user_id',$user->id)->pluck('project_id');
+
             $project_s      = Project::with(['tasks' => function($query)
             {
                 $user = auth()->user();
-                $query->with('category_templates')->whereRaw("find_in_set('" . $user->id . "',assign_to)")->get();
+                $query->whereRaw("find_in_set('" . $user->id . "',assign_to)")->get();
     
             }])->select(
                 [
@@ -80,7 +87,6 @@ class ApiController extends Controller
 
         }
         else
-
         {
             $project_s = Project::with('tasks')->select(
                 [

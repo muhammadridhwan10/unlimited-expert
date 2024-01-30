@@ -6132,7 +6132,7 @@ class ReportController extends Controller
             $logged_hours += $total_hours;
         }
 
-        return number_format($logged_hours, 2, '.', '') . ' Hours';
+        return number_format($logged_hours, 2, '.', '');
     }
 
 
