@@ -3380,6 +3380,15 @@ Route::delete(
         'XSS',
     ]
 );
+Route::resource('timesheet', 'TimesheetController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('timesheet/create', 'TimesheetController@create')->name('timesheet.create');
+Route::get('timesheet-list','TimesheetController@index')->name('timesheet.list')->middleware(['auth','XSS']);
+Route::get('timesheet/create', 'TimesheetController@create')->name('timesheet.create');
 Route::group(
     [
         'middleware' => [
