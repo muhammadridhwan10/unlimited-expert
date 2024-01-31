@@ -633,7 +633,6 @@ class TimesheetController extends Controller
         else
         {
             $employee = Employee::where('user_id', \Auth::user()->id)->first();
-            $employee->prepend('Select Employee', '0');
             $employeeTimesheet = Timesheet::where('created_by',\Auth::user()->id);
 
             $filter_project = $request->project_id;
