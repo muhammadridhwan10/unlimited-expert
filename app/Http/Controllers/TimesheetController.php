@@ -830,7 +830,7 @@ class TimesheetController extends Controller
     {
         $exportData = new Collection();
 
-        $logged_seconds = 0;
+        $logged_hours = 0;
 
         foreach ($employeeTimesheet as $timesheet_user) {
             $data = [
@@ -842,18 +842,24 @@ class TimesheetController extends Controller
             ];
 
             $exportData->push($data);
-            $time_diff = strtotime($timesheet_user->time) - strtotime('00:00:00');
-            $logged_seconds += $time_diff;
+
+            $hours = date('H', strtotime($timesheet_user->time));
+            $minutes = date('i', strtotime($timesheet_user->time));
+            $total_hours = $hours + ($minutes / 60);
+            $logged_hours += $total_hours;
         }
 
-        $totalTime = gmdate("H:i:s", $logged_seconds);
+        $totalSeconds = $logged_hours * 3600;
+        $hours = floor($logged_hours);
+        $minutes = floor(($logged_hours - $hours) * 60);
+        $seconds = floor((($logged_hours - $hours) * 60 - $minutes) * 60);
 
         // Tambahkan baris total
         $exportData->push([
             'Employee' => 'Total',
             'Date' => '-',
             'Project Name' => '-',
-            'Time' => $totalTime,
+            'Time' => sprintf("%02d:%02d:%02d", $hours, $minutes, $seconds),
             'Platform' => '-',
         ]);
 

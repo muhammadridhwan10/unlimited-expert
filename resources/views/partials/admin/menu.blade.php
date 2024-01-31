@@ -578,12 +578,12 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                         <a class="dash-link" href="{{ route('vender.index') }}">{{__('Vendor')}}</a>
                                     </li>
                                     @endif
-                                    @if(Gate::check('manage proposal'))
+                                    {{-- @if(Gate::check('manage proposal'))
                                     <li class="dash-item {{ (Request::segment(1) == 'proposal')?'active':''}}">
                                         <a class="dash-link" href="{{ route('proposal.index') }}">{{__('Proposal')}}</a>
                                     </li>
-                                    @endif
-                                    @if( Gate::check('manage bank account') || Gate::check('manage bank transfer'))
+                                    @endif --}}
+                                    {{-- @if( Gate::check('manage bank account') || Gate::check('manage bank transfer'))
                                     <li class="dash-item dash-hasmenu {{(Request::segment(1) == 'bank-account' || Request::segment(1) == 'bank-transfer')? 'active dash-trigger' :''}}">
                                         <a class="dash-link" href="#">{{__('Banking')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                         <ul class="dash-submenu">
@@ -595,14 +595,14 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             </li>
                                         </ul>
                                     </li>
-                                    @endif
+                                    @endif --}}
                                     @if( Gate::check('manage invoice') || Gate::check('manage revenue') || Gate::check('manage credit note'))
                                     <li class="dash-item dash-hasmenu {{(Request::segment(1) == 'invoice' || Request::segment(1) == 'revenue' || Request::segment(1) == 'credit-note')? 'active dash-trigger' :''}}">
-                                        <a class="dash-link" href="#">{{__('Income')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
+                                        <a class="dash-link" href="#">{{__('Revenue')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                         <ul class="dash-submenu">
                                             @if(Gate::check('manage product & service'))
                                             <li class="dash-item {{ (Request::segment(1) == 'productservice')?'active':''}}">
-                                                <a href="{{ route('productservice.index') }}" class="dash-link">{{__('Product & Services')}}
+                                                <a href="{{ route('productservice.index') }}" class="dash-link">{{__('Type Of Services')}}
                                                 </a>
                                             </li>
                                             @endif
@@ -610,12 +610,12 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                                 <a class="dash-link" href="{{ route('invoice.index') }}">{{__('Invoice')}}</a>
                                             </li>
                                             @if (\Auth::user()->type != 'partners')
-                                            <li class="dash-item {{ (Request::route()->getName() == 'revenue.index' || Request::route()->getName() == 'revenue.create' || Request::route()->getName() == 'revenue.edit') ? ' active' : '' }}">
+                                            {{-- <li class="dash-item {{ (Request::route()->getName() == 'revenue.index' || Request::route()->getName() == 'revenue.create' || Request::route()->getName() == 'revenue.edit') ? ' active' : '' }}">
                                                 <a class="dash-link" href="{{route('revenue.index')}}">{{__('Revenue')}}</a>
-                                            </li>
-                                            <li class="dash-item {{ (Request::route()->getName() == 'credit.note' ) ? ' active' : '' }}">
+                                            </li> --}}
+                                            {{-- <li class="dash-item {{ (Request::route()->getName() == 'credit.note' ) ? ' active' : '' }}">
                                                 <a class="dash-link" href="{{route('credit.note')}}">{{__('Credit Note')}}</a>
-                                            </li>
+                                            </li> --}}
                                             @endif
                                         </ul>
                                     </li>
@@ -624,21 +624,21 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                     <li class="dash-item dash-hasmenu {{(Request::segment(1) == 'bill' || Request::segment(1) == 'payment' || Request::segment(1) == 'debit-note')? 'active dash-trigger' :''}}">
                                         <a class="dash-link" href="#">{{__('Expense')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                         <ul class="dash-submenu">
-                                            <li class="dash-item {{ (Request::route()->getName() == 'bill.index' || Request::route()->getName() == 'bill.create' || Request::route()->getName() == 'bill.edit' || Request::route()->getName() == 'bill.show') ? ' active' : '' }}">
+                                            {{-- <li class="dash-item {{ (Request::route()->getName() == 'bill.index' || Request::route()->getName() == 'bill.create' || Request::route()->getName() == 'bill.edit' || Request::route()->getName() == 'bill.show') ? ' active' : '' }}">
                                                 <a class="dash-link" href="{{ route('bill.index') }}">{{__('Bill')}}</a>
-                                            </li>
+                                            </li> --}}
                                             <li class="dash-item {{ (Request::route()->getName() == 'payment.index' || Request::route()->getName() == 'payment.create' || Request::route()->getName() == 'payment.edit') ? ' active' : '' }}">
-                                                <a class="dash-link" href="{{route('payment.index')}}">{{__('Payment')}}</a>
+                                                <a class="dash-link" href="{{route('payment.index')}}">{{__('Bill')}}</a>
                                             </li>
-                                            <li class="dash-item  {{ (Request::route()->getName() == 'debit.note' ) ? ' active' : '' }}">
+                                            {{-- <li class="dash-item  {{ (Request::route()->getName() == 'debit.note' ) ? ' active' : '' }}">
                                                 <a class="dash-link" href="{{route('debit.note')}}">{{__('Debit Note')}}</a>
-                                            </li>
+                                            </li> --}}
                                         </ul>
                                     </li>
                                     @endif
-                                    @if( Gate::check('manage chart of account') || Gate::check('manage journal entry') || Gate::check('balance sheet report') || Gate::check('ledger report') || Gate::check('trial balance report'))
+                                    {{-- @if( Gate::check('manage chart of account') || Gate::check('manage journal entry') || Gate::check('balance sheet report') || Gate::check('ledger report') || Gate::check('trial balance report'))
                                     <li class="dash-item dash-hasmenu {{(Request::segment(1) == 'chart-of-account' || Request::segment(1) == 'journal-entry' || Request::segment(2) == 'ledger' ||  Request::segment(2) == 'balance-sheet' ||  Request::segment(2) == 'trial-balance')? 'active dash-trigger' :''}}">
-                                        <a class="dash-link" href="#">{{__('Double Entry')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
+                                        <a class="dash-link" href="#">{{__('Chart of Accounts')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                         <ul class="dash-submenu">
                                             <li class="dash-item {{ (Request::route()->getName() == 'chart-of-account.index') ? ' active' : '' }}">
                                                 <a class="dash-link" href="{{ route('chart-of-account.index') }}">{{__('Chart of Accounts')}}</a>
@@ -657,17 +657,22 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             </li>
                                         </ul>
                                     </li>
+                                    @endif --}}
+                                    @if(Gate::check('manage chart of account'))
+                                    <li class="dash-item {{ (Request::segment(1) == 'goal')?'active':''}}">
+                                        <a class="dash-link" href="{{ route('chart-of-account.index') }}">{{__('Chart of Accounts')}}</a>
+                                    </li>
                                     @endif
-                                    @if(\Auth::user()->type =='company')
+                                    {{-- @if(\Auth::user()->type =='company')
                                     <li class="dash-item {{ (Request::segment(1) == 'budget')?'active':''}}">
                                         <a class="dash-link" href="{{ route('budget.index') }}">{{__('Budget Planner')}}</a>
                                     </li>
-                                    @endif
-                                    @if(Gate::check('manage goal'))
+                                    @endif --}}
+                                    {{-- @if(Gate::check('manage goal'))
                                     <li class="dash-item {{ (Request::segment(1) == 'goal')?'active':''}}">
                                         <a class="dash-link" href="{{ route('goal.index') }}">{{__('Financial Goal')}}</a>
                                     </li>
-                                    @endif
+                                    @endif --}}
                                     @if( Gate::check('income report') || Gate::check('expense report') || Gate::check('income vs expense report') ||
                                     Gate::check('tax report') || Gate::check('loss & profit report') || Gate::check('invoice report') ||
                                     Gate::check('bill report') || Gate::check('stock report') || Gate::check('invoice report') ||
@@ -677,6 +682,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
 
                                         <a class="dash-link" href="#">{{__('Reports')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                         <ul class="dash-submenu">
+                                            @can('income report')
+                                            <li class="dash-item {{ (Request::route()->getName() == 'report.income.summary' ) ? ' active' : '' }}">
+                                                <a class="dash-link" href="{{route('report.income.summary')}}">{{__('Income Summary')}}</a>
+                                            </li>
+                                            @endcan
                                             @can('expense report')
                                             <li class="dash-item {{ (Request::route()->getName() == 'report.expense.summary' ) ? ' active' : '' }}">
                                                 <a class="dash-link" href="{{route('report.expense.summary')}}">{{__('Expense Summary')}}</a>
@@ -687,17 +697,17 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                                 <a class="dash-link" href="{{route('report.income.vs.expense.summary')}}">{{__('Income VS Expense')}}</a>
                                             </li>
                                             @endcan
-                                            @can('statement report')
+                                            {{-- @can('statement report')
                                             <li class="dash-item {{ (Request::route()->getName() == 'report.account.statement') ? ' active' : '' }}">
                                                 <a class="dash-link" href="{{route('report.account.statement')}}">{{__('Account Statement')}}</a>
                                             </li>
-                                            @endcan
-                                            @can('invoice report')
+                                            @endcan --}}
+                                            {{-- @can('invoice report')
                                             <li class="dash-item {{ (Request::route()->getName() == 'report.invoice.summary' ) ? ' active' : '' }}">
                                                 <a class="dash-link" href="{{route('report.invoice.summary')}}">{{__('Invoice Summary')}}</a>
                                             </li>
-                                            @endcan
-                                            @can('bill report')
+                                            @endcan --}}
+                                            {{-- @can('bill report')
                                             <li class="dash-item {{ (Request::route()->getName() == 'report.bill.summary' ) ? ' active' : '' }}">
                                                 <a class="dash-link" href="{{route('report.bill.summary')}}">{{__('Bill Summary')}}</a>
                                             </li>
@@ -707,33 +717,28 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             <li class="dash-item {{ (Request::route()->getName() == 'report.product.stock.report' ) ? ' active' : '' }}">
                                                 <a href="{{route('report.product.stock.report')}}" class="dash-link">{{ __('Product Stock') }}</a>
                                             </li>
-                                            @endcan
+                                            @endcan --}}
                                             @can('loss & profit report')
                                             <li class="dash-item {{ (Request::route()->getName() == 'report.profit.loss.summary' ) ? ' active' : '' }}">
                                                 <a class="dash-link" href="{{route('report.profit.loss.summary')}}">{{__('Profit & Loss')}}</a>
                                             </li>
                                             @endcan
-                                            @can('manage transaction')
+                                            {{-- @can('manage transaction')
                                             <li class="dash-item {{ (Request::route()->getName() == 'transaction.index' || Request::route()->getName() == 'transfer.create' || Request::route()->getName() == 'transaction.edit') ? ' active' : '' }}">
                                                 <a class="dash-link" href="{{ route('transaction.index') }}">{{__('Transaction')}}</a>
                                             </li>
-                                            @endcan
-                                            @can('income report')
-                                            <li class="dash-item {{ (Request::route()->getName() == 'report.income.summary' ) ? ' active' : '' }}">
-                                                <a class="dash-link" href="{{route('report.income.summary')}}">{{__('Income Summary')}}</a>
-                                            </li>
-                                            @endcan
-                                            @can('tax report')
+                                            @endcan --}}
+                                            {{-- @can('tax report')
                                             <li class="dash-item {{ (Request::route()->getName() == 'report.tax.summary' ) ? ' active' : '' }}">
                                                 <a class="dash-link" href="{{route('report.tax.summary')}}">{{__('Tax Summary')}}</a>
                                             </li>
-                                            @endcan
+                                            @endcan --}}
                                         </ul>
                                     </li>
                                     @endif
                                     @if(Gate::check('manage constant tax') || Gate::check('manage constant category') ||Gate::check('manage constant unit') ||Gate::check('manage constant payment method') ||Gate::check('manage constant custom field') )
                                     <li class="dash-item {{(Request::segment(1) == 'taxes' || Request::segment(1) == 'product-category' || Request::segment(1) == 'product-unit' || Request::segment(1) == 'payment-method' || Request::segment(1) == 'custom-field' || Request::segment(1) == 'chart-of-account-type')? 'active dash-trigger' :''}}">
-                                        <a class="dash-link" href="{{ route('taxes.index') }}">{{__('Accounting')}}</a>
+                                        <a class="dash-link" href="{{ route('taxes.index') }}">{{__('Tax and Service Setting')}}</a>
                                         {{-- <ul class="dash-submenu">--}}
                                         {{-- @can('manage constant tax')--}}
                                         {{-- <li class="dash-item {{ (Request::route()->getName() == 'taxes.index' ) ? ' active' : '' }}">--}}
@@ -913,11 +918,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                         <a class="dash-link" href="{{route('project_report.index') }}">{{__('Project Progress Report')}}</a>
                                     </li>
                                     @endif
-                                    @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'senior audit')
+                                    {{-- @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'senior audit')
                                     <li class="dash-item {{ request()->is('reports-projects') ? 'active' : '' }}">
                                         <a class="dash-link" href="{{ route('report.projects') }}">{{ __('Project Time Report') }}</a>
                                     </li>
-                                    @endif
+                                    @endif --}}
                                     @if(Gate::check('manage project task stage') || Gate::check('manage bug status') || Gate::check('manage project task template') || Gate::check('manage mapping account data'))
                                     <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'bugstatus' || Request::segment(1) == 'project-task-stages' || Request::segment(1) == 'tasktemplate') ? 'active dash-trigger' : ''}}">
                                         <a class="dash-link" href="#">{{__('Project Settings')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>

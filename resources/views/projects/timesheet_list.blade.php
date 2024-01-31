@@ -89,7 +89,8 @@
                                     <div class="col-auto">
                                         <div class="btn-box">
                                             {{Form::label('month',__('Month'),['class'=>'form-label'])}}
-                                            {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
+                                           {{ Form::month('month', request()->input('month', ''), ['class' => 'month-btn form-control']) }}
+
                                         </div>
                                     </div>
                                 </div>
@@ -147,11 +148,14 @@
                             </thead>
                             <tbody>
                             @php
-                                $totalSeconds = 0;
+                                $logged_hours = 0;
                             @endphp
                             @foreach ($employeeTimesheet as $timesheet)
                             @php
-                                $totalSeconds += strtotime($timesheet->time) - strtotime('00:00:00');
+                                $hours = date('H', strtotime($timesheet->time));
+                                $minutes = date('i', strtotime($timesheet->time));
+                                $total_hours = $hours + ($minutes / 60);
+                                $logged_hours += $total_hours;
                             @endphp
                                 <tr>
                                     <td>{{!empty($timesheet->user->name)?$timesheet->user->name:'-'}}</td>
@@ -188,8 +192,16 @@
                             @endforeach
                             
                             </tbody>
+                            @php
+                                $totalSeconds = $logged_hours * 3600;
+                                $hours = floor($logged_hours);
+                                $minutes = floor(($logged_hours - $hours) * 60);
+                                $seconds = floor((($logged_hours - $hours) * 60 - $minutes) * 60);
+                            @endphp
                             <tr>
-                                <td colspan="5" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;"><strong>Total Time: {{ gmdate("H:i:s", $totalSeconds) }}</strong></td>
+                                <td colspan="5" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;">
+                                    <strong>Total Time: {{ sprintf("%02d:%02d:%02d", $hours, $minutes, $seconds) }}</strong>
+                                </td>
                             </tr>
                         </table>
                     </div>
