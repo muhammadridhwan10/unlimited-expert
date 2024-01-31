@@ -7,6 +7,22 @@
     <li class="breadcrumb-item">{{__('Timesheet')}}</li>
 @endsection
 
+@push('script-page')
+
+    <script type="text/javascript" src="{{ asset('js/jszip.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/pdfmake.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/vfs_fonts.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/dataTables.buttons.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/buttons.html5.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('js/html2pdf.bundle.min.js') }}"></script>
+    <script>
+        function exportToExcel() {
+            $('#export_excel').val(1);
+            document.getElementById('report_monthly_tracker').submit();
+        }
+    </script>
+@endpush
+
 @section('action-btn')
     <div class="float-end">
         @can('create timesheet')
@@ -14,6 +30,9 @@
                 <i class="ti ti-plus"></i>
             </a>
         @endcan
+        <a href="#" class="btn btn-sm btn-success" onclick="exportToExcel()" data-bs-toggle="tooltip" title="{{__('Export to Excel')}}" data-original-title="{{__('Export to Excel')}}">
+            <span class="btn-inner--icon"><i class="ti ti-file"></i></span>
+        </a>
     </div>
 @endsection
 
@@ -63,6 +82,7 @@
                 <div class="card">
                     <div class="card-body">
                         {{ Form::open(array('route' => array('timesheet.list'),'method'=>'get','id'=>'report_monthly_tracker')) }}
+                        {{ Form::hidden('export_excel', 0, ['id' => 'export_excel']) }}
                         <div class="row align-items-center justify-content-end">
                             <div class="col-auto">
                                 <div class="row">
@@ -74,13 +94,27 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="col-auto" style = "width:400px;">
+                                <div class="btn-box">
+                                    {{ Form::label('project_id', __('Project'), ['class' => 'form-label']) }}
+                                    {{ Form::select('project_id', $project, isset($_GET['project_id']) ? $_GET['project_id'] : 0, ['class' => 'form-control select2']) }}
+                                </div>
+                            </div>
+                            @if(Auth::user()->type == "admin" || Auth::user()->type == "company" || Auth::user()->type == "partners")
+                            <div class="col-auto" style = "width:300px;">
+                                <div class="btn-box">
+                                    {{ Form::label('user_id', __('Employee'), ['class' => 'form-label']) }}
+                                    {{ Form::select('user_id', $employee, isset($_GET['user_id']) ? $_GET['user_id'] : 0, ['class' => 'form-control select2']) }}
+                                </div>
+                            </div>
+                            @endif
                             <div class="col-auto">
                                 <div class="row">
                                     <div class="col-auto mt-4">
                                         <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_monthly_tracker').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
                                             <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
                                         </a>
-                                        <a href="{{route('time.tracker')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
+                                        <a href="{{route('timesheet.list')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
                                             <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
                                         </a>
                                     </div>
@@ -112,7 +146,13 @@
                             </tr>
                             </thead>
                             <tbody>
+                            @php
+                                $totalSeconds = 0;
+                            @endphp
                             @foreach ($employeeTimesheet as $timesheet)
+                            @php
+                                $totalSeconds += strtotime($timesheet->time) - strtotime('00:00:00');
+                            @endphp
                                 <tr>
                                     <td>{{!empty($timesheet->user->name)?$timesheet->user->name:'-'}}</td>
                                     <td>{{!empty($timesheet->project->project_name)?$timesheet->project->project_name:'-'}}</td>
@@ -146,7 +186,11 @@
                                     @endif
                                 </tr>
                             @endforeach
+                            
                             </tbody>
+                            <tr>
+                                <td colspan="5" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;"><strong>Total Time: {{ gmdate("H:i:s", $totalSeconds) }}</strong></td>
+                            </tr>
                         </table>
                     </div>
                 </div>

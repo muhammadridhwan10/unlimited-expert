@@ -8,12 +8,16 @@ use App\Models\Utility;
 use App\Models\Timesheet;
 use App\Models\Branch;
 use App\Models\Department;
+use App\Models\Employee;
 use App\Models\ProjectTask;
 use App\Models\ProjectUser;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
+use App\Exports\TimesheetExport;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Facades\Excel;
 
 class TimesheetController extends Controller
 {
@@ -530,16 +534,29 @@ class TimesheetController extends Controller
         $user = Auth::user();
         if($user->type == 'admin' || $user->type == 'company')
         {
-            $timesheet = Timesheet::all();
-            $branch      = Branch::get();
-            $department = Department::get();
+            $employeeTimesheet = Timesheet::query();
 
-            $data['branch']     = __('All');
-            $data['department'] = __('All');
+            $employee = User::where('type', '!=', 'client' )->get()->pluck('name', 'id');
+            $employee->prepend('Select Employee', '0');
 
-            $employee = User::all();
-            $employee = $employee->pluck('id');
-            $employeeTimesheet = Timesheet::whereIn('created_by', $employee);
+            $filter_project = $request->project_id;
+
+            $assign_pro_ids = ProjectUser::where('user_id',\Auth::user()->id)->pluck('project_id');
+
+            $project      = Project::get()->pluck('project_name', 'id');
+            $project->prepend('Select Project', '0');
+
+            if (!empty($request->user_id)) {
+                $selectedEmployees = $request->user_id;
+                $employeeTimesheet->where('created_by', $selectedEmployees);
+            }
+
+            if (!empty($request->project_id)) {
+                $employeeTimesheet
+                ->whereHas('project', function ($query) use ($filter_project) {
+                    $query->where('id', $filter_project);
+                });
+            }
 
             if (!empty($request->month)) {
                 $month = date('m', strtotime($request->month));
@@ -552,20 +569,44 @@ class TimesheetController extends Controller
             } 
 
             $employeeTimesheet = $employeeTimesheet->get();
+
+            if (!empty($request->export_excel)) {
+
+                $exportData = $this->prepareExportData($employeeTimesheet);
+        
+                $exportDataArray = $exportData->toArray();
+
+                return Excel::download(new TimesheetExport($exportDataArray), 'timesheet_report.xlsx');
+            }
+            
 
         }
         elseif($user->type == 'partners')
         {
-            $branch      = Branch::get();
-            $department = Department::get();
 
-            $data['branch']     = __('All');
-            $data['department'] = __('All');
+            $employeeTimesheet = Timesheet::query();
 
-            $employee = Employee::where('user_id', \Auth::user()->id)->first();
-            $employeebranch = Employee::where('branch_id', $employee->branch_id);
-            $employees = $employeebranch->pluck('user_id');
-            $employeeTimesheet = Timesheet::whereIn('created_by', $employees);
+            $employee = User::where('type', '!=', 'client' )->get()->pluck('name', 'id');
+            $employee->prepend('Select Employee', '0');
+
+            $filter_project = $request->project_id;
+
+            $assign_pro_ids = ProjectUser::where('user_id',\Auth::user()->id)->pluck('project_id');
+
+            $project      = Project::get()->pluck('project_name', 'id');
+            $project->prepend('Select Project', '0');
+
+            if (!empty($request->user_id)) {
+                $selectedEmployees = $request->user_id;
+                $employeeTimesheet->where('created_by', $selectedEmployees);
+            }
+
+            if (!empty($request->project_id)) {
+                $employeeTimesheet
+                ->whereHas('project', function ($query) use ($filter_project) {
+                    $query->where('id', $filter_project);
+                });
+            }
 
             if (!empty($request->month)) {
                 $month = date('m', strtotime($request->month));
@@ -578,16 +619,47 @@ class TimesheetController extends Controller
             } 
 
             $employeeTimesheet = $employeeTimesheet->get();
+
+            if (!empty($request->export_excel)) {
+
+                $exportData = $this->prepareExportData($employeeTimesheet);
+        
+                $exportDataArray = $exportData->toArray();
+
+                return Excel::download(new TimesheetExport($exportDataArray), 'timesheet_report.xlsx');
+            }
 
         }
         else
         {
-            $branch      = Branch::get();
-            $department = Department::get();
-
-            $data['branch']     = __('All');
-            $data['department'] = __('All');
+            $employee = Employee::where('user_id', \Auth::user()->id)->first();
+            $employee->prepend('Select Employee', '0');
             $employeeTimesheet = Timesheet::where('created_by',\Auth::user()->id);
+
+            $filter_project = $request->project_id;
+            $employess =   User::where('type','!=','client')->pluck('name','id');
+
+            $assign_pro_ids = ProjectUser::where('user_id',\Auth::user()->id)->pluck('project_id');
+
+            $project      = Project::with(['tasks' => function($query)
+            {
+                $user = auth()->user();
+                $query->whereRaw("find_in_set('" . $user->id . "',assign_to)")->get();
+    
+            }])->whereIn('id', $assign_pro_ids)->get()->pluck('project_name', 'id');
+            $project->prepend('Select Project', '0');
+
+            if (!empty($request->user_id)) {
+                $selectedEmployees = $request->user_id;
+                $employeeTimesheet->where('created_by', $selectedEmployees);
+            }
+
+            if (!empty($request->project_id)) {
+                $employeeTimesheet
+                ->whereHas('project', function ($query) use ($filter_project) {
+                    $query->where('id', $filter_project);
+                });
+            }
 
             if (!empty($request->month)) {
                 $month = date('m', strtotime($request->month));
@@ -600,8 +672,17 @@ class TimesheetController extends Controller
             } 
 
             $employeeTimesheet = $employeeTimesheet->get();
+
+            if (!empty($request->export_excel)) {
+
+                $exportData = $this->prepareExportData($employeeTimesheet);
+        
+                $exportDataArray = $exportData->toArray();
+
+                return Excel::download(new TimesheetExport($exportDataArray), 'timesheet_report.xlsx');
+            }
         }
-        return view('projects.timesheet_list',compact('employeeTimesheet','branch', 'department'));
+        return view('projects.timesheet_list',compact('employeeTimesheet','project','employee'));
 
     }
 
@@ -664,6 +745,7 @@ class TimesheetController extends Controller
                 $timesheets->time          = $formattedHour . ':' . $formattedMinute;
                 $timesheets->task_id       = 0;
                 $timesheets->created_by    = \Auth::user()->id;
+                $timesheets->platform      = 'Web';
                 $timesheets->save();
             }
 
@@ -717,6 +799,7 @@ class TimesheetController extends Controller
             $formattedTime = $formattedHour . ':' . $formattedMinute;
 
             $timesheet->time = $formattedTime;
+            $timesheet->platform      = 'Web';
 
             $timesheet->update($post);
 
@@ -742,6 +825,62 @@ class TimesheetController extends Controller
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
     }
+
+    public function prepareExportData($employeeTimesheet)
+    {
+        $exportData = new Collection();
+
+        $logged_seconds = 0;
+
+        foreach ($employeeTimesheet as $timesheet_user) {
+            $data = [
+                'Employee' => !empty($timesheet_user->user->name) ? $timesheet_user->user->name : '-',
+                'Date' => !empty($timesheet_user->date) ? $timesheet_user->date : '-',
+                'Project Name' => !empty($timesheet_user->project->project_name) ? $timesheet_user->project->project_name : '-',
+                'Time' => !empty($timesheet_user->time) ? $this->formatTime($timesheet_user->time) : '-',
+                'Platform' => !empty($timesheet_user->platform) ? $timesheet_user->platform : '-',
+            ];
+
+            $exportData->push($data);
+            $time_diff = strtotime($timesheet_user->time) - strtotime('00:00:00');
+            $logged_seconds += $time_diff;
+        }
+
+        $totalTime = gmdate("H:i:s", $logged_seconds);
+
+        // Tambahkan baris total
+        $exportData->push([
+            'Employee' => 'Total',
+            'Date' => '-',
+            'Project Name' => '-',
+            'Time' => $totalTime,
+            'Platform' => '-',
+        ]);
+
+
+        return $exportData;
+    }
+
+
+    protected function formatTime($time)
+    {
+        return gmdate("H:i:s", strtotime($time) - strtotime('00:00:00'));
+    }
+
+    // public function calculateLoggedHours($projectId, $userId)
+    // {
+    //     $logged_hours = 0;
+    //     $timesheets = Timesheet::where('project_id', $projectId)->where('created_by', $userId)->get();
+
+    //     foreach ($timesheets as $timesheet) {
+    //         $hours = date('H', strtotime($timesheet->time));
+    //         $minutes = date('i', strtotime($timesheet->time));
+    //         $total_hours = $hours + ($minutes / 60);
+    //         $logged_hours += $total_hours;
+    //     }
+
+    //     return number_format($logged_hours, 2, '.', '');
+    // }
 
 
 }

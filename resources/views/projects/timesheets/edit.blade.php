@@ -6,7 +6,6 @@
                     {{ Form::label('project_id', __('Project'),['class' => 'form-label']) }}<span class="text-danger">*</span>
                     <select name="project_id" id="project_id" class="form-control select2 main-element">
                         @foreach($projects as $project)
-                            <option value="0">Select Project</option>
                             <option value="{{$project->id}}">{{__($project->project_name)}}</option>
                         @endforeach
                     </select>

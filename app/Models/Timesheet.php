@@ -13,6 +13,7 @@ class Timesheet extends Model
         'time',
         'description',
         'created_by',
+        'platform',
     ];
 
     public function project()

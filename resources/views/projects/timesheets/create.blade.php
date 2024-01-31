@@ -344,7 +344,6 @@
                                     <div class="form-group price-input input-group search-form">
                                         <select name="project_id" id="project_id" class="form-control select main-element">
                                             @foreach($projects as $project)
-                                                <option value="0">Select Project</option>
                                                 <option value="{{$project->id}}">{{__($project->project_name)}}</option>
                                             @endforeach
                                         </select>

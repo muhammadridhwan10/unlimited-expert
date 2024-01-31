@@ -66,36 +66,32 @@ class ApiController extends Controller
     public function getProjects(Request $request){
         $user = auth()->user();
         $status = ["in_progress"];
+        $keyword = $request->input('keyword');
 
         if($user->type!='company')
         {
             $assign_pro_ids = ProjectUser::where('user_id',$user->id)->pluck('project_id');
 
-            $project_s      = Project::with(['tasks' => function($query)
-            {
-                $user = auth()->user();
-                $query->whereRaw("find_in_set('" . $user->id . "',assign_to)")->get();
-    
-            }])->select(
-                [
-                    'project_name',
-                    'id',
-                    'client_id',
-                    'status',
-                ]
-            )->where('status', $status)->whereIn('id', $assign_pro_ids)->get()->toArray();
+            $project_s = Project::with(['tasks' => function($query) use ($user) {
+                $query->whereRaw("find_in_set('" . $user->id . "', assign_to)")->get();
+            }])
+            ->select(['project_name', 'id', 'client_id', 'status'])
+            ->where('status', $status)
+            ->whereIn('id', $assign_pro_ids)
+            ->where('project_name', 'like', '%' . $keyword . '%')
+            ->get()
+            ->toArray();
 
         }
         else
         {
-            $project_s = Project::with('tasks')->select(
-                [
-                    'project_name',
-                    'id',
-                    'client_id',
-                    'status',
-                ]
-            )->where('status', $status)->where('created_by', $user->id)->get()->toArray();
+            $project_s = Project::with('tasks')
+                ->select(['project_name', 'id', 'client_id', 'status'])
+                ->where('status', $status)
+                ->where('created_by', $user->id)
+                ->where('project_name', 'like', '%' . $keyword . '%')
+                ->get()
+                ->toArray();
 
         }
         return $this->success([
@@ -195,6 +191,7 @@ class ApiController extends Controller
 
                 $time = sprintf("%02d:%02d:%02d", $H, $i, $s);
                 $timesheet->time = $time;
+                $timesheet->platform = 'Desktop';
                 $timesheet->created_by = $tracker->created_by;
 
                 $timesheet->save();
@@ -231,5 +228,6 @@ class ApiController extends Controller
         $new->save();
         return $this->success( [],'Uploaded successfully.');
     }
+    
 
 }
