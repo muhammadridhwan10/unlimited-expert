@@ -101,8 +101,14 @@
                                     {{ Form::select('project_id', $project, isset($_GET['project_id']) ? $_GET['project_id'] : 0, ['class' => 'form-control select2']) }}
                                 </div>
                             </div>
+                            <div class="col-auto">
+                                <div class="btn-box">
+                                    {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
+                                    {{ Form::select('status', \App\Models\Project::$project_status, isset($request->status) ? $request->status : null, ['class' => 'form-control select']) }}
+                                </div>
+                            </div>
                             @if(Auth::user()->type == "admin" || Auth::user()->type == "company" || Auth::user()->type == "partners")
-                            <div class="col-auto" style = "width:300px;">
+                            <div class="col-auto">
                                 <div class="btn-box">
                                     {{ Form::label('user_id', __('Employee'), ['class' => 'form-label']) }}
                                     {{ Form::select('user_id', $employee, isset($_GET['user_id']) ? $_GET['user_id'] : 0, ['class' => 'form-control select2']) }}
@@ -143,6 +149,7 @@
                                 <th> {{__('Project')}}</th>
                                 <th> {{__('Date')}}</th>
                                 <th> {{__('Time')}}</th>
+                                <th> {{__('Status')}}</th>
                                 <th>{{__('Action')}}</th>
                             </tr>
                             </thead>
@@ -162,6 +169,7 @@
                                     <td>{{!empty($timesheet->project->project_name)?$timesheet->project->project_name:'-'}}</td>
                                     <td>{{date("l, d-m-Y",strtotime($timesheet->date))}}</td>
                                     <td>{{date("H:i:s",strtotime($timesheet->time))}}</td>
+                                    <td>{{!empty($timesheet->project->status)?$timesheet->project->status:'-'}}</td>
                                     @if (Gate::check('edit timesheet') || Gate::check('delete timesheet'))
                                         <td class="Action">
                                                 <span>
@@ -199,7 +207,7 @@
                                 $seconds = floor((($logged_hours - $hours) * 60 - $minutes) * 60);
                             @endphp
                             <tr>
-                                <td colspan="5" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;">
+                                <td colspan="6" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;">
                                     <strong>Total Time: {{ sprintf("%02d:%02d:%02d", $hours, $minutes, $seconds) }}</strong>
                                 </td>
                             </tr>

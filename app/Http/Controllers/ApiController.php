@@ -39,7 +39,7 @@ class ApiController extends Controller
             return $this->error('Credentials not match', 401);
         }
 
-        $settings              = Utility::settings(auth()->user()->id);
+        $settings              = Utility::settings(\Auth::user()->creatorId());
 
         // $employee = Employee::where('user_id', auth()->user()->id)->where('created_by', '=', \Auth::user()->creatorId())->first();
 
@@ -67,36 +67,24 @@ class ApiController extends Controller
         $user = auth()->user();
         $status = ["in_progress"];
         $keyword = $request->input('keyword');
-
-        if($user->type!='company')
-        {
-            $assign_pro_ids = ProjectUser::where('user_id',$user->id)->pluck('project_id');
-
-            $project_s = Project::with(['tasks' => function($query) use ($user) {
-                $query->whereRaw("find_in_set('" . $user->id . "', assign_to)")->get();
-            }])
-            ->select(['project_name', 'id', 'client_id', 'status'])
+    
+        $projectQuery = Project::select(['project_name', 'id', 'client_id', 'status'])
             ->where('status', $status)
-            ->whereIn('id', $assign_pro_ids)
-            ->where('project_name', 'like', '%' . $keyword . '%')
-            ->get()
-            ->toArray();
-
+            ->where('project_name', 'like', '%' . $keyword . '%');
+    
+        if ($user->type !== 'company') {
+            $assign_pro_ids = ProjectUser::where('user_id', $user->id)->pluck('project_id');
+    
+            $projectQuery->whereIn('id', $assign_pro_ids);
+        } else {
+            $projectQuery->where('created_by', $user->id);
         }
-        else
-        {
-            $project_s = Project::with('tasks')
-                ->select(['project_name', 'id', 'client_id', 'status'])
-                ->where('status', $status)
-                ->where('created_by', $user->id)
-                ->where('project_name', 'like', '%' . $keyword . '%')
-                ->get()
-                ->toArray();
-
-        }
+    
+        $projects = $projectQuery->get();
+    
         return $this->success([
-            'projects' => $project_s,
-        ],'Get Project List successfully.');
+            'projects' => $projects,
+        ], 'Get Project List successfully.');
     }
 
     public function getTask(Request $request)
@@ -128,7 +116,7 @@ class ApiController extends Controller
         if($request->has('action') && $request->action == 'start'){
 
             $validatorArray = [
-                'task_id' => 'required|integer',
+                'project_id' => 'required|integer',
             ];
             $validator      = \Validator::make(
                 $request->all(), $validatorArray
@@ -137,13 +125,13 @@ class ApiController extends Controller
             {
                 return $this->error($validator->errors()->first(), 401);
             }
-            $task= ProjectTask::find($request->task_id);
+            $project= Project::find($request->project_id);
 
-            if(empty($task)){
-                return $this->error('Invalid task', 401);
+            if(empty($project)){
+                return $this->error('Invalid Project', 401);
             }
 
-            $project_id = isset($task->project_id)?$task->project_id:'';
+            $project_id = $request->has('project_id') ? $request->project_id : null;
             TimeTracker::where('created_by', '=', $user->id)->where('is_active', '=', 1)->update(['end_time' => date("Y-m-d H:i:s")]);
 
             $track['name']        = $request->has('workin_on') ? $request->input('workin_on') : '';
@@ -151,7 +139,7 @@ class ApiController extends Controller
             $track['is_billable'] =  $request->has('is_billable')? $request->is_billable:0;
             $track['tag_id']      = $request->has('workin_on') ? $request->input('workin_on') : '';
             $track['start_time']  = $request->has('time') ?  date("Y-m-d H:i:s",strtotime($request->input('time'))) : date("Y-m-d H:i:s");
-            $track['task_id']     = $request->has('task_id') ? $request->input('task_id') : '';
+            $track['task_id']     = 0;
             $track['created_by']  = $user->id;
             $track                = TimeTracker::create($track);
             $track->action        ='start';
@@ -159,7 +147,7 @@ class ApiController extends Controller
             return $this->success( $track,'Track successfully create.');
         }else{
             $validatorArray = [
-                'task_id' => 'required|integer',
+                'project_id' => 'required|integer',
                 'traker_id' =>'required|integer',
             ];
             $validator      = Validator::make(
@@ -181,7 +169,7 @@ class ApiController extends Controller
 
                 $timesheet = new Timesheet;
                 $timesheet->project_id = $tracker->project_id;
-                $timesheet->task_id = $tracker->task_id;
+                $timesheet->task_id = 0;
                 $timesheet->date = $date;
                 $seconds = $tracker->total_time;
 

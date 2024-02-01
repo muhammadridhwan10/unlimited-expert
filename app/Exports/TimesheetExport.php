@@ -27,6 +27,7 @@ class TimesheetExport implements FromArray, WithHeadings
             'Project Name',
             'Time',
             'Platform',
+            'Project Status',
         ];
     }
 }
