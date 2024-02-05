@@ -95,6 +95,12 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="col-auto">
+                                <div class="btn-box">
+                                    {{ Form::label('date', __('Date'), ['class' => 'form-label']) }}
+                                    {{ Form::date('date', request()->input('date'), ['class' => 'form-control']) }}
+                                </div>
+                            </div>
                             <div class="col-auto" style = "width:400px;">
                                 <div class="btn-box">
                                     {{ Form::label('project_id', __('Project'), ['class' => 'form-label']) }}
@@ -104,7 +110,12 @@
                             <div class="col-auto">
                                 <div class="btn-box">
                                     {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
-                                    {{ Form::select('status', \App\Models\Project::$project_status, isset($request->status) ? $request->status : null, ['class' => 'form-control select']) }}
+                                    <select class="form-control select" name="status" id="status" placeholder="Select Status">
+                                        <option value="0">{{ __('All Status') }}</option>
+                                        @foreach(\App\Models\Project::$project_status as $key => $label)
+                                            <option value="{{ $key }}">{{ $label }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                             @if(Auth::user()->type == "admin" || Auth::user()->type == "company" || Auth::user()->type == "partners")

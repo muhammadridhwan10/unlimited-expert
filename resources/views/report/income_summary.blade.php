@@ -240,7 +240,7 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-                                <tr>
+                                {{-- <tr>
                                     <td colspan="13" class="text-dark"><span>{{__('Revenue :')}}</span></td>
                                 </tr>
                                 @foreach($incomeArr as $i=>$income)
@@ -250,7 +250,7 @@
                                             <td>{{\Auth::user()->priceFormat($data)}}</td>
                                         @endforeach
                                     </tr>
-                                @endforeach
+                                @endforeach --}}
                                 <tr>
                                     <td colspan="13" class="text-dark"><span>{{__('Invoice :')}}</span></td>
                                 </tr>
@@ -263,7 +263,7 @@
                                     </tr>
                                 @endforeach
                                 <tr>
-                                    <td colspan="13" class="text-dark"><span>{{__('Income = Revenue + Invoice :')}}</span></td>
+                                    <td colspan="13" class="text-dark"><span>{{__('Income = Invoice :')}}</span></td>
                                 </tr>
                                 <tr>
                                     <td class="text-dark"><h6>{{__('Total')}}</h6></td>

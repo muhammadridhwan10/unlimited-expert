@@ -545,7 +545,7 @@ class TimesheetController extends Controller
             $assign_pro_ids = ProjectUser::where('user_id',\Auth::user()->id)->pluck('project_id');
 
             $project      = Project::get()->pluck('project_name', 'id');
-            $project->prepend('Select Project', '0');
+            $project->prepend('All Project', '0');
 
             if (!empty($request->user_id)) {
                 $selectedEmployees = $request->user_id;
@@ -557,6 +557,11 @@ class TimesheetController extends Controller
                 ->whereHas('project', function ($query) use ($filter_status) {
                     $query->where('status', $filter_status);
                 });
+            }
+
+            if (!empty($request->date)) {
+                $selectedDate = $request->date;
+                $employeeTimesheet->whereDate('date', $selectedDate);
             }
 
             if (!empty($request->project_id)) {
@@ -603,7 +608,7 @@ class TimesheetController extends Controller
             $assign_pro_ids = ProjectUser::where('user_id',\Auth::user()->id)->pluck('project_id');
 
             $project      = Project::get()->pluck('project_name', 'id');
-            $project->prepend('Select Project', '0');
+            $project->prepend('All Project', '0');
 
             if (!empty($request->status)) {
                 $employeeTimesheet
@@ -622,6 +627,11 @@ class TimesheetController extends Controller
                 ->whereHas('project', function ($query) use ($filter_project) {
                     $query->where('id', $filter_project);
                 });
+            }
+
+            if (!empty($request->date)) {
+                $selectedDate = $request->date;
+                $employeeTimesheet->whereDate('date', $selectedDate);
             }
 
             if (!empty($request->month)) {
@@ -663,7 +673,7 @@ class TimesheetController extends Controller
                 $query->whereRaw("find_in_set('" . $user->id . "',assign_to)")->get();
     
             }])->whereIn('id', $assign_pro_ids)->get()->pluck('project_name', 'id');
-            $project->prepend('Select Project', '0');
+            $project->prepend('All Project', '0');
 
             if (!empty($request->user_id)) {
                 $selectedEmployees = $request->user_id;
@@ -682,6 +692,11 @@ class TimesheetController extends Controller
                 ->whereHas('project', function ($query) use ($filter_project) {
                     $query->where('id', $filter_project);
                 });
+            }
+
+            if (!empty($request->date)) {
+                $selectedDate = $request->date;
+                $employeeTimesheet->whereDate('date', $selectedDate);
             }
 
             if (!empty($request->month)) {
