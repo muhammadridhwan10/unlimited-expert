@@ -4,20 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\ClientDeal;
 use App\Models\ClientPermission;
-use App\Models\Mail\UserCreate;
 use App\Models\Contract;
 use App\Models\CustomField;
-use App\Models\ClientBusinessSector;
-use App\Models\ClientOwnershipStatus;
-use App\Models\ClientAccountingStandard;
 use App\Models\Estimation;
 use App\Models\Invoice;
 use App\Models\Plan;
 use App\Models\User;
+use App\Models\Client as Clients;
 use App\Models\Utility;
+use App\Models\ClientBusinessSector;
 use http\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Spatie\Permission\Models\Role;
@@ -38,23 +37,14 @@ class ClientController extends Controller
     {
         if(\Auth::user()->can('manage client'))
         {
-            if(\Auth::user()->type == 'admin')
-            {
-                $clients   = User::where('type', '=', 'client')->get();
-            }
-            elseif(\Auth::user()->type == 'company')
-            {
-                $clients   = User::where('type', '=', 'client')->get();
-            }
-            else
-            {
-                $user       = \Auth::user();
-                $clients    = User::where('created_by', '=', $user->creatorId())->where('type', '=', 'client')->get();
-            }
+            $user    = \Auth::user();
+            $clients = User::where('type', '=', 'client')->get();
+
             return view('clients.index', compact('clients'));
         }
         else
         {
+
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
     }
@@ -70,15 +60,11 @@ class ClientController extends Controller
             }
             else
             {
-                $businesssector         = ClientBusinessSector::get()->pluck('name', 'id');
-                $ownershipstatus        = ClientOwnershipStatus::get()->pluck('name', 'id');
-                $accountingstandard     = ClientAccountingStandard::get()->pluck('name', 'id');
+                $businesssector   = ClientBusinessSector::get()->pluck('name', 'id');
                 $businesssector->prepend('Select Business Sector', '');
-                $ownershipstatus->prepend('Select Ownership Status', '');
-                $accountingstandard->prepend('Select Accounting Standard', '');
                 $customFields = CustomField::where('module', '=', 'client')->get();
 
-                return view('clients.create', compact('businesssector','ownershipstatus','accountingstandard','customFields'));
+                return view('clients.create', compact('businesssector','customFields'));
             }
         }
         else
@@ -90,88 +76,104 @@ class ClientController extends Controller
     public function store(Request $request)
     {
         if(\Auth::user()->can('create client'))
+        {
+            $default_language = DB::table('settings')->select('value')->where('name', 'default_language')->where('created_by', '=', \Auth::user()->creatorId())->first();
+
+            $user      = \Auth::user();
+            $validator = \Validator::make(
+                $request->all(), [
+                    'name' => 'required',
+                    'email' => 'required|email|unique:users',
+                ]
+            );
+            if($validator->fails())
+            {
+                $messages = $validator->getMessageBag();
+                if($request->ajax)
                 {
-                    $user      = \Auth::user();
-                    $validator = \Validator::make(
-                        $request->all(), [
-                                           'name' => 'required|unique:users',
-                                           'email' => 'required|email|unique:users',
-                                           'password' => 'required',
-                                       ]
-                    );
-                    if($validator->fails())
-                    {
-                        $messages = $validator->getMessageBag();
-                        if($request->ajax)
-                        {
-                            return response()->json(['error' => $messages->first()], 401);
-                        }
-                        else
-                        {
-                            return redirect()->back()->with('error', $messages->first());
-                        }
-                    }
-                    $objCustomer    = \Auth::user();
-                    $creator        = User::find($objCustomer->creatorId());
-                    $total_client = User::where('type','client')->count();
-                    // dd($total_client);
-
-                        $role = Role::findByName('client');
-                        $client = User::create(
-                            [
-                                'name' => $request->name,
-                                'email' => $request->email,
-                                'job_title' => $request->job_title,
-                                'alamat' => $request->alamat,
-                                'telp' => $request->telp,
-                                'npwp' => $request->npwp,
-                                'client_business_sector_id' => $request->client_business_sector_id,
-                                'client_ownership_status_id' => $request->client_ownership_status_id,
-                                'engagement_type' => $request->engagement_type,
-                                'engagement_types' => $request->engagement_types,
-                                'auditing_standard' => $request->auditing_standard,
-                                'client_accounting_standard_id' => $request->client_accounting_standard_id,
-                                'password' => Hash::make($request->password),
-                                'type' => 'client',
-                                'lang' => Utility::getValByName('default_language'),
-                                'created_by' => $user->creatorId(),
-                            ]
-                        );
-
-                    //Send Email
-
-                    $role_r = Role::findByName('client');
-                    $client->assignRole($role_r);
-
-                    $client->password = $request->password;
-                    $clientArr = [
-                        'client_name' => $client->name,
-                        'client_email' => $client->email,
-                        'client_password' =>  $client->password,
-                    ];
-                    $resp = Utility::sendEmailTemplate('create_client', [$client->email], $clientArr);
-
-
-                    return redirect()->route('clients.index')->with('success', __('Client successfully added.') . ((!empty($resp) && $resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
-
+                    return response()->json(['error' => $messages->first()], 401);
                 }
+                else
+                {
+                    return redirect()->back()->with('error', $messages->first());
+                }
+            }
+            $objCustomer    = \Auth::user();
+            $creator        = User::find($objCustomer->creatorId());
+            $total_client = User::where('created_by', '=', \Auth::user()->creatorId())->where('type','client')->count();
+            $plan           = Plan::find($creator->plan);
+            if($total_client < $plan->max_clients || $plan->max_clients == -1)
+            {
+                $role = Role::findByName('client');
+                $client = User::create(
+                    [
+                        'name' => $request->name,
+                        'email' => $request->email,
+                        'job_title' => $request->job_title,
+                        'type' => 'client',
+                        'lang' => !empty($default_language) ? $default_language->value : 'en',
+                        'created_by' => $user->creatorId(),
+                        'email_verified_at' => date('Y-m-d H:i:s'),
+                    ]
+                );
+
+                $clients = Clients::create(
+                    [
+                        'user_id'       => $client->id,
+                        'name_invoice'  => $request->name_invoice,
+                        'position'      => $request->position,
+                        'telp'          => $request->telp,
+                        'npwp'          => $request->npwp,
+                        'address'       => $request->address,
+                        'country'       => $request->country,
+                        'state'         => $request->state,
+                        'city'          => $request->city,
+                        'client_business_sector_id' => $request->client_business_sector_id,
+                        'created_by' => $user->creatorId(),
+                    ]
+                );
+
+                //Send Email
+                $setings = Utility::settings();
+
+                // if($setings['new_client'] == 1)
+                // {
+                //     $role_r = Role::findByName('client');
+                //     $client->assignRole($role_r);
+
+                //     $clientArr = [
+                //         'client_name' => $client->name,
+                //         'client_email' => $client->email,
+                //         'client_password' =>  $client->password,
+                //     ];
+                //     $resp = Utility::sendEmailTemplate('new_client', [$client->email], $clientArr);
+                //     return redirect()->route('clients.index')->with('success', __('Client successfully added.') . ((!empty($resp) && $resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
+                // }
+                return redirect()->route('clients.index')->with('success', __('Client successfully created.'));
+            }
+            else
+            {
+                return redirect()->back()->with('error', __('Your client limit is over, Please upgrade plan.'));
+            }
+        }
         else
-                {
-                    if($request->ajax)
-                    {
-                        return response()->json(['error' => __('Permission Denied.')], 401);
-                    }
-                    else
-                    {
-                        return redirect()->back()->with('error', __('Permission Denied.'));
-                    }
-                }
+        {
+            if($request->ajax)
+            {
+                return response()->json(['error' => __('Permission Denied.')], 401);
+            }
+            else
+            {
+                return redirect()->back()->with('error', __('Permission Denied.'));
+            }
+        }
     }
 
     public function show(User $client)
     {
         $usr = Auth::user();
-        if(\Auth::user()->type = 'admin')
+        $clients = Clients::where('user_id', $client->id)->first();
+        if(\Auth::user()->can('manage client'))
         {
             // For Estimations
             $estimations = $client->clientEstimations()->orderByDesc('id')->get();
@@ -218,115 +220,12 @@ class ClientController extends Controller
             $cnt_contract['cnt_this_week']   = $curr_week->count();
             $cnt_contract['cnt_last_30days'] = $last_30days->count();
 
-            return view('clients.show', compact('client', 'estimations', 'cnt_estimation', 'contracts', 'cnt_contract'));
-        }
-        elseif(\Auth::user()->type = 'company')
-        {
-            // For Estimations
-            $estimations = $client->clientEstimations()->orderByDesc('id')->get();
-            $curr_month  = $client->clientEstimations()->whereMonth('issue_date', '=', date('m'))->get();
-            $curr_week   = $client->clientEstimations()->whereBetween(
-                'issue_date', [
-                                \Carbon\Carbon::now()->startOfWeek(),
-                                \Carbon\Carbon::now()->endOfWeek(),
-                            ]
-            )->get();
-            $last_30days = $client->clientEstimations()->whereDate('issue_date', '>', \Carbon\Carbon::now()->subDays(30))->get();
-            // Estimation Summary
-            $cnt_estimation                = [];
-            $cnt_estimation['total']       = Estimation::getEstimationSummary($estimations);
-            $cnt_estimation['this_month']  = Estimation::getEstimationSummary($curr_month);
-            $cnt_estimation['this_week']   = Estimation::getEstimationSummary($curr_week);
-            $cnt_estimation['last_30days'] = Estimation::getEstimationSummary($last_30days);
-
-            $cnt_estimation['cnt_total']       = $estimations->count();
-            $cnt_estimation['cnt_this_month']  = $curr_month->count();
-            $cnt_estimation['cnt_this_week']   = $curr_week->count();
-            $cnt_estimation['cnt_last_30days'] = $last_30days->count();
-
-            // For Contracts
-            $contracts   = $client->clientContracts()->orderByDesc('id')->get();
-            $curr_month  = $client->clientContracts()->whereMonth('start_date', '=', date('m'))->get();
-            $curr_week   = $client->clientContracts()->whereBetween(
-                'start_date', [
-                                \Carbon\Carbon::now()->startOfWeek(),
-                                \Carbon\Carbon::now()->endOfWeek(),
-                            ]
-            )->get();
-            $last_30days = $client->clientContracts()->whereDate('start_date', '>', \Carbon\Carbon::now()->subDays(30))->get();
-
-            // Contracts Summary
-            $cnt_contract                = [];
-            $cnt_contract['total']       = Contract::getContractSummary($contracts);
-            $cnt_contract['this_month']  = Contract::getContractSummary($curr_month);
-            $cnt_contract['this_week']   = Contract::getContractSummary($curr_week);
-            $cnt_contract['last_30days'] = Contract::getContractSummary($last_30days);
-
-            $cnt_contract['cnt_total']       = $contracts->count();
-            $cnt_contract['cnt_this_month']  = $curr_month->count();
-            $cnt_contract['cnt_this_week']   = $curr_week->count();
-            $cnt_contract['cnt_last_30days'] = $last_30days->count();
-
-            return view('clients.show', compact('client', 'estimations', 'cnt_estimation', 'contracts', 'cnt_contract'));
+            return view('clients.show', compact('client','clients', 'estimations', 'cnt_estimation', 'contracts', 'cnt_contract'));
         }
         else
         {
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
-
-        // if(!empty($client) && $usr->id == $client->creatorId() && $client->id != $usr->id && $client->type == 'client')
-        // {
-        //     // For Estimations
-        //     $estimations = $client->clientEstimations()->orderByDesc('id')->get();
-        //     $curr_month  = $client->clientEstimations()->whereMonth('issue_date', '=', date('m'))->get();
-        //     $curr_week   = $client->clientEstimations()->whereBetween(
-        //         'issue_date', [
-        //                         \Carbon\Carbon::now()->startOfWeek(),
-        //                         \Carbon\Carbon::now()->endOfWeek(),
-        //                     ]
-        //     )->get();
-        //     $last_30days = $client->clientEstimations()->whereDate('issue_date', '>', \Carbon\Carbon::now()->subDays(30))->get();
-        //     // Estimation Summary
-        //     $cnt_estimation                = [];
-        //     $cnt_estimation['total']       = Estimation::getEstimationSummary($estimations);
-        //     $cnt_estimation['this_month']  = Estimation::getEstimationSummary($curr_month);
-        //     $cnt_estimation['this_week']   = Estimation::getEstimationSummary($curr_week);
-        //     $cnt_estimation['last_30days'] = Estimation::getEstimationSummary($last_30days);
-
-        //     $cnt_estimation['cnt_total']       = $estimations->count();
-        //     $cnt_estimation['cnt_this_month']  = $curr_month->count();
-        //     $cnt_estimation['cnt_this_week']   = $curr_week->count();
-        //     $cnt_estimation['cnt_last_30days'] = $last_30days->count();
-
-        //     // For Contracts
-        //     $contracts   = $client->clientContracts()->orderByDesc('id')->get();
-        //     $curr_month  = $client->clientContracts()->whereMonth('start_date', '=', date('m'))->get();
-        //     $curr_week   = $client->clientContracts()->whereBetween(
-        //         'start_date', [
-        //                         \Carbon\Carbon::now()->startOfWeek(),
-        //                         \Carbon\Carbon::now()->endOfWeek(),
-        //                     ]
-        //     )->get();
-        //     $last_30days = $client->clientContracts()->whereDate('start_date', '>', \Carbon\Carbon::now()->subDays(30))->get();
-
-        //     // Contracts Summary
-        //     $cnt_contract                = [];
-        //     $cnt_contract['total']       = Contract::getContractSummary($contracts);
-        //     $cnt_contract['this_month']  = Contract::getContractSummary($curr_month);
-        //     $cnt_contract['this_week']   = Contract::getContractSummary($curr_week);
-        //     $cnt_contract['last_30days'] = Contract::getContractSummary($last_30days);
-
-        //     $cnt_contract['cnt_total']       = $contracts->count();
-        //     $cnt_contract['cnt_this_month']  = $curr_month->count();
-        //     $cnt_contract['cnt_this_week']   = $curr_week->count();
-        //     $cnt_contract['cnt_last_30days'] = $last_30days->count();
-
-        //     return view('clients.show', compact('client', 'estimations', 'cnt_estimation', 'contracts', 'cnt_contract'));
-        // }
-        // else
-        // {
-        //     return redirect()->back()->with('error', __('Permission Denied.'));
-        // }
     }
 
     public function edit(User $client)
@@ -334,49 +233,12 @@ class ClientController extends Controller
         if(\Auth::user()->can('edit client'))
         {
             $user = \Auth::user();
-            if($client->created_by == $user->creatorId())
-            {
-                $client->customField    = CustomField::getData($client, 'client');
-                $businesssector         = ClientBusinessSector::get()->pluck('name', 'id');
-                $ownershipstatus        = ClientOwnershipStatus::get()->pluck('name', 'id');
-                $accountingstandard     = ClientAccountingStandard::get()->pluck('name', 'id');
-                $businesssector->prepend('Select Business Sector', '');
-                $ownershipstatus->prepend('Select Ownership Status', '');
-                $accountingstandard->prepend('Select Accounting Standard', '');
-                $customFields        = CustomField::where('module', '=', 'client')->get();
-
-                return view('clients.edit', compact('client', 'businesssector','ownershipstatus','accountingstandard', 'customFields'));
-            }
-            elseif(\Auth::user()->type = 'admin')
-            {
-                $client->customField = CustomField::getData($client, 'client');
-                $businesssector         = ClientBusinessSector::get()->pluck('name', 'id');
-                $ownershipstatus        = ClientOwnershipStatus::get()->pluck('name', 'id');
-                $accountingstandard     = ClientAccountingStandard::get()->pluck('name', 'id');
-                $businesssector->prepend('Select Business Sector', '');
-                $ownershipstatus->prepend('Select Ownership Status', '');
-                $accountingstandard->prepend('Select Accounting Standard', '');
-                $customFields        = CustomField::where('module', '=', 'client')->get();
-
-                return view('clients.edit', compact('client', 'businesssector','ownershipstatus','accountingstandard', 'customFields'));
-            }
-            elseif(\Auth::user()->type = 'company')
-            {
-                $client->customField = CustomField::getData($client, 'client');
-                $businesssector         = ClientBusinessSector::get()->pluck('name', 'id');
-                $ownershipstatus        = ClientOwnershipStatus::get()->pluck('name', 'id');
-                $accountingstandard     = ClientAccountingStandard::get()->pluck('name', 'id');
-                $businesssector->prepend('Select Business Sector', '');
-                $ownershipstatus->prepend('Select Ownership Status', '');
-                $accountingstandard->prepend('Select Accounting Standard', '');
-                $customFields        = CustomField::where('module', '=', 'client')->get();
-
-                return view('clients.edit', compact('client','businesssector','ownershipstatus','accountingstandard', 'customFields'));
-            }
-            else
-            {
-                return response()->json(['error' => __('Invalid Client.')], 401);
-            }
+            $client->customField = CustomField::getData($client, 'client');
+            $customFields        = CustomField::where('module', '=', 'client')->get();
+            $businesssector      = ClientBusinessSector::get()->pluck('name', 'id');
+            $businesssector->prepend('Select Business Sector', '');
+            $clients = Clients::where('user_id', $client->id)->first();
+            return view('clients.edit', compact('client', 'businesssector','clients', 'customFields'));
         }
         else
         {
@@ -389,130 +251,48 @@ class ClientController extends Controller
         if(\Auth::user()->can('edit client'))
         {
             $user = \Auth::user();
-            if($client->created_by == $user->creatorId())
+            $validation = [
+                'name' => 'required',
+                'email' => 'required'
+            ];
+
+            $clients = Clients::where('user_id', $client->id)->first();
+
+            $post                   = [];
+            $clientss               = [];
+            $post['name']           = $request->name;
+
+            // if(!empty($request->password))
+            // {
+            //     $validation['password'] = 'required';
+            //     $post['password']       = Hash::make($request->password);
+            // }
+
+            $validator = \Validator::make($request->all(), $validation);
+            if($validator->fails())
             {
-                $validation = [
-                    'name' => 'required',
-                    'email' => 'required|email|unique:users,email,' . $client->id,
-                ];
+                $messages = $validator->getMessageBag();
 
-                $post         = [];
-                $post['name'] = $request->name;
-                if(!empty($request->password))
-                {
-                    $validation['password'] = 'required';
-                    $post['password']       = Hash::make($request->password);
-                }
-
-                $validator = \Validator::make($request->all(), $validation);
-                if($validator->fails())
-                {
-                    $messages = $validator->getMessageBag();
-
-                    return redirect()->back()->with('error', $messages->first());
-                }
-                $post['email'] = $request->email;
-                $post['alamat'] = $request->alamat;
-                $post['telp'] = $request->telp;
-                $post['npwp'] = $request->npwp;
-                $post['client_business_sector_id'] = $request->client_business_sector_id;
-                $post['client_ownership_status_id'] = $request->client_ownership_status_id;
-                $post['engagement_type'] = $request->engagement_type;
-                $post['engagement_types'] = $request->engagement_types;
-                $post['auditing_standard'] = $request->auditing_standard;
-                $post['client_accounting_standard_id'] = $request->client_accounting_standard_id;
-
-                $client->update($post);
-
-                CustomField::saveData($client, $request->customField);
-
-                return redirect()->back()->with('success', __('Client Updated Successfully!'));
+                return redirect()->back()->with('error', $messages->first());
             }
-            elseif(\Auth::user()->type = 'admin')
-            {
-                $validation = [
-                    'name' => 'required',
-                    'email' => 'required|email|unique:users,email,' . $client->id,
-                ];
+            $post['email'] = $request->email;
 
-                $post         = [];
-                $post['name'] = $request->name;
-                if(!empty($request->password))
-                {
-                    $validation['password'] = 'required';
-                    $post['password']       = Hash::make($request->password);
-                }
+            $clientss['name_invoice']   = $request->name_invoice;
+            $clientss['position']       = $request->position;
+            $clientss['telp']           = $request->telp;
+            $clientss['npwp']           = $request->npwp;
+            $clientss['address']        = $request->address;
+            $clientss['country']        = $request->country;
+            $clientss['state']          = $request->state;
+            $clientss['city']           = $request->city;
+            $clientss['client_business_sector_id'] = $request->client_business_sector_id;
 
-                $validator = \Validator::make($request->all(), $validation);
-                if($validator->fails())
-                {
-                    $messages = $validator->getMessageBag();
+            $client->update($post);
+            $clients->update($clientss);
 
-                    return redirect()->back()->with('error', $messages->first());
-                }
-                $post['email'] = $request->email;
-                $post['alamat'] = $request->alamat;
-                $post['telp'] = $request->telp;
-                $post['npwp'] = $request->npwp;
-                $post['client_business_sector_id'] = $request->client_business_sector_id;
-                $post['client_ownership_status_id'] = $request->client_ownership_status_id;
-                $post['engagement_type'] = $request->engagement_type;
-                $post['engagement_types'] = $request->engagement_types;
-                $post['auditing_standard'] = $request->auditing_standard;
-                $post['client_accounting_standard_id'] = $request->client_accounting_standard_id;
+            CustomField::saveData($client, $request->customField);
 
-                dd($post);
-
-                $client->update($post);
-
-                CustomField::saveData($client, $request->customField);
-
-                return redirect()->back()->with('success', __('Client Updated Successfully!'));
-            }
-            elseif(\Auth::user()->type = 'company')
-            {
-                $validation = [
-                    'name' => 'required',
-                    'email' => 'required|email|unique:users,email,' . $client->id,
-                ];
-
-                $post         = [];
-                $post['name'] = $request->name;
-                if(!empty($request->password))
-                {
-                    $validation['password'] = 'required';
-                    $post['password']       = Hash::make($request->password);
-                }
-
-                $validator = \Validator::make($request->all(), $validation);
-                if($validator->fails())
-                {
-                    $messages = $validator->getMessageBag();
-
-                    return redirect()->back()->with('error', $messages->first());
-                }
-                $post['email'] = $request->email;
-                $post['alamat'] = $request->alamat;
-                $post['telp'] = $request->telp;
-                $post['npwp'] = $request->npwp;
-                $post['client_business_sector_id'] = $request->client_business_sector_id;
-                $post['client_ownership_status_id'] = $request->client_ownership_status_id;
-                $post['engagement_type'] = $request->engagement_type;
-                $post['engagement_types'] = $request->engagement_types;
-                $post['auditing_standard'] = $request->auditing_standard;
-                $post['client_accounting_standard_id'] = $request->client_accounting_standard_id;
-                
-
-                $client->update($post);
-
-                CustomField::saveData($client, $request->customField);
-
-                return redirect()->back()->with('success', __('Client Updated Successfully!'));
-            }
-            else
-            {
-                return redirect()->back()->with('error', __('Invalid Client.'));
-            }
+            return redirect()->back()->with('success', __('Client Updated Successfully!'));
         }
         else
         {
@@ -522,74 +302,30 @@ class ClientController extends Controller
 
     public function destroy(User $client)
     {
-        $user = \Auth::user();
-            if($client->created_by == $user->creatorId())
+            $user = \Auth::user();
+            $estimation = Estimation::where('client_id', '=', $client->id)->first();
+            if(empty($estimation))
             {
-                $estimation = Estimation::where('client_id', '=', $client->id)->first();
-                if(empty($estimation))
-                {
-                  /*  ClientDeal::where('client_id', '=', $client->id)->delete();
-                    ClientPermission::where('client_id', '=', $client->id)->delete();*/
-                    $client->delete();
-                    return redirect()->back()->with('success', __('Client Deleted Successfully!'));
-                }
-                else
-                {
-                    return redirect()->back()->with('error', __('This client has assigned some estimation.'));
-                }
-            }
-            elseif(\Auth::user()->type = 'admin')
-            {
-                $estimation = Estimation::where('client_id', '=', $client->id)->first();
-                if(empty($estimation))
-                {
-                  /*  ClientDeal::where('client_id', '=', $client->id)->delete();
-                    ClientPermission::where('client_id', '=', $client->id)->delete();*/
-                    $client->delete();
-                    return redirect()->back()->with('success', __('Client Deleted Successfully!'));
-                }
-                else
-                {
-                    return redirect()->back()->with('error', __('This client has assigned some estimation.'));
-                }
-            }
-            elseif(\Auth::user()->type = 'company')
-            {
-                $estimation = Estimation::where('client_id', '=', $client->id)->first();
-                if(empty($estimation))
-                {
-                  /*  ClientDeal::where('client_id', '=', $client->id)->delete();
-                    ClientPermission::where('client_id', '=', $client->id)->delete();*/
-                    $client->delete();
-                    return redirect()->back()->with('success', __('Client Deleted Successfully!'));
-                }
-                else
-                {
-                    return redirect()->back()->with('error', __('This client has assigned some estimation.'));
-                }
+                $clients = Clients::find($client->id);
+                /*  ClientDeal::where('client_id', '=', $client->id)->delete();
+                ClientPermission::where('client_id', '=', $client->id)->delete();*/
+                $client->delete();
+                $clients->delete();
+                return redirect()->back()->with('success', __('Client Deleted Successfully!'));
             }
             else
             {
-                return redirect()->back()->with('error', __('Invalid Client.'));
+                return redirect()->back()->with('error', __('This client has assigned some estimation.'));
             }
-        }
+    }
 
     public function clientPassword($id)
     {
         $eId        = \Crypt::decrypt($id);
         $user = User::find($eId);
-        if(\Auth::user()->type = 'admin')
-        {
-            $client = User::where('type', '=', 'client')->first();
-        }
-        elseif(\Auth::user()->type = 'company')
-        {
-            $client = User::where('type', '=', 'client')->first();
-        }
-        else
-        {
-            $client = User::where('created_by', '=', $user->creatorId())->where('type', '=', 'client')->first();
-        }
+        $client = User::where('created_by', '=', $user->creatorId())->where('type', '=', 'client')->first();
+
+
         return view('clients.reset', compact('user', 'client'));
     }
 
@@ -621,42 +357,43 @@ class ClientController extends Controller
 
     }
 
-    public function filterClientView(Request $request)
-    {
+    // public function filterClientView(Request $request)
+    // {
 
-        if(\Auth::user()->can('manage client'))
-        {
-            $usr           = Auth::user();
-            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
-            {
-                $user_projects = User::where('type', '=', 'client')->pluck('id','id')->toArray();
-            }
-            if($request->ajax() && $request->has('view') && $request->has('sort'))
-            {
-                $sort     = explode('-', $request->sort);
-                $clients = User::whereIn('id', array_keys($user_projects))->orderBy($sort[0], $sort[1]);
+    //     if(\Auth::user()->can('manage client'))
+    //     {
+    //         $usr           = Auth::user();
+    //         if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
+    //         {
+    //             $user_projects = User::where('type', '=', 'client')->pluck('id','id')->toArray();
+    //         }
+    //         if($request->ajax() && $request->has('view') && $request->has('sort'))
+    //         {
+    //             $sort     = explode('-', $request->sort);
+    //             $clients = User::whereIn('id', array_keys($user_projects))->orderBy($sort[0], $sort[1]);
 
-                if(!empty($request->keyword))
-                {
-                    $clients->where('name', 'LIKE', $request->keyword . '%');
-                }
+    //             if(!empty($request->keyword))
+    //             {
+    //                 $clients->where('name', 'LIKE', $request->keyword . '%');
+    //             }
 
-                $clients   = $clients->get();
-                $returnHTML = view('clients.' . $request->view, compact('clients', 'user_projects'))->render();
+    //             $clients   = $clients->get();
+    //             $returnHTML = view('clients.' . $request->view, compact('clients', 'user_projects'))->render();
 
-                return response()->json(
-                    [
-                        'success' => true,
-                        'html' => $returnHTML,
-                    ]
-                );
-            }
-        }
-        else
-        {
-            return redirect()->back()->with('error', __('Permission Denied.'));
-        }
-    }
+    //             return response()->json(
+    //                 [
+    //                     'success' => true,
+    //                     'html' => $returnHTML,
+    //                 ]
+    //             );
+    //         }
+    //     }
+    //     else
+    //     {
+    //         return redirect()->back()->with('error', __('Permission Denied.'));
+    //     }
+    // }
+
 
 
 }

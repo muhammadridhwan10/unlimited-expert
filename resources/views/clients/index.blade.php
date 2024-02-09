@@ -12,12 +12,12 @@
     <li class="breadcrumb-item">{{__('Client')}}</li>
 @endsection
 @section('action-btn')
-    <div class ="float-start">
+    {{-- <div class ="float-start">
                 <div class="input-group">
                     <span class="input-group-text text-body"><i class="fas fa-search" aria-hidden="true"></i></span>
-                    <input id="project_keyword" name="keyword" type="search" class="form-control" placeholder="Search...">
+                    <input id="client_keyword" name="keyword" type="search" class="form-control" placeholder="Search...">
                 </div>
-    </div>
+    </div> --}}
     <div class="float-end">
         <a href="#" data-size="lg" data-url="{{ route('clients.create') }}" data-ajax-popup="true"  data-bs-toggle="tooltip" title="{{__('Create')}}"  class="btn btn-sm btn-primary">
             <i class="ti ti-plus"></i>
@@ -42,13 +42,13 @@
                                         </button>
 
                                         <div class="dropdown-menu dropdown-menu-end">
-                                            <a href="{{ route('clients.show',$client->id) }}"  class="dropdown-item" data-bs-original-title="{{__('View')}}">
+                                            {{-- <a href="{{ route('clients.show',$client->id) }}"  class="dropdown-item" data-bs-original-title="{{__('View')}}">
                                                 <i class="ti ti-eye"></i>
                                                 <span>{{__('Show')}}</span>
-                                            </a>
+                                            </a> --}}
 
                                             @can('edit client')
-                                                <a href="#!" data-size="md" data-url="{{ route('clients.edit',$client->id) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Edit User')}}">
+                                                <a href="#!" data-size="lg" data-url="{{ route('clients.edit',$client->id) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Edit User')}}">
                                                     <i class="ti ti-pencil"></i>
                                                     <span>{{__('Edit')}}</span>
                                                 </a>
@@ -77,27 +77,31 @@
                                     <img src="{{(!empty($client->avatar))? asset(Storage::url("uploads/avatar/".$client->avatar)): asset(Storage::url("uploads/avatar/avatar.png"))}}" alt="kal" class="img-user wid-80 rounded-circle">
                                 </div>
                                 <h4 class=" mt-2">{{ $client->name }}</h4>
-                                <p></p>
-                                <div class="row">
+                                {{-- <div class="row">
                                     <div class="col-12 col-sm-12">
                                         <div class="d-grid">
                                             {{ $client->email }}
                                         </div>
                                     </div>
-                                </div>
-                                <div class="align-items-center h6 mt-2" data-bs-toggle="tooltip" title="{{__('Last Login')}}">
+                                </div> --}}
+                                {{-- <div class="align-items-center h6 mt-2" data-bs-toggle="tooltip" title="{{__('Last Login')}}">
                                     {{ (!empty($client->last_login_at)) ? $client->last_login_at : '' }}
+                                </div> --}}
+                                <div class="align-items-center h6 mt-2" data-bs-toggle="tooltip" title="{{__('Detail Client')}}">
+                                <a href="{{ route('clients.show',$client->id) }}"  class="btn btn-primary" data-bs-original-title="{{__('View')}}">
+                                    <span>{{__('Detail')}}</span>
+                                </a>
                                 </div>
                             </div>
                             <div class="card-footer p-3">
                                 <div class="row">
-                                    <div class="col-6">
+                                    {{-- <div class="col-6">
                                         <h6 class="mb-0"> @if($client->clientDeals)
                                                 {{$client->clientDeals->count()}}
                                             @endif</h6>
                                         <p class="text-muted text-sm mb-0">{{__('Deals')}}</p>
-                                    </div>
-                                    <div class="col-6">
+                                    </div> --}}
+                                    <div class="col-12">
                                         <h6 class="mb-0">@if($client->clientProjects)
                                                 {{ $client->clientProjects->count() }}
                                             @endif</h6>
@@ -113,18 +117,18 @@
     </div>
 @endsection
 
-@push('script-page')
+{{-- @push('script-page')
     <script>
         $(document).ready(function () {
             // when searching by project name
-            $(document).on('keyup', '#project_keyword', function () {
-                ajaxFilterProjectView($('#project_keyword').val());
+            $(document).on('keyup', '#client_keyword', function () {
+                ajaxFilterClientView($('#client_keyword').val());
             });
         });
 
         var currentRequest = null;
 
-        function ajaxFilterProjectView(keyword = '') {
+        function ajaxFilterClientView(keyword = '') {
             var mainEle = $('#client_view');
             var data = {
                 keyword: keyword
@@ -146,4 +150,4 @@
             });
         }
     </script>
-@endpush
+@endpush --}}

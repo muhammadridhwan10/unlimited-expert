@@ -13,7 +13,6 @@ class InvoiceProduct extends Model
         'tax',
         'discount',
         'total',
-        'price',
     ];
 
     public function product(){
@@ -22,6 +21,10 @@ class InvoiceProduct extends Model
 
     public function products(){
         return $this->hasOne('App\Models\ProductService', 'id', 'product_id');
+    }
+
+    public function project(){
+        return $this->hasOne('App\Models\Project', 'id', 'product_id')->first();
     }
 
     public function tax(){

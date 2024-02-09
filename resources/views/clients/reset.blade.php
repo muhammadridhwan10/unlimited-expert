@@ -1,6 +1,5 @@
 
 {{Form::model($user,array('route' => array('client.password.update', $user->id), 'method' => 'post')) }}
-
 <div class="modal-body">
     <div class="row">
         <div class="form-group">

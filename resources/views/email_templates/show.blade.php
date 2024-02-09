@@ -160,6 +160,12 @@
                                                 <p class="col-4">{{__('Customer Name')}} : <span class="pull-right text-primary">{customer_name}</span></p>
                                                 <p class="col-4">{{__('Customer Email')}} : <span class="pull-right text-primary">{customer_email}</span></p>
                                                 <p class="col-4">{{__('Invoice Name')}} : <span class="pull-right text-primary">{invoice_name}</span></p>
+                                                <p class="col-4">{{__('Invoice Company Name')}} : <span class="pull-right text-primary">{invoice_company_name}</span></p>
+                                                <p class="col-4">{{__('Invoice Date')}} : <span class="pull-right text-primary">{invoice_date}</span></p>
+                                                <p class="col-4">{{__('Invoice Due Date')}} : <span class="pull-right text-primary">{invoice_due_date}</span></p>
+                                                <p class="col-4">{{__('Invoice Product Name')}} : <span class="pull-right text-primary">{invoice_products_name}</span></p>
+                                                <p class="col-4">{{__('Invoice Product Periods')}} : <span class="pull-right text-primary">{invoice_products_periods}</span></p>
+                                                <p class="col-4">{{__('Invoice Total Amount')}} : <span class="pull-right text-primary">{total_amount}</span></p>
                                                 <p class="col-4">{{__('Invoice Number')}} : <span class="pull-right text-primary">{invoice_number}</span></p>
                                                 <p class="col-4">{{__('Invoice Url')}} : <span class="pull-right text-primary">{invoice_url}</span></p>
                                             </div>

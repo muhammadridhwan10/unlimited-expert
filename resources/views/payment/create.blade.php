@@ -2,7 +2,7 @@
 <div class="modal-body">
     <div class="row">
         <div class="form-group col-md-6">
-            {{ Form::label('date', __('Date'),['class'=>'form-label']) }}
+            {{ Form::label('date', __('Issue Date'),['class'=>'form-label']) }}
             {{Form::date('date',null,array('class'=>'form-control','required'=>'required'))}}
         </div>
         <div class="form-group col-md-6">
@@ -25,14 +25,20 @@
             {{ Form::label('category_id', __('Category'),['class'=>'form-label']) }}
             {{ Form::select('category_id', $categories,null, array('class' => 'form-control select','required'=>'required')) }}
         </div>
-        <div class="form-group col-md-6">
+        {{-- <div class="form-group col-md-6">
             {{ Form::label('reference', __('Reference'),['class'=>'form-label']) }}
             {{ Form::text('reference', '', array('class' => 'form-control')) }}
-        </div>
+        </div> --}}
 
         <div class="form-group col-md-6">
-            {{Form::label('add_receipt',__('Payment Receipt'),['class' => 'col-form-label'])}}
-            {{Form::file('add_receipt',array('class'=>'form-control','required'=>'required', 'id'=>'files', 'accept' => '.pdf'))}}
+            {{Form::label('add_receipt',__('Payment Receipt'),['class' => 'form-label'])}}
+            {{Form::file('add_receipt',array('class'=>'form-control', 'id'=>'files'))}}
+            <img id="image" class="mt-2" style="width:25%;"/>
+        </div>
+
+         <div class="form-group col-md-6">
+            {{Form::label('add_bill',__('Bill to Pay'),['class' => 'form-label'])}}
+            {{Form::file('add_bill',array('class'=>'form-control','required'=>'required', 'id'=>'filess', 'accept' => '.pdf'))}}
             <img id="image" class="mt-2" style="width:25%;"/>
         </div>
 
@@ -48,6 +54,11 @@
 
 <script>
     document.getElementById('files').onchange = function () {
+        var src = URL.createObjectURL(this.files[0])
+        document.getElementById('image').src = src
+    }
+
+    document.getElementById('filess').onchange = function () {
         var src = URL.createObjectURL(this.files[0])
         document.getElementById('image').src = src
     }

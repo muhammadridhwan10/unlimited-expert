@@ -147,24 +147,24 @@
                                 <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
                             <a href="#useradd-3" class="list-group-item list-group-item-action border-0">{{ __('Company Setting') }}
                                 <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
-                            <a href="#useradd-4" class="list-group-item list-group-item-action border-0">{{ __('Payment Setting') }}
-                                <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
+                            {{-- <a href="#useradd-4" class="list-group-item list-group-item-action border-0">{{ __('Payment Setting') }}
+                                <div class="float-end"><i class="ti ti-chevron-right"></i></div></a> --}}
                             <a href="#useradd-5" class="list-group-item list-group-item-action border-0">{{ __('Email Setting') }}
                                 <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
-                            <a href="#useradd-6" class="list-group-item list-group-item-action border-0">{{ __('Pusher Setting') }}
-                                <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
-                            <a href="#useradd-7" class="list-group-item list-group-item-action border-0">{{ __('Zoom Meeting Setting') }}
-                                <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
-                            <a href="#useradd-8" class="list-group-item list-group-item-action border-0">{{ __('Slack Setting') }}
+                            {{-- <a href="#useradd-6" class="list-group-item list-group-item-action border-0">{{ __('Pusher Setting') }}
+                                <div class="float-end"><i class="ti ti-chevron-right"></i></div></a> --}}
+                            {{-- <a href="#useradd-7" class="list-group-item list-group-item-action border-0">{{ __('Zoom Meeting Setting') }}
+                                <div class="float-end"><i class="ti ti-chevron-right"></i></div></a> --}}
+                            {{-- <a href="#useradd-8" class="list-group-item list-group-item-action border-0">{{ __('Slack Setting') }}
                                 <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
                             <a href="#useradd-9" class="list-group-item list-group-item-action border-0">{{ __('Telegram Setting') }}
                                 <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
                             <a href="#useradd-10" class="list-group-item list-group-item-action border-0">{{ __('Twillio Setting') }}
-                                <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
+                                <div class="float-end"><i class="ti ti-chevron-right"></i></div></a> --}}
                             <a href="#useradd-11" class="list-group-item list-group-item-action border-0">{{ __('ReCaptcha Setting') }}
                                 <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
-                            <a href="#useradd-12" class="list-group-item list-group-item-action border-0">{{ __('Email Notification ') }}
-                                <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
+                            {{-- <a href="#useradd-12" class="list-group-item list-group-item-action border-0">{{ __('Email Notification ') }}
+                                <div class="float-end"><i class="ti ti-chevron-right"></i></div></a> --}}
 
 
                         </div>
@@ -426,14 +426,14 @@
                             <div class="row">
                                 <div class="form-group col-md-6">
                                     {{Form::label('site_currency',__('Currency *'),array('class' => 'form-label')) }}
-                                    {{Form::text('site_currency',null,array('class'=>'form-control font-style'))}}
+                                    {{ Form::text('site_currency', $settings['site_currency'], ['class' => 'form-control font-style', 'required', 'placeholder' => __('Enter Currency')]) }}
                                     <small> {{ __('Note: Add currency code as per three-letter ISO code.') }}<br>
                                         <a href="https://stripe.com/docs/currencies"
-                                           target="_blank">{{ __('you can find out here..') }}</a></small> <br>
+                                           target="_blank">{{ __('You can find out how to do that here.') }}</a></small> <br>
                                     @error('site_currency')
                                     <span class="invalid-site_currency" role="alert">
-                                                        <strong class="text-danger">{{ $message }}</strong>
-                                                    </span>
+                                        <strong class="text-danger">{{ $message }}</strong>
+                                    </span>
                                     @enderror
                                 </div>
                                 <div class="form-group col-md-6">
@@ -441,14 +441,13 @@
                                     {{Form::text('site_currency_symbol',null,array('class'=>'form-control'))}}
                                     @error('site_currency_symbol')
                                     <span class="invalid-site_currency_symbol" role="alert">
-                                                        <strong class="text-danger">{{ $message }}</strong>
-                                                    </span>
+                                        <strong class="text-danger">{{ $message }}</strong>
+                                    </span>
                                     @enderror
                                 </div>
-
                                 <div class="form-group col-md-6">
                                     <label class="form-label" for="example3cols3Input">{{__('Currency Symbol Position')}}</label>
-                                    <div class="row">
+                                    <div class="row ms-1">
                                         <div class="form-check col-md-6">
                                             <input class="form-check-input" type="radio" name="site_currency_symbol_position" value="pre" @if(@$settings['site_currency_symbol_position'] == 'pre') checked @endif
                                             id="flexCheckDefault">
@@ -458,12 +457,70 @@
                                         </div>
                                         <div class="form-check col-md-6">
                                             <input class="form-check-input" type="radio" name="site_currency_symbol_position" value="post" @if(@$settings['site_currency_symbol_position'] == 'post') checked @endif
-                                            id="flexCheckChecked" checked>
+                                            id="flexCheckChecked">
                                             <label class="form-check-label" for="flexCheckChecked">
                                                 {{__('Post')}}
                                             </label>
                                         </div>
                                     </div>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    {{Form::label('decimal_number',__('Decimal Number Format'),array('class'=>'form-label')) }}
+                                    {{Form::number('decimal_number', null, ['class'=>'form-control'])}}
+                                    @error('decimal_number')
+                                    <span class="invalid-decimal_number" role="alert">
+                                        <strong class="text-danger">{{ $message }}</strong>
+                                    </span>
+                                    @enderror
+                                </div>
+                                <div class="form-group col-md-6">
+                                    {{Form::label('site_currency_2',__('Currency 2 *'),array('class' => 'form-label')) }}
+                                    {{ Form::text('site_currency_2', $settings['site_currency_2'], ['class' => 'form-control font-style', 'required', 'placeholder' => __('Enter Currency 2')]) }}
+                                    <small> {{ __('Note: Add currency code as per three-letter ISO code.') }}<br>
+                                        <a href="https://stripe.com/docs/currencies"
+                                           target="_blank">{{ __('You can find out how to do that here.') }}</a></small> <br>
+                                    @error('site_currency_2')
+                                    <span class="invalid-site_currency_2" role="alert">
+                                        <strong class="text-danger">{{ $message }}</strong>
+                                    </span>
+                                    @enderror
+                                </div>
+                                <div class="form-group col-md-6">
+                                    {{Form::label('site_currency_symbol_2',__('Currency Symbol 2 *'),array('class' => 'form-label')) }}
+                                    {{Form::text('site_currency_symbol_2',null,array('class'=>'form-control'))}}
+                                    @error('site_currency_symbol_2')
+                                    <span class="invalid-site_currency_symbol_2" role="alert">
+                                        <strong class="text-danger">{{ $message }}</strong>
+                                    </span>
+                                    @enderror
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label class="form-label" for="example3cols3Input">{{__('Currency Symbol Position')}}</label>
+                                    <div class="row ms-1">
+                                        <div class="form-check col-md-6">
+                                            <input class="form-check-input" type="radio" name="site_currency_symbol_position_2" value="pre" @if(@$settings['site_currency_symbol_position_2'] == 'pre') checked @endif
+                                            id="flexCheckDefault">
+                                            <label class="form-check-label" for="flexCheckDefault">
+                                                {{__('Pre')}}
+                                            </label>
+                                        </div>
+                                        <div class="form-check col-md-6">
+                                            <input class="form-check-input" type="radio" name="site_currency_symbol_position_2" value="post" @if(@$settings['site_currency_symbol_position_2'] == 'post') checked @endif
+                                            id="flexCheckChecked">
+                                            <label class="form-check-label" for="flexCheckChecked">
+                                                {{__('Post')}}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    {{Form::label('decimal_number_2',__('Decimal Number Format 2'),array('class'=>'form-label')) }}
+                                    {{Form::number('decimal_number_2', null, ['class'=>'form-control'])}}
+                                    @error('decimal_number_2')
+                                    <span class="invalid-decimal_number_2" role="alert">
+                                        <strong class="text-danger">{{ $message }}</strong>
+                                    </span>
+                                    @enderror
                                 </div>
 
                                 <div class="form-group col-md-6">
@@ -799,7 +856,7 @@
                     </div>
 
                     <!--Payment Setting-->
-                    <div id="useradd-4" class="card">
+                    {{-- <div id="useradd-4" class="card">
                         <div class="card-header">
                             <h5>{{ __('Payment Setting') }}</h5>
                             <small class="text-muted">{{ __('This detail will use for collect payment on invoice from clients. On invoice client will find out pay now button based on your below configuration.') }}</small>
@@ -1363,7 +1420,7 @@
                             </form>
                         </div>
 
-                    </div>
+                    </div> --}}
 
                     <!--Email Setting-->
                     <div id="useradd-5" class="card">
@@ -1495,7 +1552,7 @@
                     </div>
 
                     <!--Pusher Setting-->
-                    <div id="useradd-6" class="card">
+                    {{-- <div id="useradd-6" class="card">
                         <div class="card-header">
                             <h5>{{ __('Pusher Setting') }}</h5>
                         </div>
@@ -1561,10 +1618,10 @@
 
                             {{ Form::close() }}
                         </div>
-                    </div>
+                    </div> --}}
 
                     <!--Zoom - Metting Setting-->
-                    <div id="useradd-7" class="card">
+                    {{-- <div id="useradd-7" class="card">
                         <div class="card-header">
                             <h5>{{ __('Zoom-Meeting Setting') }}</h5>
                             <small class="text-muted">{{ __('Edit details about your Company zoom-meeting setting') }}</small>
@@ -1593,10 +1650,10 @@
                             {{ Form::close() }}
                         </div>
 
-                    </div>
+                    </div> --}}
 
                     <!--Slack Setting-->
-                    <div id="useradd-8" class="card">
+                    {{-- <div id="useradd-8" class="card">
                         <div class="card-header">
                             <h5>{{ __('Slack Setting') }}</h5>
                             <small class="text-muted">{{ __('Edit details about your Company slack setting') }}</small>
@@ -1839,10 +1896,10 @@
                             {{ Form::close() }}
                         </div>
 
-                    </div>
+                    </div> --}}
 
                     <!--Telegram Setting-->
-                    <div id="useradd-9" class="card">
+                    {{-- <div id="useradd-9" class="card">
                         <div class="card-header">
                             <h5>{{ __('Telegram Setting') }}</h5>
                             <small class="text-muted">{{ __('Edit details about your Company telegram setting') }}</small>
@@ -2090,10 +2147,10 @@
                             {{ Form::close() }}
                         </div>
 
-                    </div>
+                    </div> --}}
 
                     <!--Twilio Setting-->
-                    <div id="useradd-10" class="card">
+                    {{-- <div id="useradd-10" class="card">
                         <div class="card-header">
                             <h5>{{ __('Twilio Setting') }}</h5>
                             <small class="text-muted">{{ __('Edit details about your Company twilio setting') }}</small>
@@ -2231,7 +2288,7 @@
                             {{ Form::close() }}
                         </div>
 
-                    </div>
+                    </div> --}}
 
                     <!--ReCaptcha Setting-->
                     <div id="useradd-11" class="card">
@@ -2283,7 +2340,7 @@
                     </div>
 
                     <!--Email Notification Setting-->
-                    <div id="useradd-12" class="card">
+                    {{-- <div id="useradd-12" class="card">
 
                         <div class="col-md-12">
 
@@ -2329,7 +2386,7 @@
                             </div>
                         </div>
                         <!-- </form>  -->
-                    </div>
+                    </div> --}}
 
                 </div>
 

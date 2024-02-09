@@ -1,20 +1,20 @@
 <?php
 $totalAmount = 0;
 
-$invoiceProducts = \App\Models\InvoiceProduct::with('productService')->where('invoice_id', $invoice->id)->get();
+$invoiceProducts = \App\Models\InvoiceProduct::where('invoice_id', $invoice->id)->get();
 
 
 foreach ($invoiceProducts as $invoiceProduct) {
 
-    $tax = \App\Models\Tax::find($invoiceProduct->productService->tax_id);
-    $rate = $tax->rate;
+    $rate = $invoiceProduct->tax;
     $price = $invoiceProduct->price;
     
     $totalAmount += $price - ($price * $rate / 100);
     
 }
 
-$productNames = $invoiceProducts->pluck('productService.name')->first();
+$categoryIds = explode(',', $invoice->category_id);
+$productNames = \App\Models\ProductServiceCategory::whereIn('id', $categoryIds)->pluck('name');
 $productPeriods = $invoiceProducts->pluck('productService.periode')->first();
 
 $invoiceUrl = $invoice->invoice_url;
@@ -23,9 +23,11 @@ $shortenedUrl = url('/invoice/' . hash('crc32', $invoiceUrl));
 $invoiceId    = \Crypt::encrypt($invoice->id);
 $invoice_url  = route('invoice.pdf', $invoiceId);
 
+$settings = \App\Models\Utility::settings();
+
 ?>
 <div style="background-color:#f6f6f6;font-family:sans-serif;font-size:14px;line-height:1.4;margin:0;padding:0">
-    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Dear {{ $invoice->customer->name }} I trus this email finds you well, I am writing to inform you that the invoice for the recent services/products provided by PT Dummy Indonesia is now ready for your review and payment.</span>
+    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Dear {{ $invoice->client->clients->name_invoice }} I trust this email finds you well, I am writing to inform you that the invoice for the recent services/products provided by PT Dummy Indonesia is now ready for your review and payment.</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse:separate;background-color:#f6f6f6;width:100%" width="100%" bgcolor="#f6f6f6">
         <tbody>
             <tr>
@@ -48,10 +50,10 @@ $invoice_url  = route('invoice.pdf', $invoiceId);
                                                             <img src="https://i.postimg.cc/9XbjrKPR/logo-light.png" style="border:none;max-width:100%" width="150px" class="CToWUd">
                                                         </div>
                                                         <br>
-                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Dear {{ $invoice->customer->name }}</p>
-                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">I trus this email finds you well.</p>
+                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Dear {{ $invoice->client->clients->name_invoice }}</p>
+                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">I trust this email finds you well.</p>
                                                         <br>
-                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">I am writing to inform you that the invoice for the recent services/products provided by {{ $invoice->customer->billing_name }} is now ready for your review and payment.</p>
+                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">I am writing to inform you that the invoice for the recent services/products provided by {{ $invoice->client->name }} is now ready for your review and payment.</p>
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Please find the details of the invoice below : </p>
                                                         <br>
@@ -68,10 +70,21 @@ $invoice_url  = route('invoice.pdf', $invoiceId);
                                                                 <strong>Due Date:</strong> {{ $invoice->due_date }}
                                                             </li>
                                                             <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
-                                                                <strong>Description of Service/Product:</strong> {{ $productNames }} for {{ $productPeriods }}
+                                                                <strong>Description of Service/Product:</strong> 
+                                                                @foreach ($productNames as $item)
+                                                                    {{ 'Jasa ' . $item }},
+                                                                    @if (!$loop->last)
+                                                                        <br>
+                                                                    @endif
+                                                                @endforeach
                                                             </li>
                                                             <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
-                                                                <strong>Total Amount:</strong> {{ 'Rp' . $totalAmount }}
+                                                                <strong>Total Amount:</strong> 
+                                                                @if ($invoice->currency == '$')
+                                                                    {{\App\Models\Utility::priceFormat2($settings,$totalAmount)}}
+                                                                @else
+                                                                    {{\App\Models\Utility::priceFormat($settings,$totalAmount)}}
+                                                                @endif 
                                                             </li>
                                                         </ul>
                                                         <br>

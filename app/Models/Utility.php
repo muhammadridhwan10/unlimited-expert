@@ -33,6 +33,9 @@ class Utility extends Model
             "site_currency" => "Rupiah",
             "site_currency_symbol" => "Rp",
             "site_currency_symbol_position" => "pre",
+            "site_currency_2" => "USD",
+            "site_currency_symbol_2" => "$",
+            "site_currency_symbol_position_2" => "pre",
             "site_date_format" => "M j, Y",
             "site_time_format" => "g:i A",
             "company_name" => "",
@@ -70,7 +73,8 @@ class Utility extends Model
             "paypal_secret_key" => "",
             "stripe_key" => "",
             "stripe_secret" => "",
-            "decimal_number" => "",
+            "decimal_number" => "0",
+            "decimal_number_2" => "2",
             "tax_type" => "",
             "shipping_display" => "on",
             "journal_prefix" => "#JUR",
@@ -372,10 +376,13 @@ class Utility extends Model
         ];
         $arr['templates'] = [
             "template1" => "Template KAP",
-            "template2" => "Template Pusat 2",
-            "template3" => "Template Bekasi 1",
             "template4" => "Template ARA",
             "template5" => "Template XGA",
+            "template6" => "Template KAP Non Signature",
+            "template7" => "Template ARA Non Signature",
+            "template8" => "Template XGA Non Signature",
+            "template9" => "Template KAP MJ",
+            
         ];
 
         return $arr;
@@ -1475,7 +1482,7 @@ class Utility extends Model
         return $latest->employee_id + 1;
     }
 
-    public static function employeeDetails($user_id, $created_by)
+    public static function employeeDetails($user_id, $created_by, $branch_id)
     {
         $user = User::where('id', $user_id)->first();
 
@@ -1486,6 +1493,7 @@ class Utility extends Model
                 'email' => $user->email,
                 'password' => $user->password,
                 'employee_id' => Utility::employeeNumber($created_by),
+                'branch_id' => $branch_id,
                 'created_by' => $created_by,
             ]
         );

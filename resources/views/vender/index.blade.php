@@ -51,10 +51,6 @@ $profile = asset(Storage::url('uploads/avatar/'));
                                 <tr>
                                     <th>#</th>
                                     <th>{{ __('Name') }}</th>
-                                    <th>{{ __('Contact') }}</th>
-                                    <th>{{ __('Email') }}</th>
-                                    <th>{{ __('Balance') }}</th>
-                                    <th>{{ __('Last Login At') }}</th>
                                     <th>{{ __('Action') }}</th>
                                 </tr>
                             </thead>
@@ -72,27 +68,21 @@ $profile = asset(Storage::url('uploads/avatar/'));
                                             @endcan
                                         </td>
                                         <td>{{ $Vender['name'] }}</td>
-                                        <td>{{ $Vender['contact'] }}</td>
-                                        <td>{{ $Vender['email'] }}</td>
-                                        <td>{{ \Auth::user()->priceFormat($Vender['balance']) }}</td>
-                                        <td>
-                                            {{ !empty($Vender->last_login_at) ? $Vender->last_login_at : '-' }}
-                                        </td>
                                         <td class="Action">
                                             <span>
-                                                @if ($Vender['is_active'] == 0)
-                                                    <i class="fa fa-lock" title="Inactive"></i>
-                                                @else
-                                                    @can('show vender')
-                                                        <div class="action-btn bg-info ms-2">
-                                                            <a href="{{ route('vender.show', \Crypt::encrypt($Vender['id'])) }}"
-                                                                class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip"
-                                                                title="{{ __('View') }}">
-                                                                <i class="ti ti-eye text-white text-white"></i>
-                                                            </a>
-                                                        </div>
-                                                    @endcan
-                                                    @can('edit vender')
+                                                    @if ($Vender['is_active'] == 0)
+                                                        <i class="fa fa-lock" title="Inactive"></i>
+                                                    @else
+                                                        @can('show vender')
+                                                            <div class="action-btn bg-info ms-2">
+                                                                <a href="{{ route('vender.show', \Crypt::encrypt($Vender['id'])) }}"
+                                                                    class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip"
+                                                                    title="{{ __('View') }}">
+                                                                    <i class="ti ti-eye text-white text-white"></i>
+                                                                </a>
+                                                            </div>
+                                                        @endcan
+                                                        @can('edit vender')
                                                             <div class="action-btn bg-primary ms-2">
                                                                 <a href="#" class="mx-3 btn btn-sm align-items-center" data-size="lg"
                                                                 data-title="{{__('Edit Vendor')}}"
@@ -102,20 +92,19 @@ $profile = asset(Storage::url('uploads/avatar/'));
                                                                     <i class="ti ti-pencil text-white"></i>
                                                                 </a>
                                                             </div>
-                                                    @endcan
-                                                    @can('delete vender')
+                                                        @endcan
+                                                        @can('delete vender')
                                                             <div class="action-btn bg-danger ms-2">
-                                                            {!! Form::open(['method' => 'DELETE', 'route' => ['vender.destroy', $Vender['id']], 'id' => 'delete-form-' . $Vender['id']]) !!}
-
-                                                            <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para" data-bs-toggle="tooltip"
-                                                                   data-original-title="{{ __('Delete') }}" title="{{ __('Delete') }}"
-                                                                   data-confirm="{{ __('Are You Sure?') . '|' . __('This action can not be undone. Do you want to continue?') }}"
-                                                                   data-confirm-yes="document.getElementById('delete-form-{{ $Vender['id'] }}').submit();">
-                                                                <i class="ti ti-trash text-white text-white"></i>
-                                                                </a>
+                                                                {!! Form::open(['method' => 'DELETE', 'route' => ['vender.destroy', $Vender['id']], 'id' => 'delete-form-' . $Vender['id']]) !!}
+                                                                    <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para" data-bs-toggle="tooltip"
+                                                                           data-original-title="{{ __('Delete') }}" title="{{ __('Delete') }}"
+                                                                           data-confirm="{{ __('Are You Sure?') . '|' . __('This action can not be undone. Do you want to continue?') }}"
+                                                                           data-confirm-yes="document.getElementById('delete-form-{{ $Vender['id'] }}').submit();">
+                                                                        <i class="ti ti-trash text-white text-white"></i>
+                                                                    </a>
                                                                 {!! Form::close() !!}
                                                             </div>
-                                                    @endcan
+                                                        @endcan
                                                 @endif
                                             </span>
                                         </td>

@@ -26,7 +26,7 @@
         @endcan
         @can('delete vender')
             {!! Form::open(['method' => 'DELETE', 'route' => ['vender.destroy', $vendor['id']],'class'=>'delete-form-btn','id'=>'delete-form-'.$vendor['id']]) !!}
-            <a href="#" class="btn btn-sm btn-danger bs-pass-para" data-bs-toggle="tooltip" title="{{__('Delete')}}"  data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{ $vendor['id']}}').submit();">
+            <a href="#" class="btn btn-sm btn-danger bs-pass-para" data-bs-toggle="tooltip" title="{{__('Delete')}}" data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{ $vendor['id']}}').submit();">
                 <i class="ti ti-trash text-white"></i>
             </a>
             {!! Form::close() !!}
@@ -51,10 +51,11 @@
                 <div class="card-body">
                     <h3 class="card-title">{{__('Billing Info')}}</h3>
                     <p class="card-text mb-0">{{$vendor->billing_name}}</p>
-                    <p class="card-text mb-0">{{$vendor->billing_phone}}</p>
                     <p class="card-text mb-0">{{$vendor->billing_address}}</p>
-                    <p class="card-text mb-0">{{$vendor->billing_zip}}</p>
-                    <p class="card-text mb-0">{{$vendor->billing_city.', '. $vendor->billing_state .', '.$vendor->billing_country}}</p>
+                    <p class="card-text mb-0">{{$vendor->billing_city.', '. $vendor->billing_state .', '.$vendor->billing_zip}}</p>
+                    <p class="card-text mb-0">{{$vendor->billing_country}}</p>
+                    <p class="card-text mb-0">{{$vendor->billing_phone}}</p>
+
                 </div>
             </div>
         </div>
@@ -63,10 +64,10 @@
                 <div class="card-body">
                     <h3 class="card-title">{{__('Shipping Info')}}</h3>
                     <p class="card-text mb-0">{{$vendor->shipping_name}}</p>
-                    <p class="card-text mb-0">{{$vendor->shipping_phone}}</p>
                     <p class="card-text mb-0">{{$vendor->shipping_address}}</p>
-                    <p class="card-text mb-0">{{$vendor->shipping_zip}}</p>
-                    <p class="card-text mb-0">{{$vendor->shipping_city.', '. $vendor->billing_state .', '.$vendor->billing_country}}</p>
+                    <p class="card-text mb-0">{{$vendor->shipping_city.', '. $vendor->shipping_state .', '.$vendor->shipping_zip}}</p>
+                    <p class="card-text mb-0">{{$vendor->shipping_country}}</p>
+                    <p class="card-text mb-0">{{$vendor->shipping_phone}}</p>
                 </div>
             </div>
         </div>
@@ -122,12 +123,10 @@
     <div class="row">
         <div class="col-12">
             <div class="card">
-
                 <div class="card-body table-border-style">
-                    <h5 class=" d-inline-block  mb-5">{{__('Bills')}}</h5>
-
+                    <h5 class=" d-inline-block mb-5">{{__('Bills')}}</h5>
                     <div class="table-responsive">
-                        <table class="table ">
+                        <table class="table">
                             <thead>
                             <tr>
                                 <th>{{__('Bill')}}</th>
@@ -145,13 +144,8 @@
                             @foreach ($vendor->vendorBill($vendor->id) as $bill)
                                 <tr class="font-style">
                                     <td class="Id">
-                                        @if(\Auth::guard('vender')->check())
-                                            <a href="{{ route('vender.bill.show',\Crypt::encrypt($bill->id)) }}" class="btn btn-outline-primary">{{ AUth::user()->billNumberFormat($bill->bill_id) }}
-                                            </a>
-                                        @else
-                                            <a href="{{ route('bill.show',\Crypt::encrypt($bill->id)) }}" class="btn btn-outline-primary">{{ AUth::user()->billNumberFormat($bill->bill_id) }}
-                                            </a>
-                                        @endif
+                                        <a href="{{ route('bill.show',\Crypt::encrypt($bill->id)) }}" class="btn btn-outline-primary">{{ AUth::user()->billNumberFormat($bill->bill_id) }}
+                                        </a>
                                     </td>
                                     <td>{{ Auth::user()->dateFormat($bill->bill_date) }}</td>
                                     <td>
@@ -187,19 +181,12 @@
                                                     </div>
                                                 @endcan
                                                 @can('show bill')
-                                                    @if(\Auth::guard('vender')->check())
-                                                        <div class="action-btn bg-info ms-2">
-                                                            <a href="{{ route('vender.bill.show',\Crypt::encrypt($bill->id)) }}" class="mx-3 btn btn-sm  align-items-center" data-bs-toggle="tooltip"  title="{{__('Show')}}" data-original-title="{{__('Detail')}}">
-                                                                <i class="ti ti-eye text-white text-white"></i>
-                                                            </a>
-                                                        </div>
-                                                    @else
-                                                        <div class="action-btn bg-info ms-2">
+
+                                                    <div class="action-btn bg-info ms-2">
                                                             <a href="{{ route('bill.show',\Crypt::encrypt($bill->id)) }}" class="mx-3 btn btn-sm  align-items-center" data-bs-toggle="tooltip" title="{{__('Show')}}" data-original-title="{{__('Detail')}}">
                                                                 <i class="ti ti-eye text-white text-white"></i>
                                                             </a>
                                                         </div>
-                                                    @endif
                                                 @endcan
                                                 @can('edit bill')
                                                     <div class="action-btn bg-primary ms-2">

@@ -13,6 +13,12 @@
         {{__('Indonesian')}}
     </label>
 </div>
+<br>
+<br>
+<div class="form-group">
+    <label for="cc_email">{{__('CC Email')}}</label>
+    <textarea class="form-control" id="cc_email" name="cc_email" placeholder="Enter CC Email(s)"></textarea>
+</div>
 {{ Form::hidden('selected_language', '', ['id' => 'selected_language']) }}
 </div>
 <div class="modal-footer">

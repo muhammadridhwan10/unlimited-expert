@@ -1,27 +1,22 @@
-@if(!empty($customer))
+@if(!empty($client))
     <div class="row">
         <div class="col-md-5">
             <h6>{{__('Bill to')}}</h6>
+            @php
+             $company = \App\Models\User::where('id', $client->user_id)->first();
+            @endphp
             <div class="bill-to">
+                @if(!empty($client))
                 <small>
-                    <span>{{$customer['billing_name']}}</span><br>
-                    <span>{{$customer['billing_phone']}}</span><br>
-                    <span>{{$customer['billing_address']}}</span><br>
-                    <span>{{$customer['billing_zip']}}</span><br>
-                    <span>{{$customer['billing_country'] . ' , '.$customer['billing_city'].' , '.$customer['billing_state'].'.'}}</span>
+                    <span>{{$company['name']}}</span><br>
+                    <span>{{$client['telp']}}</span><br>
+                    <span>{{$client['address']}}</span><br>
+                    <span>{{$client['city'] . ' , '.$client['state'].' , '.$client['country'].'.'}}</span><br>
+
                 </small>
-            </div>
-        </div>
-        <div class="col-md-5">
-            <h6>{{__('Ship to')}}</h6>
-            <div class="bill-to">
-                <small>
-                    <span>{{$customer['shipping_name']}}</span><br>
-                    <span>{{$customer['shipping_phone']}}</span><br>
-                    <span>{{$customer['shipping_address']}}</span><br>
-                    <span>{{$customer['shipping_zip']}}</span><br>
-                    <span>{{$customer['shipping_country'] . ' , '.$customer['shipping_state'].' , '.$customer['shipping_city'].'.'}}</span>
-                </small>
+                @else
+                    <br> -
+                @endif
             </div>
         </div>
         <div class="col-md-2">

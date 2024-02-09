@@ -11,6 +11,7 @@ use App\Models\ProjectUser;
 use App\Models\ProjectTask;
 use App\Models\UserCompany;
 use App\Models\LoginDetail;
+use App\Models\Branch;
 use Auth;
 use File;
 use App\Models\Utility;
@@ -56,26 +57,20 @@ class UserController extends Controller
     }
 
     public function create()
-    {
+    { 
+        $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'user')->get();
+        $user  = \Auth::user();
+        $roles = Role::where('created_by', '=', $user->creatorId())->where('name','!=','client')->get()->pluck('name', 'id');
+        
+        $branches = Branch::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
 
-        if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
-        {
-            $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'user')->get();
-            $roles = Role::where('name','!=','client')->where('name','!=','super admin')->get()->pluck('name', 'id');
-        }
-        else
-        {
-            $customFields = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'user')->get();
-            $user  = \Auth::user();
-            $roles = Role::where('created_by', '=', $user->creatorId())->where('name','!=','client')->get()->pluck('name', 'id');
-        }
         if(\Auth::user()->can('create user'))
         {
-            return view('user.create', compact('roles', 'customFields'));
+            return view('user.create', compact('roles', 'customFields','branches'));
         }
         else
         {
-            return response()->json(['error' => __('Permission denied.')], 401);
+            return redirect()->back();
         }
     }
 
@@ -110,7 +105,7 @@ class UserController extends Controller
             $user->assignRole($role_r);
 
             if($request['type'] != 'client')
-                \App\Models\Utility::employeeDetails($user->id,\Auth::user()->creatorId());
+                \App\Models\Utility::employeeDetails($user->id,\Auth::user()->creatorId(), $request->branch_id);
 
             //Send Email
 
@@ -134,19 +129,8 @@ class UserController extends Controller
 
     public function edit($id)
     {
-        if(Auth::user()->type == 'admin')
-        {
-            $roles = Role::where('name','!=','client')->where('name','!=','super admin')->get()->pluck('name', 'id');
-        }
-        elseif(Auth::user()->type == 'company')
-        {
-            $roles = Role::where('name','!=','client')->where('name','!=','super admin')->get()->pluck('name', 'id');
-        }
-        else
-        {
-            $user  = \Auth::user();
-            $roles = Role::where('created_by', '=', $user->creatorId())->where('name','!=','client')->get()->pluck('name', 'id');
-        }
+        $user  = \Auth::user();
+        $roles = Role::where('created_by', '=', $user->creatorId())->where('name','!=','client')->get()->pluck('name', 'id');
         if(\Auth::user()->can('edit user'))
         {
             $user              = User::findOrFail($id);
@@ -157,7 +141,7 @@ class UserController extends Controller
         }
         else
         {
-            return response()->json(['error' => __('Permission denied.')], 401);
+            return redirect()->back();
         }
 
     }

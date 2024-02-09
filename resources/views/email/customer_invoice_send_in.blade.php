@@ -1,20 +1,20 @@
 <?php
 $totalAmount = 0;
 
-$invoiceProducts = \App\Models\InvoiceProduct::with('productService')->where('invoice_id', $invoice->id)->get();
+$invoiceProducts = \App\Models\InvoiceProduct::where('invoice_id', $invoice->id)->get();
 
 
 foreach ($invoiceProducts as $invoiceProduct) {
 
-    $tax = \App\Models\Tax::find($invoiceProduct->productService->tax_id);
-    $rate = $tax->rate;
+    $rate = $invoiceProduct->tax;
     $price = $invoiceProduct->price;
     
     $totalAmount += $price - ($price * $rate / 100);
     
 }
 
-$productNames = $invoiceProducts->pluck('productService.name')->first();
+$categoryIds = explode(',', $invoice->category_id);
+$productNames = \App\Models\ProductServiceCategory::whereIn('id', $categoryIds)->pluck('name');
 $productPeriods = $invoiceProducts->pluck('productService.periode')->first();
 
 $invoiceUrl = $invoice->invoice_url;
@@ -23,9 +23,13 @@ $shortenedUrl = url('/invoice/' . hash('crc32', $invoiceUrl));
 $invoiceId    = \Crypt::encrypt($invoice->id);
 $invoice_url  = route('invoice.pdf', $invoiceId);
 
+$settings = \App\Models\Utility::settings();
+
 ?>
 <div style="background-color:#f6f6f6;font-family:sans-serif;font-size:14px;line-height:1.4;margin:0;padding:0">
-    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Kepada {{ $invoice->customer->name }} Salam Hormat, Kami berharap Bapak/Ibu dalam keadaan baik. Sehubungan dengan {{ $productNames }} yang telah kami sediakan, bersama ini kami lampirkan invoice terkait untuk pembayaran .</span>
+    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Kepada {{ $invoice->client->clients->name_invoice }} Salam Hormat, Kami berharap Bapak/Ibu dalam keadaan baik. Sehubungan dengan Jasa @foreach($productNames as $productName)
+        {{ $productName }},
+    @endforeach yang telah kami sediakan, bersama ini kami lampirkan invoice terkait untuk pembayaran .</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse:separate;background-color:#f6f6f6;width:100%" width="100%" bgcolor="#f6f6f6">
         <tbody>
             <tr>
@@ -48,10 +52,10 @@ $invoice_url  = route('invoice.pdf', $invoiceId);
                                                             <img src="https://i.postimg.cc/9XbjrKPR/logo-light.png" style="border:none;max-width:100%" width="150px" class="CToWUd">
                                                         </div>
                                                         <br>
-                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Kepada {{ $invoice->customer->name }}</p>
+                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Kepada {{ $invoice->client->name }}</p>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Salam Hormat,</p>
                                                         <br>
-                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Kami berharap Bapak/Ibu dalam keadaan baik. Sehubungan dengan {{ $productNames }} yang telah kami sediakan, bersama ini kami lampirkan invoice terkait untuk pembayaran.</p>
+                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Kami berharap Bapak/Ibu dalam keadaan baik. Sehubungan dengan Jasa @foreach($productNames as $productName) {{ $productName }}, @endforeach yang telah kami sediakan, bersama ini kami lampirkan invoice terkait untuk pembayaran.</p>
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Rincian Invoice : </p>
                                                         <br>
@@ -66,10 +70,21 @@ $invoice_url  = route('invoice.pdf', $invoiceId);
                                                                 <strong>Jatuh Tempo:</strong> {{ $invoice->due_date }}
                                                             </li>
                                                             <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
-                                                                <strong>Deskripsi Jasa:</strong> {{ $productNames }} untuk {{ $productPeriods }}
+                                                                <strong>Deskripsi Jasa:</strong> 
+                                                                @foreach ($productNames as $item)
+                                                                    {{ 'Jasa ' . $item }},
+                                                                    @if (!$loop->last)
+                                                                        <br>
+                                                                    @endif
+                                                                @endforeach
                                                             </li>
                                                             <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
-                                                                <strong>Total Tagihan:</strong> {{ 'Rp' . $totalAmount }}
+                                                                <strong>Total Tagihan:</strong> 
+                                                                @if ($invoice->currency == '$')
+                                                                    {{\App\Models\Utility::priceFormat2($settings,$totalAmount)}}
+                                                                @else
+                                                                    {{\App\Models\Utility::priceFormat($settings,$totalAmount)}}
+                                                                @endif 
                                                             </li>
                                                         </ul>
                                                         <br>

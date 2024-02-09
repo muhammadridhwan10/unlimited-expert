@@ -98,9 +98,7 @@ class RoleController extends Controller
                 $role->givePermissionTo($p);
             }
 
-            return redirect()->route('roles.index')->with(
-                'Role successfully created.', 'Role ' . $role->name . ' added!'
-            );
+            return redirect()->back()->with('success', __('Role Successfully created.'));
         }
         else
         {
@@ -174,9 +172,7 @@ class RoleController extends Controller
                 $role->givePermissionTo($p);
             }
 
-            return redirect()->route('roles.index')->with(
-                'Role successfully updated.', 'Role ' . $role->name . ' updated!'
-            );
+            return redirect()->back()->with('success', __('Role Successfully updated.'));
         }
         else
         {

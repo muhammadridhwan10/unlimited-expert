@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 @php
-    $profile=asset(Storage::url('uploads/avatar/'));
+  //  $profile=asset(Storage::url('uploads/avatar/'));
+$profile=\App\Models\Utility::get_file('uploads/avatar/');
 @endphp
 @section('page-title')
     {{__('Profile Account')}}
@@ -83,7 +84,7 @@
                                             <div class="choose-file">
                                                 <label for="avatar">
                                                     <div>{{__('Choose file here')}}</div>
-                                                    <input type="file" class="form-control" accept="image/png, image/gif, image/jpeg" name="profile" id="avatar" name="profile" data-filename="profiles">
+                                                    <input type="file" accept=".png, .jpeg, .jpg" class="form-control file" id="avatar" name="profile" data-filename="profiles">
                                                 </label>
                                                 <p class="profiles"></p>
                                             </div>

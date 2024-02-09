@@ -17,7 +17,7 @@ class SystemController extends Controller
 {
     public function index()
     {
-        if(\Auth::user()->can('manage company settings'))
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
         {
             $settings = Utility::settings();
             $admin_payment_setting = Utility::getAdminPaymentSetting();
@@ -143,7 +143,7 @@ class SystemController extends Controller
 
     public function saveEmailSettings(Request $request)
     {
-        if(\Auth::user()->can('manage company settings'))
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
         {
             $request->validate(
                 [
@@ -182,7 +182,7 @@ class SystemController extends Controller
     public function saveCompanySettings(Request $request)
     {
 
-        if(\Auth::user()->can('manage company settings'))
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
         {
             $user = \Auth::user();
             $request->validate(
@@ -262,12 +262,13 @@ class SystemController extends Controller
     public function saveSystemSettings(Request $request)
     {
 
-        if(\Auth::user()->can('manage company settings'))
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
         {
             $user = \Auth::user();
             $request->validate(
                 [
                     'site_currency' => 'required',
+                    'site_currency_2' => 'required',
                 ]
             );
             $post = $request->all();
@@ -288,7 +289,7 @@ class SystemController extends Controller
                         'insert into settings (`value`, `name`,`created_by`,`created_at`,`updated_at`) values (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE `value` = VALUES(`value`) ', [
                                                                                                                                                                                      $data,
                                                                                                                                                                                      $key,
-                                                                                                                                                                                     \Auth::user()->creatorId(),
+                                                                                                                                                                                     1,
                                                                                                                                                                                      date('Y-m-d H:i:s'),
                                                                                                                                                                                      date('Y-m-d H:i:s'),
                                                                                                                                                                                  ]
@@ -327,7 +328,7 @@ class SystemController extends Controller
 
     public function saveBusinessSettings(Request $request)
     {
-        if(\Auth::user()->can('manage company settings'))
+        if(\Auth::user()->type = 'admin' || \Auth::user()->type = 'company')
         {
 
             $user = \Auth::user();
@@ -450,7 +451,7 @@ class SystemController extends Controller
 
     public function companyIndex()
     {
-        if(\Auth::user()->can('manage company settings'))
+        if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
         {
             $settings                = Utility::settings();
             $timezones               = config('timezones');

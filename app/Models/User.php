@@ -153,7 +153,21 @@ class User extends Authenticatable
     {
         $settings = Utility::settings();
 
-        return (($settings['site_currency_symbol_position'] == "pre") ? $settings['site_currency_symbol'] : '') . number_format($price) . (($settings['site_currency_symbol_position'] == "post") ? $settings['site_currency_symbol'] : '');
+        return (($settings['site_currency_symbol_position'] == "pre") ? $settings['site_currency_symbol'] : '') . number_format($price, $settings['decimal_number']) . (($settings['site_currency_symbol_position'] == "post") ? $settings['site_currency_symbol'] : '');
+    }
+
+    public function priceFormat2($price)
+    {
+        $settings = Utility::settings();
+
+        return (($settings['site_currency_symbol_position_2'] == "pre") ? $settings['site_currency_symbol_2'] : '') . number_format($price, $settings['decimal_number_2']) . (($settings['site_currency_symbol_position_2'] == "post") ? $settings['site_currency_symbol_2'] : '');
+    }
+
+    public static function priceFormats($price)
+    {
+        $settings = Utility::settings();
+
+        return (($settings['site_currency_symbol_position'] == "pre") ? $settings['site_currency_symbol'] : '') . number_format($price, Utility::getValByName('decimal_number')) . (($settings['site_currency_symbol_position'] == "post") ? $settings['site_currency_symbol'] : '');
     }
 
     public function currencySymbol()
@@ -161,6 +175,13 @@ class User extends Authenticatable
         $settings = Utility::settings();
 
         return $settings['site_currency_symbol'];
+    }
+
+    public function currencySymbol2()
+    {
+        $settings = Utility::settings();
+
+        return $settings['site_currency_symbol_2'];
     }
 
     public function dateFormat($date)
@@ -999,6 +1020,18 @@ class User extends Authenticatable
     public function clientProjects()
     {
         return $this->hasMany('App\Models\Project', 'client_id', 'id');
+    }
+
+    public function clientProject($clientId)
+    {
+        $projects  = Project::where('client_id', $clientId)->orderBy('end_date', 'desc')->get();
+        return $projects;
+    }
+
+    public function clientInvoice($clientId)
+    {
+        $invoices  = Invoice::where('client_id', $clientId)->orderBy('issue_date', 'desc')->get();
+        return $invoices;
     }
 
     public function isUser()

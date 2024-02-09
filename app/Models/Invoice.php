@@ -17,6 +17,10 @@ class Invoice extends Model
         'created_by',
         'user_id',
         'company',
+        'account_id',
+        'client_id',
+        'currency',
+        'invoice_template'
     ];
 
     public static $statues = [
@@ -46,10 +50,18 @@ class Invoice extends Model
     {
         return $this->hasMany('App\Models\InvoicePayment', 'invoice_id', 'id');
     }
-
+    public function bankPayments()
+    {
+        return $this->hasMany('App\Models\InvoiceBankTransfer', 'invoice_id', 'id')->where('status','!=','Approved');
+    }
     public function customer()
     {
         return $this->hasOne('App\Models\Customer', 'id', 'customer_id');
+    }
+
+    public function account()
+    {
+        return $this->hasOne('App\Models\ChartOfAccount', 'id', 'account_id');
     }
 
     public function user()
@@ -57,12 +69,26 @@ class Invoice extends Model
         return $this->hasOne('App\Models\User', 'id', 'user_id');
     }
 
+    public function client()
+    {
+        return $this->hasOne('App\Models\User', 'id', 'client_id');
+    }
+
     public function getSubTotal()
     {
         $subTotal = 0;
         foreach($this->items as $product)
         {
-            $subTotal += ($product->price * $product->quantity);
+            $invoice = Invoice::where('id', $product->invoice_id)->first();
+
+            if($invoice->currency == "$" )
+            {
+                $subTotal += ($product->price);
+            }
+            elseif($invoice->currency == "Rp")
+            {
+                $subTotal += ($product->price);
+            }
         }
 
         return $subTotal;
@@ -73,9 +99,22 @@ class Invoice extends Model
         $totalTax = 0;
         foreach($this->items as $product)
         {
-            $taxes = Utility::totalTaxRate($product->tax);
+            $invoice = Invoice::where('id', $product->invoice_id)->first();
 
-            $totalTax += ($taxes / 100) * ($product->price * $product->quantity);
+            if($invoice->currency == "$" )
+            {
+                $taxes = $product->tax;
+
+
+                $totalTax += ($taxes / 100) * ($product->price) ;
+            }
+            elseif($invoice->currency == "Rp")
+            {
+                $taxes = $product->tax;
+
+
+                $totalTax += ($taxes / 100) * ($product->price) ;
+            }
         }
 
         return $totalTax;
@@ -94,7 +133,9 @@ class Invoice extends Model
 
     public function getTotal()
     {
-        return ($this->getSubTotal() - $this->getTotalTax()) - $this->getTotalDiscount();
+
+        return $this->getSubTotal() - $this->getTotalTax();
+//        return ($this->getSubTotal() + $this->getTotalTax()) - $this->getTotalDiscount();
     }
 
     public function getDue()

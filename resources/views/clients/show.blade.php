@@ -1,7 +1,4 @@
 @extends('layouts.admin')
-@php
-    $profile=asset(Storage::url('uploads/avatar/'));
-@endphp
 @section('page-title')
     {{__('Manage Client')}}
 @endsection
@@ -17,142 +14,288 @@
 @endsection
 
 @section('content')
-
+    <div class="page-header">
+        <div class="page-block">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                </div>
+                <div class="col-md-8 mt-4">
+                    <ul class="nav nav-pills nav-fill cust-nav information-tab" id="pills-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="customer-details-tab" data-bs-toggle="pill"
+                                data-bs-target="#customer-details" type="button">{{ __('Details') }}</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="client-invoice-tab"
+                                data-bs-toggle="pill" data-bs-target="#client-invoice"
+                                type="button">{{ __('Invoices') }}</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link " id="client-project-tab"
+                                data-bs-toggle="pill" data-bs-target="#client-project"
+                                type="button">{{ __('Projects') }}</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row">
-        <div class="col-sm-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row align-items-center justify-content-between">
-                        <div class="col-auto mb-3 mb-sm-0">
-                            <small class="text-muted">{{__('Total Estimate')}}</small>
-                            <h3 class="m-0">{{ $cnt_estimation['total'] }} / {{$cnt_estimation['cnt_total']}}</h3>
-                        </div>
-                        <div class="col-auto">
-                            <div class="theme-avtar bg-info">
-                                <i class="ti ti-coin"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row align-items-center justify-content-between">
-                        <div class="col-auto mb-3 mb-sm-0">
-                            <small class="text-muted">{{__('This Month Total Estimate')}}</small>
-                            <h3 class="m-0">{{ $cnt_estimation['this_month'] }} / {{$cnt_estimation['cnt_this_month']}}</h3>
-                        </div>
-                        <div class="col-auto">
-                            <div class="theme-avtar bg-primary">
-                                <i class="ti ti-coin"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row align-items-center justify-content-between">
-                        <div class="col-auto mb-3 mb-sm-0">
-                            <small class="text-muted">{{__('This Week Total Estimate')}}</small>
-                            <h3 class="m-0">{{ $cnt_estimation['this_week'] }} / {{$cnt_estimation['cnt_this_week']}}</h3>
-                        </div>
-                        <div class="col-auto">
-                            <div class="theme-avtar bg-warning">
-                                <i class="ti ti-coin"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-sm-3">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row align-items-center justify-content-between">
-                        <div class="col-auto mb-3 mb-sm-0">
-                            <small class="text-muted">{{__('Last 30 Days Total Estimate')}}</small>
-                            <h3 class="m-0">{{ $cnt_estimation['last_30days'] }} / {{$cnt_estimation['cnt_last_30days']}}</h3>
-                        </div>
-                        <div class="col-auto">
-                            <div class="theme-avtar bg-danger">
-                                <i class="ti ti-coin"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-12">
-            <div class="card">
-                <div class="card-body table-border-style">
-                    <div class="table-responsive">
-                        <table class="table datatable">
-                            <thead>
-                            <tr>
+        <div class="col-sm-12 ">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="tab-content" id="pills-tabContent">
+                        <div class="tab-pane fade active show" id="customer-details" role="tabpanel"
+                        aria-labelledby="pills-user-tab-1">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card pb-0">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ __('Company Info') }}</h5>
 
-                                <th>{{__('Estimate')}}</th>
-                                <th>{{__('Client')}}</th>
-                                <th>{{__('Issue Date')}}</th>
-                                <th>{{__('Value')}}</th>
-                                <th>{{__('Status')}}</th>
-                                @if(Auth::user()->type != 'client')
-                                    <th width="250px">{{__('Action')}}</th>
-                                @endif
-                            </tr>
-                            </thead>
-                            <tbody>
-                            @foreach ($estimations as $estimate)
-                                <tr>
-                                    <td class="Id">
-                                        @can('View Estimation')
-                                            <a href="{{route('estimations.show',$estimate->id)}}"> <i class="ti ti-file-estimate"></i> {{ Auth::user()->estimateNumberFormat($estimate->estimation_id) }}</a>
-                                        @else
-                                            {{ Auth::user()->estimateNumberFormat($estimate->estimation_id) }}
-                                        @endcan
-                                    </td>
-                                    <td>{{ $estimate->client->name }}</td>
-                                    <td>{{ Auth::user()->dateFormat($estimate->issue_date) }}</td>
-                                    <td>{{ Auth::user()->priceFormat($estimate->getTotal()) }}</td>
-                                    <td>
-                                        @if($estimate->status == 0)
-                                            <span class="badge badge-pill badge-primary">{{ __(\App\Models\Estimation::$statues[$estimate->status]) }}</span>
-                                        @elseif($estimate->status == 1)
-                                            <span class="badge badge-pill badge-danger">{{ __(\App\Models\Estimation::$statues[$estimate->status]) }}</span>
-                                        @elseif($estimate->status == 2)
-                                            <span class="badge badge-pill badge-warning">{{ __(\App\Models\Estimation::$statues[$estimate->status]) }}</span>
-                                        @elseif($estimate->status == 3)
-                                            <span class="badge badge-pill badge-success">{{ __(\App\Models\Estimation::$statues[$estimate->status]) }}</span>
-                                        @elseif($estimate->status == 4)
-                                            <span class="badge badge-pill badge-info">{{ __(\App\Models\Estimation::$statues[$estimate->status]) }}</span>
-                                        @endif
-                                    </td>
-                                    @if(Auth::user()->type != 'client')
-                                        <td class="Action">
-                                        <span>
-                                        @can('View Estimation')
-                                                <a href="{{route('estimations.show',$estimate->id)}}" class="edit-icon bg-warning" data-bs-toggle="tooltip" data-original-title="{{ __('View') }}"><i class="ti ti-eye"></i></a>
-                                            @endcan
-                                            @can('Edit Estimation')
-                                                <a href="#" data-url="{{ URL::to('estimations/'.$estimate->id.'/edit') }}" data-ajax-popup="true" data-title="{{__('Edit Estimation')}}" class="edit-icon" data-bs-toggle="tooltip" data-original-title="{{__('Edit')}}"><i class="ti ti-pencil text-white"></i></a>
-                                            @endcan
-                                            @can('Delete Estimation')
-                                                <a href="#" class="delete-icon" data-bs-toggle="tooltip" data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$estimate->id}}').submit();"><i class="ti ti-trash"></i></a>
-                                                {!! Form::open(['method' => 'DELETE', 'route' => ['estimations.destroy', $estimate->id],'id'=>'delete-form-'.$estimate->id]) !!}
-                                                {!! Form::close() !!}
-                                            @endif
-                                        </span>
-                                        </td>
-                                    @endif
-                                </tr>
-                            @endforeach
+                                            <div class="row">
+                                                {{-- @php
+                                                    $totalInvoiceSum = $customer->customerTotalInvoiceSum($customer['id']);
+                                                    $totalInvoice = $customer->customerTotalInvoice($customer['id']);
+                                                    $averageSale = $totalInvoiceSum != 0 ? $totalInvoiceSum / $totalInvoice : 0;
+                                                @endphp --}}
+                                                <div class="col-md-3 col-sm-6">
+                                                    <div class="p-4">
+                                                        <p class="card-text mb-0">{{ __('Company Name ') }}</p>
+                                                        <h6 class="report-text mb-3">
+                                                            {{ $client->name }}
+                                                        </h6>
+                                                        <p class="card-text mb-0">{{ __('E-Mail') }}</p>
+                                                        <h6 class="report-text mb-0">{{ $client->email }}</h6>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 col-sm-6">
+                                                    <div class="p-4">
+                                                        <p class="card-text mb-0">{{ __('NPWP') }}</p>
+                                                        <h6 class="report-text mb-3">{{ $clients ? $clients->npwp : '-' }}</h6>
+                                                        <p class="card-text mb-0">{{ __('Telephone') }}</p>
+                                                        <h6 class="report-text mb-0">{{ $clients ? $clients->telp : '-' }}</h6>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 col-sm-6">
+                                                    <div class="p-4">
+                                                        <p class="card-text mb-0">{{ __('Country') }}</p>
+                                                        <h6 class="report-text mb-3">{{ $clients ? $clients->country : '-' }}</h6>
+                                                        <p class="card-text mb-0">{{ __('State') }}</p>
+                                                        <h6 class="report-text mb-0">{{ $clients ? $clients->state : '-' }}</h6>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 col-sm-6">
+                                                    <div class="p-4">
+                                                        <p class="card-text mb-0">{{ __('City') }}</p>
+                                                        <h6 class="report-text mb-3">
+                                                            {{ $clients ? $clients->city : '-' }}</h6>
+                                                        <p class="card-text mb-0">{{ __('Client Business Sector') }}</p>
+                                                        <h6 class="report-text mb-3">
+                                                            {{ $clients && $clients->sector ? $clients->sector->name : '-' }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                            </tbody>
-                        </table>
+
+                        <div class="tab-pane fade" id="client-invoice" role="tabpanel"
+                        aria-labelledby="pills-user-tab-3">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body table-border-style table-border-style">
+                                            <h5 class="d-inline-block mb-5">{{ __('Invoice') }}</h5>
+                                            <div class="table-responsive">
+                                                <table class="table datatable">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>{{ __('Invoice') }}</th>
+                                                            <th>{{ __('Issue Date') }}</th>
+                                                            <th>{{ __('Due Date') }}</th>
+                                                            <th>{{ __('Due Amount') }}</th>
+                                                            <th>{{ __('Status') }}</th>
+                                                            @if (Gate::check('invoice edit') || Gate::check('invoice delete') || Gate::check('invoice show'))
+                                                                <th width="10%"> {{ __('Action') }}</th>
+                                                            @endif
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @forelse ($client->clientInvoice($client->id) as $invoice)
+                                                            <tr>
+                                                                <td class="Id">
+                                                                @can('invoice show')
+                                                                    <a href="{{ route('invoice.show', \Crypt::encrypt($invoice->id)) }}"
+                                                                        class="btn btn-outline-primary">{{ $invoice->invoice_id }}
+                                                                    </a>
+                                                                @else
+                                                                    <a
+                                                                        class="btn btn-outline-primary">{{ $invoice->invoice_id }}
+                                                                    </a>
+                                                                @endcan
+                                                                </td>
+                                                                <td>{{ $invoice->issue_date }}</td>
+                                                                <td>
+                                                                    @if ($invoice->due_date < date('Y-m-d'))
+                                                                        <p class="text-danger"> {{$invoice->due_date }}</p>
+                                                                    @else
+                                                                        {{ $invoice->due_date }}
+                                                                    @endif
+                                                                </td>
+                                                                <td>{{ $invoice->getDue() }}</td>
+                                                                <td>
+                                                                    @if ($invoice->status == 0)
+                                                                        <span
+                                                                            class="badge bg-primary p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                                    @elseif($invoice->status == 1)
+                                                                        <span
+                                                                            class="badge bg-warning p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                                    @elseif($invoice->status == 2)
+                                                                        <span
+                                                                            class="badge bg-danger p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                                    @elseif($invoice->status == 3)
+                                                                        <span
+                                                                            class="badge bg-info p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                                    @elseif($invoice->status == 4)
+                                                                        <span
+                                                                            class="badge bg-success p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                                    @endif
+                                                                </td>
+                                                                @if (Gate::check('invoice edit') || Gate::check('invoice delete') || Gate::check('invoice show'))
+                                                                    <td class="Action">
+                                                                        <span>
+                                                                            @can('duplicate invoice')
+                                                                                <div class="action-btn bg-secondary ms-2">
+
+                                                                                    {!! Form::open([
+                                                                                        'method' => 'get',
+                                                                                        'route' => ['invoice.duplicate', $invoice->id],
+                                                                                        'id' => 'invoice-duplicate-form-' . $invoice->id,
+                                                                                    ]) !!}
+
+                                                                                    <a
+                                                                                        class="mx-3 btn btn-sm align-items-center bs-pass-para"
+                                                                                        data-bs-toggle="tooltip"
+                                                                                        title="{{ __('Duplicate Invoice') }}"
+                                                                                        data-original-title="{{ __('Duplicate') }}"
+                                                                                        data-confirm="{{ __('You want to confirm this action. Press Yes to continue or Cancel to go back') }}"
+                                                                                        data-confirm-yes="document.getElementById('invoice-duplicate-form-{{ $invoice->id }}').submit();">
+                                                                                        <i class="ti ti-copy text-white text-white"></i>
+                                                                                    </a>
+                                                                                    {!! Form::close() !!}
+
+                                                                                </div>
+                                                                            @endcan
+                                                                            @can('invoice show')
+                                                                                @if (\Auth::user()->type == 'client')
+                                                                                    <div class="action-btn bg-warning ms-2">
+                                                                                        <a href="{{ route('customer.invoice.show', \Crypt::encrypt($invoice->id)) }}"
+                                                                                            class="mx-3 btn btn-sm align-items-center"
+                                                                                            data-bs-toggle="tooltip" title="{{ __('Show') }}"
+                                                                                            data-original-title="{{ __('Detail') }}">
+                                                                                            <i class="ti ti-eye text-white text-white"></i>
+                                                                                        </a>
+                                                                                    </div>
+                                                                                @else
+                                                                                    <div class="action-btn bg-warning ms-2">
+                                                                                        <a href="{{ route('invoice.show', \Crypt::encrypt($invoice->id)) }}"
+                                                                                            class="mx-3 btn btn-sm align-items-center"
+                                                                                            data-bs-toggle="tooltip" title="{{ __('View') }}">
+                                                                                            <i class="ti ti-eye text-white text-white"></i>
+                                                                                        </a>
+                                                                                    </div>
+                                                                                @endif
+                                                                            @endcan
+                                                                            @can('invoice edit')
+                                                                                <div class="action-btn bg-info ms-2">
+                                                                                    <a href="{{ route('invoice.edit', \Crypt::encrypt($invoice->id)) }}"
+                                                                                        class="mx-3 btn btn-sm  align-items-center"
+                                                                                        data-bs-toggle="tooltip"
+                                                                                        data-bs-original-title="{{ __('Edit') }}">
+                                                                                        <i class="ti ti-pencil text-white"></i>
+                                                                                    </a>
+                                                                                </div>
+                                                                            @endcan
+                                                                            @can('invoice delete')
+                                                                                <div class="action-btn bg-danger ms-2">
+                                                                                    {{ Form::open(['route' => ['invoice.destroy', $invoice->id], 'class' => 'm-0']) }}
+                                                                                    @method('DELETE')
+                                                                                    <a
+                                                                                        class="mx-3 btn btn-sm  align-items-center bs-pass-para show_confirm"
+                                                                                        data-bs-toggle="tooltip" title=""
+                                                                                        data-bs-original-title="Delete" aria-label="Delete"
+                                                                                        data-confirm="{{ __('Are You Sure?') }}"
+                                                                                        data-text="{{ __('This action can not be undone. Do you want to continue?') }}"
+                                                                                        data-confirm-yes="delete-form-{{ $invoice->id }}">
+                                                                                        <i class="ti ti-trash text-white text-white"></i>
+                                                                                    </a>
+                                                                                    {{ Form::close() }}
+                                                                                </div>
+                                                                            @endcan
+                                                                        </span>
+                                                                    </td>
+                                                                @endif
+                                                            </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="client-project" role="tabpanel"
+                        aria-labelledby="pills-user-tab-4">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-body table-border-style table-border-style">
+                                            <h5 class="d-inline-block mb-5">{{ __('Project') }}</h5>
+                                            <div class="table-responsive">
+                                                <table class="table datatable">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>{{ __('Name') }}</th>
+                                                            <th>{{ __('Status') }}</th>
+                                                            <th>{{ __('Start Date') }}</th>
+                                                            <th>{{ __('End Date') }}</th>
+                                                            <th>{{ __('Description') }}</th>
+                                                            @if(Gate::check('project show') || Gate::check('project edit') || Gate::check('project delete'))
+                                                                <th width="10%"> {{ __('Action') }}</th>
+                                                            @endif
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        @forelse ($client->clientProject($client->id) as $project)
+                                                        <tr class="font-style">
+                                                            <td>{{ !empty($project) ? $project->project_name : '-' }}</td>
+                                                            <td>{{ !empty($project) ? $project->status : '-' }}</td>
+                                                            <td>{{ !empty($project) ? $project->start_date : '-'}}</td>
+                                                            <td>{{ !empty($project) ? $project->end_date : '-' }}</td>
+                                                            <td>
+                                                                <p style="white-space: nowrap;
+                                                                    width: 200px;
+                                                                    overflow: hidden;
+                                                                    text-overflow: ellipsis;">{{ !empty($project) ? $project->description  : '-'}}
+                                                                </p>
+                                                            </td>
+                                                        </tr>
+                                                        @endforeach
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>

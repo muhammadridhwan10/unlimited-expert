@@ -33,9 +33,20 @@
                 </small>
                 @enderror
             </div>
-        @elseif(\Auth::user()->type == 'company')
+        @elseif(\Auth::user()->type == 'super admin')
             {!! Form::hidden('role', 'company', null,array('class' => 'form-control select2','required'=>'required')) !!}
         @endif
+        <div class="col-md-6">
+            <div class="form-group">
+                {{ Form::label('branch_id', __('Branch'), ['class' => 'form-label']) }}
+                {!! Form::select('branch_id', $branches, null, ['class' => 'form-control', 'placeholder' => __('Select Branch')]) !!}
+                @error('branch_id')
+                <small class="invalid-branch" role="alert">
+                    <strong class="text-danger">{{ $message }}</strong>
+                </small>
+                @enderror
+            </div>
+        </div>
         <div class="col-md-6">
             <div class="form-group">
                 {{Form::label('password',__('Password'),['class'=>'form-label'])}}

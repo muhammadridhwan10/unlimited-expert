@@ -376,6 +376,7 @@ Route::group(
     Route::get('invoice/{id}/payment', 'InvoiceController@payment')->name('invoice.payment');
     Route::post('invoice/{id}/payment', 'InvoiceController@createPayment')->name('invoice.payment');
     Route::post('invoice/{id}/payment/{pid}/destroy', 'InvoiceController@paymentDestroy')->name('invoice.payment.destroy');
+    Route::get('invoice/{id}/sent/cc',  'InvoiceController@ccEmail')->name('invoice.cc');
     Route::get('invoice/items', 'InvoiceController@items')->name('invoice.items');
 
     Route::resource('invoice', 'InvoiceController');
@@ -527,6 +528,9 @@ Route::resource('payment', 'PaymentController')->middleware(
         'revalidate',
     ]
 );
+
+Route::post('payment-receipt/image-view', ['as' => 'payment-receipt.image.view','uses' => [PaymentController::class,'getPaymentReceiptImages']]);
+Route::post('payment-bill/image-view', ['as' => 'payment-bill.image.view','uses' => [PaymentController::class,'getPaymentBillImages']]);
 
 Route::group(
     [

@@ -1,20 +1,19 @@
 <?php
 $totalAmount = 0;
 
-$invoiceProducts = \App\Models\InvoiceProduct::with('productService')->where('invoice_id', $invoice->id)->get();
+$invoiceProducts = \App\Models\InvoiceProduct::where('invoice_id', $invoice->id)->get();
 
 
 foreach ($invoiceProducts as $invoiceProduct) {
 
-    $tax = \App\Models\Tax::find($invoiceProduct->productService->tax_id);
-    $rate = $tax->rate;
+    $rate = $invoiceProduct->tax;
     $price = $invoiceProduct->price;
     
     $totalAmount += $price - ($price * $rate / 100);
     
 }
 
-$productNames = $invoiceProducts->pluck('productService.name')->first();
+$productNames = \App\Models\ProductServiceCategory::where('id', $invoice->category_id)->pluck('name');
 $productPeriods = $invoiceProducts->pluck('productService.periode')->first();
 
 $invoiceUrl = $invoice->invoice_url;
@@ -38,7 +37,7 @@ elseif($invoice->company == "XGA")
 
 ?>
 <div style="background-color:#f6f6f6;font-family:sans-serif;font-size:14px;line-height:1.4;margin:0;padding:0">
-    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Dear {{ $invoice->customer->name }} Thank you for the payment of the invoice. Your collaboration is an honor for us, and we deeply appreciate the trust you have placed.</span>
+    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Dear {{ $invoice->client->name }} Thank you for the payment of the invoice. Your collaboration is an honor for us, and we deeply appreciate the trust you have placed.</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse:separate;background-color:#f6f6f6;width:100%" width="100%" bgcolor="#f6f6f6">
         <tbody>
             <tr>
@@ -61,7 +60,7 @@ elseif($invoice->company == "XGA")
                                                             <img src="https://i.postimg.cc/9XbjrKPR/logo-light.png" style="border:none;max-width:100%" width="150px" class="CToWUd">
                                                         </div>
                                                         <br>
-                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Dear {{ $invoice->customer->name }}</p>
+                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Dear {{ $invoice->client->name }}</p>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Thank you for the payment of the invoice. Your collaboration is an honor for us, and we deeply appreciate the trust you have placed in Kap.</p>
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">If you have any questions or need further assistance, we are ready to help. We look forward to continuing a positive and mutually beneficial partnership in the future.</p>
