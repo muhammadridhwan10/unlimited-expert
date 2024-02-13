@@ -52,7 +52,7 @@ class InvoiceController extends Controller
                 $client = User::where('type','=','client')->where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $client->prepend('Select Client', '');
 
-                $partners = User::where('type', 'partners')
+                $partner = User::where('type', 'partners')
                  ->orWhere('type', 'senior accounting')
                  ->get()
                  ->pluck('name', 'id');
@@ -121,7 +121,7 @@ class InvoiceController extends Controller
                 $client = User::where('type','=','client')->where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $client->prepend('Select Client', '');
 
-                $partners = User::where('type', 'partners')
+                $partner = User::where('type', 'partners')
                  ->orWhere('type', 'senior accounting')
                  ->get()
                  ->pluck('name', 'id');
