@@ -538,7 +538,7 @@
                                 <div data-v-f2a183a6="" class="d-header-inner">
                                     <div data-v-f2a183a6="" class="d-header-50">
                                         <div data-v-f2a183a6="" class="d-header-brand">
-                                            <img src="{{$img}}" style="max-width: 220px"/>
+                                            <img src="{{$logo_ara}}" style="max-width: 400px"/>
                                         </div>
                                         <br>
                                         <br>
@@ -552,6 +552,15 @@
                                             <tr>
                                                 <td>{{__('Due Date')}}:</td>
                                                 <td>{{Utility::dateFormat($settings,$invoice->due_date)}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <br>
+                                                    <br>
+                                                    <div style="font-size: 35px; color: green; font-weight: bold;">
+                                                        PAID
+                                                    </div>
+                                                </td>
                                             </tr>
                                             @if(!empty($customFields) && count($invoice->customField)>0)
                                                 @foreach($customFields as $field)
@@ -578,7 +587,9 @@
                                     </div>
 
                                     <div data-v-f2a183a6="" class="d-header-50 d-right">
-                                        <img src="{{$logo_kap}}" style="max-width: 340px"/>
+                                        <br>
+                                        <br>
+                                        <br>
                                         <br>
                                         <div data-v-f2a183a6="" class="d-title">{{__('INVOICE')}}</div>
 
@@ -657,7 +668,7 @@
                                                 <div class="d-table-th w-4">{{__('Discount')}}</div> -->
 
 {{--                                                <div class="d-table-th w-6">{{__('Description')}}</div>--}}
-                                               <div class="d-table-th w-6 text-right">{{__('Amount')}}
+                                                <div class="d-table-th w-6 text-right">{{__('Amount')}}
                                                 
                                                 </div>
                                             </div>
@@ -776,9 +787,9 @@
                                                                 </div>
                                                             </div>
                                                     @endif
-                                                    <div data-v-f2a183a6="" class="d-table-summary-item" >
+                                                    <div data-v-f2a183a6="" class="d-table-summary-item">
                                                         <div data-v-f2a183a6="" class="d-table-label"><strong>{{__('Total')}} :</strong></div>
-                                                         <div data-v-f2a183a6="" class="d-table-value"><strong>
+                                                        <div data-v-f2a183a6="" class="d-table-value"><strong>
                                                         @if ($invoice->currency == '$')
                                                                     {{Utility::priceFormat2($settings,$invoice->getSubTotal() - $invoice->getTotalTax())}}
                                                                 @else
@@ -819,13 +830,13 @@
                                                 {{"Payment by bank transfer : "}}<br>
                                                 {{"PT Bank Negara Indonesia (Persero)"}}<br>
                                                 {{"Account name :"}}<br>
-                                                {{"Akuntan Publik Agus Ubaidillah dan Rekan"}}<br>
-                                                {{"Account number : 03467-27205"}}<br>
+                                                {{"All Rich Associate"}}<br>
+                                                {{"Account number : 05666-47352"}}<br>
                                                 <strong data-v-f2a183a6="">{{__('Please email us your transfer proof to info@au-partners.com')}}</strong>
                                             </p>
                                             </div>
                                                 <p style= "text-align:center">
-                                                {{-- <img src="{{$ttd}}" style="width: 210px"/> --}}
+                                                {{-- <img src="{{$ttd_ara}}" style="max-width: 150px"/> --}}
                                                 <br>
                                                 <br>
                                                 <br>
@@ -840,7 +851,7 @@
                                     </div>
                                     <br>
                                     <br>
-                                    <p style="text-align:center"> KAP AGUS UBAIDILLAH & REKAN </p>
+                                    <p style="text-align:center"> ALLRICH ASSOCIATE </p>
                                     <p style="text-align:center"> Wisma Staco 6th Fl, Jl Casablanca Kav 18, Jakarta 12870 | (+62) 21-8298265 | info@au-partners.com</p>
                                 </div>
                             </div>

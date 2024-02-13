@@ -553,6 +553,15 @@
                                                 <td>{{__('Due Date')}}:</td>
                                                 <td>{{Utility::dateFormat($settings,$invoice->due_date)}}</td>
                                             </tr>
+                                            <tr>
+                                                <td>
+                                                    <br>
+                                                    <br>
+                                                    <div style="font-size: 35px; color: green; font-weight: bold;">
+                                                        PAID
+                                                    </div>
+                                                </td>
+                                            </tr>
                                             @if(!empty($customFields) && count($invoice->customField)>0)
                                                 @foreach($customFields as $field)
                                                     <tr>
@@ -578,7 +587,8 @@
                                     </div>
 
                                     <div data-v-f2a183a6="" class="d-header-50 d-right">
-                                        <img src="{{$logo_kap}}" style="max-width: 340px"/>
+                                        <img src="{{$logo_xga}}" style="max-width: 400px;margin-top: 12px;"/>
+                                        <br>
                                         <br>
                                         <div data-v-f2a183a6="" class="d-title">{{__('INVOICE')}}</div>
 
@@ -623,7 +633,7 @@
                                             <strong data-v-f2a183a6="">{{!empty($client->name)?$client->name:''}}</strong><br>
                                             @php
                                                 $address = $clients->address;
-                                                $commaPosition = strpos($address, ',');
+                                               $commaPosition = strpos($address, ',');
                                                 $firstLine = ($commaPosition !== false) ? substr($address, 0, $commaPosition) : $address;
                                                 $remainingAddress = ($commaPosition !== false) ? substr($address, $commaPosition + 1) : '';
                                             @endphp
@@ -650,14 +660,14 @@
                                     <div data-v-f2a183a6="" class="d-table">
                                         <div data-v-f2a183a6="" class="d-table">
 
-                                            <div data-v-f2a183a6="" class="d-table-tr" style="background: {{$color}};color:{{$font_color}}">
+                                            <div data-v-f2a183a6="" class="d-table-tr">
                                                 <div class="d-table-th w-15" style="text-align:center">{{__('Description')}}</div>
                                                 <!-- <div class="d-table-th w-5">{{__('Rate')}}</div>
                                                 <div class="d-table-th w-5">{{__('Tax')}} (%)</div>
                                                 <div class="d-table-th w-4">{{__('Discount')}}</div> -->
 
 {{--                                                <div class="d-table-th w-6">{{__('Description')}}</div>--}}
-                                               <div class="d-table-th w-6 text-right">{{__('Amount')}}
+                                                <div class="d-table-th w-6 text-right">{{__('Amount')}}
                                                 
                                                 </div>
                                             </div>
@@ -776,9 +786,9 @@
                                                                 </div>
                                                             </div>
                                                     @endif
-                                                    <div data-v-f2a183a6="" class="d-table-summary-item" >
+                                                    <div data-v-f2a183a6="" class="d-table-summary-item" style="background: {{$color}};color:{{$font_color}}">
                                                         <div data-v-f2a183a6="" class="d-table-label"><strong>{{__('Total')}} :</strong></div>
-                                                         <div data-v-f2a183a6="" class="d-table-value"><strong>
+                                                        <div data-v-f2a183a6="" class="d-table-value"><strong>
                                                         @if ($invoice->currency == '$')
                                                                     {{Utility::priceFormat2($settings,$invoice->getSubTotal() - $invoice->getTotalTax())}}
                                                                 @else
@@ -819,13 +829,12 @@
                                                 {{"Payment by bank transfer : "}}<br>
                                                 {{"PT Bank Negara Indonesia (Persero)"}}<br>
                                                 {{"Account name :"}}<br>
-                                                {{"Akuntan Publik Agus Ubaidillah dan Rekan"}}<br>
-                                                {{"Account number : 03467-27205"}}<br>
-                                                <strong data-v-f2a183a6="">{{__('Please email us your transfer proof to info@au-partners.com')}}</strong>
+                                                {{"X Group Advisory Firma"}}<br>
+                                                {{"Account number : 567183534"}}<br>
                                             </p>
                                             </div>
                                                 <p style= "text-align:center">
-                                                {{-- <img src="{{$ttd}}" style="width: 210px"/> --}}
+                                                {{-- <img src="{{$ttd_xga}}" style="width: 200px"/> --}}
                                                 <br>
                                                 <br>
                                                 <br>
@@ -840,7 +849,7 @@
                                     </div>
                                     <br>
                                     <br>
-                                    <p style="text-align:center"> KAP AGUS UBAIDILLAH & REKAN </p>
+                                    <p style="text-align:center"> X GROUP ADVISORY </p>
                                     <p style="text-align:center"> Wisma Staco 6th Fl, Jl Casablanca Kav 18, Jakarta 12870 | (+62) 21-8298265 | info@au-partners.com</p>
                                 </div>
                             </div>
