@@ -19,7 +19,7 @@
                                 <tr>
                                     <td>
                                         <div class="d-flex align-items-center">
-                                            <img {{ $project->img_image }} class="wid-40 rounded me-3" alt="avatar image">
+                                            {{-- <img {{ $project->img_image }} class="wid-40 rounded me-3" alt="avatar image"> --}}
                                             <p class="mb-0"><a href="{{ route('projects.show',$project) }}" class="name mb-0 h6 text-sm">{{ $project->project_name }}</a></p>{{"|"}}
                                             @if ($project->tags === "PUSAT")
                                                 <span class="badge rounded-pill bg-info">{{ $project->tags }}</span>
@@ -39,7 +39,7 @@
                                                 @foreach($project->users as $key => $user)
                                                     @if($key < 3)
                                                         <a href="#" class="avatar rounded-circle">
-                                                            <img @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset(Storage::url($user->name . ".png"))}}" @endif title="{{ $user->name }}" style="height:36px;width:36px;">
+                                                            <img @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset(Storage::url($user->name . ".jpg"))}}" @endif title="{{ $user->name }}" style="height:36px;width:36px;">
                                                         </a>
                                                     @else
                                                         @break

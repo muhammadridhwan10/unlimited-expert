@@ -518,7 +518,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-6 col-md-6">
+        {{-- <div class="col-lg-6 col-md-6">
             <div class="card">
                 <div class="card-header">
                     <div class="d-flex align-items-center justify-content-between">
@@ -537,7 +537,7 @@
                     </ul>
                 </div>
             </div>
-        </div>
+        </div> --}}
             @if(Auth::user()->type == "admin" || Auth::user()->type == "company")
             <div class="col-md-6">
                     <div class="card">
@@ -606,7 +606,7 @@
                     </div>
                 </div>
             @endif
-            <div class="col-lg-6 col-md-6">
+            {{-- <div class="col-lg-6 col-md-6">
                 <div class="card">
                     <div class="card-header">
                         <div class="d-flex align-items-center justify-content-between">
@@ -669,7 +669,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> --}}
 
         <!-- <div class="col-lg-6 col-md-6">
             <div class="card">

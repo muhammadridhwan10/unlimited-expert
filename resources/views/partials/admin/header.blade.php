@@ -41,7 +41,7 @@
                         aria-expanded="false"
                     >
                         <span class="card-avtar">
-                             <img src="{{(!empty(\Auth::user()->avatar))? asset(Storage::url("uploads/avatar/".\Auth::user()->avatar)): asset(Storage::url(\Auth::user()->name . ".png"))}}" class="wid-80" style="width: 40px; height: 40px; object-fit: cover; object-position: center; border-radius: 50%;">
+                             <img src="{{(!empty(\Auth::user()->avatar))? asset(Storage::url("uploads/avatar/".\Auth::user()->avatar)): asset(Storage::url(\Auth::user()->name . ".jpg"))}}" class="wid-80" style="width: 40px; height: 40px; object-fit: cover; object-position: center; border-radius: 50%;">
                            </span>
                         <span class="hide-mob ms-2">{{__('Hi, ')}}{{\Auth::user()->name }}!</span>
                         <i class="ti ti-chevron-down drp-arrow nocolor hide-mob"></i>

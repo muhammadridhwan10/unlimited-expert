@@ -5,7 +5,7 @@
                 <div class="col-sm-auto mb-3 mb-sm-0">
                     <div class="d-flex align-items-center">
                         <div class="avatar rounded-circle avatar-sm me-3">
-                            <img @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset(Storage::url($user->name . ".png"))}}" @endif  alt="image" >
+                            <img @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset(Storage::url($user->name . ".jpg"))}}"  @endif  alt="image" >
 
                         </div>
                         <div class="div">

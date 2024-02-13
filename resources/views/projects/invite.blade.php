@@ -6,8 +6,8 @@
                 <div class="col-6 mb-4">
                     <div class="list-group-item px-0">
                         <div class="row ">
-                            <div class="col-auto">
-                                <img @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset(Storage::url($user->name . ".png"))}}" @endif class="wid-40 rounded-circle ml-3" alt="avatar image">
+                            <div class="col-auto"><img @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset(Storage::url($user->name . ".jpg"))}}" @endif class="wid-40 rounded-circle ml-3" alt="avatar image">
+                                
                             </div>
                             <div class="col">
                                 <h6 class="mb-0">{{ $user->name }}</h6>

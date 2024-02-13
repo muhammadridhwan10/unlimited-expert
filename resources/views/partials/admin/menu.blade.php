@@ -860,13 +860,13 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                         <a class="dash-link" href="{{route('projects.index')}}">{{__('Projects')}}</a>
                                     </li>
                                     @endcan
-                                    @if (\Auth::user()->type !== 'client' || \Auth::user()->type !== 'staff_client')
+                                    {{-- @if (\Auth::user()->type !== 'client' || \Auth::user()->type !== 'staff_client')
                                         @can('manage project task')
                                         <li class="dash-item {{ (Request::route()->getName() == 'project.listUsers') ? ' active' : '' }}">
                                             <a class="dash-link" href="{{ route('project.listUsers') }}">{{__('User Assignment')}}</a>
                                         </li>
                                         @endcan
-                                    @endif
+                                    @endif --}}
                                     @can('manage project task')
                                     <li class="dash-item {{ (request()->is('taskboard*') ? 'active' : '')}}">
                                         <a class="dash-link" href="{{ route('taskBoard.view', 'list') }}">{{__('Tasks')}}</a>

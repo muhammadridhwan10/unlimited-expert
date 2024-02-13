@@ -57,6 +57,7 @@ class Project extends Model
         'Marketing' => 'Marketing',
         'HR' => 'HR',
         'Quality' => 'Quality',
+        'KPPK' => 'KPPK',
     ];
 
     public static $label_color = [

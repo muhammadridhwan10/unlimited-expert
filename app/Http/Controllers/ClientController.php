@@ -100,61 +100,109 @@ class ClientController extends Controller
             }
             $objCustomer    = \Auth::user();
             $creator        = User::find($objCustomer->creatorId());
-            $total_client = User::where('created_by', '=', \Auth::user()->creatorId())->where('type','client')->count();
-            $plan           = Plan::find($creator->plan);
-            if($total_client < $plan->max_clients || $plan->max_clients == -1)
-            {
-                $role = Role::findByName('client');
-                $client = User::create(
-                    [
-                        'name' => $request->name,
-                        'email' => $request->email,
-                        'job_title' => $request->job_title,
-                        'type' => 'client',
-                        'lang' => !empty($default_language) ? $default_language->value : 'en',
-                        'created_by' => $user->creatorId(),
-                        'email_verified_at' => date('Y-m-d H:i:s'),
-                    ]
-                );
 
-                $clients = Clients::create(
-                    [
-                        'user_id'       => $client->id,
-                        'name_invoice'  => $request->name_invoice,
-                        'position'      => $request->position,
-                        'telp'          => $request->telp,
-                        'npwp'          => $request->npwp,
-                        'address'       => $request->address,
-                        'country'       => $request->country,
-                        'state'         => $request->state,
-                        'city'          => $request->city,
-                        'client_business_sector_id' => $request->client_business_sector_id,
-                        'created_by' => $user->creatorId(),
-                    ]
-                );
+            $role = Role::findByName('client');
+            $client = User::create(
+                [
+                    'name' => $request->name,
+                    'email' => $request->email,
+                    'job_title' => $request->job_title,
+                    'type' => 'client',
+                    'lang' => !empty($default_language) ? $default_language->value : 'en',
+                    'created_by' => $user->creatorId(),
+                    'email_verified_at' => date('Y-m-d H:i:s'),
+                ]
+            );
 
-                //Send Email
-                $setings = Utility::settings();
+            $clients = Clients::create(
+                [
+                    'user_id'       => $client->id,
+                    'name_invoice'  => $request->name_invoice,
+                    'position'      => $request->position,
+                    'telp'          => $request->telp,
+                    'npwp'          => $request->npwp,
+                    'address'       => $request->address,
+                    'country'       => $request->country,
+                    'state'         => $request->state,
+                    'city'          => $request->city,
+                    'client_business_sector_id' => $request->client_business_sector_id,
+                    'created_by' => $user->creatorId(),
+                ]
+            );
 
-                // if($setings['new_client'] == 1)
-                // {
-                //     $role_r = Role::findByName('client');
-                //     $client->assignRole($role_r);
+            //Send Email
+            $setings = Utility::settings();
 
-                //     $clientArr = [
-                //         'client_name' => $client->name,
-                //         'client_email' => $client->email,
-                //         'client_password' =>  $client->password,
-                //     ];
-                //     $resp = Utility::sendEmailTemplate('new_client', [$client->email], $clientArr);
-                //     return redirect()->route('clients.index')->with('success', __('Client successfully added.') . ((!empty($resp) && $resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
-                // }
-                return redirect()->route('clients.index')->with('success', __('Client successfully created.'));
-            }
-            else
-            {
-                return redirect()->back()->with('error', __('Your client limit is over, Please upgrade plan.'));
-            }
+            // if($setings['new_client'] == 1)
+            // {
+            //     $role_r = Role::findByName('client');
+            //     $client->assignRole($role_r);
+
+            //     $clientArr = [
+            //         'client_name' => $client->name,
+            //         'client_email' => $client->email,
+            //         'client_password' =>  $client->password,
+            //     ];
+            //     $resp = Utility::sendEmailTemplate('new_client', [$client->email], $clientArr);
+            //     return redirect()->route('clients.index')->with('success', __('Client successfully added.') . ((!empty($resp) && $resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
+            // }
+            return redirect()->route('clients.index')->with('success', __('Client successfully created.'));
+
+            // $total_client = User::where('created_by', '=', \Auth::user()->creatorId())->where('type','client')->count();
+            // $plan           = Plan::find($creator->plan);
+            // if($total_client < $plan->max_clients || $plan->max_clients == -1)
+            // {
+            //     $role = Role::findByName('client');
+            //     $client = User::create(
+            //         [
+            //             'name' => $request->name,
+            //             'email' => $request->email,
+            //             'job_title' => $request->job_title,
+            //             'type' => 'client',
+            //             'lang' => !empty($default_language) ? $default_language->value : 'en',
+            //             'created_by' => $user->creatorId(),
+            //             'email_verified_at' => date('Y-m-d H:i:s'),
+            //         ]
+            //     );
+
+            //     $clients = Clients::create(
+            //         [
+            //             'user_id'       => $client->id,
+            //             'name_invoice'  => $request->name_invoice,
+            //             'position'      => $request->position,
+            //             'telp'          => $request->telp,
+            //             'npwp'          => $request->npwp,
+            //             'address'       => $request->address,
+            //             'country'       => $request->country,
+            //             'state'         => $request->state,
+            //             'city'          => $request->city,
+            //             'client_business_sector_id' => $request->client_business_sector_id,
+            //             'created_by' => $user->creatorId(),
+            //         ]
+            //     );
+
+            //     //Send Email
+            //     $setings = Utility::settings();
+
+            //     // if($setings['new_client'] == 1)
+            //     // {
+            //     //     $role_r = Role::findByName('client');
+            //     //     $client->assignRole($role_r);
+
+            //     //     $clientArr = [
+            //     //         'client_name' => $client->name,
+            //     //         'client_email' => $client->email,
+            //     //         'client_password' =>  $client->password,
+            //     //     ];
+            //     //     $resp = Utility::sendEmailTemplate('new_client', [$client->email], $clientArr);
+            //     //     return redirect()->route('clients.index')->with('success', __('Client successfully added.') . ((!empty($resp) && $resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
+            //     // }
+            //     return redirect()->route('clients.index')->with('success', __('Client successfully created.'));
+            // }
+            // else
+            // {
+            //     return redirect()->back()->with('error', __('Your client limit is over, Please upgrade plan.'));
+            // }
         }
         else
         {

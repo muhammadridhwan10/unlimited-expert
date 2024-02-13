@@ -63,7 +63,7 @@
                                                 @if($user->avatar) 
                                                     src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" 
                                                 @else 
-                                                    src="{{asset(Storage::url($user->name . ".png"))}}" 
+                                                    src="{{asset(Storage::url($user->name . ".jpg"))}}" 
                                                 @endif  
                                                 alt="image" 
                                                 data-bs-toggle="tooltip" 
