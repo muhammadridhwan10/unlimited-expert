@@ -52,7 +52,10 @@ class InvoiceController extends Controller
                 $client = User::where('type','=','client')->where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $client->prepend('Select Client', '');
 
-                $partner = User::where('type','=','partners')->where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $partners = User::where('type', 'partners')
+                 ->orWhere('type', 'senior accounting')
+                 ->get()
+                 ->pluck('name', 'id');
                 $partner->prepend('Select Partner', '');
     
                 $status = Invoice::$statues;
@@ -118,7 +121,10 @@ class InvoiceController extends Controller
                 $client = User::where('type','=','client')->where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $client->prepend('Select Client', '');
 
-                $partner = User::where('type','=','partners')->where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $partners = User::where('type', 'partners')
+                 ->orWhere('type', 'senior accounting')
+                 ->get()
+                 ->pluck('name', 'id');
                 $partner->prepend('Select Partner', '');
     
                 $status = Invoice::$statues;
@@ -194,7 +200,10 @@ class InvoiceController extends Controller
             $category->prepend('Select Category', '');
             $projects = Project::where('created_by', \Auth::user()->creatorId())->get()->pluck('project_name', 'id');
             $projects->prepend('--', '');
-            $partners = User::where('type', 'partners')->get()->pluck('name', 'id');
+            $partners = User::where('type', 'partners')
+            ->orWhere('type', 'senior accounting')
+            ->get()
+            ->pluck('name', 'id');
             $partners->prepend('Select Partners', '');
             $account = ChartOfAccount::where('sub_type', 13)->get()->pluck('name', 'id');
             $account->prepend('Select Account', '');
@@ -360,7 +369,10 @@ class InvoiceController extends Controller
             $projects = Project::where('created_by', \Auth::user()->creatorId())->get()->pluck('project_name', 'id');
             $invoice->customField = CustomField::getData($invoice, 'invoice');
             $customFields         = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
-            $partners = User::where('type', 'partners')->get()->pluck('name', 'id');
+            $partners = User::where('type', 'partners')
+                 ->orWhere('type', 'senior accounting')
+                 ->get()
+                 ->pluck('name', 'id');
             $partners->prepend('Select Partners', '');
             $account = ChartOfAccount::where('sub_type', 13)->get()->pluck('name', 'id');
             $account->prepend('Select Account', '');
@@ -379,7 +391,6 @@ class InvoiceController extends Controller
     {
 
         if (\Auth::user()->can('edit invoice')) {
-            if ($invoice->created_by == \Auth::user()->creatorId()) {
                 $validator = \Validator::make(
                     $request->all(),
                     [
@@ -447,9 +458,6 @@ class InvoiceController extends Controller
                 }
 
                 return redirect()->route('invoice.index')->with('success', __('Invoice successfully updated.'));
-            } else {
-                return redirect()->back()->with('error', __('Permission denied.'));
-            }
         } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
