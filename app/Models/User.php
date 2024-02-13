@@ -119,6 +119,11 @@ class User extends Authenticatable
         }
     }
 
+    public function clients()
+    {
+        return $this->hasOne('App\Models\Client', 'user_id', 'id');
+    }
+
     public function ownerId()
     {
         if($this->type == 'company' && $this->type == 'admin')

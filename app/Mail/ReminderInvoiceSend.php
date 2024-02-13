@@ -13,14 +13,16 @@ class ReminderInvoiceSend extends Mailable
     use Queueable, SerializesModels;
 
     public $invoice;
+    protected $ccEmails;
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(Invoice $invoice)
+    public function __construct(Invoice $invoice, $ccEmails = [])
     {
         $this->invoice = $invoice;
+        $this->ccEmails = $ccEmails;
     }
 
     /**
@@ -37,8 +39,14 @@ class ReminderInvoiceSend extends Mailable
         //         'nama' => env('MAIL_USERNAME'),
         //         'website' => 'Konsultanku',
         //     ]);
-        return $this->markdown('email.reminder_invoice_send')
-                ->subject('Invoice Payment Reminder For ' . $this->invoice->invoice_id);
+        $mail = $this->markdown('email.reminder_invoice_send')
+        ->subject('Invoice Payment Reminder For ' . $this->invoice->invoice_id);
+
+        if (!empty($this->ccEmails)) {
+            $mail->cc($this->ccEmails);
+        }
+
+        return $mail;
 
         // return $this->markdown('email.customer_invoice_send')
         // ->subject('Invoice Submission for ' . $this->invoice->invoice_id);
