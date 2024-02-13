@@ -553,6 +553,15 @@
                                                 <td>{{__('Due Date')}}:</td>
                                                 <td>{{Utility::dateFormat($settings,$invoice->due_date)}}</td>
                                             </tr>
+                                            <tr>
+                                                <td>
+                                                    <br>
+                                                    <br>
+                                                    <div style="font-size: 35px; color: green; font-weight: bold;">
+                                                        PAID
+                                                    </div>
+                                                </td>
+                                            </tr>
                                             @if(!empty($customFields) && count($invoice->customField)>0)
                                                 @foreach($customFields as $field)
                                                     <tr>
