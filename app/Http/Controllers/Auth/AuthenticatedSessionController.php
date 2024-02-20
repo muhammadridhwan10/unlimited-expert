@@ -302,6 +302,62 @@ class AuthenticatedSessionController extends Controller
 
         $settings = Utility::settings();
 
+        if (isset($_SERVER["HTTP_CF_CONNECTING_IP"])) {
+            $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
+            $_SERVER['HTTP_CLIENT_IP'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
+        }
+        $client  = @$_SERVER['HTTP_CLIENT_IP'];
+        $forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
+        $remote  = $_SERVER['REMOTE_ADDR'];
+    
+        if(filter_var($client, FILTER_VALIDATE_IP))
+        {
+            $ip = $client;
+        }
+        elseif(filter_var($forward, FILTER_VALIDATE_IP))
+        {
+            $ip = $forward;
+        }
+        else
+        {
+            $ip = $remote;
+        }
+        
+        $query = @unserialize(file_get_contents('http://ip-api.com/php/' . $ip));
+
+        $whichbrowser = new \WhichBrowser\Parser($_SERVER['HTTP_USER_AGENT']);
+        if ($whichbrowser->device->type == 'bot') {
+            return;
+        }
+        $referrer = isset($_SERVER['HTTP_REFERER']) ? parse_url($_SERVER['HTTP_REFERER']) : null;
+
+        /* Detect extra details about the user */
+        $query['browser_name'] = $whichbrowser->browser->name ?? null;
+        $query['os_name'] = $whichbrowser->os->name ?? null;
+        $query['browser_language'] = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? mb_substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2) : null;
+        $query['device_type'] = get_device_type($_SERVER['HTTP_USER_AGENT']);
+        $query['referrer_host'] = !empty($referrer['host']);
+        $query['referrer_path'] = !empty($referrer['path']);
+
+        isset($query['timezone'])?date_default_timezone_set($query['timezone']):'';
+
+
+        $json = json_encode($query);
+
+        $login_detail = new LoginDetail();
+        $login_detail->user_id = 0;
+        $login_detail->ip = $ip;
+        $login_detail->date = date('Y-m-d H:i:s');
+        $login_detail->Details = $json;
+        $login_detail->created_by = 0;
+        $login_detail->save();
+
+        $query = json_decode($json, true);
+
+        if(isset($query['country']) && $query['country'] !== 'Indonesia') {
+            return response()->view('errors.404');
+        }
+
         return view('auth.login', compact('lang','settings'));
     }
 
@@ -310,7 +366,7 @@ class AuthenticatedSessionController extends Controller
         // $url = "https://drive.google.com/uc?export=download&id=1NIwA0wxIUiMk29orvrNkyZwAnHDWTu5l";
         // return Redirect::to($url);
         $zip = new ZipArchive();
-        $file_name = 'Aup-Desktop-win.zip';
+        $file_name = 'Aup-Desktop-win1.2.zip';
 
         if($zip->open(public_path($file_name), ZipArchive::CREATE) == TRUE)
         {
@@ -331,7 +387,7 @@ class AuthenticatedSessionController extends Controller
     public function download_mac()
     {
         $zip = new ZipArchive();
-        $file_name = 'Aup-Desktop-mac.zip';
+        $file_name = 'Aup-Desktop-mac1.2.zip';
 
         if($zip->open(public_path($file_name), ZipArchive::CREATE) == TRUE)
         {
