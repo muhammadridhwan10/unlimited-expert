@@ -49,7 +49,7 @@ class InvoiceController extends Controller
         {
             if(\Auth::user()->type == 'partners')
             {
-                $client = User::where('type','=','client')->where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $client = User::where('type','=','client')->get()->pluck('name', 'id');
                 $client->prepend('Select Client', '');
 
                 $partner = User::where('type', 'partners')
@@ -118,7 +118,7 @@ class InvoiceController extends Controller
             }
             else
             {
-                $client = User::where('type','=','client')->where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+                $client = User::where('type','=','client')->get()->pluck('name', 'id');
                 $client->prepend('Select Client', '');
 
                 $partner = User::where('type', 'partners')
@@ -194,11 +194,11 @@ class InvoiceController extends Controller
         if(\Auth::user()->can('create invoice'))
         {
             $customFields   = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
-            $customers      = User::where('type','=','client')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $customers      = User::where('type','=','client')->get()->pluck('name', 'id');
             $customers->prepend('Select Client', '');
             $category = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 1)->get()->pluck('name', 'id');
             $category->prepend('Select Category', '');
-            $projects = Project::where('created_by', \Auth::user()->creatorId())->get()->pluck('project_name', 'id');
+            $projects = Project::get()->pluck('project_name', 'id');
             $projects->prepend('--', '');
             $partners = User::where('type', 'partners')
             ->orWhere('type', 'senior accounting')
@@ -363,10 +363,10 @@ class InvoiceController extends Controller
             $id      = Crypt::decrypt($ids);
             $invoice = Invoice::find($id);
             $invoice_number = \Auth::user()->invoiceNumberFormat($invoice->invoice_id);
-            $customers      = User::where('type','=','client')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $customers      = User::where('type','=','client')->get()->pluck('name', 'id');
             $category       = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 1)->get()->pluck('name', 'id');
             $category->prepend('Select Category', '');
-            $projects = Project::where('created_by', \Auth::user()->creatorId())->get()->pluck('project_name', 'id');
+            $projects = Project::get()->pluck('project_name', 'id');
             $invoice->customField = CustomField::getData($invoice, 'invoice');
             $customFields         = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
             $partners = User::where('type', 'partners')
