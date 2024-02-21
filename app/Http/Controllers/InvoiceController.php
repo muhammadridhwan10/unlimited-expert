@@ -204,7 +204,7 @@ class InvoiceController extends Controller
             ->orWhere('type', 'senior accounting')
             ->get()
             ->pluck('name', 'id');
-            $partners->prepend('Select Partners', '');
+            $partners->prepend('Select Partner', '');
             $account = ChartOfAccount::where('sub_type', 13)->get()->pluck('name', 'id');
             $account->prepend('Select Account', '');
             $siteCurrencySymbol = Settings::where('name', 'site_currency_symbol')->value('value');
@@ -373,7 +373,7 @@ class InvoiceController extends Controller
                  ->orWhere('type', 'senior accounting')
                  ->get()
                  ->pluck('name', 'id');
-            $partners->prepend('Select Partners', '');
+            $partners->prepend('Select Partner', '');
             $account = ChartOfAccount::where('sub_type', 13)->get()->pluck('name', 'id');
             $account->prepend('Select Account', '');
             $siteCurrencySymbol = Settings::where('name', 'site_currency_symbol')->value('value');
