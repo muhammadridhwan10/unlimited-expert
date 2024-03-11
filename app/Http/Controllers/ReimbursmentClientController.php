@@ -130,7 +130,7 @@ class ReimbursmentClientController extends Controller
             $employee     = Employee::where('user_id', '=', $users->id)->first();
             $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('approval', '=', $users->id)->where('status','=', 'Pending')->get();
         }
-        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff IT' || \Auth::user()->type == 'intern')
+        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff IT' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'intern')
         {
 
 
@@ -212,13 +212,11 @@ class ReimbursmentClientController extends Controller
      */
     public function create()
     {
-        if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
+        if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
         {
             $employees                       = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
             $approval = User::where(function($query) {
-                $query->where('type', 'admin')
-                      ->orWhere('type', 'company')
-                      ->orWhere('type', 'senior accounting');
+                $query->where('type', 'senior accounting');
             })
             ->get()
             ->pluck('name', 'id');
@@ -228,9 +226,7 @@ class ReimbursmentClientController extends Controller
         {
             $employees                       = Employee::all()->pluck('name', 'id');
             $approval = User::where(function($query) {
-                $query->where('type', 'admin')
-                      ->orWhere('type', 'company')
-                      ->orWhere('type', 'senior accounting');
+                $query->where('type', 'senior accounting');
             })
             ->get()
             ->pluck('name', 'id');
@@ -240,9 +236,7 @@ class ReimbursmentClientController extends Controller
         {
             $employees                       = Employee::all()->pluck('name', 'id');
             $approval = User::where(function($query) {
-                $query->where('type', 'admin')
-                      ->orWhere('type', 'company')
-                      ->orWhere('type', 'senior accounting');
+                $query->where('type', 'senior accounting');
             })
             ->get()
             ->pluck('name', 'id');
@@ -268,72 +262,67 @@ class ReimbursmentClientController extends Controller
     {
         $validator = \Validator::make(
             $request->all(), [
-                               'client_id' => 'required',
-                               'approval' => 'required',
-                               'date' => 'required',
-                               'amount' => 'required',
-                               'reimbursment_image' => 'mimes:png,jpeg,jpg|max:10240',
-                           ]
+                            'client_id' => 'required',
+                            'approval' => 'required',
+                            'date' => 'required',
+                            'amount' => 'required',
+                        ]
         );
-        if($validator->fails())
-        {
-            $messages = $validator->getMessageBag();
 
+        if ($validator->fails()) {
+            $messages = $validator->getMessageBag();
             return redirect()->back()->with('error', $messages->first());
         }
 
-
         $employee = Employee::where('user_id', '=', Auth::user()->id)->first();
+        $date = Carbon::now()->format('Y-m-d');
 
-        if(!empty($request->reimbursment_image))
-        {
-            $filenameWithExt = $request->file('reimbursment_image')->getClientOriginalName();
-            $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
-            $extension       = $request->file('reimbursment_image')->getClientOriginalExtension();
-            $fileNameToStore = $filename . '_' . time() . '.' . $extension;
-            $dir             = storage_path('uploads/reimbursment/');
+        if ($request->file_type == 'image') {
+            $validator = \Validator::make(
+                $request->all(), [
+                                'reimbursment_image' => 'required|image|mimes:png,jpeg,jpg|max:10240',
+                            ]
+            );
 
-            if(!file_exists($dir))
-            {
-                mkdir($dir, 0777, true);
+            if ($validator->fails()) {
+                $messages = $validator->getMessageBag();
+                return redirect()->back()->with('error', $messages->first());
             }
-            // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
-            $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
+
+            $image = $request->file('reimbursment_image');
+            $fileNameToStore = time() . '_' . $image->getClientOriginalName();
+            $image->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
+        } else {
+            $validator = \Validator::make(
+                $request->all(), [
+                                'reimbursment_pdf' => 'required|mimes:pdf|max:10240',
+                            ]
+            );
+
+            if ($validator->fails()) {
+                $messages = $validator->getMessageBag();
+                return redirect()->back()->with('error', $messages->first());
+            }
+
+            $pdf = $request->file('reimbursment_pdf');
+            $fileNameToStore = time() . '_' . $pdf->getClientOriginalName();
+            $pdf->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
         }
 
-        $date            = Carbon::now()->format('Y-m-d');
-
-        $reimbursment    = new Reimbursment();
-
-        if(\Auth::user()->type == "admin" || \Auth::user()->type == "company" )
-        {
-            $reimbursment->employee_id = $request->employee_id;
-        }
-        else
-        {
-            $reimbursment->employee_id = $employee->id;
-        }
-
-        $reimbursment->client_id            = $request->client_id;
-        $reimbursment->approval             = $request->approval;
-        $reimbursment->reimbursment_type    = "Reimbursment Client";
-        $reimbursment->date                 = $request->date;
-        $reimbursment->amount               = $request->amount;
-        $reimbursment->description          = $request->description;
-        $reimbursment->status               = 'Pending';
-        $reimbursment->created_by           = \Auth::user()->creatorId();
-        $reimbursment->reimbursment_image  = !empty('uploads/reimbursment/' . $request->reimbursment_image) ? 'uploads/reimbursment/' . $fileNameToStore : '';
-        $reimbursment->created_date         = $date;
-
+        $reimbursment = new Reimbursment();
+        // Assign other fields as before
+        $reimbursment->reimbursment_image = 'uploads/reimbursment/' . $fileNameToStore;
+        // Save the reimbursment
         $reimbursment->save();
 
-        //Email Notification
+        // Email Notification
         $user = User::where('id', $reimbursment->approval)->first();
         $email = $user->email;
         Mail::to($email)->send(new ReimbursmentClientNotification($reimbursment));
 
         return redirect()->route('reimbursment-client.index')->with('success', __('Reimbursment Client successfully created.'));
     }
+
 
     /**
      * Display the specified resource.
@@ -399,65 +388,80 @@ class ReimbursmentClientController extends Controller
 
         $validator = \Validator::make(
             $request->all(), [
-                               'client_id' => 'required',
-                               'approval' => 'required',
-                               'date' => 'required',
-                               'amount' => 'required',
-                               'reimbursment_image' => 'mimes:png,jpeg,jpg|max:10240',
-                           ]
+                            'client_id' => 'required',
+                            'approval' => 'required',
+                            'date' => 'required',
+                            'amount' => 'required',
+                        ]
         );
-        if($validator->fails())
-        {
-            $messages = $validator->getMessageBag();
 
+        if ($validator->fails()) {
+            $messages = $validator->getMessageBag();
             return redirect()->back()->with('error', $messages->first());
         }
 
         $employee = Employee::where('user_id', '=', Auth::user()->id)->first();
+        $date = Carbon::now()->format('Y-m-d');
 
-        if(!empty($request->reimbursment_image))
-        {
-            $filenameWithExt = $request->file('reimbursment_image')->getClientOriginalName();
-            $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
-            $extension       = $request->file('reimbursment_image')->getClientOriginalExtension();
-            $fileNameToStore = $filename . '_' . time() . '.' . $extension;
-            $dir             = storage_path('uploads/reimbursment/');
+        if ($request->file_type == 'image') {
+            $validator = \Validator::make(
+                $request->all(), [
+                                'reimbursment_image' => 'nullable|image|mimes:png,jpeg,jpg|max:10240',
+                            ]
+            );
 
-            if(!file_exists($dir))
-            {
-                mkdir($dir, 0777, true);
+            if ($validator->fails()) {
+                $messages = $validator->getMessageBag();
+                return redirect()->back()->with('error', $messages->first());
             }
-            // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
-            $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
+
+            if ($request->hasFile('reimbursment_image')) {
+                $image = $request->file('reimbursment_image');
+                $fileNameToStore = time() . '_' . $image->getClientOriginalName();
+                $image->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
+                $reimbursment->reimbursment_image = 'uploads/reimbursment/' . $fileNameToStore;
+            }
+        } else {
+            $validator = \Validator::make(
+                $request->all(), [
+                                'reimbursment_pdf' => 'nullable|mimes:pdf|max:10240',
+                            ]
+            );
+
+            if ($validator->fails()) {
+                $messages = $validator->getMessageBag();
+                return redirect()->back()->with('error', $messages->first());
+            }
+
+            if ($request->hasFile('reimbursment_pdf')) {
+                $pdf = $request->file('reimbursment_pdf');
+                $fileNameToStore = time() . '_' . $pdf->getClientOriginalName();
+                $pdf->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
+                $reimbursment->reimbursment_image = 'uploads/reimbursment/' . $fileNameToStore;
+            }
         }
 
-        $date            = Carbon::now()->format('Y-m-d');
-
-        if(\Auth::user()->type == "admin" || \Auth::user()->type == "company" )
-        {
+        if (\Auth::user()->type == "admin" || \Auth::user()->type == "company") {
             $reimbursment->employee_id = $request->employee_id;
-        }
-        else
-        {
+        } else {
             $reimbursment->employee_id = $employee->id;
         }
 
-        $reimbursment->client_id            = $request->client_id;
-        $reimbursment->approval             = $request->approval;
-        $reimbursment->reimbursment_type    = "Reimbursment Client";
-        $reimbursment->date                 = $request->date;
-        $reimbursment->amount               = $request->amount;
-        $reimbursment->description          = $request->description;
-        $reimbursment->status               = 'Pending';
-        $reimbursment->created_by           = \Auth::user()->creatorId();
-        $reimbursment->reimbursment_image  = !empty('uploads/reimbursment/' . $request->reimbursment_image) ? 'uploads/reimbursment/' . $fileNameToStore : '';
-        $reimbursment->created_date         = $date;
+        $reimbursment->client_id = $request->client_id;
+        $reimbursment->approval = $request->approval;
+        $reimbursment->reimbursment_type = "Reimbursment Client";
+        $reimbursment->date = $request->date;
+        $reimbursment->amount = $request->amount;
+        $reimbursment->description = $request->description;
+        $reimbursment->status = 'Pending';
+        $reimbursment->created_by = \Auth::user()->creatorId();
+        $reimbursment->created_date = $date;
 
         $reimbursment->save();
 
         return redirect()->back()->with('success', __('Reimbursment Client successfully updated.'));
-
     }
+
 
     /**
      * Remove the specified resource from storage.

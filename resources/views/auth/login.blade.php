@@ -15,9 +15,9 @@
 @endsection
 
 @section('auth-topbar')
-    <li class="nav-item">
+    {{-- <li class="nav-item">
         <a class="nav-link" target="_blank" href="https://aup-docs.au-partners.com/">Documentation</a>
-    </li>
+    </li> --}}
     <li class="nav-item ">
         <select class="btn btn-primary my-1 me-2 " onchange="this.options[this.selectedIndex].value && (window.location = this.options[this.selectedIndex].value);" id="language">
             @foreach(Utility::languages() as $language)
@@ -27,17 +27,23 @@
     </li>
 @endsection
 @section('content')
-    <div class="">
+    {{-- <div class="">
         <h2 class="mb-3 f-w-600">{{__('Login')}}</h2>
         <p class="text-black">
                         Teamwork is so important that it is virtually impossible for you to reach the heights 
                         of your capabilities or make the money 
                         that you want without becoming very good at it
                         </p>
-    </div>
+    </div> --}}
     {{Form::open(array('route'=>'login','method'=>'post','id'=>'loginForm' ))}}
     @csrf
-    <div class="">
+    <div class="card-body">
+        <h2 class="mb-3 f-w-600">{{__('Login')}}</h2>
+        {{-- <p class="text-black">
+                        Teamwork is so important that it is virtually impossible for you to reach the heights 
+                        of your capabilities or make the money 
+                        that you want without becoming very good at it
+                        </p> --}}
         <div class="form-group mb-3">
             <label for="email" class="form-label">{{__('Email')}}</label>
             <input class="form-control @error('email') is-invalid @enderror" id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
@@ -64,18 +70,18 @@
                 @enderror
             </div>
         @endif
-        <div class="form-group mb-4">
+        {{-- <div class="form-group mb-4">
 
                 @if (Route::has('password.request'))
                     <a href="{{ route('password.request') }}" class="text-xs">{{ __('Forgot Your Password?') }}</a>
                 @endif
 
-        </div>
+        </div> --}}
         <div class="d-grid">
             <button type="submit" class="btn-login btn btn-primary btn-block mt-2" id="login_button">{{__('Login')}}</button>
         </div>
 
-        <div class="row mt-2 align-items-center">
+        {{-- <div class="row mt-2 align-items-center">
             <div class="col-6 text-start">
                 <a target="_blank" href="{{ URL::route('filewin.download') }}">
                     <button class="btn btn-primary text-xs btn-block login-btn text-white " type="button">Download App for Win</button>
@@ -87,7 +93,7 @@
                     <button class="btn btn-primary text-xs btn-block login-btn text-white " type="button">Download App for Mac</button>
                 </a>
             </div>
-        </div>
+        </div> --}}
 
     </div>
     {{Form::close()}}

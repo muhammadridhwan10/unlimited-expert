@@ -3,6 +3,7 @@
 use App\Models\Utility;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectReportController;
+use App\Http\Controllers\ProjectOrdersController;
 use Illuminate\Http\Request;
 use App\Models\ProjectTask;
 
@@ -60,6 +61,13 @@ Route::get('/account-dashboard', 'DashboardController@account_dashboard_index')-
     ]
 );
 Route::get('/home', 'DashboardController@home')->name('home')->middleware(
+    [
+        'auth',
+        'XSS',
+        'revalidate',
+    ]
+);
+Route::get('/admin-dashboard', 'DashboardController@dashboard')->name('admin.dashboard')->middleware(
     [
         'auth',
         'XSS',
@@ -4342,3 +4350,12 @@ Route::post(
 
 Route::get('/get-states-by-country', 'JobController@getStatesByCountry')->name('get.states.by.country');
 Route::get('/get-cities-by-state', 'JobController@getCitiesByState')->name('get.cities.by.state');
+Route::resource('project-orders', 'ProjectOrdersController')->middleware(
+    [
+        'auth',
+        'XSS',
+        'revalidate',
+    ]
+);
+Route::resource('audit', 'AuditController')->middleware(['auth', 'XSS']);
+Route::get('audit-view', 'AuditController@filterAuditView')->name('filter.audit.view')->middleware(['auth', 'XSS']);

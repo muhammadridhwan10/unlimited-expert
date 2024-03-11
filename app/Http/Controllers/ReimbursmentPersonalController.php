@@ -115,7 +115,7 @@ class ReimbursmentPersonalController extends Controller
             $employee     = Employee::where('user_id', '=', $users->id)->first();
             $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->where('approval', '=', $users->id)->where('status','=', 'Pending')->get();
         }
-        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff IT' || \Auth::user()->type == 'intern' )
+        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff IT' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'intern' )
         {
 
 
@@ -187,13 +187,11 @@ class ReimbursmentPersonalController extends Controller
      */
     public function create()
     {
-        if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
+        if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
         {
             $employees                       = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
             $approval = User::where(function($query) {
-                $query->where('type', 'admin')
-                      ->orWhere('type', 'company')
-                      ->orWhere('type', 'senior accounting');
+                $query->where('type', 'senior accounting');
             })
             ->get()
             ->pluck('name', 'id');  
@@ -206,9 +204,7 @@ class ReimbursmentPersonalController extends Controller
         {
             $employees                       = Employee::all()->pluck('name', 'id');
             $approval = User::where(function($query) {
-                $query->where('type', 'admin')
-                      ->orWhere('type', 'company')
-                      ->orWhere('type', 'senior accounting');
+                $query->where('type', 'senior accounting');
             })
             ->get()
             ->pluck('name', 'id');
@@ -221,9 +217,7 @@ class ReimbursmentPersonalController extends Controller
         {
             $employees                       = Employee::all()->pluck('name', 'id');
             $approval = User::where(function($query) {
-                $query->where('type', 'admin')
-                      ->orWhere('type', 'company')
-                      ->orWhere('type', 'senior accounting');
+                $query->where('type', 'senior accounting');
             })
             ->get()
             ->pluck('name', 'id');
@@ -347,9 +341,7 @@ class ReimbursmentPersonalController extends Controller
             $reimbursment      = Reimbursment::find($ids);
             $employees         = Employee::get()->pluck('name', 'id');
             $approval = User::where(function($query) {
-                $query->where('type', 'admin')
-                      ->orWhere('type', 'company')
-                      ->orWhere('type', 'senior accounting');
+                $query->where('type', 'senior accounting');
             })
             ->get()
             ->pluck('name', 'id');              
@@ -364,9 +356,7 @@ class ReimbursmentPersonalController extends Controller
             $reimbursment      = Reimbursment::find($ids);
             $employees    = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
             $approval = User::where(function($query) {
-                $query->where('type', 'admin')
-                      ->orWhere('type', 'company')
-                      ->orWhere('type', 'senior accounting');
+                $query->where('type', 'senior accounting');
             })
             ->get()
             ->pluck('name', 'id');             

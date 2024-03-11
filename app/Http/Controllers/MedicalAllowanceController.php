@@ -115,7 +115,7 @@ class MedicalAllowanceController extends Controller
             $employee     = Employee::where('user_id', '=', $users->id)->first();
             $approval     = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->where('approval', '=', $users->id)->where('status','=', 'Pending')->get();
         }
-        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff IT' || \Auth::user()->type == 'intern')
+        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff IT' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'intern')
         {
 
             $employee                      = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('id');
@@ -186,7 +186,7 @@ class MedicalAllowanceController extends Controller
      */
     public function create()
     {
-        if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
+        if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
         {
             $employees                       = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
             $approval                        = User::where('type', '=', 'senior accounting')->get()->pluck('name', 'id');                

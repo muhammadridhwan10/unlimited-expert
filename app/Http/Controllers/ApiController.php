@@ -16,6 +16,7 @@ use App\Models\ProjectTask;
 use App\Models\TimeTracker;
 use App\Models\TrackPhoto;
 use App\Models\Timesheet;
+use App\Models\LogDesktop;
 use DateTime;
 use DatePeriod;
 use DateInterval;
@@ -48,6 +49,11 @@ class ApiController extends Controller
         $settings = [
             'shot_time'=> isset($settings['interval_time'])?$settings['interval_time']:0.5,
         ];
+
+        $LogDesktop = new LogDesktop();
+        $LogDesktop->user_id = auth()->user()->id;
+        $LogDesktop->last_active_at = now();
+        $LogDesktop->save();
 
         return $this->success([
             'token' => auth()->user()->createToken('API Token')->plainTextToken,

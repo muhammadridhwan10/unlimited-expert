@@ -325,6 +325,8 @@ class ClientController extends Controller
             }
             $post['email'] = $request->email;
 
+            $clientss['user_id']        = $client->id;
+
             $clientss['name_invoice']   = $request->name_invoice;
             $clientss['position']       = $request->position;
             $clientss['telp']           = $request->telp;
@@ -336,7 +338,12 @@ class ClientController extends Controller
             $clientss['client_business_sector_id'] = $request->client_business_sector_id;
 
             $client->update($post);
-            $clients->update($clientss);
+
+            if($clients) {
+                $clients->update($clientss);
+            } else {
+                Clients::create($clientss);
+            }
 
             CustomField::saveData($client, $request->customField);
 
@@ -347,6 +354,7 @@ class ClientController extends Controller
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
     }
+    
 
     public function destroy(User $client)
     {

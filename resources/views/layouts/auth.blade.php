@@ -34,13 +34,19 @@
     <link rel="stylesheet" href="{{ asset('assets/fonts/fontawesome.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/fonts/material.css') }}">
 
-    @if ( $setting['SITE_RTL'] == 'on')
+    @if ($setting['SITE_RTL'] == 'on')
         <link rel="stylesheet" href="{{ asset('assets/css/style-rtl.css')}}" id="main-style-link">
-    @endif
-    @if($setting['cust_darklayout']=='on')
-        <link rel="stylesheet" href="{{ asset('assets/css/style-dark.css')}}">
+        <link rel="stylesheet" href="{{ asset('assets/css/custom-auth-rtl.css') }}" id="main-style-link">
     @else
-        <link rel="stylesheet" href="{{ asset('assets/css/style.css')}}" id="main-style-link">
+        <link rel="stylesheet" href="{{ asset('assets/css/custom-auth.css') }}" id="main-style-link">
+    @endif
+    @if( $setting['SITE_RTL'] != 'on' && $setting['cust_darklayout'] != 'on')
+        <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}" id="main-style-link">
+    @endif
+
+    @if($setting['cust_darklayout']=='on')
+         <link rel="stylesheet" href="{{ asset('assets/css/style-dark.css') }}" id="main-style-link">
+        <link rel="stylesheet" href="{{ asset('assets/css/custom-auth-dark.css') }}" id="main-style-link">
     @endif
     <link rel="stylesheet" href="{{ asset('assets/css/customizer.css') }}">
     <style>
@@ -50,12 +56,15 @@
             align-items: center;
             justify-content: center;
             flex-direction: column;
-            z-index: 9999; 
+            z-index: 9999;
             left: 0;
             top: 0;
-            width: 100vw; 
-            height: 100vh; 
-            background: #DEDEDE;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('{{ asset('assets/images/auth/background-puasa.png') }}');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
             transition: 1s;
         }
 
@@ -104,9 +113,11 @@
             0% {
                 transform: scale(1);
             }
+
             50% {
                 transform: scale(1.2);
             }
+
             100% {
                 transform: scale(1);
             }
@@ -116,12 +127,13 @@
             0% {
                 transform: perspective(400px) rotateY(0);
             }
+
             100% {
                 transform: perspective(400px) rotateY(360deg);
             }
         }
-
     </style>
+
 
 </head>
 
@@ -136,9 +148,9 @@
         </h1>
         <p style="font-size: 20px; color: black;">Simplify and Streamline Your Work.</p>
 </div> 
-<div class="auth-wrapper auth-v3">
+{{-- <div class="auth-wrapper auth-v3">
     <div class="bg-auth-side bg-primary">
-    <img
+        <img
                             src="{{ asset('assets/images/auth/background-working.png') }}"
                             alt=""
                             class="img-fluid"  style="width: 800px; height: 800px;"
@@ -206,6 +218,70 @@
             </div>
         </div>
     </div>
+</div> --}}
+<div class="custom-login bg-primary">
+        <div class="login-bg-img">
+            <img src="{{ asset('assets/images/auth/'.$color.'.svg') }}" class="login-bg-1">
+            <img src="{{ asset('assets/images/auth/common.svg') }}" class="login-bg-2">
+        </div>
+        {{-- <div class="bg-login bg-primary"></div> --}}
+        <div class="custom-login-inner">
+            <header class="dash-header">
+                <nav class="navbar navbar-expand-md default">
+                    <div class="container">
+                        <div class="navbar-brand">
+                            <a class="navbar-brand" href="{{ url('/') }}">
+                            @if($mode_setting['cust_darklayout'] && $mode_setting['cust_darklayout'] == 'on' )
+                                <img src="{{ $logo . '/' . (isset($company_logos) && !empty($company_logos) ? $company_logos : 'logo-dark.png') }}"
+                                    alt="{{ config('app.name', 'TGS AU-Partners Apps') }}" class="logo w-50">
+                            @else
+                                <img src="{{ $logo . '/' . (isset($company_logo) && !empty($company_logo) ? $company_logo : 'logo-dark.png') }}"
+                                    alt="{{ config('app.name', 'TGS AU-Partners Apps') }}" class="logo w-50">
+                            @endif
+                            </a>
+                        </div>
+                        <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#navbarlogin">
+                            <span class="navbar-toggler-icon"></span>
+                        </button>
+                        <div class="collapse navbar-collapse" id="navbarlogin">
+                            <ul class="navbar-nav align-items-center ms-auto mb-2 mb-lg-0">
+                                <li class="nav-item">
+                                    <a class="nav-link" target="_blank" href="https://aup-docs.au-partners.com/">{{ __('Documentation')}}</a>
+                                </li>
+                                {{-- <li class="nav-item">
+                                    <a class="nav-link" href="#">{{ __('Terms')}}</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">{{ __('Privacy')}}</a>
+                                </li> --}}
+                                @yield('language-bar')
+                            </ul>
+                        </div>
+                    </div>
+                </nav>
+            </header>
+            <main class="custom-wrapper">
+                <div class="custom-row">
+                    <div class="card">
+                        @yield('content')
+                    </div>
+                </div>
+            </main>
+            <footer>
+                <div class="auth-footer">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-12">
+                                <p class="mb-0"> &copy;
+                                    {{ date('Y') }} {{ Utility::getValByName('footer_text') ? Utility::getValByName('footer_text') : config('app.name', 'ERPGo') }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+        </div>
 </div>
 <!-- [ auth-signup ] end -->
 

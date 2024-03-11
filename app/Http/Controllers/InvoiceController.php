@@ -1196,15 +1196,17 @@ class InvoiceController extends Controller
         $logo         = asset(Storage::url('uploads/logo/'));
         $invoice_logo = Utility::getValByName('invoice_logo');
         $company_logo = \App\Models\Utility::GetLogo();
-        if(isset($invoice_logo) && !empty($invoice_logo))
-        {
-            $img          = asset(\Storage::url('uploads/invoice_logo').'/'. $invoice_logo);
-        }
+        $img          = asset(\Storage::url('uploads/invoice_logo').'/'. $invoice_logo);
+        
+        // if(isset($invoice_logo) && !empty($invoice_logo))
+        // {
+        //     $img          = asset(\Storage::url('uploads/invoice_logo').'/'. $invoice_logo);
+        // }
 
-        else{
-            $img          = asset($logo . '/' . (isset($company_logo) && !empty($company_logo) ? $company_logo : 'logo-dark.png'));
+        // else{
+        //     $img          = asset($logo . '/' . (isset($company_logo) && !empty($company_logo) ? $company_logo : 'logo-dark.png'));
 
-        }
+        // }
 
         $logo_kap = asset(\Storage::url('logo').'/logo-kap.png');
         $logo_ara = asset(\Storage::url('logo').'/ara.png');
@@ -1288,15 +1290,16 @@ class InvoiceController extends Controller
         $logo         = asset(Storage::url('uploads/logo/'));
         $invoice_logo = Utility::getValByName('invoice_logo');
         $company_logo = \App\Models\Utility::GetLogo();
-        if(isset($invoice_logo) && !empty($invoice_logo))
-        {
-            $img          = asset(\Storage::url('uploads/invoice_logo').'/'. $invoice_logo);
-        }
+        $img          = asset(\Storage::url('uploads/invoice_logo').'/'. $invoice_logo);
+        // if(isset($invoice_logo) && !empty($invoice_logo))
+        // {
+        //     $img          = asset(\Storage::url('uploads/invoice_logo').'/'. $invoice_logo);
+        // }
 
-        else{
-            $img          = asset($logo . '/' . (isset($company_logo) && !empty($company_logo) ? $company_logo : 'logo-dark.png'));
+        // else{
+        //     $img          = asset($logo . '/' . (isset($company_logo) && !empty($company_logo) ? $company_logo : 'logo-dark.png'));
 
-        }
+        // }
 
         $logo         = asset(Storage::url('uploads/logo/'));
         $company_logo = Utility::getValByName('company_logo_dark');

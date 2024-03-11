@@ -33,6 +33,7 @@ use App\Models\Tax;
 use App\Models\Ticket;
 use App\Models\Timesheet;
 use App\Models\TimeTracker;
+use App\Models\LogDesktop;
 use App\Models\Trainer;
 use App\Models\Training;
 use App\Models\User;
@@ -1203,22 +1204,35 @@ class DashboardController extends Controller
                                 $dateFormat = $year . '-' . $month . '-' . $date;
                         
                                 if ($dateFormat <= date('Y-m-d')) {
-                                    if ($this->isWeekend($dateFormat)) {
-                                        $attendanceStatus[$date] = 'W'; // Jika hari adalah Sabtu atau Minggu, status kehadiran diatur sebagai 'W'
-                                    } else {
-                                        $employeeAttendance = AttendanceEmployee::where('employee_id', $id)->where('date', $dateFormat)->first();
-                        
-                                        if (!empty($employeeAttendance) && $employeeAttendance->status == 'Present') {
-                                            $attendanceStatus[$date] = 'P';
-                                            $totalPresent += 1;
-                                        } else {
-                                            $attendanceStatus[$date] = '';
-                                        }
-                                    }
+                                                if ($this->isWeekend($dateFormat)) {
+                                                    $employeeAttendance = AttendanceEmployee::where('employee_id', $id)
+                                                                                            ->where('date', $dateFormat)
+                                                                                            ->where('status', 'Present')
+                                                                                            ->first();
+                                                    
+                                                    if (!empty($employeeAttendance)) {
+                                                        $attendanceStatus[$date] = 'P'; // Jika ada kehadiran pada hari Sabtu atau Minggu, status kehadiran diatur sebagai 'P'
+                                                        $totalPresent += 1;
+                                                    } else {
+                                                        $attendanceStatus[$date] = 'W'; // Jika tidak ada kehadiran pada hari Sabtu atau Minggu, status kehadiran diatur sebagai 'W'
+                                                    }
+                                                } 
+                                                else {
+                                                    $employeeAttendance = AttendanceEmployee::where('employee_id', $id)
+                                                                                            ->where('date', $dateFormat)
+                                                                                            ->first();
+                                            
+                                                    if (!empty($employeeAttendance) && $employeeAttendance->status == 'Present') {
+                                                        $attendanceStatus[$date] = 'P';
+                                                        $totalPresent += 1;
+                                                    } else {
+                                                        $attendanceStatus[$date] = '';
+                                                    }
+                                                }
                                 } else {
                                     $attendanceStatus[$date] = '';
-                                }
-                            }            
+                                }  
+                            }     
                             $attendances['status'] = $attendanceStatus;
                             $employeesAttendances[] = $attendances;
                         }
@@ -1395,6 +1409,418 @@ class DashboardController extends Controller
 
             }
         }
+    }
+
+    public function dashboard(Request $request)
+    {
+        if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'partners')
+        {
+
+            //---------------------------HRM-----------------------------------------------
+
+            $employees           = User::where('type', '!=', 'client')->get();
+            $countEmployee = count($employees);
+
+            $emp = Employee::where('user_id', '=', Auth::user()->id)->first();
+
+            $date               = date("Y-m-d");
+            $time               = date("H:i:s");
+            $employeeAttendance = AttendanceEmployee::orderBy('id', 'desc')->where('employee_id', '=', !empty(\Auth::user()->employee) ? \Auth::user()->employee->id : 0)->where('date', '=', $date)->first();
+
+            if($emp->branch_id == 1)
+            {
+                $officeTime['startTime']    = Utility::getValByName('company_start_time');
+                $officeTime['endTime']      = Utility::getValByName('company_end_time');
+            }
+            elseif($emp->branch_id == 2)
+            {
+                $officeTime['startTime']    = "08:30";
+                $officeTime['endTime']      = "17:30";
+            }
+            elseif($emp->branch_id == 3)
+            {
+                $officeTime['startTime']    = "08:00";
+                $officeTime['endTime']      = "17:00";
+            }
+
+
+            $totalEmployees = [
+                'Jakarta' => User::join('employees', 'users.id', '=', 'employees.user_id')
+                                ->where('employees.branch_id', 1)
+                                ->where('users.is_active', 1)
+                                ->where('users.type','!=', 'admin')
+                                ->where('users.type','!=', 'company')
+                                ->count(),
+                'Bekasi' => User::join('employees', 'users.id', '=', 'employees.user_id')
+                                ->where('employees.branch_id', 2)
+                                ->where('users.is_active', 1)
+                                ->where('users.type','!=', 'admin')
+                                ->where('users.type','!=', 'company')
+                                ->count(),
+                'Malang' => User::join('employees', 'users.id', '=', 'employees.user_id')
+                                ->where('employees.branch_id', 3)
+                                ->where('users.is_active', 1)
+                                ->where('users.type','!=', 'admin')
+                                ->where('users.type','!=', 'company')
+                                ->count(),
+            ];
+        
+            $branches = [1 => 'Jakarta', 2 => 'Bekasi', 3 => 'Malang'];
+            $employeeTypes = ['Partners', 'Senior Audit', 'Junior Audit', 'Senior Accounting', 'Junior Accounting', 'Staff IT', 'Staff', 'Intern'];
+            $employeesByBranch = [];
+
+            foreach ($branches as $branchId => $branchName) {
+                $employeesByBranch[$branchName] = [];
+                foreach ($employeeTypes as $type) {
+                    $employeesByBranch[$branchName][$type] = 0;
+                }
+            }
+
+            foreach ($employeeTypes as $type) {
+                foreach ($branches as $branchId => $branchName) {
+                    $employeesByBranch[$branchName][$type] = User::join('employees', 'users.id', '=', 'employees.user_id')
+                        ->where('employees.branch_id', $branchId)
+                        ->where('users.is_active', 1)
+                        ->where('users.type', $type)
+                        ->count();
+                }
+            }
+
+
+            $currentDate = date('Y-m-d');
+
+            $employees   = User::where('type', '=', 'client')->get();
+            $countClient = count($employees);
+            $notEnableDesktop  = LogDesktop::whereDate('last_active_at', '=', $currentDate)->get()->pluck('user_id');
+
+            $notEnableDesktops = User::whereNotIn('id', $notEnableDesktop)
+            ->where('type','!=','client')
+            ->where('type', '!=', 'admin')
+            ->where('type', '!=', 'company')
+            ->where('type', '!=', 'partners')
+            ->where('is_active', 1)->get();
+
+            $activeJob   = Job::where('status', 'active')->count();
+            $inActiveJOb = Job::where('status', 'in_active')->count();
+
+            $officeTime['startTime'] = Utility::getValByName('company_start_time');
+            $officeTime['endTime']   = Utility::getValByName('company_end_time');
+
+            //--------------------------------------------------------------------------//
+
+
+            $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
+            $account->prepend('select Account', '');
+            $client = User::where('type','=','client')->where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $client->prepend('Select Client', '');
+            $partner = User::where('type','=','partners')->orWhere('type','=','senior accounting')->where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $partner->prepend('Select Partner', '');
+            $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 1)->get()->pluck('name', 'id');
+            $category->prepend('Select Category', '');
+            $companies = Invoice::$company;
+            $companies = ['' => 'Select Company'] + $companies;
+
+            $currencyList = ['Rp' => 'Rp', '$' => '$'];
+
+            $data['monthList']  = $month = $this->yearMonth();
+            $data['yearList']   = $this->yearList();
+            $filter['category'] = __('All');
+            $filter['client'] = __('All');
+
+
+            if(isset($request->year))
+            {
+                $year = $request->year;
+            }
+            else
+            {
+                $year = date('Y');
+            }
+            $data['currentYear'] = $year;
+
+            // ------------------------------REVENUE INCOME-----------------------------------
+            $incomes = Revenue::selectRaw('sum(revenues.amount) as amount,MONTH(date) as month,YEAR(date) as year,category_id')->leftjoin('product_service_categories', 'revenues.category_id', '=', 'product_service_categories.id')->where('product_service_categories.type', '=', 1);
+            $incomes->where('revenues.created_by', '=', \Auth::user()->creatorId());
+            $incomes->whereRAW('YEAR(date) =?', [$year]);
+
+            if(!empty($request->category))
+            {
+                $incomes->where('category_id', '=', $request->category);
+                $cat                = ProductServiceCategory::find($request->category);
+                $filter['category'] = !empty($cat) ? $cat->name : '';
+            }
+
+            if(!empty($request->customer))
+            {
+                $incomes->where('customer_id', '=', $request->customer);
+                $cust               = Customer::find($request->customer);
+                $filter['customer'] = !empty($cust) ? $cust->name : '';
+            }
+            $incomes->groupBy('month', 'year', 'category_id');
+            $incomes = $incomes->get();
+
+            $tmpArray = [];
+            foreach($incomes as $income)
+            {
+                $tmpArray[$income->category_id][$income->month] = $income->amount;
+            }
+            $array = [];
+            foreach($tmpArray as $cat_id => $record)
+            {
+                $tmp             = [];
+                $tmp['category'] = !empty(ProductServiceCategory::where('id', '=', $cat_id)->first()) ? ProductServiceCategory::where('id', '=', $cat_id)->first()->name : '';
+                $tmp['data']     = [];
+                for($i = 1; $i <= 12; $i++)
+                {
+                    $tmp['data'][$i] = array_key_exists($i, $record) ? $record[$i] : 0;
+                }
+                $array[] = $tmp;
+            }
+
+
+            $incomesData = Revenue::selectRaw('sum(revenues.amount) as amount,MONTH(date) as month,YEAR(date) as year');
+            $incomesData->where('revenues.created_by', '=', \Auth::user()->creatorId());
+            $incomesData->whereRAW('YEAR(date) =?', [$year]);
+
+            if(!empty($request->category))
+            {
+                $incomesData->where('category_id', '=', $request->category);
+            }
+            if(!empty($request->customer))
+            {
+                $incomesData->where('customer_id', '=', $request->customer);
+            }
+            $incomesData->groupBy('month', 'year');
+            $incomesData = $incomesData->get();
+            $incomeArr   = [];
+            foreach($incomesData as $k => $incomeData)
+            {
+                $incomeArr[$incomeData->month] = $incomeData->amount;
+            }
+            for($i = 1; $i <= 12; $i++)
+            {
+                $incomeTotal[] = array_key_exists($i, $incomeArr) ? $incomeArr[$i] : 0;
+            }
+
+            //---------------------------INVOICE INCOME-----------------------------------------------
+
+            $invoices = Invoice::selectRaw('MONTH(send_date) as month, YEAR(send_date) as year, category_id, invoice_id, id, currency')
+            ->where('status', '=', 2);
+
+            $invoices->whereRAW('YEAR(send_date) =?', [$year]);
+
+            if(!empty($request->client))
+            {
+                $invoices->where('client_id', '=', $request->client);
+            }
+
+            if(!empty($request->user_id))
+            {
+                $invoices->where('user_id', '=', $request->user_id);
+            }
+
+            if(!empty($request->company))
+            {
+                $invoices->where('company', '=', $request->company);
+            }
+
+            if(!empty($request->category))
+            {
+                $invoices->where('category_id', '=', $request->category);
+            }
+
+            $invoices        = $invoices->get();
+            $invoiceTmpArray = [];
+            foreach($invoices as $invoice)
+            {
+                $categoryIds = explode(',', $invoice->category_id);
+                foreach ($categoryIds as $categoryId) {
+                    $invoiceTmpArray[$categoryId][$invoice->month][] = $invoice->getTotal();
+                }
+            }
+
+
+            $invoiceArray = [];
+            foreach ($invoiceTmpArray as $cat_id => $record) {
+                $invoice             = [];
+                $invoice['category'] = !empty(ProductServiceCategory::where('id', '=', $cat_id)->first()) ? ProductServiceCategory::where('id', '=', $cat_id)->first()->name : '';
+                $invoice['data']     = [];
+            
+                for ($i = 1; $i <= 12; $i++) {
+                    $invoice['data'][$i] = array_key_exists($i, $record) ? array_sum($record[$i]) : 0;
+                }
+            
+                $invoiceArray[] = $invoice;
+            }
+
+            $invoiceTotalArrayRp = [];
+            $invoiceTotalArrayUsd = [];
+            $totalInvoiceRp = 0;
+            $totalInvoiceDollar = 0;
+            
+
+            foreach($invoices as $invoice)
+            {
+                if($invoice->currency == 'Rp') {
+                    $invoiceTotalArrayRp[$invoice->month][] = $invoice->getTotal();
+                    $totalInvoiceRp += $invoice->getTotal();
+                } elseif($invoice->currency == '$') {
+                    $invoiceTotalArrayUsd[$invoice->month][] = $invoice->getTotal();
+                    $totalInvoiceDollar += $invoice->getTotal();
+                }
+            }
+
+
+            $invoiceTotalRp = [];
+            $invoiceTotalUsd = [];
+
+            for($i = 1; $i <= 12; $i++)
+            {
+                $invoiceTotalRp[] = array_key_exists($i, $invoiceTotalArrayRp) ? array_sum($invoiceTotalArrayRp[$i]) : 0;
+                $invoiceTotalUsd[] = array_key_exists($i, $invoiceTotalArrayUsd) ? array_sum($invoiceTotalArrayUsd[$i]) : 0;
+            }
+
+
+            $chartIncomeArrRp = array_map(
+                function (){
+                    return array_sum(func_get_args());
+                }, $incomeTotal, $invoiceTotalRp
+            );
+
+            $chartIncomeArrUsd = array_map(
+                function (){
+                    return array_sum(func_get_args());
+                }, $incomeTotal, $invoiceTotalUsd
+            );
+
+            $invoicePartnersRp = [];
+            $invoicePartnersUsd = [];
+
+            $partners = User::whereIn('type', ['partners', 'senior accounting'])->get();
+
+            foreach ($partners as $partner) {
+
+                $invoices = Invoice::selectRaw('MONTH(send_date) as month, YEAR(send_date) as year, category_id, invoice_id, id, currency')
+                ->where('user_id', $partner->id)
+                ->where('status', '=', 2)
+                ->whereRaw('YEAR(send_date) = ?', [$year]);
+
+                if (!empty($request->company)) {
+                    $invoices->where('company', '=', $request->company);
+                }
+
+                $invoices = $invoices->get();
+
+                $invoicePartners[$partner->name] = $invoices;
+
+                foreach($invoices as $invoice)
+                {
+                    if($invoice->currency == 'Rp') {
+                        $invoicePartnersRp[$invoice->month][$partner->name] = $invoice->getTotal();
+                    } elseif($invoice->currency == '$') {
+                        $invoicePartnersUsd[$invoice->month][$partner->name] = $invoice->getTotal();
+                    }
+                }
+            }
+
+            $lineChartDataRp = [];
+            $lineChartDataUsd = [];
+
+            foreach ($invoicePartnersRp as $month => $partnerData) {
+                foreach ($partnerData as $partnerName => $total) {
+                    $lineChartDataRp[$partnerName][$month] = $total;
+                }
+            }
+
+            foreach ($invoicePartnersUsd as $month => $partnerData) {
+                foreach ($partnerData as $partnerName => $total) {
+                    $lineChartDataUsd[$partnerName][$month] = $total;
+                }
+            }
+
+
+            $invoicePaidCount = Invoice::where('status', '=', 2)->count();
+            $invoiceDraftCount = Invoice::where('status', '=', 0)->count();
+            $invoiceUnpaidCount = Invoice::where('status', '=', 1)->count();
+            $totalInvoiceCount = Invoice::count();
+
+            $data['chartIncomeArrRp'] = $chartIncomeArrRp;
+            $data['chartIncomeArrUsd'] = $chartIncomeArrUsd;
+            $data['lineChartDataRp'] = $lineChartDataRp;
+            $data['lineChartDataUsd'] = $lineChartDataUsd;
+            $data['totalInvoiceRp'] = $totalInvoiceRp;
+            $data['totalInvoiceDollar'] = $totalInvoiceDollar;
+            $data['incomeArr']      = $array;
+            $data['invoiceArray']   = $invoiceArray;
+            $data['account']        = $account;
+            $data['client']         = $client;
+            $data['partner']        = $partner;
+            $data['companies']        = $companies;
+            $data['officeTime']       = $officeTime;
+            $data['employees']       = $employees;
+            $data['countClient']       = $countClient;
+            $data['notEnableDesktops']       = $notEnableDesktops;
+            $data['employeeAttendance']       = $employeeAttendance;
+            $data['category']       = $category;
+            $data['invoiceSummary'] = [
+                'paid' => [
+                    'count' => $invoicePaidCount,
+                ],
+                'draft' => [
+                    'count' => $invoiceDraftCount,
+                ],
+                'unpaid' => [
+                    'count' => $invoiceUnpaidCount,
+                ],
+                'total' => $totalInvoiceCount,
+            ];
+            $data['totalEmployees'] = $totalEmployees;
+            $data['employeesByBranch'] = $employeesByBranch;
+            $data['employeeTypes'] = $employeeTypes;
+            
+
+            $filter['startDateRange'] = 'Jan-' . $year;
+            $filter['endDateRange']   = 'Dec-' . $year;
+
+
+            return view('dashboard.admin-dashboard',  compact('filter','currencyList'), $data);
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
+
+    public function yearMonth()
+    {
+
+        $month[] = __('January');
+        $month[] = __('February');
+        $month[] = __('March');
+        $month[] = __('April');
+        $month[] = __('May');
+        $month[] = __('June');
+        $month[] = __('July');
+        $month[] = __('August');
+        $month[] = __('September');
+        $month[] = __('October');
+        $month[] = __('November');
+        $month[] = __('December');
+
+        return $month;
+    }
+
+    public function yearList()
+    {
+        $starting_year = date('Y', strtotime('-5 year'));
+        $ending_year   = date('Y');
+
+        foreach(range($ending_year, $starting_year) as $year)
+        {
+            $years[$year] = $year;
+        }
+
+        return $years;
     }
 
     function isWeekend($date)

@@ -44,16 +44,39 @@
         </div>
     </div>
     <div class="row">
-        <div class="form-group col-sm-12 col-md-12">
-                {{Form::label('reimbursment_image',__('Image'),['class'=>'form-label'])}}<span class="text-danger">*</span>
-                <div class="choose-file form-group">
-                    <label for="reimbursment_image" class="form-label">
-                        <input type="file" accept=".png, .jpg, .jpeg" class="form-control" name="reimbursment_image" id="reimbursment_image" data-filename="reimbursment_image_create">
-                        <img id="image" class="mt-3" style="width:25%;"/>
+        <div class="form-group">
+            <label for="file_type" class="form-label">{{ __('Select File Type') }}</label>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="file_type" id="image_radio" value="image" checked>
+                <label class="form-check-label" for="image_radio">
+                    {{ __('Image') }}
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="file_type" id="pdf_radio" value="pdf">
+                <label class="form-check-label" for="pdf_radio">
+                    {{ __('PDF') }}
+                </label>
+            </div>
+        </div>
 
-                    </label>
-                </div>
+        <div id="image_upload" class="form-group">
+            <label for="reimbursment_image" class="form-label">{{ __('Image') }}</label><span class="text-danger">*</span>
+            <div class="choose-file form-group">
+                <label for="reimbursment_image" class="form-label">
+                    <input type="file" accept=".png, .jpg, .jpeg" class="form-control" name="reimbursment_image" id="reimbursment_image" data-filename="reimbursment_image_create">
+                    <img id="image" class="mt-3" style="width:25%;"/>
+                </label>
+            </div>
+        </div>
 
+        <div id="pdf_upload" class="form-group" style="display: none;">
+            <label for="reimbursment_pdf" class="form-label">{{ __('PDF') }}</label><span class="text-danger">*</span>
+            <div class="choose-file form-group">
+                <label for="reimbursment_pdf" class="form-label">
+                    <input type="file" accept=".pdf" class="form-control" name="reimbursment_pdf" id="reimbursment_pdf" data-filename="reimbursment_pdf_create">
+                </label>
+            </div>
         </div>
     </div>
     <div class="row">
@@ -71,9 +94,25 @@
 </div>
 {{Form::close()}}
 
-<script>
+{{-- <script>
     document.getElementById('reimbursment_image').onchange = function () {
         var src = URL.createObjectURL(this.files[0])
         document.getElementById('image').src = src
     }
+</script> --}}
+<script>
+    document.getElementById('image_radio').addEventListener('change', function() {
+        document.getElementById('image_upload').style.display = 'block';
+        document.getElementById('pdf_upload').style.display = 'none';
+    });
+
+    document.getElementById('pdf_radio').addEventListener('change', function() {
+        document.getElementById('pdf_upload').style.display = 'block';
+        document.getElementById('image_upload').style.display = 'none';
+    });
+
+    document.getElementById('reimbursment_image').onchange = function () {
+        var src = URL.createObjectURL(this.files[0]);
+        document.getElementById('image').src = src;
+    };
 </script>
