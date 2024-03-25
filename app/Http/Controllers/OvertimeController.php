@@ -496,6 +496,11 @@ class OvertimeController extends Controller
 
         foreach ($selectedIds as $reimbursmentId) {
             $overtime = UserOvertime::find($reimbursmentId);
+            $start_time = $overtime->start_time;
+            $end_time = $overtime->end_time;
+            $time_difference = $this->calculateTimeDifference($start_time, $end_time);
+            $overtime->total_time = $time_difference;
+            $overtime->save();
         }
 
         return redirect()->route('overtime.index')->with('success', __('Overtime successfully updated.'));
