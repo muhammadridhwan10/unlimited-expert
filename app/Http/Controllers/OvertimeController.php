@@ -92,7 +92,7 @@ class OvertimeController extends Controller
             $employee     = Employee::where('user_id', '=', $users->id)->first();
             $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
         }
-        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
+        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
         {
 
             $users        = \Auth::user();
@@ -485,5 +485,19 @@ class OvertimeController extends Controller
         $difference = $start->diffInSeconds($end);
     
         return gmdate('H:i:s', $difference);
+    }
+
+    public function approveMultiple(Request $request)
+    {
+
+        $selectedIds = $request->input('selectedIds');
+
+        UserOvertime::whereIn('id', $selectedIds)->update(['status' => 'Approved']);
+
+        foreach ($selectedIds as $reimbursmentId) {
+            $overtime = UserOvertime::find($reimbursmentId);
+        }
+
+        return redirect()->route('overtime.index')->with('success', __('Overtime successfully updated.'));
     }
 }

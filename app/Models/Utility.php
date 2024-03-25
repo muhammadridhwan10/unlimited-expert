@@ -393,12 +393,22 @@ class Utility extends Model
 
     public static function priceFormat($settings, $price)
     {
-        return (($settings['site_currency_symbol_position'] == "pre") ? $settings['site_currency_symbol'] : '') . number_format($price) . (($settings['site_currency_symbol_position'] == "post") ? $settings['site_currency_symbol'] : '');
+        return (($settings['site_currency_symbol_position'] == "pre") ? $settings['site_currency_symbol'] : '') . number_format($price, $settings['decimal_number']) . (($settings['site_currency_symbol_position'] == "post") ? $settings['site_currency_symbol'] : '');
+    }
+
+    public static function priceFormat2($settings, $price)
+    {
+        return (($settings['site_currency_symbol_position_2'] == "pre") ? $settings['site_currency_symbol_2'] : '') . number_format($price, $settings['decimal_number_2']) . (($settings['site_currency_symbol_position_2'] == "post") ? $settings['site_currency_symbol_2'] : '');
     }
 
     public static function currencySymbol($settings)
     {
         return $settings['site_currency_symbol'];
+    }
+
+    public static function currencySymbol2($settings)
+    {
+        return $settings['site_currency_symbol_2'];
     }
 
     public static function dateFormat($settings, $date)
