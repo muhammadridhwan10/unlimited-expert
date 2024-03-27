@@ -92,6 +92,41 @@ class OvertimeController extends Controller
             $employee     = Employee::where('user_id', '=', $users->id)->first();
             $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
         }
+        elseif(\Auth::user()->type == 'partners')
+        {
+            $overtimes   = UserOvertime::all();
+            
+            if(\Auth::user()->employee->branch_id == 2)
+            {
+                $employee = Employee::where('branch_id', 2)->get();
+            }
+            elseif(\Auth::user()->employee->branch_id == 3)
+            {
+                $employee = Employee::where('branch_id', 2)->get();
+            }
+            else
+            {
+                $employee = Employee::all();
+            }
+            $employee = $employee->pluck('id');
+            $employeeOvertimes = UserOvertime::whereIn('user_id', $employee);
+
+            if (!empty($request->month)) {
+                $month = date('m', strtotime($request->month));
+                $year  = date('Y', strtotime($request->month));
+
+                $start_date = date($year . '-' . $month . '-01');
+                $end_date   = date($year . '-' . $month . '-t');
+
+                $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
+            } 
+
+            $employeeOvertimes = $employeeOvertimes->get();
+
+            $users        = \Auth::user();
+            $employee     = Employee::where('user_id', '=', $users->id)->first();
+            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
+        }
         elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
         {
 
