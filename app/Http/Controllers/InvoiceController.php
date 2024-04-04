@@ -1359,6 +1359,10 @@ class InvoiceController extends Controller
             {
                 $settings['invoice_template'] = 'template12'; 
             }
+            elseif($invoice->invoice_template == "template13")
+            {
+                $settings['invoice_template'] = 'template13'; 
+            }
 
             return view('invoice.templates.' . $settings['invoice_template'], compact('invoice', 'invoices', 'kode_invoice', 'color', 'settings', 'client','clients', 'img','logo_kap','logo_xga','logo_ara', 'ttd', 'ttd_ara','ttd_xga','ttd_mj', 'font_color', 'customFields'));
         }
