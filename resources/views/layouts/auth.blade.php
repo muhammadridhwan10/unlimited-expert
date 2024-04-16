@@ -139,7 +139,7 @@
 
 <body class="{{ $color }}">
 <div class="intro">
-        <img src="{{ asset('assets/images/auth/favicon.png') }}" style="width: 120px; height: 120px; margin-top: 30px;">
+        <img src="{{ asset('assets/images/auth/favicon.png') }}" style="width: 120px; height: 120px; margin-top: 15px;">
         <h1 class="logo-intro">
             <span class="logo-parts">Welcome</span>
              <span class="logo-parts">to</span>
