@@ -61,7 +61,7 @@
             top: 0;
             width: 100vw;
             height: 100vh;
-            background-image: url('{{ asset('assets/images/auth/background-puasa.png') }}');
+            background-image: url('{{ asset('assets/images/auth/background-lebaran.jpg') }}');
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center;
@@ -139,7 +139,7 @@
 
 <body class="{{ $color }}">
 <div class="intro">
-        <img src="{{ asset('assets/images/auth/favicon.png') }}" style="width: 120px; height: 120px;">
+        <img src="{{ asset('assets/images/auth/favicon.png') }}" style="width: 120px; height: 120px; margin-top: 30px;">
         <h1 class="logo-intro">
             <span class="logo-parts">Welcome</span>
              <span class="logo-parts">to</span>
