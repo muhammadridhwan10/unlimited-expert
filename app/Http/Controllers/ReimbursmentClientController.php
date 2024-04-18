@@ -512,4 +512,24 @@ class ReimbursmentClientController extends Controller
 
         return view('reimbursment-client.action', compact('reimbursment', 'user', 'client'));
     }
+
+    public function approveMultiple(Request $request)
+    {
+
+        $selectedIds = $request->input('selectedIds');
+
+        Reimbursment::whereIn('id', $selectedIds)->update(['status' => 'Paid']);
+
+        foreach ($selectedIds as $reimbursmentId) {
+            $reimbursment = Reimbursment::find($reimbursmentId);
+            $employee = Employee::find($reimbursment->employee_id);
+    
+            if ($employee) {
+                $email = $employee->email;
+                Mail::to($email)->send(new ReimbursmentClientApprovalNotification($reimbursment));
+            }
+        }
+
+        return redirect()->route('reimbursment-client.index')->with('success', __('Reimbursment Client successfully updated.'));
+    }
 }

@@ -820,14 +820,24 @@
                                             <p>
                                                 {{"Payment by bank transfer : "}}<br>
                                                 {{"PT Bank Negara Indonesia (Persero)"}}<br>
-                                                {{"Account name :"}}<br>
+                                                {{"Branch Address :"}}<br>
+                                                {{"Jl. Jatinegara Timur No. 67, Jakarta Timur"}}<br>
+                                                {{"Account Name :"}}<br>
                                                 {{"All Rich Associate"}}<br>
-                                                {{"Account number : 05666-47352"}}<br>
+                                                <strong>{{"Account Number (Rp) : 05666-47352"}}</strong><br>
+                                                {{"Account Currency : IDR"}}<br>
+                                                <strong>{{"Account Number ($) : 0566791928"}}</strong><br>
+                                                {{"Account Currency : USD"}}<br>
+                                                {{"Swift Code : BNINIDJA"}}<br>
+                                                {{"Branch Code : JNG"}}<br>
                                                 <strong data-v-f2a183a6="">{{__('Please email us your transfer proof to info@au-partners.com')}}</strong>
                                             </p>
                                             </div>
                                                 <p style= "text-align:center">
                                                 {{-- <img src="{{$ttd_ara}}" style="max-width: 150px"/> --}}
+                                                <br>
+                                                <br>
+                                                <br>
                                                 <br>
                                                 <br>
                                                 <br>

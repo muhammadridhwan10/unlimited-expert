@@ -14,15 +14,17 @@ class CustomerInvoiceSend extends Mailable
 
     public $invoice;
     public $language;
+    protected $ccEmails;
     /**
      * Create a new message instance.
      *
      * @return void
      */
-    public function __construct(Invoice $invoice, $language)
+    public function __construct(Invoice $invoice, $language, $ccEmails = [])
     {
         $this->invoice = $invoice;
         $this->language = $language;
+        $this->ccEmails = $ccEmails;
     }
 
     /**
@@ -40,12 +42,19 @@ class CustomerInvoiceSend extends Mailable
         //         'website' => 'Konsultanku',
         //     ]);
         if ($this->language === 'english') {
-            return $this->markdown('email.customer_invoice_send')
-                ->subject('Invoice Submission for ' . $this->invoice->invoice_id);
+            $mail = $this->markdown('email.customer_invoice_send')
+                        ->subject('Invoice Submission for ' . $this->invoice->invoice_id);
         } elseif ($this->language === 'indonesian') {
-            return $this->markdown('email.customer_invoice_send_in')
-                ->subject('Pengiriman Invoice Untuk Pembayaran ');
+            $mail = $this->markdown('email.customer_invoice_send_in')
+                        ->subject('Pengiriman Invoice Untuk Pembayaran ');
         }
+        
+        if (!empty($this->ccEmails)) {
+            $mail->cc($this->ccEmails);
+        }
+        
+        return $mail;
+        
 
         // return $this->markdown('email.customer_invoice_send')
         // ->subject('Invoice Submission for ' . $this->invoice->invoice_id);

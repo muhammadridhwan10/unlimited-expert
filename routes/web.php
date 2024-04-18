@@ -4271,6 +4271,12 @@ Route::post('reimbursment-client/changeaction', 'ReimbursmentClientController@ch
         'XSS',
     ]
 );
+Route::post('reimbursment-client/approve-multiple', 'ReimbursmentClientController@approveMultiple')->name('approve-multiple-client')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
 Route::get('reports-reimbursment', 'ReportController@reimbursment')->name('report.reimbursment')->middleware(
     [
         'auth',
