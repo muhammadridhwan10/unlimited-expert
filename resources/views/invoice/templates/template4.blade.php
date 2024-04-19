@@ -814,8 +814,6 @@
                                     <div class="row">
                                         <div data-v-f2a183a6="" class="d-header-brands-left">
                                             <strong data-v-f2a183a6="">{{__('Thank you for your business!')}}</strong>
-                                            <br>
-                                            <br>
                                             <strong data-v-f2a183a6="">{{__('Payment Instructions')}}:</strong>
                                             <p>
                                                 {{"Payment by bank transfer : "}}<br>
@@ -833,11 +831,7 @@
                                                 <strong data-v-f2a183a6="">{{__('Please email us your transfer proof to info@au-partners.com')}}</strong>
                                             </p>
                                             </div>
-                                                <p style= "text-align:center">
-                                                <br>
-                                                <br>
-                                                <br>
-                                                <br>
+                                            <p style= "text-align:center">
                                                 <img src="{{$ttd_ara}}" style="max-width: 150px"/>
                                                 <br>
                                                 {{"Melya Lubis"}}<br>
@@ -845,8 +839,6 @@
                                             </p>
                                         </div>
                                     </div>
-                                    <br>
-                                    <br>
                                     <p style="text-align:center"> ALLRICH ASSOCIATE </p>
                                     <p style="text-align:center"> Wisma Staco 6th Fl, Jl Casablanca Kav 18, Jakarta 12870 | (+62) 21-8298265 | info@au-partners.com</p>
                                 </div>
