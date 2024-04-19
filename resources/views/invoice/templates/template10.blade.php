@@ -830,6 +830,9 @@
                                                 {{"Account name :"}}<br>
                                                 {{"Akuntan Publik Agus Ubaidillah dan Rekan"}}<br>
                                                 {{"Account number : 03467-27205"}}<br>
+                                                {{"Account Currency : IDR"}}<br>
+                                                {{"Swift Code : BNINIDJA"}}<br>
+                                                {{"Branch Code : JNG"}}<br>
                                                 <strong data-v-f2a183a6="">{{__('Please email us your transfer proof to info@au-partners.com')}}</strong>
                                             </p>
                                             </div>
