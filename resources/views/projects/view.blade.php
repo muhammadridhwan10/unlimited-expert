@@ -303,7 +303,7 @@
                                 </div>
                             </div>
                             <div class="col-auto text-end">
-                                <h4 class="m-0">{{ \Auth::user()->priceFormat($project->budget)}}</h4>
+                                <h4 style="font-size:15px;" class="m-0">{{ \Auth::user()->priceFormat($project->budget)}}</h4>
                             </div>
                         </div>
                     </div>
@@ -545,62 +545,56 @@
                             <h5>{{ __('Project Offerings')}}</h5>
                         </div>
                         <div class="card-body" style="min-height: 280px;">
-                            <div class="row align-items-center">
-                                <div class="col-7">
-                                    <table class="table" >
-                                        <tbody>
-                                            <tr class="border-0" >
-                                                <th class="border-0" >{{ __('Charge-out Partners')}}:</th>
-                                                <td class="border-0"> {{\Auth::user()->priceFormat($co_partners)}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th class="border-0">{{ __('Charge-out Manager')}}:</th>
-                                                <td class="border-0"> {{\Auth::user()->priceFormat($co_manager)}}</td>
-                                            </tr>
-                                            <tr class="border-0" >
-                                                <th class="border-0" >{{ __('Charge-out Senior Associate')}}:</th>
-                                                <td class="border-0"> {{\Auth::user()->priceFormat($co_senior_associate)}}</td>
-                                            </tr>
-                                            <tr>
-                                                <th class="border-0">{{ __('Charge-out Associate')}}:</th>
-                                                <td class="border-0"> {{\Auth::user()->priceFormat($co_associate)}}</td>
-                                            </tr>
-                                            <tr class="border-0" >
-                                                <th class="border-0" >{{ __('Charge-out Intern')}}:</th>
-                                                <td class="border-0"> {{\Auth::user()->priceFormat($co_intern)}}</td>
-                                            </tr>
-                                            <tr class="border-0" >
-                                                <th class="border-0" >{{ __('Total Charge-out')}}:</th>
-                                                <td class="border-0"> {{\Auth::user()->priceFormat($co_partners + $co_manager + $co_senior_associate + $co_associate + $co_intern)}}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <!-- <div class="col-5 ">
-                                            @php
-                                                $task_percentage = $project->project_progress()['percentage'];
-                                                $data =trim($task_percentage,'%');
-                                                $status = $data > 0 && $data <= 25 ? 'red' : ($data > 25 && $data <= 50 ? 'orange' : ($data > 50 && $data <= 75 ? 'blue' : ($data > 75 && $data <= 100 ? 'green' : '')));
-                                            @endphp
-                                    <div class="circular-progressbar p-0">
-                                        <div class="flex-wrapper">
-                                            <div class="single-chart">
-                                                <svg viewBox="0 0 36 36"
-                                                    class="circular-chart orange  {{$status}}">
-                                                    <path class="circle-bg" d="M18 2.0845
-                                                                a 15.9155 15.9155 0 0 1 0 31.831
-                                                                a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                                    <path class="circle"
-                                                        stroke-dasharray="{{ $data }}, 100" d="M18 2.0845
-                                                                a 15.9155 15.9155 0 0 1 0 31.831
-                                                                a 15.9155 15.9155 0 0 1 0 -31.831" />
-                                                    <text x="18" y="20.35"
-                                                        class="percentage">{{ $data }}%</text>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div> -->
+                            <div class="row">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>{{ __('Position') }}</th>
+                                            <th>{{ __('Project Hours') }}</th>
+                                            <th>{{ __('Rate') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>{{ __('Partners') }}</td>
+                                            <td>{{ $project_offerings->als_partners . ' H' }}</td>
+                                            <td>{{ \Auth::user()->priceFormat($project_offerings->rate_partners) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ __('Manager') }}</td>
+                                            <td>{{ $project_offerings->als_manager . ' H' }}</td>
+                                            <td>{{ \Auth::user()->priceFormat($project_offerings->rate_manager) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ __('Senior Associate') }}</td>
+                                            <td>{{ $project_offerings->als_senior_associate . ' H' }}</td>
+                                            <td>{{ \Auth::user()->priceFormat($project_offerings->rate_senior_associate) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ __('Associate') }}</td>
+                                            <td>{{ $project_offerings->als_associate . ' H' }}</td>
+                                            <td>{{ \Auth::user()->priceFormat($project_offerings->rate_associate) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>{{ __('Assistant') }}</td>
+                                            <td>{{ $project_offerings->als_intern . ' H' }}</td>
+                                            <td>{{ \Auth::user()->priceFormat($project_offerings->rate_intern) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>{{ __('Total') }}</strong></td>
+                                            <td>
+                                                <strong>
+                                                    {{ $project_offerings->als_partners + $project_offerings->als_manager + $project_offerings->als_senior_associate + $project_offerings->als_associate + $project_offerings->als_intern . ' H' }}
+                                                </strong>
+                                            </td>
+                                            <td>
+                                                <strong>
+                                                    {{ \Auth::user()->priceFormat($project_offerings->rate_partners + $project_offerings->rate_manager + $project_offerings->rate_senior_associate + $project_offerings->rate_associate + $project_offerings->rate_intern) }}
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>

@@ -812,8 +812,6 @@
                                     <div class="row">
                                         <div data-v-f2a183a6="" class="d-header-brands-left">
                                             <strong data-v-f2a183a6="">{{__('Thank you for your business!')}}</strong>
-                                            <br>
-                                            <br>
                                             <strong data-v-f2a183a6="">{{__('Payment Instructions')}}:</strong>
                                             <p>
                                                 {{"Payment by bank transfer : "}}<br>

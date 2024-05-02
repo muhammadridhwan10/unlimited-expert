@@ -6289,6 +6289,25 @@ fieldset:disabled .btn {
     border-bottom-left-radius: 14px;
 }
 
+.progress {
+    height: 20px;
+    margin-bottom: 20px;
+}
+
+.progress-bar {
+    border-radius: 14px;
+}
+
+.step {
+    display: none;
+}
+
+.step h3 {
+    margin-bottom: 20px;
+}
+
+
+
 .modal-footer > * {
     margin: 0.25rem;
 }

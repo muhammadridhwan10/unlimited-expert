@@ -50,11 +50,6 @@ class ApiController extends Controller
             'shot_time'=> isset($settings['interval_time'])?$settings['interval_time']:0.5,
         ];
 
-        $LogDesktop = new LogDesktop();
-        $LogDesktop->user_id = auth()->user()->id;
-        $LogDesktop->last_active_at = now();
-        $LogDesktop->save();
-
         return $this->success([
             'token' => auth()->user()->createToken('API Token')->plainTextToken,
             'user'=> auth()->user()->name,
@@ -119,6 +114,12 @@ class ApiController extends Controller
     public function addTracker(Request $request){
 
         $user = auth()->user();
+
+        $LogDesktop = new LogDesktop();
+        $LogDesktop->user_id = auth()->user()->id;
+        $LogDesktop->last_active_at = now();
+        $LogDesktop->save();
+        
         if($request->has('action') && $request->action == 'start'){
 
             $validatorArray = [

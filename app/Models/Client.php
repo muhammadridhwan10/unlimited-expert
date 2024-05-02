@@ -20,6 +20,15 @@ class Client extends Model
         'state',
         'city',
         'client_business_sector_id',
+        'name_pic',
+        'email_pic',
+        'telp_pic',
+        'total_company_income_per_year',
+        'total_company_assets_value',
+        'total_employeee',
+        'total_branch_offices',
+        'client_ownership_id',
+        'accounting_standars_id',
         'created_by',
     ];
 

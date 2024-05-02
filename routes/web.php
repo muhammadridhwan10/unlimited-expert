@@ -4370,5 +4370,9 @@ Route::resource('project-orders', 'ProjectOrdersController')->middleware(
         'revalidate',
     ]
 );
+Route::get('project-orders/{id}/request-approval/', 'ProjectOrdersController@approval')->name('order.approval');
+Route::get('project-orders/{id}/sent-approval', 'ProjectOrdersController@sent')->name('projectorder.sent');
+Route::get('project-orders/{id}/process-approved/', 'ProjectOrdersController@approved')->name('order.approved');
+Route::get('project-orders/{id}/approved', 'ProjectOrdersController@sentApproved')->name('projectorder.approved');
 Route::resource('audit', 'AuditController')->middleware(['auth', 'XSS']);
 Route::get('audit-view', 'AuditController@filterAuditView')->name('filter.audit.view')->middleware(['auth', 'XSS']);
