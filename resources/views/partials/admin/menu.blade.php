@@ -1097,6 +1097,13 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                 </ul>
                             </li>
                         @endif
+
+                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'share-screen')?'active':''}}">
+                            <a href="{{route('share-screen.index')}}" class="dash-link">
+                                <span class="dash-micon"><i class="ti ti-device-desktop"></i></span><span class="dash-mtext">{{__('Share Screen')}}</span><sup style="color: red;">New</sup>
+                            </a>
+                        </li>
+
                         {{-- @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'event')?'active':''}}">
                                 <a href="{{route('event.index')}}" class="dash-link">

@@ -86,6 +86,22 @@
     {
         maxDate = 26;
     } 
+    else if (currentMonth === 5)
+    {
+        maxDate = 28;
+    } 
+    else if (currentMonth === 6)
+    {
+        maxDate = 26;
+    }
+    else if (currentMonth === 7)
+    {
+        maxDate = 26;
+    } 
+    else if (currentMonth === 8)
+    {
+        maxDate = 27;
+    }  
     else {
       maxDate = currentDate.getDate();
     }

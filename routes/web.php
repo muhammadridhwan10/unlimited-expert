@@ -4376,3 +4376,11 @@ Route::get('project-orders/{id}/process-approved/', 'ProjectOrdersController@app
 Route::get('project-orders/{id}/approved', 'ProjectOrdersController@sentApproved')->name('projectorder.approved');
 Route::resource('audit', 'AuditController')->middleware(['auth', 'XSS']);
 Route::get('audit-view', 'AuditController@filterAuditView')->name('filter.audit.view')->middleware(['auth', 'XSS']);
+Route::resource('share-screen', 'ShareScreenController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::post('create-room', 'ShareScreenController@createRoom')->name('create-room');
+Route::post('join-room', 'ShareScreenController@joinRoom')->name('join-room');
