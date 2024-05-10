@@ -61,7 +61,7 @@
             top: 0;
             width: 100vw;
             height: 100vh;
-            background-image: url('{{ asset('assets/images/auth/tgs_cleanup.png') }}');
+            background-image: url('{{ asset('assets/images/auth/tgs_cleanup.jpg') }}');
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center;
@@ -89,10 +89,16 @@
             display: inline-block;
             bottom: -50vh;
             opacity: 0;
-            font-size: 3.0vw;
+            font-size: 40px;
             color: white;
             transition: ease-in-out 0.5s;
         }
+		
+		@media only screen and (max-width: 768px) {
+			.logo-parts {
+				font-size: 30px;
+			}
+		}
 
         .logo-parts.active {
             bottom: 60;
