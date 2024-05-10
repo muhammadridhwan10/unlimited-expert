@@ -839,8 +839,10 @@
                                             </p>
                                         </div>
                                     </div>
-                                    <p style="text-align:center"> ALLRICH ASSOCIATE </p>
-                                    <p style="text-align:center"> Wisma Staco 6th Fl, Jl Casablanca Kav 18, Jakarta 12870 | (+62) 21-8298265 | info@au-partners.com</p>
+                                    <p style="text-align:center; font-size: 9px;">
+                                        ALLRICH ASSOCIATE<br>
+                                        Wisma Staco 6th Fl, Jl Casablanca Kav 18, Jakarta 12870 | (+62) 21-8298265 | info@au-partners.com
+                                    </p>
                                 </div>
                             </div>
                         </div>

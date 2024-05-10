@@ -17,6 +17,9 @@ class Leave extends Model
         'approval',
         'remark',
         'status',
+        'total_sick_days',
+        'sick_letter',
+        'absence_type',
         'created_by',
     ];
 

@@ -227,4 +227,25 @@ class TimeTrackerController extends Controller
             return Utility::error_res(__('Track not found.'));
         }
     }
+
+    public function search_json(Request $request)
+    {
+        $month = $request->input('month');
+    
+        $timeTrackers = TimeTracker::with('user');
+
+        if (!empty($request->month)) {
+            $month = date('m', strtotime($request->month));
+            $year  = date('Y', strtotime($request->month));
+
+            $start_date = date($year . '-' . $month . '-01');
+            $end_date   = date($year . '-' . $month . '-t');
+
+            $timeTrackers->whereBetween('start_time', [$start_date, $end_date]);
+        } 
+        
+        $timeTrackers = $timeTrackers->get();
+
+        return response()->json($timeTrackers);
+    }
 }

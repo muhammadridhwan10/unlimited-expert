@@ -177,35 +177,6 @@
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script>
-        $(document).on('change', '#employee_id', function () {
-            var employee_id = $(this).val();
-
-            $.ajax({
-                url: '{{route('leave.jsoncount')}}',
-                type: 'POST',
-                data: {
-                    "employee_id": employee_id, "_token": "{{ csrf_token() }}",
-                },
-                success: function (data) {
-
-                    $('#leave_type_id').empty();
-                    $('#leave_type_id').append('<option value="">{{__('Select Leave Type')}}</option>');
-
-                    $.each(data, function (key, value) {
-
-                        if (value.total_leave >= value.days) {
-                            $('#leave_type_id').append('<option value="' + value.id + '" disabled>' + value.title + '&nbsp(' + value.total_leave + '/' + value.days + ')</option>');
-                        } else {
-                            $('#leave_type_id').append('<option value="' + value.id + '">' + value.title + '&nbsp(' + value.total_leave + '/' + value.days + ')</option>');
-                        }
-                    });
-
-                }
-            });
-        });
-
-    </script>
-    <script>
         $(document).ready(function () {
             $('#approve-selected').click(function () {
                 var selectedIds = [];

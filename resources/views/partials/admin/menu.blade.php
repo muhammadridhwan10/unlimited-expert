@@ -191,9 +191,9 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                             </li>
                         @endif
                         @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
-                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'leave')?'active':''}}">
-                                <a href="{{route('leave.index')}}" class="dash-link">
-                                    <span class="dash-micon"><i class="ti ti-calendar"></i></span><span class="dash-mtext">{{__('Leave')}}</span><sup style="color: red;">New</sup>
+                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'absence-request')?'active':''}}">
+                                <a href="{{route('absence-request.index')}}" class="dash-link">
+                                    <span class="dash-micon"><i class="ti ti-calendar"></i></span><span class="dash-mtext">{{__('Absence Request')}}</span><sup style="color: red;">New</sup>
                                 </a>
                             </li>
                         @endif
@@ -232,6 +232,12 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             {{ __('Employee Identity') }}
                                         </a>
                                         @endif
+                                    </li>
+                                    <li class="dash-item {{ request()->is('absence-request') ? 'active' : '' }}">
+                                        <a class="dash-link" href="{{route('absence-request.index')}}">{{__('Absence Request')}}</a>
+                                    </li>
+                                    <li class="dash-item {{ request()->is('overtime') ? 'active' : '' }}">
+                                        <a class="dash-link" href="{{ route('overtime.index') }}">{{__('Overtime')}}</a>
                                     </li>
                                     <!-- @if( Gate::check('manage set salary') || Gate::check('manage pay slip'))
                                     <li class="dash-item dash-hasmenu  {{ (Request::segment(1) == 'setsalary' || Request::segment(1) == 'payslip') ? 'active dash-trigger' : ''}}">
@@ -480,17 +486,17 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                     @endcan --}}
 
                                     @can('manage report')
-                                    <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'reports-monthly-attendance' || Request::segment(1) == 'reports-leave' || Request::segment(1) == 'leave' || Request::segment(1) == 'overtime' || Request::segment(1) == 'reports-payroll' || Request::segment(1) == 'reports-overtime') ? 'active dash-trigger' : ''}}" href="#hr-report" data-toggle="collapse" role="button" aria-expanded="{{(Request::segment(1) == 'reports-monthly-attendance' || Request::segment(1) == 'reports-leave' || Request::segment(1) == 'leave' || Request::segment(1) == 'overtime' || Request::segment(1) == 'reports-payroll' || Request::segment(1) == 'reports-overtime') ? 'true' : 'false'}}">
+                                    <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'reports-monthly-attendance' || Request::segment(1) == 'reports-leave' || Request::segment(1) == 'leave' || Request::segment(1) == 'reports-payroll' || Request::segment(1) == 'reports-overtime') ? 'active dash-trigger' : ''}}" href="#hr-report" data-toggle="collapse" role="button" aria-expanded="{{(Request::segment(1) == 'reports-monthly-attendance' || Request::segment(1) == 'reports-leave' || Request::segment(1) == 'leave' || Request::segment(1) == 'overtime' || Request::segment(1) == 'reports-payroll' || Request::segment(1) == 'reports-overtime') ? 'true' : 'false'}}">
                                         <a class="dash-link" href="#">{{__('Reports')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                         <ul class="dash-submenu">
                                             <li class="dash-item {{ request()->is('reports-payroll') ? 'active' : '' }}">
                                                 <a class="dash-link" href="{{ route('report.payroll') }}">{{__('Payroll')}}</a>
                                             </li>
                                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'reports-leave') ? 'active dash-trigger' : ''}}" href="#navbar-attendance" data-toggle="collapse" role="button" aria-expanded="{{ (Request::segment(1) == 'reports-leave') ? 'true' : 'false'}}">
-                                                <a class="dash-link" href="#">{{__('Leave')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
+                                                <a class="dash-link" href="#">{{__('Absence Request')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                                 <ul class="dash-submenu">
-                                                    <li class="dash-item {{ request()->is('leave') ? 'active' : '' }}">
-                                                        <a class="dash-link" href="{{route('leave.index')}}">{{__('Approval Leave')}}</a>
+                                                    <li class="dash-item {{ request()->is('reports-sick') ? 'active' : '' }}">
+                                                        <a class="dash-link" href="{{ route('report.sick') }}">{{__('Report Sick')}}</a>
                                                     </li>
                                                     <li class="dash-item {{ request()->is('reports-leave') ? 'active' : '' }}">
                                                         <a class="dash-link" href="{{ route('report.leave') }}">{{__('Report Leave')}}</a>
@@ -508,17 +514,6 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                                     </li>
                                                 </ul>
                                             </li>
-                                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'reports-overtime') ? 'active dash-trigger' : ''}}" href="#navbar-attendance" data-toggle="collapse" role="button" aria-expanded="{{ (Request::segment(1) == 'reports-overtime') ? 'true' : 'false'}}">
-                                                <a class="dash-link" href="#">{{__('Overtime')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
-                                                <ul class="dash-submenu">
-                                                    <li class="dash-item {{ request()->is('reports-overtime') ? 'active' : '' }}">
-                                                        <a class="dash-link" href="{{ route('report.overtime') }}">{{ __('Report Overtime') }}</a>
-                                                    </li>
-                                                    <li class="dash-item {{ request()->is('overtime') ? 'active' : '' }}">
-                                                        <a class="dash-link" href="{{ route('overtime.index') }}">{{__('Approval Overtime')}}</a>
-                                                    </li>
-                                                </ul>
-                                            </li>
                                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'reports-projects') ? 'active dash-trigger' : ''}}" href="#navbar-attendance" data-toggle="collapse" role="button" aria-expanded="{{ (Request::segment(1) == 'reports-projects') ? 'true' : 'false'}}">
                                                 <a class="dash-link" href="#">{{__('Projects')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                                 <ul class="dash-submenu">
@@ -529,6 +524,9 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                                         <a class="dash-link" href="{{route('project_report.index') }}">{{__('Project Progress Reports')}}</a>
                                                     </li>
                                                 </ul>
+                                            </li>
+                                            <li class="dash-item {{ request()->is('reports-overtime') ? 'active' : '' }}">
+                                                <a class="dash-link" href="{{ route('report.overtime') }}">{{__('Report Overtime')}}</a>
                                             </li>
                                             <li class="dash-item {{ request()->is('reports-reimbursment') ? 'active' : '' }}">
                                                 <a class="dash-link" href="{{ route('report.reimbursment') }}">{{__('Report Reimbursment')}}</a>
@@ -1098,11 +1096,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                             </li>
                         @endif
 
-                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'share-screen')?'active':''}}">
+                        {{-- <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'share-screen')?'active':''}}">
                             <a href="{{route('share-screen.index')}}" class="dash-link">
                                 <span class="dash-micon"><i class="ti ti-device-desktop"></i></span><span class="dash-mtext">{{__('Share Screen')}}</span><sup style="color: red;">New</sup>
                             </a>
-                        </li>
+                        </li> --}}
 
                         {{-- @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'event')?'active':''}}">

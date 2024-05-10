@@ -2,16 +2,25 @@
 @section('page-title')
     {{__('Invoice Create')}}
 @endsection
-
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
     <li class="breadcrumb-item"><a href="{{route('invoice.index')}}">{{__('Invoice')}}</a></li>
     <li class="breadcrumb-item">{{__('Invoice Create')}}</li>
 @endsection
+@push('css-page')
+<link rel="stylesheet" href="{{url('css/select2.min.css')}}">
+@endpush
 @push('script-page')
     <script src="{{asset('js/jquery-ui.min.js')}}"></script>
     <script src="{{asset('js/jquery.repeater.min.js')}}"></script>
+    <script src="{{asset('js/select2.min.js')}}"></script>
     <script>
+        $(document).ready(function() {
+            console.log("Select2 initialized.");
+            $('.item').select2({
+                allowClear: true
+            });
+        });
         var selector = "body";
         if ($(selector + " .repeater").length) {
             var $dragAndDrop = $("body .repeater tbody").sortable({
@@ -33,7 +42,7 @@
                         });
                     }
                     if($('.select2').length) {
-                        $('.select2').select2();
+                        $('.item').select2();
                     }
 
                 },
@@ -290,7 +299,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         {{ Form::label('invoice_template', __('Invoice Template'),['class'=>'form-label']) }}
-                                        <select class="form-control select2" name="invoice_template">
+                                        <select class="form-control" name="invoice_template">
                                             @foreach(Utility::templateData()['templates'] as $key => $template)
                                                 <option value="{{$key}}" {{(isset($settings['invoice_template']) && $settings['invoice_template'] == $key) ? 'selected' : ''}}>{{$template}}</option>
                                             @endforeach
@@ -300,7 +309,7 @@
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         {{ Form::label('currency', __('Currency'),['class'=>'form-label']) }}
-                                        <select class="form-control select2 currency" name="currency" id="currency">
+                                        <select class="form-control currency" name="currency" id="currency">
                                             <option value="{{ $siteCurrencySymbol }}">{{ $siteCurrencySymbol }}</option>
                                             <option value="{{ $siteCurrencySymbol2 }}">{{ $siteCurrencySymbol2 }}</option>
                                             <!-- Tambahkan opsi lain jika diperlukan -->
@@ -360,12 +369,12 @@
                             <tr>
 
                                 <td>
-                                    {{ Form::select('item', $projects,'', array('class' => 'form-control select2 item','required'=>'required')) }}
+                                    {{ Form::select('item', $projects,'', array('class' => 'select2 item custom-select-style','style'=>'max-width:250px','required'=>'required')) }}
                                 </td>
 
 
                                 <td>
-                                    <div class="price-input input-group search-form">
+                                    <div class="price-input input-group search-form" style="width:200px">
                                         {{ Form::text('price','', array('class' => 'form-control price','required'=>'required','placeholder'=>__('Price'),'required'=>'required')) }}
                                         <span class="input-group-text bg-transparent currency-symbol">{{\Auth::user()->currencySymbol()}}</span>
                                     </div>
@@ -374,9 +383,10 @@
 
 
                                 <td>
-                                        <div class="input-group colorpickerinput">
+                                        <div class="input-group colorpickerinput" style="width:100px">
                                             {{ Form::text('tax','', array('class' => 'form-control tax','required'=>'required','placeholder'=>__('Tax'))) }}
                                             {{ Form::hidden('itemTaxPrice','', array('class' => 'form-control itemTaxPrice')) }}
+                                            <span class="input-group-text bg-transparent">{{'%'}}</span>
                                         </div>
                                 </td>
                                 <td></td>

@@ -847,10 +847,10 @@
                                             </p>
                                         </div>
                                     </div>
-                                    <br>
-                                    <br>
-                                    <p style="text-align:center"> X GROUP ADVISORY </p>
-                                    <p style="text-align:center"> Wisma Staco 6th Fl, Jl Casablanca Kav 18, Jakarta 12870 | (+62) 21-8298265 | info@au-partners.com</p>
+                                    <p style="text-align:center; font-size: 9px;">
+                                        X GROUP ADVISORY <br>
+                                        Wisma Staco 6th Fl, Jl Casablanca Kav 18, Jakarta 12870 | (+62) 21-8298265 | info@au-partners.com
+                                    </p>
                                 </div>
                             </div>
                         </div>

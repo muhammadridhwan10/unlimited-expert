@@ -2271,25 +2271,25 @@ Route::get('employee/{id}/leave/{status}/{type}/{month}/{year}', 'ReportControll
         'XSS',
     ]
 );
-Route::get('leave/{id}/action', 'LeaveController@action')->name('leave.action')->middleware(
+Route::get('absence-request/{id}/action', 'LeaveController@action')->name('absence-request.action')->middleware(
     [
         'auth',
         'XSS',
     ]
 );
-Route::post('leave/changeaction', 'LeaveController@changeaction')->name('leave.changeaction')->middleware(
+Route::post('absence-request/changeaction', 'LeaveController@changeaction')->name('absence-request.changeaction')->middleware(
     [
         'auth',
         'XSS',
     ]
 );
-Route::post('leave/jsoncount', 'LeaveController@jsoncount')->name('leave.jsoncount')->middleware(
+Route::post('absence-request/jsoncount', 'LeaveController@jsoncount')->name('absence-request.jsoncount')->middleware(
     [
         'auth',
         'XSS',
     ]
 );
-Route::resource('leave', 'LeaveController')->middleware(
+Route::resource('absence-request', 'LeaveController')->middleware(
     [
         'auth',
         'XSS',
@@ -2332,6 +2332,12 @@ Route::get('reports-monthly-attendance', 'ReportController@monthlyAttendance')->
     ]
 );
 Route::get('reports-overtime', 'ReportController@overtime')->name('report.overtime')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('reports-sick', 'ReportController@sick')->name('report.sick')->middleware(
     [
         'auth',
         'XSS',
@@ -4289,6 +4295,12 @@ Route::get('employee/{id}/reimbursment/{month}/type/{reimbursment_type}', 'Repor
         'XSS',
     ]
 );
+Route::get('employee/{id}/sick-leave/{month}', 'ReportController@employeeSick')->name('report.employee.sick')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
 Route::resource('reimbursmenttype', 'ReimbursmentTypeController')->middleware(
     [
         'auth',
@@ -4384,3 +4396,17 @@ Route::resource('share-screen', 'ShareScreenController')->middleware(
 );
 Route::post('create-room', 'ShareScreenController@createRoom')->name('create-room');
 Route::post('join-room', 'ShareScreenController@joinRoom')->name('join-room');
+Route::post('tracker/search_json', 'TimeTrackerController@search_json')->name('time.tracker.search_json')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::post('absence-request/sick-letter', ['as' => 'sick-letter.image.view','uses' => 'LeaveController@getSickLetter']);
+Route::post('report-sick/sick-letter', ['as' => 'sick.letter.image.view','uses' => 'ReportController@getSickLetter']);
+Route::resource('document-request', 'DocumentRequestController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);

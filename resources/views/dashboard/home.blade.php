@@ -342,8 +342,6 @@
                                         <tr>
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <img src="{{asset(Storage::url('/'.$due_project->project_image ))}}"
-                                                        class="wid-40 rounded-circle me-3" alt="avatar image">
                                                     <div>
                                                         <h5 class="mb-0"><a class="text-blue" href="{{ route('projects.show',$due_project) }}">{{ $due_project->project_name }}</a></h5>
                                                         <!-- <p class="mb-0"><span class="text-success">{{ \Auth::user()->priceFormat($due_project->budget) }}</p> -->
@@ -414,8 +412,6 @@
                                             <tr>
                                                 <td>
                                                     <div class="d-flex align-items-center">
-                                                        <img src="{{asset(Storage::url('/'.$project->project_image ))}}"
-                                                            class="wid-40 rounded-circle me-3" alt="avatar image">
                                                         <div>
                                                            <h5 class="mb-0"><a class="text-blue" href="{{ route('projects.show',$project) }}">{{ $project->project_name }}</a></h5>
                                                             <!-- <p class="mb-0"><span class="text-success">{{ \Auth::user()->priceFormat($due_project->budget) }}</p> -->

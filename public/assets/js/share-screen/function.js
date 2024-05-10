@@ -1,1 +1,248 @@
-var room_id,local_stream,screenStream,getUserMedia=navigator.getUserMedia||navigator.webkitGetUserMedia||navigator.mozGetUserMedia,peer=null,currentPeer=null,screenSharing=!1,cameraOn=!0;function toggleCamera(){cameraOn?stopCamera():startCamera()}function startCamera(){getUserMedia({video:!0,audio:!0},(e=>{console.log(e),setLocalStream(local_stream=e),cameraOn=!0,document.getElementById("cameraIcon").classList.remove("fa-video-slash"),document.getElementById("cameraIcon").classList.add("fa-video"),document.getElementById("cameraStatus").innerText="Turn Off Camera"}),(e=>{console.log(e)}))}function stopCamera(){local_stream.getVideoTracks().forEach((e=>e.stop())),document.getElementById("local-video").srcObject=null,cameraOn=!1,document.getElementById("cameraIcon").classList.remove("fa-video"),document.getElementById("cameraIcon").classList.add("fa-video-slash"),document.getElementById("cameraStatus").innerText="Turn On Camera"}function createRoom(){console.log("Creating Room");let e=document.getElementById("room-input").value;" "!=e&&""!=e?(room_id=e,(peer=new Peer(room_id)).on("open",(e=>{console.log("Peer Room ID: ",e),getUserMedia({video:!0,audio:!0},(e=>{console.log(e),setLocalStream(local_stream=e)}),(e=>{console.log(e)})),alert("Room created successfully!")})),peer.on("call",(e=>{e.answer(local_stream),e.on("stream",(e=>{console.log("got call"),console.log(e),setRemoteStream(e)})),currentPeer=e}))):alert("Please enter room number")}function setLocalStream(e){document.getElementById("local-vid-container").hidden=!1,document.getElementById("buttons").hidden=!1;let t=document.getElementById("local-video");t.srcObject=e,t.muted=!0,t.play()}function setScreenSharingStream(e){document.getElementById("screenshare-container").hidden=!1;let t=document.getElementById("screenshared-video");t.srcObject=e,t.muted=!0,t.play()}function setRemoteStream(e){document.getElementById("remote-vid-container").hidden=!1;let t=document.getElementById("remote-video");t.srcObject=e,t.play()}function notify(e){let t=document.getElementById("notification");t.innerHTML=e,t.hidden=!1,setTimeout((()=>{t.hidden=!0}),3e3)}function joinRoom(){console.log("Joining Room");let e=document.getElementById("room-input").value;" "!=e&&""!=e?(room_id=e,(peer=new Peer).on("open",(e=>{console.log("Connected room with Id: "+e),getUserMedia({video:!0,audio:!1},(e=>{setLocalStream(local_stream=e),alert("Successfully joined the room!");let t=peer.call(room_id,e);t.on("stream",(e=>{setRemoteStream(e)})),currentPeer=t}),(e=>{console.log(e)}))}))):alert("Please enter room number")}function startScreenShare(){screenSharing&&stopScreenSharing(),navigator.mediaDevices.getDisplayMedia({video:!0}).then((e=>{setScreenSharingStream(e);let t=(screenStream=e).getVideoTracks()[0];if(t.onended=()=>{stopScreenSharing()},peer){currentPeer.peerConnection.getSenders().find((function(e){return e.track.kind==t.kind})).replaceTrack(t),screenSharing=!0}console.log(screenStream)}))}function stopScreenSharing(){if(!screenSharing)return;let e=local_stream.getVideoTracks()[0];if(peer){currentPeer.peerConnection.getSenders().find((function(t){return t.track.kind==e.kind})).replaceTrack(e)}screenStream.getTracks().forEach((function(e){e.stop()})),screenSharing=!1}
+var room_id;
+var getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+var local_stream;
+var screenStream;
+var peer = null;
+var currentPeer = null
+var screenSharing = false
+var cameraOn = true;
+var microphoneOn = true;
+
+function toggleCamera() {
+    if (cameraOn) {
+        stopCamera();
+    } else {
+        startCamera();
+    }
+}
+
+function toggleMicrophone() {
+    if (microphoneOn) {
+        stopMicrophone();
+    } else {
+        startMicrophone();
+    }
+}
+
+function startMicrophone() {
+    getUserMedia({ video: true, audio: true }, (stream) => {
+        console.log(stream);
+        local_stream = stream;
+        setLocalStream(local_stream);
+        microphoneOn = true;
+        document.getElementById("microphoneIcon").classList.remove("fa-microphone-slash");
+        document.getElementById("microphoneIcon").classList.add("fa-microphone");
+        document.getElementById("microphoneStatus").innerText = "Turn Off Microphone";
+    }, (err) => {
+        console.log(err);
+    });
+}
+
+function stopMicrophone() {
+    local_stream.getAudioTracks().forEach(track => track.stop());
+    microphoneOn = false;
+    document.getElementById("microphoneIcon").classList.remove("fa-microphone");
+    document.getElementById("microphoneIcon").classList.add("fa-microphone-slash");
+    document.getElementById("microphoneStatus").innerText = "Turn On Microphone";
+}
+
+function startCamera() {
+    getUserMedia({ video: true, audio: true }, (stream) => {
+        console.log(stream);
+        local_stream = stream;
+        setLocalStream(local_stream);
+        cameraOn = true;
+        document.getElementById("cameraIcon").classList.remove("fa-video-slash"); 
+        document.getElementById("cameraIcon").classList.add("fa-video");
+        document.getElementById("cameraStatus").innerText = "Turn Off Camera";
+    }, (err) => {
+        console.log(err);
+    });
+}
+
+function stopCamera() {
+    local_stream.getVideoTracks().forEach(track => track.stop());
+    document.getElementById("local-video").srcObject = null;
+    cameraOn = false;
+    document.getElementById("cameraIcon").classList.remove("fa-video");
+    document.getElementById("cameraIcon").classList.add("fa-video-slash");
+    document.getElementById("cameraStatus").innerText = "Turn On Camera";
+}
+
+function createRoom() {
+    console.log("Creating Room")
+    let room = document.getElementById("room-input").value;
+    if (room == " " || room == "") {
+        alert("Please enter room number")
+        return;
+    }
+
+    room_id = room;
+
+    //$.ajax({
+    //    url: "{{ route('create-room') }}",
+    //    type: "POST",
+    //    data: { room_id: room_id, _token: $('meta[name="csrf-token"]').attr('content') },
+    //    success: function(response) {
+    //        if (response.success) {
+    //            alert(response.message);
+    //        } else {
+    //            alert("Failed to create room!");
+    //        }
+    //    },
+    //    error: function(xhr) {
+    //        console.log(xhr.responseText);
+    //        alert("Error occurred while creating room. Please try again.");
+    //    }
+    //});
+
+    peer = new Peer(room_id)
+    peer.on('open', (id) => {
+        console.log("Peer Room ID: ", id)
+        getUserMedia({ video: true, audio: true }, (stream) => {
+            console.log(stream);
+            local_stream = stream;
+            setLocalStream(local_stream)
+        }, (err) => {
+            console.log(err)
+        })
+        //notify("Waiting for peer to join.")
+        alert("Room created successfully!");
+    })
+    peer.on('call', (call) => {
+        call.answer(local_stream);
+        call.on('stream', (stream) => {
+            console.log("got call");
+            console.log(stream);
+            setRemoteStream(stream)
+        })
+        currentPeer = call;
+    })
+}
+
+function setLocalStream(stream) {
+    document.getElementById("local-vid-container").hidden = false;
+        document.getElementById("buttons").hidden = false;
+    let video = document.getElementById("local-video");
+    video.srcObject = stream;
+    video.muted = true;
+    video.play();
+}
+function setScreenSharingStream(stream) {
+    document.getElementById("screenshare-container").hidden = false;
+    let video = document.getElementById("screenshared-video");
+    video.srcObject = stream;
+    video.muted = true;
+    video.play();
+}
+function setRemoteStream(stream) {
+    document.getElementById("remote-vid-container").hidden = false;
+    let video = document.getElementById("remote-video");
+    video.srcObject = stream;
+    video.play();
+}
+
+
+function notify(msg) {
+    let notification = document.getElementById("notification")
+    notification.innerHTML = msg
+    notification.hidden = false
+    setTimeout(() => {
+        notification.hidden = true;
+    }, 3000)
+}
+
+function joinRoom() {
+    console.log("Joining Room")
+    let room = document.getElementById("room-input").value;
+    if (room == " " || room == "") {
+        alert("Please enter room number")
+        return;
+    }
+
+    //let csrfToken = document.head.querySelector('meta[name="csrf-token"]').content;
+
+    //let data = {
+    //    room_id: room,
+    //    _token: csrfToken
+    //};
+
+
+    //$.ajax({
+    //url: "{{ route('join-room') }}",
+    //type: "POST",
+    //data: data,
+    //success: function(response) {
+    //    if (response.success) {
+    //        alert(response.message);
+    //    } else {
+    //        alert("The room id you entered is incorrect!");
+    //    }
+    //},
+    //    error: function(xhr) {
+    //        console.log(xhr.responseText);
+    //        alert("Error occurred while joining room. Please try again.");
+    //    }
+    //});
+
+    room_id = room;
+    peer = new Peer()
+    peer.on('open', (id) => {
+        console.log("Connected room with Id: " + id)
+
+        getUserMedia({ video: true, audio: false }, (stream) => {
+            local_stream = stream;
+            setLocalStream(local_stream)
+            //notify("Joining peer")
+            alert("Successfully joined the room!");
+            let call = peer.call(room_id, stream)
+            call.on('stream', (stream) => {
+                setRemoteStream(stream);
+
+            })
+            currentPeer = call;
+        }, (err) => {
+            console.log(err)
+        })
+
+    })
+}
+
+
+function startScreenShare() {
+    if (screenSharing) {
+        stopScreenSharing()
+    }
+    navigator.mediaDevices.getDisplayMedia({ video: true }).then((stream) => {
+        setScreenSharingStream(stream);
+
+        screenStream = stream;
+        let videoTrack = screenStream.getVideoTracks()[0];
+        videoTrack.onended = () => {
+            stopScreenSharing()
+        }
+        if (peer) {
+            let sender = currentPeer.peerConnection.getSenders().find(function (s) {
+                return s.track.kind == videoTrack.kind;
+            })
+            sender.replaceTrack(videoTrack)
+            screenSharing = true
+        }
+        console.log(screenStream)
+    })
+}
+
+function stopScreenSharing() {
+    if (!screenSharing) return;
+    let videoTrack = local_stream.getVideoTracks()[0];
+    if (peer) {
+        let sender = currentPeer.peerConnection.getSenders().find(function (s) {
+            return s.track.kind == videoTrack.kind;
+        })
+        sender.replaceTrack(videoTrack)
+    }
+    screenStream.getTracks().forEach(function (track) {
+        track.stop();
+    });
+    screenSharing = false
+}

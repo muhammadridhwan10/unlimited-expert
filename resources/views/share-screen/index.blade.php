@@ -28,6 +28,46 @@
         .camera-button i {
             color: #fff;
         }
+
+        .microphone-button {
+            width: 50px;
+            height: 50px;
+            background-color: #f26622;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .microphone-button:hover {
+            background-color: #f26622;
+        }
+
+        .microphone-button i {
+            color: #fff;
+        }
+
+        .desktop-button {
+            width: 50px;
+            height: 50px;
+            background-color: #f26622;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .desktop-button:hover {
+            background-color: #f26622;
+        }
+
+        .desktop-button i {
+            color: #fff;
+        }
     </style>
 @endpush
 
@@ -81,6 +121,8 @@
                                     </div>
                                 </div>
                             </div>
+                            <br>
+                            <br>
 
                             <div class="row" id="buttons" hidden>
                                 <div class="col-md-12 text-center"> 
@@ -89,13 +131,23 @@
                                             <i id="cameraIcon" class="fas fa-video"></i>
                                         </div>
                                     </div>
-                                    <button type="submit" class="btn btn-primary" onclick="startScreenShare()">{{__('Share Screen')}}</button>
+                                    <div class="btn-group" role="group" aria-label="Desktop Controls">
+                                        <div class="desktop-button" onclick="startScreenShare()">
+                                            <i id="desktopIcon" class="fas fa-desktop"></i>
+                                        </div>
+                                    </div>
+                                    {{-- <button type="submit" class="btn btn-primary" onclick="startScreenShare()">{{__('Share Screen')}}</button> --}}
+                                    <div class="btn-group" role="group" aria-label="Microphone Controls">
+                                        <div class="microphone-button" onclick="toggleMicrophone()">
+                                            <i id="microphoneIcon" class="fas fa-microphone"></i>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             <div class="row mt-3">
                                 <div class="col text-center" id="screenshare-container" style="display: none;">
-                                    <video height="300" id="screenshared-video" controls class="local-video"></video>
+                                    <video height="300" id="screenshared-video" controls class="col-12 local-video"></video>
                                 </div>
                             </div>
                         </div>

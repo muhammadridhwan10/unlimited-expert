@@ -852,10 +852,10 @@
                                             </p>
                                         </div>
                                     </div>
-                                    <br>
-                                    <br>
-                                    <p style="text-align:center"> KAP AGUS UBAIDILLAH & REKAN </p>
-                                    <p style="text-align:center"> Jl. Kalpataru No 33 Ruko Kav 4 Jatimulyo, Malang | (+62) 21-8298265 | info@au-partners.com</p>
+                                    <p style="text-align:center; font-size: 9px;">
+                                        KAP AGUS UBAIDILLAH & REKAN <br>
+                                        Jl. Kalpataru No 33 Ruko Kav 4 Jatimulyo, Malang | (+62) 21-8298265 | info@au-partners.com
+                                    </p>
                                 </div>
                             </div>
                         </div>

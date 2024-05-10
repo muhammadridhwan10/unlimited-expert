@@ -563,18 +563,6 @@
                                             @endif
                                             </tbody>
                                         </table>
-                                        <div data-v-f2a183a6="" class="break-25"></div>
-                                        <!-- <p data-v-f2a183a6="">@if($settings['company_name']){{$settings['company_name']}}@endif</p>
-                                        <p data-v-f2a183a6="">
-                                            {{-- @if($settings['company_email']){{$settings['company_email']}}@endif<br>
-                                            @if($settings['company_telephone']){{$settings['company_telephone']}}@endif<br>
-                                            @if($settings['company_address']){{$settings['company_address']}}@endif
-                                            @if($settings['company_city']) <br> {{$settings['company_city']}}, @endif @if($settings['company_state']){{$settings['company_state']}}@endif @if($settings['company_zipcode']) - {{$settings['company_zipcode']}}@endif
-                                            @if($settings['company_country']) <br>{{$settings['company_country']}}@endif <br>
-                                            @if(!empty($settings['registration_number'])){{__('Registration Number')}} : {{$settings['registration_number']}} @endif<br>
-                                            @if(!empty($settings['tax_type']) && !empty($settings['vat_number'])){{$settings['tax_type'].' '. __('Number')}} : {{$settings['vat_number']}} <br>@endif --}}
-
-                                        </p> -->
                                     </div>
 
                                     <div data-v-f2a183a6="" class="d-header-50 d-right">
@@ -582,7 +570,7 @@
                                         <br>
                                         <div data-v-f2a183a6="" class="d-title">{{__('INVOICE')}}</div>
 
-                                        <div class="float-right mb-5">
+                                        <div class="float-right mb-0">
                                             {!! DNS2D::getBarcodeHTML(route('invoice.link.copy',\Crypt::encrypt($invoice->invoice_id)), "QRCODE",2,2) !!}
                                         </div>
 
@@ -591,14 +579,6 @@
                                             <tr>
                                                 <td>{{$invoice->invoice_id}}</td>
                                             </tr>
-                                            <!-- <tr>
-                                                <td>{{__('Issue Date')}}:</td>
-                                                <td>{{Utility::dateFormat($settings,$invoice->issue_date)}}</td>
-                                            </tr>
-                                            <tr>
-                                                <td>{{__('Due Date')}}:</td>
-                                                <td>{{Utility::dateFormat($settings,$invoice->due_date)}}</td>
-                                            </tr> -->
                                             @if(!empty($customFields) && count($invoice->customField)>0)
                                                 @foreach($customFields as $field)
                                                     <tr>
@@ -627,11 +607,8 @@
                                                 $firstLine = ($commaPosition !== false) ? substr($address, 0, $commaPosition) : $address;
                                                 $remainingAddress = ($commaPosition !== false) ? substr($address, $commaPosition + 1) : '';
                                             @endphp
-                                                <!-- {{!empty($clients->telp)?$clients->telp:''}}<br> -->
                                                 {{ $firstLine }}<br>
                                                 {{ $remainingAddress }}<br>
-                                                <!-- {{!empty($customer->billing_zip)?$customer->billing_zip:''}}<br>
-                                                {{!empty($clients->city)?$clients->city:'' .', '}} {{!empty($clients->state)?$clients->state:'',', '}} {{!empty($clients->country)?$clients->country:''}} -->
                                             </p>
                                         </div>
                                         @if($settings['shipping_display']=='on')
@@ -640,9 +617,6 @@
                                                 <p>
                                                     {{!empty($clients->name_invoice)?$clients->name_invoice:''}}<br>
                                                     {{!empty($clients->position)?$clients->position:''}}<br>
-                                                    <!-- {{!empty($customer->shipping_address)?$customer->shipping_address:''}}<br>
-                                                    {{!empty($customer->shipping_zip)?$customer->shipping_zip:''}}<br>
-                                                    {{!empty($customer->shipping_city)?$customer->shipping_city:'' . ', '}} {{!empty($customer->shipping_state)?$customer->shipping_state:'' .', '}},{{!empty($customer->shipping_country)?$customer->shipping_country:''}} -->
                                                 </p>
                                             </div>
                                         @endif
@@ -652,11 +626,6 @@
 
                                             <div data-v-f2a183a6="" class="d-table-tr" style="background: {{$color}};color:{{$font_color}}">
                                                 <div class="d-table-th w-15" style="text-align:center">{{__('Description')}}</div>
-                                                <!-- <div class="d-table-th w-5">{{__('Rate')}}</div>
-                                                <div class="d-table-th w-5">{{__('Tax')}} (%)</div>
-                                                <div class="d-table-th w-4">{{__('Discount')}}</div> -->
-
-{{--                                                <div class="d-table-th w-6">{{__('Description')}}</div>--}}
                                                <div class="d-table-th w-6 text-right">{{__('Amount')}}
                                                 
                                                 </div>
@@ -670,28 +639,8 @@
                                                             <div class="d-table-td w-13">
                                                                 <pre data-v-f2a183a6="">{{$item->description}}</pre>
                                                             </div>
-                                                            <!-- <div class="d-table-td w-5">
-                                                                <pre data-v-f2a183a6="">{{Utility::priceFormat($settings,$item->price)}}</pre>
-                                                            </div> -->
-                                                            <!-- <div class="d-table-td w-5">
-                                                                <pre data-v-f2a183a6="">
-                                                                   @if(!empty($item->itemTax))
-                                                                        @foreach($item->itemTax as $taxes)
-                                                                            <span>{{$taxes['name']}}</span>  <span>({{$taxes['rate']}})</span> <span>{{$taxes['price']}}</span>
-                                                                        @endforeach
-                                                                    @else
-                                                                        -
-                                                                    @endif
-                                                                </pre>
-                                                            </div> -->
+    
 
-                                                                <!-- <div class="d-table-td w-4">
-                                                                    <pre data-v-f2a183a6="">{{($item->discount!=0)?Utility::priceFormat($settings,$item->discount):'-'}}</pre>
-                                                                </div> -->
-
-{{--                                                            <div class="d-table-td w-3">--}}
-{{--                                                                <pre data-v-f2a183a6="">{{!empty($item->description)?$item->description:'-'}}</pre>--}}
-{{--                                                            </div>--}}
                                                             <div class="d-table-value"><span>
                                                                 @if ($invoice->currency == '$')
                                                                     {{Utility::priceFormat2($settings,$item->price)}}
@@ -718,33 +667,6 @@
                                                 @endif
                                             </div>
 
-                                            <!-- <div class="d-table-tr" style="border-bottom:1px solid {{$color}};">
-                                                <div class="d-table-td w-4">
-                                                    <pre data-v-f2a183a6="">{{__('Total')}}</pre>
-                                                </div>
-                                                <div class="d-table-td w-2">
-                                                    <pre data-v-f2a183a6="">{{$invoice->totalQuantity}}</pre>
-                                                </div>
-                                                <div class="d-table-td w-5">
-                                                    <pre data-v-f2a183a6="">{{Utility::priceFormat($settings,$invoice->totalRate)}}</pre>
-                                                </div>
-                                                <div class="d-table-td w-5">
-                                                    <pre data-v-f2a183a6="">{{Utility::priceFormat($settings,$invoice->totalTaxPrice) }}</pre>
-                                                </div>
-
-                                                    <div class="d-table-td w-4">
-                                                        <pre data-v-f2a183a6="">{{Utility::priceFormat($settings,$invoice->totalDiscount)}}</pre>
-                                                    </div>
-
-{{--                                                <div class="d-table-td w-3">--}}
-{{--                                                    <pre data-v-f2a183a6="">-</pre>--}}
-{{--                                                </div>--}}
-                                                <div class="d-table-td w-4 text-right">
-                                                    <span>{{Utility::priceFormat($settings,$invoice->getSubTotal())}}
-                                                    </span>
-                                                </div>
-                                            </div> -->
-
                                             <div data-v-f2a183a6="" class="d-table-footer">
                                                 <div data-v-f2a183a6="" class="d-table-controls"></div>
                                                 <div data-v-f2a183a6="" class="d-table-summary">
@@ -758,12 +680,6 @@
                                                             @endif 
                                                         </div>
                                                     </div>
-                                                    {{-- @if($invoice->getTotalDiscount())
-                                                        <div data-v-f2a183a6="" class="d-table-summary-item">
-                                                            <div data-v-f2a183a6="" class="d-table-label">{{__('Discount')}}:</div>
-                                                            <div data-v-f2a183a6="" class="d-table-value">{{Utility::priceFormat($settings,$invoice->getTotalDiscount())}}</div>
-                                                        </div>
-                                                    @endif --}}
                                                     @if($invoice->getTotalTax())
                                                             <div data-v-f2a183a6="" class="d-table-summary-item">
                                                                 <div data-v-f2a183a6="" class="d-table-label">{{__('Tax')}}:</div>
@@ -786,18 +702,6 @@
                                                                 @endif
                                                             </strong></div>
                                                     </div>
-                                                    <!-- <div data-v-f2a183a6="" class="d-table-summary-item">
-                                                        <div data-v-f2a183a6="" class="d-table-label">{{__('Paid')}}:</div>
-                                                        <div data-v-f2a183a6="" class="d-table-value">{{Utility::priceFormat($settings,($invoice->getTotal()-$invoice->getDue())-($invoice->invoiceTotalCreditNote()))}}</div>
-                                                    </div>
-                                                    <div data-v-f2a183a6="" class="d-table-summary-item">
-                                                        <div data-v-f2a183a6="" class="d-table-label">{{__('Credit Note')}}:</div>
-                                                        <div data-v-f2a183a6="" class="d-table-value">{{Utility::priceFormat($settings,($invoice->invoiceTotalCreditNote()))}}</div>
-                                                    </div>
-                                                    <div data-v-f2a183a6="" class="d-table-summary-item">
-                                                        <div data-v-f2a183a6="" class="d-table-label">{{__('Due Amount')}} : </div>
-                                                        <div data-v-f2a183a6="" class="d-table-value"> {{Utility::priceFormat($settings,$invoice->getDue())}}</div>
-                                                    </div> -->
                                                 </div>
                                             </div>
 
@@ -826,7 +730,6 @@
                                             </p>
                                             </div>
                                                 <p style= "text-align:center">
-                                                {{-- <img src="{{$ttd}}" style="width: 210px"/> --}}
                                                 <br>
                                                 <br>
                                                 <br>
@@ -839,10 +742,11 @@
                                             </p>
                                         </div>
                                     </div>
-                                    <br>
-                                    <br>
-                                    <p style="text-align:center"> KAP AGUS UBAIDILLAH & REKAN </p>
-                                    <p style="text-align:center"> Wisma Staco 6th Fl, Jl Casablanca Kav 18, Jakarta 12870 | (+62) 21-8298265 | info@au-partners.com</p>
+                                    <p style="text-align:center; font-size: 9px;">
+                                        KAP AGUS UBAIDILLAH & REKAN <br>
+                                        Wisma Staco 6th Fl, Jl Casablanca Kav 18, Jakarta 12870 | (+62) 21-8298265 | info@au-partners.com
+                                    </p>
+
                                 </div>
                             </div>
                         </div>

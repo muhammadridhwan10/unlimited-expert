@@ -3975,9 +3975,9 @@ class ReportController extends Controller
                 $employeeLeave['employee_id'] = $employee->employee_id;
                 $employeeLeave['employee']    = $employee->name;
 
-                $approved = Leave::where('employee_id', $employee->id)->where('status', 'Approved');
-                $reject   = Leave::where('employee_id', $employee->id)->where('status', 'Reject');
-                $pending  = Leave::where('employee_id', $employee->id)->where('status', 'Pending');
+                $approved = Leave::where('employee_id', $employee->id)->where('status', 'Approved')->where('absence_type', '=', 'leave');
+                $reject   = Leave::where('employee_id', $employee->id)->where('status', 'Reject')->where('absence_type', '=', 'leave');
+                $pending  = Leave::where('employee_id', $employee->id)->where('status', 'Pending')->where('absence_type', '=', 'leave');
 
                 if($request->type == 'monthly' && !empty($request->month))
                 {
@@ -4065,7 +4065,7 @@ class ReportController extends Controller
                 {
                     $leave        = new Leave();
                     $leave->title = $leaveType->title;
-                    $totalLeave   = Leave::where('employee_id', $employee_id)->where('status', $status)->where('leave_type_id', $leaveType->id);
+                    $totalLeave   = Leave::where('employee_id', $employee_id)->where('status', $status)->where('leave_type_id', $leaveType->id)->where('absence_type', '=', 'leave');
                     if($type == 'yearly')
                     {
                         $totalLeave->whereYear('applied_on', $year);
@@ -4083,7 +4083,7 @@ class ReportController extends Controller
                     $leaves[]     = $leave;
                 }
     
-                $leaveData = Leave::where('employee_id', $employee_id)->where('status', $status);
+                $leaveData = Leave::where('employee_id', $employee_id)->where('status', $status)->where('absence_type', '=', 'leave');
                 if($type == 'yearly')
                 {
                     $leaveData->whereYear('applied_on', $year);
@@ -4109,7 +4109,7 @@ class ReportController extends Controller
                 {
                     $leave        = new Leave();
                     $leave->title = $leaveType->title;
-                    $totalLeave   = Leave::where('employee_id', $employee_id)->where('status', $status)->where('leave_type_id', $leaveType->id);
+                    $totalLeave   = Leave::where('employee_id', $employee_id)->where('status', $status)->where('leave_type_id', $leaveType->id)->where('absence_type', '=', 'leave');
                     if($type == 'yearly')
                     {
                         $totalLeave->whereYear('applied_on', $year);
@@ -4127,7 +4127,7 @@ class ReportController extends Controller
                     $leaves[]     = $leave;
                 }
     
-                $leaveData = Leave::where('employee_id', $employee_id)->where('status', $status);
+                $leaveData = Leave::where('employee_id', $employee_id)->where('status', $status)->where('absence_type', '=', 'leave');
                 if($type == 'yearly')
                 {
                     $leaveData->whereYear('applied_on', $year);
@@ -4153,7 +4153,7 @@ class ReportController extends Controller
                 {
                     $leave        = new Leave();
                     $leave->title = $leaveType->title;
-                    $totalLeave   = Leave::where('employee_id', $employee_id)->where('status', $status)->where('leave_type_id', $leaveType->id);
+                    $totalLeave   = Leave::where('employee_id', $employee_id)->where('status', $status)->where('leave_type_id', $leaveType->id)->where('absence_type', '=', 'leave');
                     if($type == 'yearly')
                     {
                         $totalLeave->whereYear('applied_on', $year);
@@ -4171,7 +4171,7 @@ class ReportController extends Controller
                     $leaves[]     = $leave;
                 }
     
-                $leaveData = Leave::where('employee_id', $employee_id)->where('status', $status);
+                $leaveData = Leave::where('employee_id', $employee_id)->where('status', $status)->where('absence_type', '=', 'leave');
                 if($type == 'yearly')
                 {
                     $leaveData->whereYear('applied_on', $year);
@@ -5861,6 +5861,126 @@ class ReportController extends Controller
 
         return number_format($logged_hours, 2, '.', '');
     }
+
+    public function sick(Request $request)
+    {
+        $user = Auth::user();
+        if(\Auth::user()->can('manage report'))
+        {
+            $branch = Branch::get()->pluck('name', 'id');
+            $branch->prepend('Select Branch', '');
+
+            $employees = Employee::select('id', 'name');
+            if(!empty($request->employee_id) && $request->employee_id[0]!=0){
+                $employees->whereIn('id', $request->employee_id);
+            }
+            $employees=$employees;
+
+            if(!empty($request->branch))
+            {
+                $employees->where('branch_id', $request->branch);
+                $data['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
+            }
+
+            $employees = $employees->get()->pluck('name', 'id');
+
+            if(!empty($request->month))
+            {
+                $currentdate = strtotime($request->month);
+                $month       = date('m', $currentdate);
+                $year        = date('Y', $currentdate);
+                $curMonth    = date('M-Y', strtotime($request->month));
+
+            }
+            else
+            {
+                $month    = date('m');
+                $year     = date('Y');
+                $curMonth = date('M-Y', strtotime($year . '-' . $month));
+            }
+
+
+            $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
+            for($i = 1; $i <= $num_of_days; $i++)
+            {
+                $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
+            }
+
+            $employeesSick = [];            
+            foreach($employees as $id => $employee)
+            {
+                $sick['id'] = $id;
+                $sick['name'] = $employee;
+                $totalSickDays = 0;
+                $totalSickLetter = 0;
+
+                foreach ($dates as $date) {
+                    $dateFormat = $year . '-' . $month . '-' . $date;
+
+                    if ($dateFormat <= date('Y-m-d')) {
+
+                        $total_sick_days = Leave::where('employee_id', '=', $id)
+                            ->where('applied_on', $dateFormat)
+                            ->where('absence_type', '=', 'sick')
+                            ->sum('total_sick_days');
+
+                        $totalSickDays += $total_sick_days;
+
+                        $total_sick_letter = Leave::where('employee_id', '=', $id)
+                            ->where('applied_on', $dateFormat)
+                            ->where('absence_type', '=', 'sick')
+                            ->whereNotNull('sick_letter')
+                            ->count();
+
+                        $totalSickLetter += $total_sick_letter;
+
+                    }
+                }
+
+                $sick['sick'] = $totalSickDays;
+                $sick['total_sick_letter'] = $totalSickLetter;
+                $employeesSick[] = $sick;
+
+    
+            }
+
+            return view('report.sick', compact('employeesSick', 'branch', 'dates'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
+
+    public function employeeSick(Request $request, $employee_id, $month)
+    {
+        if(\Auth::user()->can('manage report'))
+        {
+            $employee_sick = Leave::where('employee_id', $employee_id)->where('absence_type', '=', 'sick');
+            $m = date('m', strtotime($month));
+            $y = date('Y', strtotime($month));
+
+            $employee_sick->whereMonth('applied_on', $m)->whereYear('applied_on', $y);
+            $employee_sick = $employee_sick->get();
+
+
+            return view('report.sickShow', compact('employee_sick'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+
+
+    }
+
+    public function getSickLetter(Request $request)
+    {
+        $absence_sick   = Leave::where('employee_id', $request->id)->get();
+        $images         = Leave::where('employee_id', $request->id)->get();
+        return view('report.sickShow',compact('images','absence_sick'));
+    }
+
 
 
 }
