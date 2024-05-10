@@ -352,7 +352,7 @@
                             <thead>
                             <tr>
                                 <th> {{ __('Invoice') }}</th>
-                                <th>{{ __('Customer') }}</th>
+                                <th>{{ __('Client') }}</th>
                                 <th>{{ __('Account') }}</th>
                                 <th>{{ __('Partner') }}</th>
                                 <th>{{ __('Company') }}</th>
@@ -390,7 +390,7 @@
                                         <td class="Id">
                                             <a href="{{ route('invoice.show', \Crypt::encrypt($invoice->id)) }}" class="btn btn-outline-primary">{{ $invoice->invoice_id }}</a>
                                         </td>
-                                        <td> {{ !empty($invoice->customer) ? $invoice->customer->billing_name : '' }} </td>
+                                        <td> {{ !empty($invoice->client) ? $invoice->client->name : '' }} </td>
                                         <td>{{!empty($invoice->account->name) ? $invoice->account->name:'-'}}</td>
                                         <td>{{!empty($invoice->user->name) ? $invoice->user->name:'-'}}</td>
                                         <td>{{!empty($invoice->company) ? $invoice->company:'-'}}</td>
