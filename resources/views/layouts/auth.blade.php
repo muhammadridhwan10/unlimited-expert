@@ -61,7 +61,7 @@
             top: 0;
             width: 100vw;
             height: 100vh;
-            background-image: url('{{ asset('assets/images/auth/background-lebaran.jpg') }}');
+            background-image: url('{{ asset('assets/images/auth/tgs_cleanup.png') }}');
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center;
@@ -69,7 +69,7 @@
         }
 
         .intro img {
-            top: 23vh;
+            top: 15vh;
             position: absolute;
             animation-name: flip;
             animation-duration: 2s;
@@ -77,11 +77,6 @@
             animation-iteration-count: infinite;
         }
 
-        .intro p {
-            color: gray;
-            font-size: 1.6vw;
-            margin-top: 10px;
-        }
 
         .logo-intro {
             font-size: 2.5vw;
@@ -92,15 +87,15 @@
         .logo-parts {
             position: relative;
             display: inline-block;
-            bottom: -2vh;
+            bottom: -50vh;
             opacity: 0;
             font-size: 3.0vw;
-            color: black;
+            color: white;
             transition: ease-in-out 0.5s;
         }
 
         .logo-parts.active {
-            bottom: 0;
+            bottom: 60;
             opacity: 1;
         }
 
@@ -139,14 +134,14 @@
 
 <body class="{{ $color }}">
 <div class="intro">
-        <img src="{{ asset('assets/images/auth/favicon.png') }}" style="width: 120px; height: 120px; margin-top: 15px;">
+        <img src="{{ asset('assets/images/auth/favicon.png') }}" style="width: 120px; height: 120px;">
         <h1 class="logo-intro">
             <span class="logo-parts">Welcome</span>
              <span class="logo-parts">to</span>
               <span class="logo-parts">AUP</span>
                <span class="logo-parts">APPS</span>
         </h1>
-        <p style="font-size: 20px; color: black;">Simplify and Streamline Your Work.</p>
+        {{-- <p style="font-size: 20px; color: white;">Simplify and Streamline Your Work.</p> --}}
 </div> 
 {{-- <div class="auth-wrapper auth-v3">
     <div class="bg-auth-side bg-primary">
