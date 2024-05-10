@@ -231,8 +231,22 @@ class TimeTrackerController extends Controller
     public function search_json(Request $request)
     {
         $month = $request->input('month');
-    
-        $timeTrackers = TimeTracker::with('user');
+        $user = Auth::user();
+        if($user->type == 'admin' || $user->type == 'company')
+        {
+            $timeTrackers = TimeTracker::with('user');
+        }
+        elseif($user->type == 'partners')
+        {
+            $employee = Employee::where('user_id', \Auth::user()->id)->first();
+            $employeebranch = Employee::where('branch_id', $employee->branch_id);
+            $employees = $employeebranch->pluck('user_id');
+            $timeTrackers = TimeTracker::with('user')->whereIn('created_by', $employees);
+        }
+        else
+        {
+            $timeTrackers = TimeTracker::with('user')->where('created_by',\Auth::user()->id);
+        }
 
         if (!empty($request->month)) {
             $month = date('m', strtotime($request->month));
