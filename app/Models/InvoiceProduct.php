@@ -27,6 +27,10 @@ class InvoiceProduct extends Model
         return $this->hasOne('App\Models\Project', 'id', 'product_id')->first();
     }
 
+    public function projects(){
+        return $this->hasOne('App\Models\Project', 'id', 'product_id');
+    }
+
     public function tax(){
         return $this->hasOne('App\Models\Tax', 'id', 'tax');
     }

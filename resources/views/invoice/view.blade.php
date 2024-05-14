@@ -391,19 +391,20 @@
                                         <small class="font-style">
                                             @php
                                                 $clients = \App\Models\Client::where('user_id', $client->id)->first();
-                                                $address = $clients->address;
+                                                $address = $clients->address ?? '-';
                                                 $commaPosition = strpos($address, ',');
                                                 $firstLine = ($commaPosition !== false) ? substr($address, 0, $commaPosition) : $address;
                                                 $remainingAddress = ($commaPosition !== false) ? substr($address, $commaPosition + 1) : '';
                                             @endphp
                                             <strong>{{__('Billed To')}} :</strong><br>
-                                            {{!empty($client->name)?$client->name:''}}<br>
-                                            {{!empty($clients->telp)?$clients->telp:''}}<br>
-                                            {{ $firstLine }}<br>
-                                            {{ $remainingAddress }}<br>
-                                            {{!empty($clients->city)?$clients->city:'' .', '}} {{!empty($clients->state)?$clients->state:'',', '}} {{!empty($clients->country)?$clients->country:''}}<br>
-                                            <strong>{{__('NPWP ')}} : </strong>{{!empty($clients->npwp)?$clients->npwp:''}}
-
+                                            {{ !empty($client->name) ? $client->name : '-' }}<br>
+                                            {{ !empty($clients->telp) ? $clients->telp : '-' }}<br>
+                                            {{ !empty($firstLine) ? $firstLine : '-' }}<br>
+                                            {{ !empty($remainingAddress) ? $remainingAddress : '-' }}<br>
+                                            {{ !empty($clients->city) ? $clients->city . ', ' : '-' }}
+                                            {{ !empty($clients->state) ? $clients->state . ', ' : '-' }}
+                                            {{ !empty($clients->country) ? $clients->country : '-' }}<br>
+                                            <strong>{{__('NPWP')}} : </strong>{{ !empty($clients->npwp) ? $clients->npwp : '-' }}
                                         </small>
                                     </div>
                                 @endif
