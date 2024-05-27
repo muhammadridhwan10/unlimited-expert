@@ -62,7 +62,7 @@
                     <table class="table datatable">
                             <thead>
                             <tr>
-                                @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'client' || \Auth::user()->type == 'staff_client')
+                                @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'company' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'client' || \Auth::user()->type == 'staff_client')
                                     <th>{{__('Employee')}}</th>
                                 @endif
                                 <th>{{__('Project Name')}}</th>
@@ -79,7 +79,7 @@
                             <tbody>
                             @foreach ($employeeOvertimes as $overtime)
                                 <tr>
-                                    @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'client' || \Auth::user()->type == 'staff_client')
+                                    @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'company' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'client' || \Auth::user()->type == 'staff_client')
                                         <td>{{!empty($overtime->employee->name)?$overtime->employee->name:'-'}}</td>
                                     @endif
                                     <td>{{!empty($overtime->project->project_name)?$overtime->project->project_name:'-'}}</td>
@@ -131,6 +131,7 @@
                         <table class="table datatables">
                                 <thead>
                                 <tr>
+                                    <th>{{__('')}}</th>
                                     @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff')
                                         <th>{{__('Employee')}}</th>
                                     @endif
