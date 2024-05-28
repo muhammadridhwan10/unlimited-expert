@@ -92,6 +92,7 @@ $settings = \App\Models\Utility::settings();
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Payment Instructions : </p>
                                                         <br>
+                                                        @if($invoice->company == "KAP")
                                                         <ul style="list-style-type: none; padding: 0; margin: 0;">
                                                             <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
                                                                 <strong>Bank Name:</strong> PT Bank Negara Indonesia (Persero)
@@ -106,6 +107,40 @@ $settings = \App\Models\Utility::settings();
                                                                 <strong>Payment Due Date:</strong> 7 Working Days After Invoice Date
                                                             </li>
                                                         </ul>
+                                                        @elseif($invoice->company == "ARA")
+                                                        <ul style="list-style-type: none; padding: 0; margin: 0;">
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Bank Name:</strong> PT Bank Negara Indonesia (Persero)
+                                                            </li>
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Account Holder:</strong> All Rich Associate
+                                                            </li>
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Account Number (Rp):</strong> 05666-47352
+                                                            </li>
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Account Number ($):</strong> 0566791928
+                                                            </li>
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Payment Due Date:</strong> 7 Working Days After Invoice Date
+                                                            </li>
+                                                        </ul>
+                                                        @elseif($invoice->company == "XGA")
+                                                        <ul style="list-style-type: none; padding: 0; margin: 0;">
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Bank Name:</strong> PT Bank Negara Indonesia (Persero)
+                                                            </li>
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Account Holder:</strong> X Group Advisory Firma
+                                                            </li>
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Account Number:</strong> 567183534
+                                                            </li>
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Payment Due Date:</strong> 7 Working Days After Invoice Date
+                                                            </li>
+                                                        </ul>
+                                                        @endif
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Kindly process the payment by the specified due date to avoid any potential late fees. If you have already made the payment, please accept our sincere thanks.</p>
                                                         <br>

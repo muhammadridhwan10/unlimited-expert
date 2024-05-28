@@ -92,6 +92,7 @@ $settings = \App\Models\Utility::settings();
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Petunjuk Pembayaran : </p>
                                                         <br>
+                                                        @if($invoice->company == "KAP")
                                                         <ul style="list-style-type: none; padding: 0; margin: 0;">
                                                             <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
                                                                 <strong>Nama Bank:</strong> PT Bank Negara Indonesia (Persero)
@@ -106,6 +107,40 @@ $settings = \App\Models\Utility::settings();
                                                                 <strong>Batas Pembayaran:</strong> 7 Hari Kerja Setelah Tanggal Invoice
                                                             </li>
                                                         </ul>
+                                                        @elseif($invoice->company == "ARA")
+                                                        <ul style="list-style-type: none; padding: 0; margin: 0;">
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Nama Bank:</strong> PT Bank Negara Indonesia (Persero)
+                                                            </li>
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Pemegang Rekening:</strong> All Rich Associate
+                                                            </li>
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Nomor Rekening (Rp):</strong> 05666-47352
+                                                            </li>
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Nomor Rekening ($):</strong> 0566791928
+                                                            </li>
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Batas Pembayaran:</strong> 7 Hari Kerja Setelah Tanggal Invoice
+                                                            </li>
+                                                        </ul>
+                                                        @elseif($invoice->company == "XGA")
+                                                        <ul style="list-style-type: none; padding: 0; margin: 0;">
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Nama Bank:</strong> PT Bank Negara Indonesia (Persero)
+                                                            </li>
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Pemegang Rekening:</strong> X Group Advisory Firma
+                                                            </li>
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Nomor Rekening:</strong> 567183534
+                                                            </li>
+                                                            <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
+                                                                <strong>Batas Pembayaran:</strong> 7 Hari Kerja Setelah Tanggal Invoice
+                                                            </li>
+                                                        </ul>
+                                                        @endif
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Mohon agar pembayaran dapat dilakukan sesuai dengan batas waktu yang telah ditentukan dalam invoice. Untuk segala pertanyaan atau klarifikasi lebih lanjut, silakan hubungi tim keuangan kami di info@au-partners.com</p>
                                                         <br>
