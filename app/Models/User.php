@@ -441,9 +441,114 @@ class User extends Authenticatable
         return Invoice::where('created_by', '=', $this->creatorId())->count();
     }
 
+    public function countInvoicesPartners()
+    {
+        return Invoice::where('user_id', '=', \Auth::user()->id)->count();
+    }
+
     public function countBills()
     {
         return Bill::where('created_by', '=', $this->creatorId())->count();
+    }
+
+    public function countBillsPartners()
+    {
+        return Payment::where('user_id', '=', \Auth::user()->id)->count();
+    }
+
+    public function IncomePartners()
+    {
+        $revenue     = Revenue::where('user_id', '=', \Auth::user()->id)->get()->sum('amount');
+        $totalIncome = (!empty($revenue) ? $revenue : 0);
+
+
+        return round($totalIncome);
+    }
+
+    public function ExpensePartners()
+    {
+        $payment = Payment::where('user_id', '=', \Auth::user()->id)->where('status', 3)->sum('amount');
+
+        $totalExpense = (!empty($payment) ? $payment : 0);
+
+        return round($totalExpense);
+    }
+
+    public function BalancePartners()
+    {
+        $balance = '36740404';
+        $balance_bu_rika = '24268255';
+
+        if(\Auth::user()->id == 106)
+        {
+            $total_balance = $this->IncomePartners() + $balance_bu_rika - $this->ExpensePartners();
+        }
+        elseif(\Auth::user()->id == 78)
+        {
+            $total_balance = $this->IncomePartners() + $balance - $this->ExpensePartners();
+        }
+        else
+        {
+            $total_balance = $this->IncomePartners() - $this->ExpensePartners();
+        }
+
+        return round($total_balance);
+    }
+
+    public function IncomePartnersBekasi()
+    {
+        $revenue     = Revenue::where('user_id', '=', 106)->get()->sum('amount');
+        $totalIncome = (!empty($revenue) ? $revenue : 0);
+
+
+        return round($totalIncome);
+    }
+
+    public function ExpensePartnersBekasi()
+    {
+        $payment = Payment::where('user_id', '=', 106)->where('status', 3)->sum('amount');
+
+        $totalExpense = (!empty($payment) ? $payment : 0);
+
+        return round($totalExpense);
+    }
+
+    public function BalancePartnersBekasi()
+    {
+
+        $balance_bu_rika = '24268255';
+        
+        $total_balance = $this->IncomePartnersBekasi() + $balance_bu_rika - $this->ExpensePartnersBekasi();
+
+        return round($total_balance);
+    }
+
+    public function IncomePartnersMalang()
+    {
+        $revenue     = Revenue::where('user_id', '=', 78)->get()->sum('amount');
+        $totalIncome = (!empty($revenue) ? $revenue : 0);
+
+
+        return round($totalIncome);
+    }
+
+    public function ExpensePartnersMalang()
+    {
+        $payment = Payment::where('user_id', '=', 78)->where('status', 3)->sum('amount');
+
+        $totalExpense = (!empty($payment) ? $payment : 0);
+
+        return round($totalExpense);
+    }
+
+    public function BalancePartnersMalang()
+    {
+
+        $balance = '36740404';
+        
+        $total_balance = $this->IncomePartnersMalang() + $balance - $this->ExpensePartnersMalang();
+
+        return round($total_balance);
     }
 
     public function todayIncome()
@@ -566,6 +671,49 @@ class User extends Authenticatable
 
     }
 
+    public function getincPartExpBarChartData()
+    {
+        $month[]          = __('January');
+        $month[]          = __('February');
+        $month[]          = __('March');
+        $month[]          = __('April');
+        $month[]          = __('May');
+        $month[]          = __('June');
+        $month[]          = __('July');
+        $month[]          = __('August');
+        $month[]          = __('September');
+        $month[]          = __('October');
+        $month[]          = __('November');
+        $month[]          = __('December');
+        $dataArr['month'] = $month;
+
+
+        for($i = 1; $i <= 12; $i++)
+        {
+            // $invoices      = Invoice:: select('*')->where('status', 2)->where('user_id', \Auth::user()->id)->whereRaw('year(`send_date`) = ?', array(date('Y')))->whereRaw('month(`send_date`) = ?', $i)->get();
+
+            // $invoiceArray = array();
+            // foreach($invoices as $invoice)
+            // {
+            //     $invoiceArray[] = $invoice->getTotal();
+            // }
+
+            $revenue     = Revenue::where('user_id', '=', \Auth::user()->id)->whereRaw('year(`date`) = ?', array(date('Y')))->whereRaw('month(`date`) = ?', $i)->get()->sum('amount');
+            // $totalIncome = (!empty($invoiceArray) ? array_sum($invoiceArray) : 0);
+            $incomeArr[] = !empty($revenue) ? round($revenue) : 0;
+
+            $monthlyExpense = Payment::selectRaw('sum(amount) amount')->where('user_id', \Auth::user()->id)->whereRaw('year(`date`) = ?', array(date('Y')))->whereRaw('month(`date`) = ?', $i)->where('status', 3)->first();
+            $totalExpense = (!empty($monthlyExpense) ? $monthlyExpense->amount : 0);
+
+            $expenseArr[] = !empty($totalExpense) ? round($totalExpense) : 0;
+        }
+
+        $dataArr['income']  = $incomeArr;
+        $dataArr['expense'] = $expenseArr;
+
+        return $dataArr;
+    }
+
     public function getIncExpLineChartDate()
     {
         $usr           = \Auth::user();
@@ -620,6 +768,25 @@ class User extends Authenticatable
     public function totalCompanyUser($id)
     {
         return User::where('created_by', '=', $id)->count();
+    }
+
+    public function totalCompanyUserBranch($id)
+    {
+        $employee = Employee::where('user_id', $id)->first();
+        if ($employee) {
+
+            $branch_id = $employee->branch_id;
+
+            return Employee::join('users', 'employees.user_id', '=', 'users.id')
+                ->where('employees.branch_id', $branch_id)
+                ->where('users.type', '!=', 'super admin')
+                ->where('users.type', '!=', 'company')
+                ->where('users.type', '!=', 'client')
+                ->where('users.is_active', 1)
+                ->count();
+        }
+
+        return 0;
     }
 
     public function totalCompanyCustomer($id)

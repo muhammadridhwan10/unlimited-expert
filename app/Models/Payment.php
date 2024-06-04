@@ -16,7 +16,31 @@ class Payment extends Model
         'payment_method',
         'reference',
         'created_by',
-        'add_bill'
+        'add_bill',
+        'user_id',
+        'tax',
+        'currency',
+        'kurs',
+        'operator',
+        'approval',
+        'status',
+    ];
+
+    public static $statues = [
+        'Pending',
+        'Approved',
+        'Not Approved',
+        'Paid',
+    ];
+
+    public static $currency =[
+        'Rp' => 'Rp',
+        '€' => '€',
+    ];
+
+    public static $operator =[
+        '-' => '-',
+        '+' => '+',
     ];
 
     public function category()
@@ -24,9 +48,24 @@ class Payment extends Model
         return $this->hasOne('App\Models\ProductServiceCategory', 'id', 'category_id');
     }
 
+    public function user()
+    {
+        return $this->hasOne('App\Models\User', 'id', 'user_id');
+    }
+
+    public function approval()
+    {
+        return $this->hasOne('App\Models\User', 'id', 'approval');
+    }
+
     public function vender()
     {
         return $this->hasOne('App\Models\Vender', 'id', 'vender_id');
+    }
+
+    public function account()
+    {
+        return $this->hasOne('App\Models\ChartOfAccount', 'id', 'account_id');
     }
 
 

@@ -20,6 +20,7 @@ use App\Models\StockReport;
 use App\Models\Transaction;
 use App\Models\User;
 use App\Models\Client;
+use App\Models\Revenue;
 use App\Models\Project;
 use App\Models\Utility;
 use App\Models\ChartOfAccount;
@@ -1580,6 +1581,30 @@ class InvoiceController extends Controller
         } else {
             return redirect()->back()->with('error', __('You do not have permission to change the invoice status.'));
         }
+    }
+
+    public function convertToRevenue(Request $request)
+    {
+
+        $selectedIds = $request->input('selectedIds');
+
+        foreach ($selectedIds as $invoiceId) {
+
+            $invoice = Invoice::find($invoiceId);
+
+            $date = date('Y-m-d', strtotime($invoice->updated_at));
+
+            $revenue                 = new Revenue();
+            $revenue->invoice_id     = $invoice->id;
+            $revenue->date           = $date;
+            $revenue->amount         = round($invoice->getDue());
+            $revenue->description    = 'Revenue From Invoice ' . $invoice->invoice_id;
+            $revenue->user_id        = $invoice->user_id;
+            $revenue->created_by     = \Auth::user()->creatorId();
+            $revenue->save();
+        }
+
+        return redirect()->route('invoice.index')->with('success', __('Invoice successfully convert to Revenue.'));
     }
 
 

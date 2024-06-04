@@ -26,10 +26,9 @@ class ChartOfAccountController extends Controller
                 $chartAccounts = [];
                 foreach($types as $type)
                 {
-                    $accounts = ChartOfAccount::all();
+                    $accounts = ChartOfAccount::where('type', $type->id)->get();
     
                     $chartAccounts[$type->name] = $accounts;
-    
                 }
                 return view('chartOfAccount.index', compact('chartAccounts', 'types'));
             }
@@ -40,7 +39,7 @@ class ChartOfAccountController extends Controller
                 $chartAccounts = [];
                 foreach($types as $type)
                 {
-                    $accounts = ChartOfAccount::all();
+                    $accounts = ChartOfAccount::where('type', $type->id)->get();
     
                     $chartAccounts[$type->name] = $accounts;
     

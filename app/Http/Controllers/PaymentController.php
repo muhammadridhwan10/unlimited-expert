@@ -12,6 +12,11 @@ use App\Models\User;
 use App\Models\ChartOfAccount;
 use App\Models\Vender;
 use Illuminate\Http\Request;
+use App\Mail\BillPartnerNotification;
+use App\Mail\BillAdminNotification;
+use App\Mail\BillApprovalNotification;
+use App\Mail\BillApprovedNotification;
+use App\Mail\BillPaidNotification;
 use Illuminate\Support\Facades\Mail;
 
 class PaymentController extends Controller
@@ -30,7 +35,7 @@ class PaymentController extends Controller
             $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 2)->get()->pluck('name', 'id');
             $category->prepend('Select Category', '');
 
-            $query = Payment::where('created_by', '=', \Auth::user()->creatorId());
+            $query = Payment::query();
 
 //            if(!empty($request->date))
 //            {
@@ -81,11 +86,17 @@ class PaymentController extends Controller
         {
             $venders = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $venders->prepend('--', 0);
+            $partners = User::where('type', 'partners')
+            ->orWhere('type', 'senior accounting')
+            ->get()
+            ->pluck('name', 'id');
+            $partners->prepend('Select Partner', '');
+            $approval   = User::where('type','=', 'company')->orWhere('type','=', 'senior accounting')->orWhere('type','=', 'partners')->get()->pluck('name', 'id');
             $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 2)->get()->pluck('name', 'id');
-            $accounts   = ChartOfAccount::where('sub_type', 12)->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $accounts   = ChartOfAccount::where('type', 5)->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $accounts->prepend('Select Account', '');
 
-            return view('payment.create', compact('venders', 'categories', 'accounts'));
+            return view('payment.create', compact('venders', 'categories', 'accounts','partners','approval'));
         }
         else
         {
@@ -97,7 +108,7 @@ class PaymentController extends Controller
     public function store(Request $request)
     {
 
-//        dd($request->all());
+    //    dd($request->all());
 
         if(\Auth::user()->can('create payment'))
         {
@@ -106,8 +117,8 @@ class PaymentController extends Controller
                 $request->all(), [
                                    'date' => 'required',
                                    'amount' => 'required',
-                                   'account_id' => 'required',
                                    'category_id' => 'required',
+                                   'tax' => 'required',
                                    'add_receipt' => 'mimes:png,jpeg,jpg|max:10240',
                                    'add_bill' => 'mimes:png,jpeg,jpg|max:10240',
                                ]
@@ -119,120 +130,148 @@ class PaymentController extends Controller
                 return redirect()->back()->with('error', $messages->first());
             }
 
-            $payment                 = new Payment();
-            $payment->date           = $request->date;
-            $payment->amount         = $request->amount;
-            $payment->account_id     = $request->account_id;
-            $payment->vender_id      = $request->vender_id;
-            $payment->category_id    = $request->category_id;
-            $payment->payment_method = 0;
-            $payment->reference      = $request->reference;
-//             if(!empty($request->add_receipt))
-//             {
-
-//                 //storage limit
-//                 $image_size = $request->file('add_receipt')->getSize();
-//                 $result = Utility::updateStorageLimit(\Auth::user()->creatorId(), $image_size);
-//                 if($result==1)
-//                 {
-//                     if($payment->add_receipt)
-//                     {
-//                         $path = storage_path('uploads/payment' . $payment->add_receipt);
-//                     }
-//                     $fileName = time() . "_" .preg_replace('/[^A-Za-z0-9\-]/', '', $request->add_receipt->getClientOriginalName()) ;
-// //                    $fileName = time() . "_" . $request->add_receipt->getClientOriginalName();
-//                     $payment->add_receipt = $fileName;
-//                     $dir        = 'uploads/payment';
-//                     $path = Utility::upload_file($request,'add_receipt',$fileName,$dir,[]);
-//                     if($path['flag']==0){
-//                         return redirect()->back()->with('error', __($path['msg']));
-//                     }
-//                 }
-
-
-//             }
-
-        if(!empty($request->add_receipt))
-        {
-            $filenameWithExt = $request->file('add_receipt')->getClientOriginalName();
-            $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
-            $extension       = $request->file('add_receipt')->getClientOriginalExtension();
-            $fileNameToStore = $filename . '_' . time() . '.' . $extension;
-            $dir             = storage_path('uploads/receipt/');
-
-            if(!file_exists($dir))
+            if(\Auth::user()->type == 'partners')
             {
-                mkdir($dir, 0777, true);
+                $payment                 = new Payment();
+                $payment->date           = $request->date;
+                $payment->amount         = $request->amount;
+                $payment->amount_before_tax  = $request->amount_before_tax;
+                $payment->account_id     = $request->account_id;
+                $payment->vender_id      = $request->vender_id;
+                $payment->category_id    = $request->category_id;
+                $payment->user_id        = \Auth::user()->id;
+                $payment->tax            = $request->tax;
+                $payment->kurs           = $request->kurs;
+                $payment->currency       = $request->currency;
+                $payment->operator       = $request->operator;
+                $payment->approval       = $request->approval ?? 0;
+                $payment->payment_method = 0;
+                $payment->status         = 0;
+                $payment->reference      = $request->reference;
+                if(!empty($request->add_receipt))
+                {
+                    $filenameWithExt = $request->file('add_receipt')->getClientOriginalName();
+                    $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+                    $extension       = $request->file('add_receipt')->getClientOriginalExtension();
+                    $fileNameToStoreReceipt = $filename . '_' . time() . '.' . $extension;
+                    $dir             = storage_path('uploads/receipt/' . \Auth::user()->name . '/');
+
+                    if(!file_exists($dir))
+                    {
+                        mkdir($dir, 0777, true);
+                    }
+                    // $path = $request->file('add_receipt')->storeAs('uploads/receipt/', $fileNameToStoreReceipt);
+                    $path = $request->file('add_receipt')->storeAs('uploads/receipt/' . \Auth::user()->name . '/', $fileNameToStoreReceipt, 's3');
+                }
+                else {
+                    $fileNameToStoreReceipt = '';
+                }
+
+                if(!empty($request->add_bill))
+                {
+                    $filenameWithExt = $request->file('add_bill')->getClientOriginalName();
+                    $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+                    $extension       = $request->file('add_bill')->getClientOriginalExtension();
+                    $fileNameToStoreBill = $filename . '_' . time() . '.' . $extension;
+                    $dir             = storage_path('uploads/bill/' . \Auth::user()->name . '/');
+
+                    if(!file_exists($dir))
+                    {
+                        mkdir($dir, 0777, true);
+                    }
+                    // $path = $request->file('add_bill')->storeAs('uploads/bill/', $fileNameToStoreBill);
+                    $path = $request->file('add_bill')->storeAs('uploads/bill/' . \Auth::user()->name . '/', $fileNameToStoreBill, 's3');
+                }
+                else {
+                    $fileNameToStoreBill = '';
+                }
+                $payment->description    = $request->description;
+                $payment->add_receipt  = !empty('uploads/receipt/' . \Auth::user()->name . '/' . $request->add_receipt) ? 'uploads/receipt/' . \Auth::user()->name . '/' . $fileNameToStoreReceipt : '';
+                $payment->add_bill  = !empty('uploads/bill/' .\Auth::user()->name . '/' . $request->add_bill) ? 'uploads/bill/' . \Auth::user()->name . '/' . $fileNameToStoreBill : '';
+                $payment->created_by     = \Auth::user()->creatorId();
+                
+                //notification
+                $user = User::where('email', '=', 'company')->orWhere('type', 'senior accounting')->get();
+                
+                foreach ($users as $user) {
+                    Mail::to($user->email)->send(new BillPartnerNotification($payment));
+                }
+                
             }
-            // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
-            $path = $request->file('add_receipt')->storeAs('uploads/recipt/', $fileNameToStore, 's3');
-        }
-
-        if(!empty($request->add_bill))
-        {
-            $filenameWithExt = $request->file('add_bill')->getClientOriginalName();
-            $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
-            $extension       = $request->file('add_bill')->getClientOriginalExtension();
-            $fileNameToStore = $filename . '_' . time() . '.' . $extension;
-            $dir             = storage_path('uploads/bill/');
-
-            if(!file_exists($dir))
+            else
             {
-                mkdir($dir, 0777, true);
+                $payment                 = new Payment();
+                $payment->date           = $request->date;
+                $payment->amount         = $request->amount;
+                $payment->amount_before_tax  = $request->amount_before_tax;
+                $payment->account_id     = $request->account_id;
+                $payment->vender_id      = $request->vender_id;
+                $payment->category_id    = $request->category_id;
+                $payment->user_id        = $request->user_id;
+                $payment->tax            = $request->tax;
+                $payment->kurs           = $request->kurs;
+                $payment->currency       = $request->currency;
+                $payment->operator       = $request->operator;
+                $payment->approval       = $request->approval ?? 0;
+                $payment->payment_method = 0;
+                $payment->status         = 0;
+                $payment->reference      = $request->reference;
+                if(!empty($request->add_receipt))
+                {
+                    $filenameWithExt = $request->file('add_receipt')->getClientOriginalName();
+                    $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+                    $extension       = $request->file('add_receipt')->getClientOriginalExtension();
+                    $fileNameToStoreReceipt = $filename . '_' . time() . '.' . $extension;
+                    $dir             = storage_path('uploads/receipt/');
+
+                    if(!file_exists($dir))
+                    {
+                        mkdir($dir, 0777, true);
+                    }
+                    // $path = $request->file('add_receipt')->storeAs('uploads/receipt/', $fileNameToStoreReceipt);
+                    $path = $request->file('add_receipt')->storeAs('uploads/receipt/', $fileNameToStoreReceipt, 's3');
+                }
+                else {
+                    $fileNameToStoreReceipt = '';
+                }
+
+                if(!empty($request->add_bill))
+                {
+                    $filenameWithExt = $request->file('add_bill')->getClientOriginalName();
+                    $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+                    $extension       = $request->file('add_bill')->getClientOriginalExtension();
+                    $fileNameToStoreBill = $filename . '_' . time() . '.' . $extension;
+                    $dir             = storage_path('uploads/bill/');
+
+                    if(!file_exists($dir))
+                    {
+                        mkdir($dir, 0777, true);
+                    }
+                    $path = $request->file('add_bill')->storeAs('uploads/bill/', $fileNameToStoreBill);
+                    // $path = $request->file('add_bill')->storeAs('uploads/bill/', $fileNameToStoreBill, 's3');
+                }
+                else {
+                    $fileNameToStoreBill = '';
+                }
+                $payment->description    = $request->description;
+                $payment->add_receipt  = !empty('uploads/receipt/' . $request->add_receipt) ? 'uploads/receipt/' . $fileNameToStoreReceipt : '';
+                $payment->add_bill  = !empty('uploads/bill/' . $request->add_bill) ? 'uploads/bill/' . $fileNameToStoreBill : '';
+                $payment->created_by     = \Auth::user()->creatorId();
+
+                if($request->approval != 0)
+                {
+                    $user = User::where('id', '=', $request->approval)->first();
+                    Mail::to($user->email)->send(new BillApprovalNotification($payment));
+                }
+                else
+                {
+                    $user = User::where('id', '=', $request->user_id)->first();
+                    Mail::to($user->email)->send(new BillAdminNotification($payment));
+                }
+
             }
-            // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
-            $path = $request->file('add_bill')->storeAs('uploads/bill/', $fileNameToStore, 's3');
-        }
 
-
-            $payment->description    = $request->description;
-            $payment->add_receipt  = !empty('uploads/receipt/' . $request->add_receipt) ? 'uploads/receipt/' . $fileNameToStore : '';
-            $payment->add_bill  = !empty('uploads/bill/' . $request->add_bill) ? 'uploads/bill/' . $fileNameToStore : '';
-            $payment->created_by     = \Auth::user()->creatorId();
             $payment->save();
-
-            // $category            = ProductServiceCategory::where('id', $request->category_id)->first();
-            // $payment->payment_id = $payment->id;
-            // $payment->type       = 'Payment';
-            // $payment->category   = $category->name;
-            // $payment->user_id    = $payment->vender_id;
-            // $payment->user_type  = 'Vender';
-            // $payment->account    = $request->account_id;
-
-            // Transaction::addTransaction($payment);
-
-            // $vender          = Vender::where('id', $request->vender_id)->first();
-            // $payment         = new BillPayment();
-            // $payment->name   = !empty($vender) ? $vender['name'] : '' ;
-            // $payment->method = '-';
-            // $payment->date   = \Auth::user()->dateFormat($request->date);
-            // $payment->amount = \Auth::user()->priceFormat($request->amount);
-            // $payment->bill   = '';
-
-            // if(!empty($vender))
-            // {
-            //     Utility::userBalance('vendor', $vender->id, $request->amount, 'debit');
-            // }
-
-            // Utility::bankAccountBalance($request->account_id, $request->amount, 'debit');
-
-
-            //For Notification
-            // $setting  = Utility::settings(\Auth::user()->creatorId());
-
-            //Twilio Notification
-            // if(isset($setting['twilio_payment_notification']) && $setting['twilio_payment_notification'] ==1)
-            // {
-
-            //     $vender = Vender::find($request->vender_id);
-            //     $paymentNotificationArr = [
-            //         'payment_amount' => \Auth::user()->priceFormat($request->amount),
-            //         'vendor_name' => $vender->name,
-            //         'payment_type' =>  'Payment',
-            //     ];
-            //     Utility::send_twilio_msg($request->contact,'bill_payment', $paymentNotificationArr);
-            // }
-
 
 
             return redirect()->route('payment.index')->with('success', __('Payment successfully created'). ((isset($result) && $result!=1) ? '<br> <span class="text-danger">' . $result . '</span>' : ''));
@@ -251,12 +290,18 @@ class PaymentController extends Controller
         {
             $venders = Vender::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $venders->prepend('--', 0);
+            $partners = User::where('type', 'partners')
+            ->orWhere('type', 'senior accounting')
+            ->get()
+            ->pluck('name', 'id');
+            $partners->prepend('Select Partner', '');
+            $approval   = User::where('type','=', 'company')->orWhere('type','=', 'senior accounting')->orWhere('type','=', 'partners')->get()->pluck('name', 'id');
             $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->get()->where('type', '=', 2)->pluck('name', 'id');
 
             $accounts   = ChartOfAccount::where('sub_type', 12)->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $accounts->prepend('Select Account', '');
 
-            return view('payment.edit', compact('venders', 'categories', 'accounts', 'payment'));
+            return view('payment.edit', compact('venders', 'categories', 'accounts', 'payment','partners','approval'));
         }
         else
         {
@@ -285,63 +330,48 @@ class PaymentController extends Controller
 
                 return redirect()->back()->with('error', $messages->first());
             }
-            $vender = Vender::where('id', $request->vender_id)->first();
-            if(!empty($vender))
-            {
-                Utility::userBalance('vendor', $vender->id, $payment->amount, 'credit');
-            }
-            Utility::bankAccountBalance($payment->account_id, $payment->amount, 'credit');
 
             $payment->date           = $request->date;
             $payment->amount         = $request->amount;
+            $payment->amount_before_tax         = $request->amount_before_tax;
             $payment->account_id     = $request->account_id;
             $payment->vender_id      = $request->vender_id;
             $payment->category_id    = $request->category_id;
+
+            if(\Auth::user()->type == 'partners')
+            {
+                $payment->user_id  = \Auth::user()->id;
+            }
+            else
+            {
+                $payment->user_id        = $request->user_id;
+            }
+
+            $payment->tax            = $request->tax;
+            $payment->kurs           = $request->kurs;
+            $payment->currency       = $request->currency;
+            $payment->operator       = $request->operator;
+            $payment->approval       = $request->approval;
             $payment->payment_method = 0;
-            $payment->reference      = $request->reference;
-
-//             if(!empty($request->add_receipt))
-//             {
-//                 //storage limit
-//                 $file_path = '/uploads/payment/'.$payment->add_receipt;
-//                 $image_size = $request->file('add_receipt')->getSize();
-//                 $result = Utility::updateStorageLimit(\Auth::user()->creatorId(), $image_size);
-//                 if($result==1)
-//                 {
-//                     if($payment->add_receipt)
-//                     {
-//                         Utility::changeStorageLimit(\Auth::user()->creatorId(), $file_path);
-//                         $path = storage_path('uploads/payment' . $payment->add_receipt);
-// //                        if(file_exists($path))
-// //                        {
-// //                            \File::delete($path);
-// //                        }
-//                     }
-//                     $fileName = time() . "_" . $request->add_receipt->getClientOriginalName();
-//                     $payment->add_receipt = $fileName;
-//                     $dir        = 'uploads/payment';
-//                     $path = Utility::upload_file($request,'add_receipt',$fileName,$dir,[]);
-//                     if($path['flag']==0){
-//                         return redirect()->back()->with('error', __($path['msg']));
-//                     }
-//                 }
-
-//             }
+            $payment->status         = 0;
 
             if(!empty($request->add_receipt))
             {
                 $filenameWithExt = $request->file('add_receipt')->getClientOriginalName();
                 $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
                 $extension       = $request->file('add_receipt')->getClientOriginalExtension();
-                $fileNameToStore = $filename . '_' . time() . '.' . $extension;
+                $fileNameToStoreReceipt = $filename . '_' . time() . '.' . $extension;
                 $dir             = storage_path('uploads/receipt/');
 
                 if(!file_exists($dir))
                 {
                     mkdir($dir, 0777, true);
                 }
-                // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
-                $path = $request->file('add_receipt')->storeAs('uploads/recipt/', $fileNameToStore, 's3');
+                // $path = $request->file('add_receipt')->storeAs('uploads/receipt/', $fileNameToStoreReceipt);
+                $path = $request->file('add_receipt')->storeAs('uploads/receipt/', $fileNameToStoreReceipt, 's3');
+            }
+            else {
+                $fileNameToStoreReceipt = '';
             }
 
             if(!empty($request->add_bill))
@@ -349,35 +379,25 @@ class PaymentController extends Controller
                 $filenameWithExt = $request->file('add_bill')->getClientOriginalName();
                 $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
                 $extension       = $request->file('add_bill')->getClientOriginalExtension();
-                $fileNameToStore = $filename . '_' . time() . '.' . $extension;
+                $fileNameToStoreBill = $filename . '_' . time() . '.' . $extension;
                 $dir             = storage_path('uploads/bill/');
 
                 if(!file_exists($dir))
                 {
                     mkdir($dir, 0777, true);
                 }
-                // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
-                $path = $request->file('add_bill')->storeAs('uploads/bill/', $fileNameToStore, 's3');
+                // $path = $request->file('add_bill')->storeAs('uploads/bill/', $fileNameToStoreBill);
+                $path = $request->file('add_bill')->storeAs('uploads/bill/', $fileNameToStoreBill, 's3');
+            }
+            else {
+                $fileNameToStoreBill = '';
             }
 
+            $payment->add_receipt  = !empty('uploads/receipt/' . $request->add_receipt) ? 'uploads/receipt/' . $fileNameToStoreReceipt : '';
+            $payment->add_bill  = !empty('uploads/bill/' . $request->add_bill) ? 'uploads/bill/' . $fileNameToStoreBill : '';
+            $payment->created_by     = \Auth::user()->creatorId();
             $payment->description    = $request->description;
             $payment->save();
-
-            $category            = ProductServiceCategory::where('id', $request->category_id)->first();
-            $payment->add_receipt  = !empty('uploads/receipt/' . $request->add_receipt) ? 'uploads/receipt/' . $fileNameToStore : '';
-            $payment->add_bill  = !empty('uploads/bill/' . $request->add_bill) ? 'uploads/bill/' . $fileNameToStore : '';
-            $payment->category   = $category->name;
-            $payment->payment_id = $payment->id;
-            $payment->type       = 'Payment';
-            $payment->account    = $request->account_id;
-            // Transaction::editTransaction($payment);
-
-            // if(!empty($vender))
-            // {
-            //     Utility::userBalance('vendor', $vender->id, $request->amount, 'debit');
-            // }
-
-            // Utility::bankAccountBalance($request->account_id, $request->amount, 'debit');
 
             return redirect()->route('payment.index')->with('success', __('Payment Updated Successfully'). ((isset($result) && $result!=1) ? '<br> <span class="text-danger">' . $result . '</span>' : ''));
 
@@ -440,5 +460,47 @@ class PaymentController extends Controller
         $payment   = Payment::find($request->id);
         $images    = Payment::where('id',$request->id)->get();
         return view('payment.bill-images',compact('images','payment'));
+    }
+
+    public function action($id)
+    {
+
+        $payment      = Payment::find($id);
+        $user         = User::find($payment->user_id);
+        $vendor       = Vender::find($payment->vender_id);
+        $account      = ChartOfAccount::find($payment->account_id);
+
+        return view('payment.action', compact('payment', 'user','vendor','account'));
+    }
+
+    public function changeaction(Request $request)
+    {
+
+        $payment = Payment::find($request->payment_id);
+
+        $status = $request->status;
+
+        if($status == 'Approved')
+        {
+            $payment->status = 1;
+            $user = User::where('email', '=', 'company')->orWhere('type', 'senior accounting')->get(); 
+            foreach ($users as $user) {
+                Mail::to($user->email)->send(new BillApprovedNotification($payment));
+            }
+        }
+        elseif($status == 'Reject')
+        {
+            $payment->status = 2;
+        }
+        elseif($status == 'Paid')
+        {
+            $payment->status = 3;
+            $user = User::where('id', '=', $request->user_id)->first();
+                    Mail::to($user->email)->send(new BillPaidNotification($payment));
+        }
+
+        $payment->save();
+
+        return redirect()->route('payment.index')->with('success', __('Payment successfully updated.'));
     }
 }

@@ -209,6 +209,7 @@ class VenderController extends Controller
             $vender->name             = $request->name;
             $vender->contact          = $request->contact;
             $vender->tax_number      = $request->tax_number;
+            $vender->email            = $request->email;
             $vender->created_by       = \Auth::user()->creatorId();
             $vender->billing_name     = $request->billing_name;
             $vender->billing_country  = $request->billing_country;

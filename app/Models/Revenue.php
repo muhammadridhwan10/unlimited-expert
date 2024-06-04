@@ -7,26 +7,22 @@ use Illuminate\Database\Eloquent\Model;
 class Revenue extends Model
 {
     protected $fillable = [
+        'invoice_id',
         'date',
         'amount',
-        'account_id',
-        'customer_id',
-        'category_id',
-        'recurring',
-        'payment_method',
-        'reference',
         'description',
+        'user_id',
         'created_by',
-    ];
+    ];    
 
-    public function category()
+    public function invoice()
     {
-        return $this->hasOne('App\Models\ProductServiceCategory', 'id', 'category_id');
+        return $this->hasOne('App\Models\Invoice', 'id', 'invoice_id');
     }
 
-    public function customer()
+    public function user()
     {
-        return $this->hasOne('App\Models\Customer', 'id', 'customer_id');
+        return $this->hasOne('App\Models\User', 'id', 'user_id');
     }
 
     public function bankAccount()

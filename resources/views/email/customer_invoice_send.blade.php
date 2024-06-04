@@ -27,7 +27,7 @@ $settings = \App\Models\Utility::settings();
 
 ?>
 <div style="background-color:#f6f6f6;font-family:sans-serif;font-size:14px;line-height:1.4;margin:0;padding:0">
-    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Dear {{ $invoice->client->clients->name_invoice }} I trust this email finds you well, I am writing to inform you that the invoice for the recent services/products provided by PT Dummy Indonesia is now ready for your review and payment.</span>
+    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Dear {{ $invoice->client->clients->name_invoice }} I trust this email finds you well, I am writing to inform you that the invoice for the recent services/products provided by {{ $invoice->client->name }} is now ready for your review and payment.</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse:separate;background-color:#f6f6f6;width:100%" width="100%" bgcolor="#f6f6f6">
         <tbody>
             <tr>

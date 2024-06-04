@@ -58,6 +58,7 @@ class Project extends Model
         'HR' => 'HR',
         'Quality' => 'Quality',
         'KPPK' => 'KPPK',
+        'TP Documentation' => 'TP Documentation',
     ];
 
     public static $label_color = [
@@ -191,7 +192,7 @@ class Project extends Model
         $percentage = 0;
         $last_task      = TaskStage::orderBy('order', 'DESC')->first();
         $total_task     = $this->tasks->count();
-        $completed_task = $this->tasks()->where('stage_id', '=', $last_task->id)->where('is_complete', '=', 1)->count();
+        $completed_task = $this->tasks()->where('stage_id', '=', 4)->where('is_complete', '=', 1)->count();
 
         if($total_task > 0)
         {

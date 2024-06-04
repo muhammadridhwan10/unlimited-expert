@@ -147,9 +147,9 @@
                         }
                     }
                 },
-                series: {!! json_encode($expenseCatAmount) !!},
+                {{-- series: {!! json_encode($expenseCatAmount) !!},
                 colors: {!! json_encode($expenseCategoryColor) !!},
-                labels: {!! json_encode($expenseCategory) !!},
+                labels: {!! json_encode($expenseCategory) !!}, --}}
                 legend: {
                     show: true
                 }
@@ -174,9 +174,9 @@
                         }
                     }
                 },
-                series: {!! json_encode($incomeCatAmount) !!},
+                {{-- series: {!! json_encode($incomeCatAmount) !!},
                 colors: {!! json_encode($incomeCategoryColor) !!},
-                labels:  {!! json_encode($incomeCategory) !!},
+                labels:  {!! json_encode($incomeCategory) !!}, --}}
                 legend: {
                     show: true
                 }

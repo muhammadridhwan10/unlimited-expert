@@ -18,9 +18,12 @@
             var chartBarOptions = {
                 series: [
                     {
-                        name: '{{ __("Expense") }}',
-                        data:  {!! json_encode($chartExpenseArr) !!},
-
+                    name: '{{ __("Expense (Rp)") }}',
+                    data:  {!! json_encode($chartExpenseArrRp) !!},
+                    },
+                    {
+                        name: '{{ __("Expense (Euro)") }}',
+                        data:  {!! json_encode($chartExpenseArrEuro) !!},
                     },
                 ],
 
@@ -57,7 +60,7 @@
                         text: '{{ __("Months") }}'
                     }
                 },
-                colors: ['#6fd944', '#6fd944'],
+                colors: ['#6fd944', '#FF3A6E'],
 
                 grid: {
                     strokeDashArray: 4,
@@ -76,7 +79,7 @@
                 // },
                 yaxis: {
                     title: {
-                        text: '{{ __("Expense") }}'
+                        text: '{{ __("Income") }}'
                     },
 
                 }
@@ -134,6 +137,8 @@
                                 <div class="row">
                                     <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
                                         <div class="btn-box">
+                                            {{ Form::label('user_id', __('Partner'),['class'=>'form-label'])}}
+                                            {{ Form::select('user_id',$partner,isset($_GET['user_id'])?$_GET['user_id']:'', array('class' => 'form-control select')) }}
                                         </div>
                                     </div>
 
@@ -186,34 +191,17 @@
     </div>
 
     <div id="printableArea">
-        <div class="row mt-3">
-            <div class="col">
-                <input type="hidden" value="{{$filter['category'].' '.__('Expense Summary').' '.'Report of'.' '.$filter['startDateRange'].' to '.$filter['endDateRange']}}" id="filename">
+        <div class="row">
+            <div class="col-xl-6 col-md-6 col-lg-6">
                 <div class="card p-4 mb-4">
-                    <h7 class="report-text gray-text mb-0">{{__('Report')}} :</h7>
-                    <h6 class="report-text mb-0">{{__('Expense Summary')}}</h6>
+                    <h7 class="report-text gray-text mb-0">{{__('Total Expense (Rp)')}}</h7>
+                    <h6 class="report-text mb-0">{{Auth::user()->priceFormat($totalBillRp)}}</h6>
                 </div>
             </div>
-            @if($filter['category']!= __('All'))
-                <div class="col">
-                    <div class="card p-4 mb-4">
-                        <h7 class="report-text gray-text mb-0">{{__('Category')}} :</h7>
-                        <h6 class="report-text mb-0">{{$filter['category'] }}</h6>
-                    </div>
-                </div>
-            @endif
-            @if($filter['vender']!= __('All'))
-                <div class="col">
-                    <div class="card p-4 mb-4">
-                        <h7 class="report-text gray-text mb-0">{{__('Vendor')}} :</h7>
-                        <h6 class="report-text mb-0">{{$filter['vender'] }}</h6>
-                    </div>
-                </div>
-            @endif
-            <div class="col">
+            <div class="col-xl-6 col-md-6 col-lg-6">
                 <div class="card p-4 mb-4">
-                    <h7 class="report-text gray-text mb-0">{{__('Duration')}} :</h7>
-                    <h6 class="report-text mb-0">{{$filter['startDateRange'].' to '.$filter['endDateRange']}}</h6>
+                    <h7 class="report-text gray-text mb-0">{{__('Total Expense (€)')}}</h7>
+                    <h6 class="report-text mb-0">{{'€' . number_format($totalBillEuro)}}</h6>
                 </div>
             </div>
         </div>
@@ -235,43 +223,28 @@
                         <div class="table-responsive">
                             <table class="table">
                                 <thead>
-                                <tr>
-                                    <th>{{__('Category')}}</th>
-                                    @foreach($monthList as $month)
-                                        <th>{{$month}}</th>
-                                    @endforeach
-                                </tr>
+                                    <tr>
+                                        <th>{{__('Category')}}</th>
+                                        @foreach($monthList as $month)
+                                            <th>{{$month}}</th>
+                                        @endforeach
+                                    </tr>
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td colspan="13" class="text-dark"><span>{{__('Payment :')}}</span></td>
-                                </tr>
-                                @foreach($expenseArr as $i=>$expense)
-                                    <tr>
-                                        <td>{{$expense['category']}}</td>
-                                        @foreach($expense['data'] as $j=>$data)
-                                            <td>{{\Auth::user()->priceFormat($data)}}</td>
-                                        @endforeach
-                                    </tr>
-                                @endforeach
-                                <tr>
-                                    <td colspan="13" class="text-dark"><span>{{__('Bill :')}}</span></td>
-                                </tr>
-                                @foreach($billArray as $i=>$bill)
-                                    <tr>
-                                        <td>{{$bill['category']}}</td>
-                                        @foreach($bill['data'] as $j=>$data)
-                                            <td>{{\Auth::user()->priceFormat($data)}}</td>
-                                        @endforeach
-                                    </tr>
-                                @endforeach
-                                <tr>
-                                    <td colspan="13" class="text-dark"><span>{{__('Expense = Payment + Bill :')}}</span></td>
+                                    <td class="text-dark"><h6>{{__('Total (Rp)')}}</h6></td>
+                                    @foreach($chartExpenseArrRp as $i => $expense)
+                                        <td>
+                                            {{\Auth::user()->priceFormat($expense)}}
+                                        </td>
+                                    @endforeach
                                 </tr>
                                 <tr>
-                                    <td class="text-dark"><h6>{{__('Total')}}</h6></td>
-                                    @foreach($chartExpenseArr as $i=>$expense)
-                                        <td>{{\Auth::user()->priceFormat($expense)}}</td>
+                                    <td class="text-dark"><h6>{{__('Total (€)')}}</h6></td>
+                                    @foreach($chartExpenseArrEuro as $i => $expense)
+                                        <td>
+                                                {{\Auth::user()->priceFormat2($expense)}}
+                                        </td>
                                     @endforeach
                                 </tr>
                                 </tbody>

@@ -8,6 +8,31 @@
     <li class="breadcrumb-item">{{__('Revenue')}}</li>
 @endsection
 
+@push('script-page')
+    <script>
+        $(document).on('change', '#invoice_id', function () {
+
+            var id = $(this).val();
+            var url = "{{route('invoice.revenue.get')}}";
+
+            $.ajax({
+                url: url,
+                type: 'get',
+                cache: false,
+                data: {
+                    'id': id,
+
+                },
+                success: function (data) {
+                    $('#amount').val(data)
+                },
+
+            });
+
+        })
+    </script>
+@endpush
+
 @section('action-btn')
     <div class="float-end">
         {{--        <a class="btn btn-sm btn-primary" data-bs-toggle="collapse" href="#multiCollapseExample1" role="button" aria-expanded="false" aria-controls="multiCollapseExample1" data-bs-toggle="tooltip" title="{{__('Filter')}}">--}}
@@ -34,32 +59,18 @@
                             <div class="col-xl-10">
                                 <div class="row">
 
-                                    <div class="col-3">
+                                    <div class="col-6">
                                         {{Form::label('date',__('Date'),['class'=>'form-label'])}}
                                         {{ Form::text('date', isset($_GET['date'])?$_GET['date']:null, array('class' => 'form-control month-btn','id'=>'pc-daterangepicker-1','readonly')) }}
 
                                     </div>
 
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 month">
+                                    <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12 date">
                                         <div class="btn-box">
-                                            {{Form::label('account',__('Account'),['class'=>'form-label'])}}
-                                            {{ Form::select('account',$account,isset($_GET['account'])?$_GET['account']:'', array('class' => 'form-control select')) }}
+                                            {{ Form::label('user', __('Partner'),['class'=>'form-label'])}}
+                                            {{ Form::select('user',$user,isset($_GET['user'])?$_GET['user']:'', array('class' => 'form-control select')) }}
                                         </div>
                                     </div>
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 date">
-                                        <div class="btn-box">
-                                            {{ Form::label('customer', __('Customer'),['class'=>'form-label'])}}
-                                            {{ Form::select('customer',$customer,isset($_GET['customer'])?$_GET['customer']:'', array('class' => 'form-control select')) }}
-                                        </div>
-                                    </div>
-
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
-                                        <div class="btn-box">
-                                            {{ Form::label('category', __('Category'),['class'=>'form-label'])}}
-                                            {{ Form::select('category',$category,isset($_GET['category'])?$_GET['category']:'', array('class' => 'form-control select')) }}
-                                        </div>
-                                    </div>
-
 
                                 </div>
                             </div>
@@ -98,13 +109,10 @@
                             <thead>
                             <tr>
                                 <th> {{__('Date')}}</th>
-                                <th> {{__('Amount')}}</th>
-                                <th> {{__('Account')}}</th>
-                                <th> {{__('Customer')}}</th>
-                                <th> {{__('Category')}}</th>
-                                <th> {{__('Reference')}}</th>
+                                <th> {{__('Partner Name')}}</th>
+                                <th> {{__('Invoice')}}</th>
+                                <th> {{__('Amount After Tax')}}</th>
                                 <th> {{__('Description')}}</th>
-                                <th>{{__('Payment Receipt')}}</th>
 
                                 @if(Gate::check('edit revenue') || Gate::check('delete revenue'))
                                     <th width="10%"> {{__('Action')}}</th>
@@ -115,25 +123,16 @@
                             @foreach ($revenues as $revenue)
                                 <tr class="font-style">
                                     <td>{{  Auth::user()->dateFormat($revenue->date)}}</td>
-                                    <td>{{  Auth::user()->priceFormat($revenue->amount)}}</td>
-                                    <td>{{ !empty($revenue->bankAccount)?$revenue->bankAccount->bank_name.' '.$revenue->bankAccount->holder_name:''}}</td>
-                                    <td>{{  (!empty($revenue->customer)?$revenue->customer->name:'-')}}</td>
-                                    <td>{{  !empty($revenue->category)?$revenue->category->name:'-'}}</td>
-                                    <td>{{  !empty($revenue->reference)?$revenue->reference:'-'}}</td>
-                                    <td>{{  !empty($revenue->description)?$revenue->description:'-'}}</td>
-                                    <td>
-                                        @if(!empty($revenue->add_receipt))
-                                            <a href="{{asset(Storage::url('uploads/revenue')).'/'.$revenue->add_receipt}}" download="" class="action-btn bg-primary ms-2 mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="{{__('Download')}}" target="_blank"><span class="btn-inner--icon"><i class="ti ti-download text-white" ></i></span></a>
-                                            <div class="action-btn bg-secondary">
-                                                <a class="mx-3 btn btn-sm align-items-center" href="{{asset(Storage::url('uploads/revenue')).'/'.$revenue->add_receipt}}" target="_blank"  >
-                                                    <i class="ti ti-crosshair text-white" data-bs-toggle="tooltip" data-bs-original-title="{{ __('Preview') }}"></i>
-                                                </a>
-                                            </div>
+                                    <td>{{  (!empty($revenue->user)?$revenue->user->name:'-')}}</td>
+                                    <td class="Id">
+                                        @if($revenue->invoice_id)
+                                            <a href="{{ route('invoice.show', \Crypt::encrypt($revenue->invoice->invoice_id)) }}" class="btn btn-outline-primary">{{ $revenue->invoice->invoice_id }}</a>
                                         @else
-                                            -
+                                            <span class="btn btn-outline-primary">-</span>
                                         @endif
-
                                     </td>
+                                    <td>{{  Auth::user()->priceFormat($revenue->amount)}}</td>
+                                    <td>{{  !empty($revenue->description)?$revenue->description:'-'}}</td>
                                     @if(Gate::check('edit revenue') || Gate::check('delete revenue'))
                                         <td class="Action">
                                             <span>

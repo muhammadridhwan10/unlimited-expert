@@ -265,23 +265,24 @@
                                 </tr>
                                 </thead>
                                 <tbody>
-
-                                @foreach($employeesAttendance as $attendance)
-
-                                    <tr>
-                                        <td>{{$attendance['name']}}</td>
-                                        @foreach($attendance['status'] as $status)
-                                            <td>
-                                                @if($status=='P')
-{{--                                                    <i class="custom-badge badge-success ap">{{__('P')}}</i>--}}
-                                                    <i class="badge bg-success p-2 rounded">{{__('P')}}</i>
-                                                @elseif($status=='A')
-                                                    <i class="badge bg-danger p-2 rounded">{{__('A')}}</i>
-                                                @endif
-                                            </td>
-                                        @endforeach
-                                    </tr>
-                                @endforeach
+                                    @foreach($employeesAttendance as $attendance)
+                                        <tr>
+                                            <td>{{$attendance['name']}}</td>
+                                            @foreach($dates as $date)
+                                                <td>
+                                                    @if($attendance['status'][$date] == 'P')
+                                                        <a href="https://www.google.com/maps/search/?api=1&query={{ $attendance['latitude'][$date] }},{{ $attendance['longitude'][$date] }}" target="_blank" title="View on map">
+                                                            <i class="ti ti-map-pin" style="font-size: 24px;"></i>
+                                                        </a>
+                                                    @elseif($attendance['status'][$date]=='A')
+                                                        <i class="badge bg-danger p-2 rounded">{{__('A')}}</i>
+                                                    @elseif($attendance['status'][$date]=='W')
+                                                        <i class="badge bg-danger p-2 rounded">{{__('W')}}</i>
+                                                    @endif
+                                                </td>
+                                            @endforeach
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>

@@ -8,19 +8,19 @@
                 {{Form::text('name',null,array('class'=>'form-control','required'=>'required'))}}
             </div>
         </div>
-        {{-- <div class="col-lg-6 col-md-6 col-sm-6">
+        <div class="col-lg-6 col-md-6 col-sm-6">
             <div class="form-group">
                 {{Form::label('contact',__('Contact'),['class'=>'form-label'])}}
                 {{Form::number('contact',null,array('class'=>'form-control','required'=>'required'))}}
             </div>
         </div>
-        <div class="col-lg-4 col-md-4 col-sm-6">
+        <div class="col-lg-6 col-md-6 col-sm-6">
             <div class="form-group">
-                {{Form::label('tax_number',__('Tax Number'),['class'=>'form-label'])}}
-                {{Form::text('tax_number',null,array('class'=>'form-control'))}}
+                {{Form::label('email',__('Email'),['class'=>'form-label'])}}
+                {{Form::text('email',null,array('class'=>'form-control'))}}
 
             </div>
-        </div> --}}
+        </div>
         @if(!$customFields->isEmpty())
             <div class="col-lg-4 col-md-4 col-sm-6">
                 <div class="tab-pane fade show" id="tab-2" role="tabpanel">

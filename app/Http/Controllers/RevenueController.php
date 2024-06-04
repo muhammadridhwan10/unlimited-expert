@@ -6,9 +6,9 @@ use App\Models\BankAccount;
 use App\Models\Customer;
 use App\Models\InvoicePayment;
 use App\Models\Mail\InvoicePaymentCreate;
-use App\Models\ProductServiceCategory;
+use App\Models\User;
 use App\Models\Revenue;
-use App\Models\Transaction;
+use App\Models\Invoice;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
@@ -20,136 +20,54 @@ class RevenueController extends Controller
     {
         if(\Auth::user()->can('manage revenue'))
         {
-            if(\Auth::user()->type = 'admin')
+            if(\Auth::user()->type == 'company')
             {
-                $customer = Customer::all()->pluck('name', 'id');
-                $customer->prepend('Select Customer', '');
-    
-                $account = BankAccount::all()->pluck('holder_name', 'id');
-                $account->prepend('Select Account', '');
-    
-                $category = ProductServiceCategory::where('type', '=', 1)->get()->pluck('name', 'id');
-                $category->prepend('Select Category', '');
-    
-    
+                $user = User::where('type', '=', 'partners')->pluck('name', 'id');
+                $user->prepend('Select Partner', '');
+
                 $query = Revenue::all();
-    
+
                 if(!empty($request->date))
                 {
                     $date_range = explode('to', $request->date);
                     $query->whereBetween('date', $date_range);
                 }
-    
-                if(!empty($request->customer))
+
+                if(!empty($request->user))
                 {
-                    $query->where('id', '=', $request->customer);
+                    $query->where('user_id', '=', $request->user);
                 }
-                if(!empty($request->account))
-                {
-                    $query->where('account_id', '=', $request->account);
-                }
-    
-                if(!empty($request->category))
-                {
-                    $query->where('category_id', '=', $request->category);
-                }
-    
-                if(!empty($request->payment))
-                {
-                    $query->where('payment_method', '=', $request->payment);
-                }
+
                 $revenues = $query;
-    
-                return view('revenue.index', compact('revenues', 'customer', 'account', 'category'));
+
+                return view('revenue.index', compact('revenues', 'user'));
             }
-            elseif(\Auth::user()->type = 'company')
+            elseif(\Auth::user()->type == 'partners')
             {
-                $customer = Customer::all()->pluck('name', 'id');
-                $customer->prepend('Select Customer', '');
-    
-                $account = BankAccount::all()->pluck('holder_name', 'id');
-                $account->prepend('Select Account', '');
-    
-                $category = ProductServiceCategory::where('type', '=', 1)->get()->pluck('name', 'id');
-                $category->prepend('Select Category', '');
-    
-    
-                $query = Revenue::all();
-    
+                $user = User::where('type', '=', 'partners')->pluck('name', 'id');
+                $user->prepend('Select Partner', '');
+
+                $query = Revenue::where('user_id', \Auth::user()->id);
+
                 if(!empty($request->date))
                 {
                     $date_range = explode('to', $request->date);
                     $query->whereBetween('date', $date_range);
                 }
-    
-                if(!empty($request->customer))
+
+                if(!empty($request->user))
                 {
-                    $query->where('id', '=', $request->customer);
+                    $query->where('user_id', '=', $request->user);
                 }
-                if(!empty($request->account))
-                {
-                    $query->where('account_id', '=', $request->account);
-                }
-    
-                if(!empty($request->category))
-                {
-                    $query->where('category_id', '=', $request->category);
-                }
-    
-                if(!empty($request->payment))
-                {
-                    $query->where('payment_method', '=', $request->payment);
-                }
-                $revenues = $query;
-    
-                return view('revenue.index', compact('revenues', 'customer', 'account', 'category'));
+
+                $revenues = $query->get();
+
+                return view('revenue.index', compact('revenues', 'user'));
             }
             else
             {
-                $customer = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                $customer->prepend('Select Customer', '');
-    
-                $account = BankAccount::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('holder_name', 'id');
-                $account->prepend('Select Account', '');
-    
-                $category = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 1)->get()->pluck('name', 'id');
-                $category->prepend('Select Category', '');
-    
-    
-                $query = Revenue::where('created_by', '=', \Auth::user()->creatorId());
-    
-                if(!empty($request->date))
-                {
-                    $date_range = explode('to', $request->date);
-                    $query->whereBetween('date', $date_range);
-                }
-    
-                if(!empty($request->customer))
-                {
-                    $query->where('id', '=', $request->customer);
-                }
-                if(!empty($request->account))
-                {
-                    $query->where('account_id', '=', $request->account);
-                }
-    
-                if(!empty($request->category))
-                {
-                    $query->where('category_id', '=', $request->category);
-                }
-    
-                if(!empty($request->payment))
-                {
-                    $query->where('payment_method', '=', $request->payment);
-                }
-                $revenues = $query->get();
-    
-                return view('revenue.index', compact('revenues', 'customer', 'account', 'category'));
+                return redirect()->back()->with('error', __('Permission denied.'));
             }
-        }
-        else
-        {
-            return redirect()->back()->with('error', __('Permission denied.'));
         }
     }
 
@@ -159,22 +77,12 @@ class RevenueController extends Controller
 
         if(\Auth::user()->can('create revenue'))
         {
-            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
-            {
-                $customers = Customer::get()->pluck('name', 'id');
-                $customers->prepend('--', 0);
-                $categories = ProductServiceCategory::where('type', '=', 1)->get()->pluck('name', 'id');
-                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            }
-            else
-            {
-                $customers = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                $customers->prepend('--', 0);
-                $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 1)->get()->pluck('name', 'id');
-                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            }
 
-            return view('revenue.create', compact('customers', 'categories', 'accounts'));
+            $user = User::where('type', '=', 'partners')->get()->pluck('name', 'id');
+            $user->prepend('--', 0);
+            $invoices = Invoice::get()->pluck('invoice_id', 'id');
+
+            return view('revenue.create', compact('user','invoices'));
         }
         else
         {
@@ -192,9 +100,6 @@ class RevenueController extends Controller
                 $request->all(), [
                                    'date' => 'required',
                                    'amount' => 'required',
-                                   'account_id' => 'required',
-                                   'category_id' => 'required',
-                                   'add_receipt' => 'mimes:pdf,png,jpg,jpeg|max:20480'
                                ]
             );
             if($validator->fails())
@@ -205,79 +110,13 @@ class RevenueController extends Controller
             }
 
             $revenue                 = new Revenue();
+            $revenue->invoice_id     = $request->invoice_id;
             $revenue->date           = $request->date;
             $revenue->amount         = $request->amount;
-            $revenue->account_id     = $request->account_id;
-            $revenue->customer_id    = $request->customer_id;
-            $revenue->category_id    = $request->category_id;
-            $revenue->payment_method = 0;
-            $revenue->reference      = $request->reference;
             $revenue->description    = $request->description;
-            if(!empty($request->add_receipt))
-            {
-                $fileName = time() . "_" . $request->add_receipt->getClientOriginalName();
-                $request->add_receipt->storeAs('uploads/revenue', $fileName);
-                $revenue->add_receipt = $fileName;
-            }
+            $revenue->user_id        = $request->user_id;
             $revenue->created_by     = \Auth::user()->creatorId();
             $revenue->save();
-
-            $category            = ProductServiceCategory::where('id', $request->category_id)->first();
-            $revenue->payment_id = $revenue->id;
-            $revenue->type       = 'Revenue';
-            $revenue->category   = $category->name;
-            $revenue->user_id    = $revenue->customer_id;
-            $revenue->user_type  = 'Customer';
-            $revenue->account    = $request->account_id;
-            Transaction::addTransaction($revenue);
-
-            $customer         = Customer::where('id', $request->customer_id)->first();
-            $payment          = new InvoicePayment();
-            $payment->name    = !empty($customer) ? $customer['name'] : '';
-            $payment->date    = \Auth::user()->dateFormat($request->date);
-            $payment->amount  = \Auth::user()->priceFormat($request->amount);
-            $payment->invoice = '';
-
-            if(!empty($customer))
-            {
-                Utility::userBalance('customer', $customer->id, $revenue->amount, 'credit');
-            }
-
-            Utility::bankAccountBalance($request->account_id, $revenue->amount, 'credit');
-
-            try
-            {
-                Mail::to($customer['email'])->send(new InvoicePaymentCreate($payment));
-            }
-            catch(\Exception $e)
-            {
-                $smtp_error = __('E-Mail has been not sent due to SMTP configuration');
-            }
-
-            //Slack Notification
-            $setting  = Utility::settings(\Auth::user()->creatorId());
-            if(isset($setting['revenue_notification']) && $setting['revenue_notification'] ==1){
-                $msg = __("New Revenue of").' '. \Auth::user()->priceFormat($request->amount).' ' .__("created for").' ' .$customer->name .' '.__("by").' ' .\Auth::user()->name.'.';
-                Utility::send_slack_msg($msg);
-            }
-
-            //Telegram Notification
-            $setting  = Utility::settings(\Auth::user()->creatorId());
-            if(isset($setting['telegram_revenue_notification']) && $setting['telegram_revenue_notification'] ==1){
-                $msg = __("New Revenue of").' '. \Auth::user()->priceFormat($request->amount).' ' .__("created for").' ' .$customer->name .' '.__("by").' ' .\Auth::user()->name.'.';
-                Utility::send_telegram_msg($msg);
-            }
-
-            //Twilio Notification
-            $setting  = Utility::settings(\Auth::user()->creatorId());
-            $customer = Customer::find($request->customer_id);
-            if(isset($setting['twilio_revenue_notification']) && $setting['twilio_revenue_notification'] ==1)
-            {
-                $msg = __("New Revenue of").' '. \Auth::user()->priceFormat($request->amount).' ' .__("created for").' ' .$customer->name .' '.__("by").' ' .\Auth::user()->name.'.';
-
-                Utility::send_twilio_msg($customer->contact,$msg);
-            }
-
 
             return redirect()->route('revenue.index')->with('success', __('Revenue successfully created.') . ((isset($smtp_error)) ? '<br> <span class="text-danger">' . $smtp_error . '</span>' : ''));
         }
@@ -288,26 +127,16 @@ class RevenueController extends Controller
     }
 
 
-    public function edit(Revenue $revenue)
+    public function edit($id)
     {
         if(\Auth::user()->can('edit revenue'))
         {
-            if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
-            {
-                $customers = Customer::get()->pluck('name', 'id');
-                $customers->prepend('--', 0);
-                $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 1)->get()->pluck('name', 'id');
-                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->get()->pluck('name', 'id');
-            }
-            else
-            {
-                $customers = Customer::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                $customers->prepend('--', 0);
-                $categories = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 1)->get()->pluck('name', 'id');
-                $accounts   = BankAccount::select('*', \DB::raw("CONCAT(bank_name,' ',holder_name) AS name"))->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            }
+            $revenue = Revenue::find($id);
+            $user = User::where('type', '=', 'partners')->get()->pluck('name', 'id');
+            $user->prepend('--', 0);
+            $invoices = Invoice::get()->pluck('invoice_id', 'id');
 
-            return view('revenue.edit', compact('customers', 'categories', 'accounts', 'revenue'));
+            return view('revenue.edit', compact('user', 'invoices', 'revenue'));
         }
         else
         {
@@ -316,18 +145,15 @@ class RevenueController extends Controller
     }
 
 
-    public function update(Request $request, Revenue $revenue)
+    public function update(Request $request, $id)
     {
         if(\Auth::user()->can('edit revenue'))
         {
 
             $validator = \Validator::make(
                 $request->all(), [
-                                   'date' => 'required',
-                                   'amount' => 'required',
-                                   'account_id' => 'required',
-                                   'category_id' => 'required',
-                                   'add_receipt' => 'mimes:pdf,png,jpg,jpeg|max:20480'
+                                    'date' => 'required',
+                                    'amount' => 'required',
                                ]
             );
             if($validator->fails())
@@ -337,45 +163,9 @@ class RevenueController extends Controller
                 return redirect()->back()->with('error', $messages->first());
             }
 
-            $customer = Customer::where('id', $request->customer_id)->first();
-            if(!empty($customer))
-            {
-                Utility::userBalance('customer', $customer->id, $revenue->amount, 'debit');
-            }
-
-            Utility::bankAccountBalance($revenue->account_id, $revenue->amount, 'debit');
-
-            $revenue->date           = $request->date;
-            $revenue->amount         = $request->amount;
-            $revenue->account_id     = $request->account_id;
-            $revenue->customer_id    = $request->customer_id;
-            $revenue->category_id    = $request->category_id;
-            $revenue->payment_method = 0;
-            $revenue->reference      = $request->reference;
-            $revenue->description    = $request->description;
-            if(!empty($request->add_receipt))
-            {
-                $fileName = time() . "_" . $request->add_receipt->getClientOriginalName();
-                $request->add_receipt->storeAs('uploads/revenue', $fileName);
-                $revenue->add_receipt = $fileName;
-            }
-
-            $revenue->save();
-
-            $category            = ProductServiceCategory::where('id', $request->category_id)->first();
-            $revenue->category   = $category->name;
-            $revenue->payment_id = $revenue->id;
-            $revenue->type       = 'Revenue';
-            $revenue->account    = $request->account_id;
-            Transaction::editTransaction($revenue);
-
-            if(!empty($customer))
-            {
-                Utility::userBalance('customer', $customer->id, $request->amount, 'credit');
-            }
-
-            Utility::bankAccountBalance($request->account_id, $request->amount, 'credit');
-
+            $post = $request->all();
+            $revenue = Revenue::find($id);
+            $revenue->update($post);
 
             return redirect()->route('revenue.index')->with('success', __('Revenue successfully updated.'));
         }
@@ -386,50 +176,27 @@ class RevenueController extends Controller
     }
 
 
-    public function destroy(Revenue $revenue)
+    public function destroy($id)
     {
         if(\Auth::user()->can('delete revenue'))
         {
-            if($revenue->created_by == \Auth::user()->creatorId())
-            {
-                $revenue->delete();
-                $type = 'Revenue';
-                $user = 'Customer';
-                Transaction::destroyTransaction($revenue->id, $type, $user);
-
-                if($revenue->customer_id != 0)
-                {
-                    Utility::userBalance('customer', $revenue->customer_id, $revenue->amount, 'debit');
-                }
-
-                Utility::bankAccountBalance($revenue->account_id, $revenue->amount, 'debit');
-
-                return redirect()->route('revenue.index')->with('success', __('Revenue successfully deleted.'));
-            }
-            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
-            {
-                $revenue->delete();
-                $type = 'Revenue';
-                $user = 'Customer';
-                Transaction::destroyTransaction($revenue->id, $type, $user);
-
-                if($revenue->customer_id != 0)
-                {
-                    Utility::userBalance('customer', $revenue->customer_id, $revenue->amount, 'debit');
-                }
-
-                Utility::bankAccountBalance($revenue->account_id, $revenue->amount, 'debit');
-
-                return redirect()->route('revenue.index')->with('success', __('Revenue successfully deleted.'));
-            }
-            else
-            {
-                return redirect()->back()->with('error', __('Permission denied.'));
-            }
+            $revenue = Revenue::find($id);
+            $revenue->delete();
+               
+            return redirect()->route('revenue.index')->with('success', __('Revenue successfully deleted.'));
         }
         else
         {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
+    }
+
+    public function getinvoice(Request $request)
+    {
+        $invoice = Invoice::where('id', $request->id)->first();
+
+        $amount = round($invoice->getDue());
+
+        echo json_encode($amount);
     }
 }

@@ -628,6 +628,130 @@
                         <div class="tab-pane fade" id="company-finance" role="tabpanel"
                         aria-labelledby="pills-user-tab-3">
                             <div class="row">
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="card" id="income-card">
+                                        <div class="card-body">
+                                            <div class="row align-items-center justify-content-between">
+                                                <div class="col-auto mb-3 mb-sm-0">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="theme-avtar bg-success">
+                                                            <i class="ti ti-circle-plus"></i>
+                                                        </div>
+                                                        <div class="ms-3">
+                                                            <small class="text-muted h6">{{__('Total Income Bekasi')}}</small>
+                                                            <h6 class="m-0">{{\Auth::user()->priceFormat(\Auth::user()->IncomePartnersBekasi())}}</h6>
+                                                            <small>{{__('All Invoice Paid')}}</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="card" id="expense-card">
+                                        <div class="card-body">
+                                            <div class="row align-items-center justify-content-between">
+                                                <div class="col-auto mb-3 mb-sm-0">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="theme-avtar bg-danger">
+                                                            <i class="ti ti-circle-minus"></i>
+                                                        </div>
+                                                        <div class="ms-3">
+                                                            <small class="text-muted h6">{{__('Total Expense Bekasi')}}</small>
+                                                            <h6 class="m-0">{{\Auth::user()->priceFormat(\Auth::user()->ExpensePartnersBekasi())}}</h6>
+                                                            <small>{{__('Bill + Tax Invoice (%6)')}}</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="row align-items-center justify-content-between">
+                                                <div class="col-auto mb-3 mb-sm-0">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="theme-avtar bg-info">
+                                                            <i class="ti ti-report-money"></i>
+                                                        </div>
+                                                        <div class="ms-3">
+                                                            <small class="text-muted h6">{{__('Total Balance Bekasi')}}</small>
+                                                            <h6 class="m-0">{{\Auth::user()->priceFormat(\Auth::user()->BalancePartnersBekasi())}}</h6>
+                                                            <small>{{__('Total Income - Total Expense')}}</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="card" id="income-card">
+                                        <div class="card-body">
+                                            <div class="row align-items-center justify-content-between">
+                                                <div class="col-auto mb-3 mb-sm-0">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="theme-avtar bg-success">
+                                                            <i class="ti ti-circle-plus"></i>
+                                                        </div>
+                                                        <div class="ms-3">
+                                                            <small class="text-muted h6">{{__('Total Income Malang')}}</small>
+                                                            <h6 class="m-0">{{\Auth::user()->priceFormat(\Auth::user()->IncomePartnersMalang())}}</h6>
+                                                            <small>{{__('All Invoice Paid')}}</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="card" id="expense-card">
+                                        <div class="card-body">
+                                            <div class="row align-items-center justify-content-between">
+                                                <div class="col-auto mb-3 mb-sm-0">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="theme-avtar bg-danger">
+                                                            <i class="ti ti-circle-minus"></i>
+                                                        </div>
+                                                        <div class="ms-3">
+                                                            <small class="text-muted h6">{{__('Total Expense Malang')}}</small>
+                                                            <h6 class="m-0">{{\Auth::user()->priceFormat(\Auth::user()->ExpensePartnersMalang())}}</h6>
+                                                            <small>{{__('Bill + Tax Invoice (%6)')}}</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 col-md-6">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <div class="row align-items-center justify-content-between">
+                                                <div class="col-auto mb-3 mb-sm-0">
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="theme-avtar bg-info">
+                                                            <i class="ti ti-report-money"></i>
+                                                        </div>
+                                                        <div class="ms-3">
+                                                            <small class="text-muted h6">{{__('Total Balance Malang')}}</small>
+                                                            <h6 class="m-0">{{\Auth::user()->priceFormat(\Auth::user()->BalancePartnersMalang())}}</h6>
+                                                            <small>{{__('Total Income - Total Expense')}}</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
                                 <div class="col-md-12">
                                     <div class="card">
                                         <div class="card-header">

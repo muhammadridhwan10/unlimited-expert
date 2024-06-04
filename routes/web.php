@@ -46,7 +46,7 @@ Route::get('/download_mac', 'Auth\AuthenticatedSessionController@download_mac')-
 // Route::get('/password/resets/{lang?}', 'Auth\LoginController@showLinkRequestForm')->name('change.langPass');
 
 
-Route::get('/', 'DashboardController@account_dashboard_index')->name('dashboard')->middleware(
+Route::get('/', 'DashboardController@dashboard')->name('dashboard')->middleware(
     [
         'XSS',
         'revalidate',
@@ -389,6 +389,12 @@ Route::group(
 
     Route::resource('invoice', 'InvoiceController');
     Route::get('invoice/create/{cid}', 'InvoiceController@create')->name('invoice.create');
+    Route::post('invoice/convert-to-revenue', 'InvoiceController@convertToRevenue')->name('convert.to.revenue')->middleware(
+        [
+            'auth',
+            'XSS',
+        ]
+    );
 }
 );
 
@@ -424,6 +430,27 @@ Route::group(
     Route::get('invoice/{id}/credit-note/edit/{cn_id}', 'CreditNoteController@edit')->name('invoice.edit.credit.note');
     Route::post('invoice/{id}/credit-note/edit/{cn_id}', 'CreditNoteController@update')->name('invoice.edit.credit.note');
     Route::delete('invoice/{id}/credit-note/delete/{cn_id}', 'CreditNoteController@destroy')->name('invoice.delete.credit.note');
+
+}
+);
+
+
+Route::group(
+    [
+        'middleware' => [
+            'auth',
+            'XSS',
+            'revalidate',
+        ],
+    ], function (){
+
+    Route::get('revenue', 'RevenueController@index')->name('revenue.index');
+    Route::get('revenue/invoice', 'RevenueController@getinvoice')->name('invoice.revenue.get');
+    Route::get('create-revenue', 'RevenueController@create')->name('revenue.create');
+    Route::post('add-revenue', 'RevenueController@store')->name('revenue.store');
+    Route::get('edit-revenue/{id}', 'RevenueController@edit')->name('revenue.edit');
+    Route::post('update-revenue/{id}', 'RevenueController@update')->name('revenue.update');
+    Route::delete('delete-revenue/{id}', 'RevenueController@destroy')->name('revenue.destroy');
 
 }
 );
@@ -466,21 +493,6 @@ Route::post(
 );
 
 Route::resource('taxes', 'TaxController')->middleware(
-    [
-        'auth',
-        'XSS',
-        'revalidate',
-    ]
-);
-
-Route::get('revenue/index', 'RevenueController@index')->name('revenue.index')->middleware(
-    [
-        'auth',
-        'XSS',
-        'revalidate',
-    ]
-);
-Route::resource('revenue', 'RevenueController')->middleware(
     [
         'auth',
         'XSS',
@@ -537,8 +549,22 @@ Route::resource('payment', 'PaymentController')->middleware(
     ]
 );
 
-Route::post('payment-receipt/image-view', ['as' => 'payment-receipt.image.view','uses' => [PaymentController::class,'getPaymentReceiptImages']]);
-Route::post('payment-bill/image-view', ['as' => 'payment-bill.image.view','uses' => [PaymentController::class,'getPaymentBillImages']]);
+Route::get('payment/{id}/action', 'PaymentController@action')->name('payment.action')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post('payment/changeaction', 'PaymentController@changeaction')->name('payment.changeaction')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post('payment-receipt/image-view', ['as' => 'payment-receipt.image.view','uses' => 'PaymentController@getPaymentReceiptImages']);
+Route::post('payment-bill/image-view', ['as' => 'payment-bill.image.view','uses' => 'PaymentController@getPaymentBillImages']);
 
 Route::group(
     [

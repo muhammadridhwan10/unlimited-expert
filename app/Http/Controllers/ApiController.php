@@ -17,10 +17,13 @@ use App\Models\TimeTracker;
 use App\Models\TrackPhoto;
 use App\Models\Timesheet;
 use App\Models\LogDesktop;
+use App\Models\AttendanceEmployee;
+use App\Models\Employee;
 use DateTime;
 use DatePeriod;
 use DateInterval;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 
 class ApiController extends Controller
@@ -42,7 +45,24 @@ class ApiController extends Controller
 
         $settings              = Utility::settings(\Auth::user()->creatorId());
 
-        // $employee = Employee::where('user_id', auth()->user()->id)->where('created_by', '=', \Auth::user()->creatorId())->first();
+        $employee = Employee::where('user_id', auth()->user()->id)->first();
+		
+		if($employee->branch_id == 1)
+		{
+			$startTime = $settings['company_start_time'];
+			$endTime   = $settings['company_end_time'];
+		}
+		elseif($employee->branch_id == 2)
+		{
+			$startTime = "08:30";
+			$endTime   = "17:30";
+		}
+		elseif($employee->branch_id == 3)
+		{
+			$startTime = "08:00";
+			$endTime   = "17:00";
+		}
+		
 
         // $branch_rest_time = Settings::where('name', 'branch_' . $employee->branch_id . '_rest_time')->value('value');
 
@@ -53,6 +73,8 @@ class ApiController extends Controller
         return $this->success([
             'token' => auth()->user()->createToken('API Token')->plainTextToken,
             'user'=> auth()->user()->name,
+			'employee_id'=> auth()->user()->employee->id,
+			'branch_id' => $employee->branch_id,
             // 'rest_time'=> $branch_rest_time,
             'avatar'=> auth()->user()->avatar,
             'settings' =>$settings,
@@ -223,6 +245,178 @@ class ApiController extends Controller
         $new->save();
         return $this->success( [],'Uploaded successfully.');
     }
+	
+	public function clockIn(Request $request)
+    {
+			$settings = Utility::settings(\Auth::user()->creatorId());
+        	$employeeId = $request->employee_id;
+			$todayAttendance = AttendanceEmployee::where('employee_id', '=', $employeeId)->where('date', date('Y-m-d'))->first();
+
+			if(empty($todayAttendance))
+			{
+				$employee = Employee::where('id', $employeeId)->first();
+
+				if($employee->branch_id == 1)
+				{
+					$startTime = Utility::getValByName('company_start_time');
+					$endTime   = Utility::getValByName('company_end_time');
+				}
+				elseif($employee->branch_id == 2)
+				{
+					$startTime = "08:30";
+					$endTime   = "17:30";
+				}
+				elseif($employee->branch_id == 3)
+				{
+					$startTime = "08:00";
+					$endTime   = "17:00";
+				}
+
+				$attendance = AttendanceEmployee::orderBy('id', 'desc')->where('employee_id', '=', $employeeId)->where('clock_out', '=', '00:00:00')->first();
+
+				if($attendance != null)
+				{
+					$attendance->clock_out = $endTime;
+					$attendance->save();
+				}
+
+				$date = date("Y-m-d");
+				$time = date("H:i:s");
+
+				//late
+				$totalLateSeconds = time() - strtotime($date . $startTime);
+				$hours            = floor($totalLateSeconds / 3600);
+				$mins             = floor($totalLateSeconds / 60 % 60);
+				$secs             = floor($totalLateSeconds % 60);
+				$late             = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
+
+				$checkDb = AttendanceEmployee::where('employee_id', '=', $employeeId)->where('date', '=', $date)->first();
+
+				if(empty($checkDb))
+				{
+					$employeeAttendance = new AttendanceEmployee();
+					$employeeAttendance->employee_id   = $employeeId;
+					$employeeAttendance->date          = $date;
+					$employeeAttendance->status        = 'Present';
+					$employeeAttendance->clock_in      = $time;
+					$employeeAttendance->clock_out     = '00:00:00';
+					$employeeAttendance->late          = $late;
+					$employeeAttendance->early_leaving = '00:00:00';
+					$employeeAttendance->overtime      = '00:00:00';
+					$employeeAttendance->total_rest    = '00:00:00';
+					$employeeAttendance->created_by    = \Auth::user()->id;
+					$employeeAttendance->latitude = $request->latitude;
+        			$employeeAttendance->longitude = $request->longitude;
+
+					$employeeAttendance->save();
+
+					return response()->json(['data' => $employeeAttendance], 200);
+				}
+				else
+				{
+					return response()->json(['error' => 'Employee are not allowed multiple time clock in & clock out for every day'], 400);
+				}
+			}
+			else
+			{
+				return response()->json(['error' => 'Employee are not allowed multiple time clock in & clock out for every day'], 400);
+			}
+    }
+	
+	public function clockOut(Request $request, $id)
+    {
+			$settings = Utility::settings(\Auth::user()->creatorId());
+        	$employeeId = $request->employee_id;
+			$todayAttendance = AttendanceEmployee::where('employee_id', '=', $employeeId)->where('date', date('Y-m-d'))->first();
+
+			if(!empty($todayAttendance) && $todayAttendance->clock_out == '00:00:00')
+			{
+				$employee = Employee::where('id', $employeeId)->first();
+
+				if($employee->branch_id == 1)
+				{
+					$startTime = Utility::getValByName('company_start_time');
+					$endTime   = Utility::getValByName('company_end_time');
+				}
+				elseif($employee->branch_id == 2)
+				{
+					$startTime = "08:30";
+					$endTime   = "17:30";
+				}
+				elseif($employee->branch_id == 3)
+				{
+					$startTime = "08:00";
+					$endTime   = "17:00";
+				}
+
+				$date = date("Y-m-d");
+				$time = date("H:i:s");
+
+				//late
+				$totalEarlyLeavingSeconds = strtotime($date . $endTime) - time();
+                $hours                    = floor($totalEarlyLeavingSeconds / 3600);
+                $mins                     = floor($totalEarlyLeavingSeconds / 60 % 60);
+                $secs                     = floor($totalEarlyLeavingSeconds % 60);
+                $earlyLeaving             = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
+
+				$attendanceEmployee['clock_out']     = $time;
+                $attendanceEmployee['early_leaving'] = $earlyLeaving;
+				
+				AttendanceEmployee::where('id',$id)->update($attendanceEmployee);
+				
+				return response()->json(['message' => 'Employee Successfully Clock Out'], 200);
+
+
+			}
+			else
+			{
+				return response()->json(['error' => 'Employee are not allowed multiple time clock in & clock out for every day'], 400);
+			}
+    }
+	
+	public function attendanceHistory(Request $request)
+	{
+		$attr = $request->validate([
+			'month' => 'required|integer|min:1|max:12', // Validasi bulan (1-12)
+			'year' => 'required|integer|min:2000|max:9999', // Validasi tahun (minimal 2000)
+			'employee_id' => 'nullable|integer', // ID karyawan opsional
+		]);
+
+		// Menyesuaikan query berdasarkan ID karyawan jika disediakan
+		$query = AttendanceEmployee::query();
+		if (isset($attr['employee_id'])) {
+			$query->where('employee_id', $attr['employee_id']);
+		}
+
+		// Filter berdasarkan bulan dan tahun
+		$query->whereYear('date', $attr['year'])
+			  ->whereMonth('date', $attr['month']);
+
+		$attendanceHistory = $query->orderBy('date', 'ASC')->get();
+
+		// Hitung total_time untuk setiap entri
+		foreach ($attendanceHistory as $attendance) {
+			$clockIn = Carbon::parse($attendance->clock_in);
+			$clockOut = Carbon::parse($attendance->clock_out);
+			$totalTime = $clockOut->diff($clockIn)->format('%H:%I:%S');
+			$attendance->total_time = $totalTime;
+		}
+
+		return response()->json(['attendance_history' => $attendanceHistory], 200);
+	}
+	
+	public function getProfile($id)
+	{
+		$employee = Employee::with('user')->find($id);
+
+		if (!$employee) {
+			return response()->json(['error' => 'Employee not found'], 404);
+		}
+
+		return response()->json($employee);
+	}
+	
+
     
 
 }

@@ -133,6 +133,7 @@ class LeaveController extends Controller
                     'end_date' => $request->type == 'leave' ? 'required' : '',
                     'leave_reason' => $request->type == 'leave' ? 'required' : '',
                     'total_sick_days' => $request->type == 'sick' ? 'required' : '',
+                    'date_sick_letter' => $request->type == 'sick' ? 'required' : '',
                 ]
             );
 
@@ -180,6 +181,7 @@ class LeaveController extends Controller
             $leave->total_sick_days  = $request->total_sick_days;
             $leave->absence_type     = $request->type;
             $leave->status           = 'Pending';
+            $leave->date_sick_letter = $request->date_sick_letter;
             $leave->created_by       = \Auth::user()->creatorId();
 
             if($leave->absence_type  == 'sick')
@@ -291,6 +293,7 @@ class LeaveController extends Controller
                     'end_date' => $request->type == 'leave' ? 'required' : '',
                     'leave_reason' => $request->type == 'leave' ? 'required' : '',
                     'total_sick_days' => $request->type == 'sick' ? 'required' : '',
+                    'date_sick_letter' => $request->type == 'sick' ? 'required' : '',
                 ]
             );
 
@@ -336,6 +339,7 @@ class LeaveController extends Controller
             $leave->sick_letter      = !empty('uploads/sick_letter/' .\Auth::user()->name . '/' . $request->sick_letter) ? $request->sick_letter : '';
             $leave->total_sick_days  = $request->total_sick_days;
             $leave->absence_type     = $request->type;
+            $leave->date_sick_letter = $request->date_sick_letter;
             $leave->created_by       = \Auth::user()->creatorId();
 
             if($leave->absence_type  == 'sick')
@@ -476,25 +480,34 @@ class LeaveController extends Controller
         // }
         // )->groupBy('leaves.leave_type_id')->get();
 
-        $leave_counts=[];
-        $leave_types = LeaveType::where('created_by',\Auth::user()->creatorId())->get();
-        foreach ($leave_types as  $type) {
-            $counts = Leave::select(\DB::raw('COALESCE(SUM(leaves.total_leave_days), 0) AS total_leave'))
-            ->where('leave_type_id', $type->id)
-            ->where('employee_id', $request->employee_id)
-            ->whereYear('created_at', now()->year)
-            ->groupBy('leaves.leave_type_id')
-            ->first();
+        $leave_counts = [];
+        $leave_types = LeaveType::where('created_by', \Auth::user()->creatorId())->get();
 
-            $leave_count['total_leave']=!empty($counts)?$counts['total_leave']:0;
-            $leave_count['title']=$type->title;
-            $leave_count['days']=$type->days;
-            $leave_count['id']=$type->id;
+        foreach ($leave_types as $type) {
+            $counts = Leave::select(\DB::raw('
+                COALESCE(SUM(
+                    CASE 
+                        WHEN sick_letter IS NULL THEN total_leave_days + total_sick_days
+                        ELSE total_leave_days 
+                    END
+                ), 0) AS total_leave'))
+                ->where('leave_type_id', $type->id)
+                ->where('employee_id', $request->employee_id)
+                ->whereYear('created_at', now()->year)
+                ->groupBy('leaves.leave_type_id')
+                ->first();
+
+            // Menyimpan hasil ke dalam array
+            $leave_count['total_leave'] = !empty($counts) ? $counts['total_leave'] : 0;
+            $leave_count['title'] = $type->title;
+            $leave_count['days'] = $type->days;
+            $leave_count['id'] = $type->id;
             $leave_count['remaining_leave'] = $type->days - $leave_count['total_leave'];
-            $leave_counts[]=$leave_count;
+            $leave_counts[] = $leave_count;
         }
 
         return $leave_counts;
+
 
     }
 

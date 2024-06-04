@@ -41,12 +41,18 @@ class CustomerInvoiceSend extends Mailable
         //         'nama' => env('MAIL_USERNAME'),
         //         'website' => 'Konsultanku',
         //     ]);
-        if ($this->language === 'english') {
-            $mail = $this->markdown('email.customer_invoice_send')
-                        ->subject('Invoice Submission for ' . $this->invoice->invoice_id);
-        } elseif ($this->language === 'indonesian') {
-            $mail = $this->markdown('email.customer_invoice_send_in')
-                        ->subject('Pengiriman Invoice Untuk Pembayaran ');
+        $categoryIds = explode(',', $this->invoice->category_id);
+        $productNames = \App\Models\ProductServiceCategory::whereIn('id', $categoryIds)->pluck('name');
+
+        foreach($productNames as $productName)
+        {
+            if ($this->language === 'english') {
+                $mail = $this->markdown('email.customer_invoice_send')
+                            ->subject('Invoice ' . $productName . ' ' . 'Service ' . ' ' . $this->invoice->client->name);
+            } elseif ($this->language === 'indonesian') {
+                $mail = $this->markdown('email.customer_invoice_send_in')
+                            ->subject('Invoice Jasa ' . $productName . ' ' . $this->invoice->client->name);
+            }
         }
         
         if (!empty($this->ccEmails)) {

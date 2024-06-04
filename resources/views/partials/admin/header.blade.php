@@ -84,24 +84,25 @@
 
                     @endif --}}
 
-                <li class="dropdown dash-h-item drp-language">
-                    @if((\Auth::user()->type != 'super admin'))
-                        <a class="dash-head-link dropdown-toggle arrow-none me-0"
-                        data-bs-toggle="dropdown"
-                        href="#"
-                        role="button"
-                        aria-haspopup="false"
-                        aria-expanded="false"
-                        >
-                            <i class="ti ti-settings"></i>
-                        </a>
-                        <div class="dropdown-menu dash-h-dropdown dropdown-menu-end">
-                            @if(Gate::check('manage company settings'))
-                                <a href="{{ route('company.setting') }}" class="dropdown-item">{{__('System Settings')}}</a>
-                            @endif
-                        </div>
-                    @endif
-                </li>
+                @if((\Auth::user()->type !== 'partners'))
+                    <li class="dropdown dash-h-item drp-language">
+                    
+                            <a class="dash-head-link dropdown-toggle arrow-none me-0"
+                            data-bs-toggle="dropdown"
+                            href="#"
+                            role="button"
+                            aria-haspopup="false"
+                            aria-expanded="false"
+                            >
+                                <i class="ti ti-settings"></i>
+                            </a>
+                            <div class="dropdown-menu dash-h-dropdown dropdown-menu-end">
+                                @if(Gate::check('manage company settings'))
+                                    <a href="{{ route('company.setting') }}" class="dropdown-item">{{__('System Settings')}}</a>
+                                @endif
+                            </div>
+                    </li>
+                @endif
 
 
 

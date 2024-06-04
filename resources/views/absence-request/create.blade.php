@@ -14,8 +14,12 @@
     <div class="row" id="typeFields">
         <div class="col-md-12">
             <div class="form-group">
-                {{Form::label('type',__('Select Type') ,['class'=>'form-label'])}}<span class="text-danger">*</span>
-                {{Form::select('type', ['sick' => 'Sick', 'leave' => 'Leave'], null, ['class' => 'form-control', 'id' => 'type', 'placeholder' => 'Select Type'])}}
+                {{ Form::label('type', __('Select Type'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                @if (\Auth::user()->type == 'intern')
+                    {{ Form::select('type', ['sick' => 'Sick'], null, ['class' => 'form-control', 'id' => 'type', 'placeholder' => 'Select Type']) }}
+                @else
+                    {{ Form::select('type', ['sick' => 'Sick', 'leave' => 'Leave'], null, ['class' => 'form-control', 'id' => 'type', 'placeholder' => 'Select Type']) }}
+                @endif
             </div>
         </div>
     </div>
@@ -69,6 +73,12 @@
 
                     </label>
                 </div>
+        </div>
+        <div class="col-md-12">
+            <div class="form-group">
+                {{ Form::label('date_sick_letter', __('Date Sick Letter'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                {{Form::date('date_sick_letter',null,array('class'=>'form-control'))}}
+            </div>
         </div>
         <div class="col-md-12">
             <div class="form-group">

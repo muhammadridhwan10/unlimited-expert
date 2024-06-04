@@ -22,7 +22,8 @@
     <div class="row">
         <div class="col-xl-12">
             <div class="card">
-             <div class="card-header"><h6 class="mb-0" style="font-size: 15px;">{{__('Leave Request')}}</h6></div>
+                @if(\Auth::user()->type != 'intern')
+                <div class="card-header"><h6 class="mb-0" style="font-size: 15px;">{{__('Leave Request')}}</h6></div>
                 <div class="card-body table-border-style">
                     <div class="table-responsive">
                         <table class="table datatable">
@@ -99,6 +100,7 @@
                         </table>
                     </div>
                 </div>
+                @endif
                 <div class="card-header"><h6 class="mb-0" style="font-size: 15px;">{{__('Sick Request')}}</h6></div>
                 <div class="card-body table-border-style">
                     <div class="table-responsive">

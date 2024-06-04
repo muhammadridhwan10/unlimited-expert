@@ -1,4 +1,4 @@
-{{ Form::open(array('url' => 'revenue','enctype' => 'multipart/form-data')) }}
+{{ Form::open(array('route' => array('revenue.store'),'method'=>'post')) }}
 <div class="modal-body">
     <div class="row">
         <div class="form-group col-md-6">
@@ -6,59 +6,30 @@
             {{Form::date('date',null,array('class'=>'form-control','required'=>'required'))}}
         </div>
         <div class="form-group col-md-6">
-            {{ Form::label('amount', __('Amount'),['class'=>'form-label']) }}
-            {{ Form::number('amount', '', array('class' => 'form-control','required'=>'required','step'=>'0.01')) }}
+            {{ Form::label('invoice_id', __('Invoice'),['class'=>'form-label']) }}
+                <select class="form-control select2" required="required" id="invoice_id" name="invoice_id">
+                    <option value="0">{{__('Select Invoice')}}</option>
+                    @foreach($invoices as $key=>$invoice)
+                        <option value="{{$key}}">{{$invoice}}</option>
+                    @endforeach
+                </select>
         </div>
         <div class="form-group col-md-6">
-            {{ Form::label('account_id', __('Account'),['class'=>'form-label']) }}
-            {{ Form::select('account_id',$accounts,null, array('class' => 'form-control select','required'=>'required')) }}
+            {{ Form::label('amount', __('Amount'),['class'=>'form-label']) }}
+            {{ Form::number('amount', null, array('class' => 'form-control','required'=>'required','step'=>'0.01')) }}
         </div>
-        <div class="form-group col-md-6"
-        {{ Form::label('customer_id', __('Customer'),['class'=>'form-label']) }}
-        {{ Form::select('customer_id', $customers,null, array('class' => 'form-control select','required'=>'required')) }}
+        <div class="form-group col-md-6">
+            {{ Form::label('user_id', __('Partner'),['class'=>'form-label']) }}
+            {{ Form::select('user_id', $user,null, array('class' => 'form-control select','required'=>'required')) }}
+        </div>
     </div>
     <div class="form-group  col-md-12">
         {{ Form::label('description', __('Description'),['class'=>'form-label']) }}
         {{ Form::textarea('description', '', array('class' => 'form-control','rows'=>3)) }}
     </div>
-    <div class="form-group col-md-6">
-        {{ Form::label('category_id', __('Category'),['class'=>'form-label']) }}
-        {{ Form::select('category_id', $categories,null, array('class' => 'form-control select','required'=>'required')) }}
-    </div>
-    <div class="form-group col-md-6">
-        {{ Form::label('reference', __('Reference'),['class'=>'form-label']) }}
-        {{ Form::text('reference', '', array('class' => 'form-control')) }}
-    </div>
-
-    {{--        <div class="col-md-6">--}}
-    {{--            {{ Form::label('add_receipt', __('Payment Receipt'), ['class' => 'form-label']) }}--}}
-    {{--            <div class="choose-file form-group">--}}
-    {{--                <label for="file" class="form-label">--}}
-    {{--                    <input type="file" name="add_receipt" id="image" class="form-control" accept="image/*, .txt, .rar, .zip" >--}}
-    {{--                </label>--}}
-    {{--                <p class="upload_file"></p>--}}
-
-    {{--            </div>--}}
-    {{--        </div>--}}
-
-    <div class="form-group col-md-6">
-
-        {{Form::label('add_receipt',__('Payment Receipt'),['class' => 'col-form-label'])}}
-        {{Form::file('add_receipt',array('class'=>'form-control','required'=>'required', 'id'=>'files',  'accept' => ".pdf, .png, .jpg, .jpeg"))}}
-        <img id="image" class="mt-3" style="width:25%;"/>
-    </div>
-
-</div>
 </div>
 <div class="modal-footer">
     <input type="button" value="{{__('Cancel')}}" class="btn  btn-light" data-bs-dismiss="modal">
     <input type="submit" value="{{__('Create')}}" class="btn  btn-primary">
 </div>
 {{ Form::close() }}
-
-<script>
-    document.getElementById('files').onchange = function () {
-        var src = URL.createObjectURL(this.files[0])
-        document.getElementById('image').src = src
-    }
-</script>

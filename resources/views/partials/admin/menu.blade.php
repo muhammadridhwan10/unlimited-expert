@@ -190,13 +190,13 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                 </a>
                             </li>
                         @endif
-                        {{-- @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
+                        @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'absence-request')?'active':''}}">
                                 <a href="{{route('absence-request.index')}}" class="dash-link">
                                     <span class="dash-micon"><i class="ti ti-calendar"></i></span><span class="dash-mtext">{{__('Absence Request')}}</span><sup style="color: red;">New</sup>
                                 </a>
                             </li>
-                        @endif --}}
+                        @endif
 
 
                         <!--------------------- Start HRM ----------------------------------->
@@ -577,7 +577,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                             <li class="dash-item dash-hasmenu {{ (Request::route()->getName() == 'print-setting' || Request::segment(1) == 'customer' || Request::segment(1) == 'vender' || Request::segment(1) == 'proposal' || Request::segment(1) == 'bank-account' || Request::segment(1) == 'bank-transfer' || Request::segment(1) == 'invoice' || Request::segment(1) == 'revenue' || Request::segment(1) == 'credit-note' || Request::segment(1) == 'taxes' || Request::segment(1) == 'product-category' ||
                                             Request::segment(1) == 'product-unit' || Request::segment(1) == 'payment-method' || Request::segment(1) == 'custom-field' || Request::segment(1) == 'chart-of-account-type' || (Request::segment(1) == 'transaction') &&  Request::segment(2) != 'ledger' &&  Request::segment(2) != 'balance-sheet' &&  Request::segment(2) != 'trial-balance' || Request::segment(1) == 'goal' || Request::segment(1) == 'budget'|| Request::segment(1) ==
                                             'chart-of-account' || Request::segment(1) == 'journal-entry' || Request::segment(2) == 'ledger' ||  Request::segment(2) == 'balance-sheet' ||  Request::segment(2) == 'trial-balance' || Request::segment(1) == 'bill' || Request::segment(1) == 'payment' || Request::segment(1) == 'debit-note')?' active dash-trigger':''}}">
-                                <a href="#!" class="dash-link"><span class="dash-micon"><i class="ti ti-file-invoice"></i></span><span class="dash-mtext">{{__('Invoice System ')}}
+                                <a href="#!" class="dash-link"><span class="dash-micon"><i class="ti ti-file-invoice"></i></span><span class="dash-mtext">{{__('Finance System ')}}
                                     </span><span class="dash-arrow"><i data-feather="chevron-right"></i></span>
                                 </a>
                                 <ul class="dash-submenu">
@@ -589,6 +589,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                     @if(Gate::check('manage vender'))
                                     <li class="dash-item {{ (Request::segment(1) == 'vender')?'active':''}}">
                                         <a class="dash-link" href="{{ route('vender.index') }}">{{__('Vendor')}}</a>
+                                    </li>
+                                    @endif
+                                    @if(Auth::user()->type !== "partners")
+                                    <li class="dash-item {{ (Request::route()->getName() == 'chart-of-account.index') ? ' active' : '' }}">
+                                        <a class="dash-link" href="{{ route('chart-of-account.index') }}">{{__('Chart of Accounts')}}</a>
                                     </li>
                                     @endif
                                     {{-- @if(Gate::check('manage proposal'))
@@ -635,6 +640,9 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                         </li> --}}
                                     @endif
                                     @if( Gate::check('manage bill')  ||  Gate::check('manage payment') ||  Gate::check('manage debit note'))
+                                         <li class="dash-item {{ (Request::route()->getName() == 'revenue.index' || Request::route()->getName() == 'revenue.create' || Request::route()->getName() == 'revenue.edit') ? ' active' : '' }}">
+                                            <a class="dash-link" href="{{route('revenue.index')}}">{{__('Revenue')}}</a>
+                                        </li>
                                         <li class="dash-item {{ (Request::route()->getName() == 'payment.index' || Request::route()->getName() == 'payment.create' || Request::route()->getName() == 'payment.edit') ? ' active' : '' }}">
                                             <a class="dash-link" href="{{route('payment.index')}}">{{__('Bill')}}</a>
                                         </li>
@@ -722,12 +730,12 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                                         <a class="dash-link" href="{{route('report.income.summary')}}">{{__('Income Summary')}}</a>
                                                     </li>
                                                 @endcan
-                                                {{-- @can('expense report')
+                                                @can('expense report')
                                                     <li class="dash-item {{ (Request::route()->getName() == 'report.expense.summary' ) ? ' active' : '' }}">
                                                         <a class="dash-link" href="{{route('report.expense.summary')}}">{{__('Expense Summary')}}</a>
                                                     </li>
                                                 @endcan
-                                                @can('income vs expense report')
+                                                {{-- @can('income vs expense report')
                                                     <li class="dash-item {{ (Request::route()->getName() == 'report.income.vs.expense.summary' ) ? ' active' : '' }}">
                                                         <a class="dash-link" href="{{route('report.income.vs.expense.summary')}}">{{__('Income VS Expense')}}</a>
                                                     </li>

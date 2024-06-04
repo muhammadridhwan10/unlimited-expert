@@ -20,6 +20,7 @@ class Leave extends Model
         'total_sick_days',
         'sick_letter',
         'absence_type',
+        'date_sick_letter',
         'created_by',
     ];
 

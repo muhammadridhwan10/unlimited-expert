@@ -51,6 +51,8 @@ $profile = asset(Storage::url('uploads/avatar/'));
                                 <tr>
                                     <th>#</th>
                                     <th>{{ __('Name') }}</th>
+                                    <th>{{ __('Contact Person') }}</th>
+                                    <th>{{ __('Email') }}</th>
                                     <th>{{ __('Action') }}</th>
                                 </tr>
                             </thead>
@@ -68,6 +70,8 @@ $profile = asset(Storage::url('uploads/avatar/'));
                                             @endcan
                                         </td>
                                         <td>{{ $Vender['name'] }}</td>
+                                        <td>{{ $Vender['contact'] }}</td>
+                                        <td>{{ $Vender['email'] }}</td>
                                         <td class="Action">
                                             <span>
                                                     @if ($Vender['is_active'] == 0)

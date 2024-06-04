@@ -71,6 +71,40 @@
             });
         });
     </script>
+    <script>
+        $(document).ready(function () {
+            $('#approve-selected').click(function () {
+                var selectedIds = [];
+                $('.approval-checkbox:checked').each(function () {
+                    selectedIds.push($(this).data('id'));
+                });
+
+                if (selectedIds.length === 0) {
+                    alert('Pilih setidaknya satu item untuk di-convert.');
+                    return;
+                }
+
+                var url = "{{ route('convert.to.revenue') }}";
+                var data = {
+                    selectedIds: selectedIds,
+                    _token: "{{ csrf_token() }}"
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    data: data,
+                    success: function (response) {
+                        alert('Invoice have been convert to revenue successfully.');
+                        window.location.reload();
+                    },
+                    error: function () {
+                        alert('Something went wrong. Please try again later.');
+                    },
+                });
+            });
+        });
+    </script>
 @endpush
 
 
@@ -193,10 +227,14 @@
                 <div class="card-body table-border-style">
                     <h5></h5>
                     @if (Auth::user()->type == 'company')
+                    <div class="float-end">
+                        <button class="btn btn-primary" id="approve-selected">Convert to Revenue</button>
+                    </div>
                     <div class="table-responsive">
                         <table class="table datatable">
                             <thead>
                             <tr>
+                                <th> {{ __('Item') }}</th>
                                 <th> {{ __('Invoice') }}</th>
                                 <th>{{ __('Client') }}</th>
                                 <th>{{ __('Account') }}</th>
@@ -233,6 +271,11 @@
                                     }
                                 @endphp
                                 <tr>
+                                    @if ($invoice->status == 2)
+                                        <td><input type="checkbox" class="approval-checkbox" data-id="{{ $invoice->id }}"></td>
+                                    @else
+                                        <td></td>
+                                    @endif
                                     <td class="Id">
                                         <a href="{{ route('invoice.show', \Crypt::encrypt($invoice->id)) }}" class="btn btn-outline-primary">{{ $invoice->invoice_id }}</a>
                                     </td>
@@ -282,13 +325,13 @@
                                     </td>
                                     @if (Gate::check('edit invoice') || Gate::check('delete invoice') || Gate::check('show invoice'))
                                         <td class="Action">
-                                                <span>
+                                                <span>  
                                                 @php $invoiceID= Crypt::encrypt($invoice->id); @endphp
 
                                                     @can('copy invoice')
-                                                        <div class="action-btn bg-warning ms-2">
+                                                    <div class="action-btn bg-warning ms-2">
                                                        <a href="#" id="{{ route('invoice.link.copy',[$invoiceID]) }}" class="mx-3 btn btn-sm align-items-center"   onclick="copyToClipboard(this)" data-bs-toggle="tooltip" data-original-title="{{__('Click to copy')}}"><i class="ti ti-link text-white"></i></a>
-                                                </div>
+                                                    </div>
                                                     @endcan
                                                     @can('duplicate invoice')
                                                         <div class="action-btn bg-success ms-2">
@@ -341,7 +384,7 @@
                                 </tr>
                             @endforeach
                             <tr>
-                                <td colspan="11" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;"><strong>Total Amount (Rp) : {{ \Auth::user()->priceFormat($totalAmountRp) }} </strong><strong>|</strong> <strong>Total Amount ($) : {{ \Auth::user()->priceFormat2($totalAmountDollar) }} </strong></td>
+                                <td colspan="12" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;"><strong>Total Amount (Rp) : {{ \Auth::user()->priceFormat($totalAmountRp) }} </strong><strong>|</strong> <strong>Total Amount ($) : {{ \Auth::user()->priceFormat2($totalAmountDollar) }} </strong></td>
                             </tr>
                             </tbody>
                         </table>
