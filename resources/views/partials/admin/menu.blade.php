@@ -190,7 +190,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                 </a>
                             </li>
                         @endif
-                        @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
+                        @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern' || \Auth::user()->type == 'support')
                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'absence-request')?'active':''}}">
                                 <a href="{{route('absence-request.index')}}" class="dash-link">
                                     <span class="dash-micon"><i class="ti ti-calendar"></i></span><span class="dash-mtext">{{__('Absence Request')}}</span><sup style="color: red;">New</sup>

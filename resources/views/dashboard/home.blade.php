@@ -616,7 +616,121 @@
                 </div>
             </div>
         @endif
+    @elseif(\Auth::user()->type == 'support')
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="row">
+                    <div class="col-xxl-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <h4>{{__('Mark Attendance')}}</h4>
+                            </div>
+                            <div class="card-body dash-card-body">
+                                <p class="text-muted pb-0-5">{{__('My Office Time: '.$officeTime['startTime'].' to '.$officeTime['endTime'])}}</p>
+                                <center>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            {{Form::open(array('url'=>'attendanceemployee/attendance','method'=>'post'))}}
+                                            @if(empty($employeeAttendance) || $employeeAttendance->clock_out != '00:00:00')
+                                                <button type="submit" value="0" name="in" id="clock_in" class="btn btn-success ">{{__('CLOCK IN')}}</button>
+                                            @else
+                                                <button type="submit" value="0" name="in" id="clock_in" class="btn btn-success disabled" disabled>{{__('CLOCK IN')}}</button>
+                                            @endif
+                                            {{Form::close()}}
+                                        </div>
+                                        <div class="col-md-6 ">
+                                            @if(!empty($employeeAttendance) && $employeeAttendance->clock_out == '00:00:00')
+                                                {{Form::model($employeeAttendance,array('route'=>array('attendanceemployee.update',$employeeAttendance->id),'method' => 'PUT')) }}
+                                                <button type="submit" value="1" name="out" id="clock_out" class="btn btn-danger">{{__('CLOCK OUT')}}</button>
+                                            @else
+                                                <button type="submit" value="1" name="out" id="clock_out" class="btn btn-danger disabled" disabled>{{__('CLOCK OUT')}}</button>
+                                            @endif
+                                            {{Form::close()}}
+                                        </div>
+                                    </div>
+                                </center>
+                                <br>
+                                <div class="container">
+                                    <div id="message"></div>
+                                    <br>
+                                    <div id="timer"></div> 
+                                </div>
 
+                            </div>
+                        </div>
+
+                         <div class="card">
+                            <div class="card-body">
+                                {{ Form::open(array('route' => array('home'),'method'=>'get','id'=>'report_monthly_attendance_user')) }}
+                                <div class="row align-items-center justify-content-end">
+                                    <div class="col-auto">
+                                        <div class="row">
+                                            <div class="col-auto">
+                                                <div class="btn-box">
+                                                    {{Form::label('month',__('Month'),['class'=>'form-label'])}}
+                                                    {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="row">
+                                            <div class="col-auto mt-4">
+                                                <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_monthly_attendance_user').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
+                                                    <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
+                                                </a>
+                                                <a href="{{route('home')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
+                                                    <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {{ Form::close() }}
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body table-border-style">
+                                <div class="table-responsive py-4 attendance-table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                        <tr>
+                                            <th class="active">{{__('Name')}}</th>
+                                            @foreach($dates as $date)
+                                                <th>{{$date}}</th>
+                                            @endforeach
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+
+                                        @foreach($employeesAttendances as $attendance)
+                                            <tr>
+                                                <td>{{$attendance['name']}}</td>
+                                                @foreach($dates as $date)
+                                                    <td>
+                                                        @if($attendance['status'][$date] == 'P')
+                                                            <a href="https://www.google.com/maps/search/?api=1&query={{ $attendance['latitude'][$date] }},{{ $attendance['longitude'][$date] }}" target="_blank" title="View on map">
+                                                                <i class="ti ti-map-pin" style="font-size: 24px;"></i>
+                                                            </a>
+                                                        @elseif($attendance['status'][$date]=='A')
+                                                            <i class="badge bg-danger p-2 rounded">{{__('A')}}</i>
+                                                        @elseif($attendance['status'][$date]=='W')
+                                                            <i class="badge bg-danger p-2 rounded">{{__('W')}}</i>
+                                                        @endif
+                                                    </td>
+                                                @endforeach
+                                            </tr>
+                                        @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     @elseif(\Auth::user()->type == 'partners')
         <div class="row">
             <div class="col-lg-3 col-6">
