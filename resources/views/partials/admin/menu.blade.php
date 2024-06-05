@@ -32,7 +32,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                     <ul class="dash-navbar">
 
                         <!--------------------- Start Dashboard ----------------------------------->
-                        @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
+                        @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern' || \Auth::user()->type == 'support') 
                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'home')?'active':''}}">
                                 <a href="{{route('home')}}" class="dash-link">
                                     <span class="dash-micon"><i class="ti ti-home"></i></span><span class="dash-mtext">{{__('Home')}}</span>

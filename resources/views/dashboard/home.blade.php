@@ -282,7 +282,7 @@
     <li class="breadcrumb-item">{{__('Home')}}</li>
 @endsection
 @section('content')
-    @if(\Auth::user()->type != 'client' && \Auth::user()->type != 'company' && \Auth::user()->type != 'admin' && \Auth::user()->type != 'partners')
+    @if(\Auth::user()->type != 'client' && \Auth::user()->type != 'company' && \Auth::user()->type != 'admin' && \Auth::user()->type != 'partners' && \Auth::user()->type != 'support')
         <div class="row">
             <div class="col-sm-12">
                 <div class="row">
