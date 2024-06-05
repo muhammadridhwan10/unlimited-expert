@@ -177,7 +177,7 @@ class LeaveController extends Controller
             $leave->end_date         = $request->end_date;
             $leave->total_leave_days = 0;
             $leave->leave_reason     = $request->leave_reason;
-            $leave->sick_letter      = !empty('uploads/sick_letter/' .\Auth::user()->name . '/' . $request->sick_letter) ? $request->sick_letter : '';
+            $leave->sick_letter      = !empty('uploads/sick_letter/' .\Auth::user()->name . '/' . $request->sick_letter) ? 'uploads/sick_letter/' .\Auth::user()->name . '/' . $fileNameToStore : '';
             $leave->total_sick_days  = $request->total_sick_days;
             $leave->absence_type     = $request->type;
             $leave->status           = 'Pending';
@@ -203,13 +203,13 @@ class LeaveController extends Controller
             $leave->save();
 
             //Email Notification
-            $user = User::where('id', $leave->approval)->first();
-            $email = $user->email;
             
-            // if($absence_type == 'leave')
-            // {
-            //     Mail::to($email)->send(new LeaveNotification($leave));
-            // }
+            if($leave->absence_type == 'leave')
+            {
+                $user = User::where('id', $leave->approval)->first();
+                $email = $user->email;
+                Mail::to($email)->send(new LeaveNotification($leave));
+            }
 
             return redirect()->route('absence-request.index')->with('success', __('Leave  successfully created.'));
         }
@@ -336,7 +336,7 @@ class LeaveController extends Controller
             $leave->end_date         = $request->end_date;
             $leave->total_leave_days = 0;
             $leave->leave_reason     = $request->leave_reason;
-            $leave->sick_letter      = !empty('uploads/sick_letter/' .\Auth::user()->name . '/' . $request->sick_letter) ? $request->sick_letter : '';
+            $leave->sick_letter      = !empty('uploads/sick_letter/' .\Auth::user()->name . '/' . $request->sick_letter) ? 'uploads/sick_letter/' .\Auth::user()->name . '/' . $fileNameToStore : '';
             $leave->total_sick_days  = $request->total_sick_days;
             $leave->absence_type     = $request->type;
             $leave->date_sick_letter = $request->date_sick_letter;
