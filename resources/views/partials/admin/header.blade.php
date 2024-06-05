@@ -84,7 +84,7 @@
 
                     @endif --}}
 
-                @if((\Auth::user()->type !== 'partners'))
+                @if((\Auth::user()->type == 'company'))
                     <li class="dropdown dash-h-item drp-language">
                     
                             <a class="dash-head-link dropdown-toggle arrow-none me-0"

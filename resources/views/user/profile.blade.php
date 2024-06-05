@@ -311,6 +311,54 @@
                                     @enderror
                                 </div>
                             </div>
+                            <div class="col-lg-6 col-sm-6">
+                                <div class="form-group">
+                                    <label class="col-form-label text-dark">{{__('Phone')}}</label>
+                                    <input class="form-control @error('phone') is-invalid @enderror" name="phone" type="number" id="phone" placeholder="{{ __('Enter Your Phone') }}" value="{{ $userDetail->employee->phone }}" required autocomplete="phone">
+                                    @error('phone')
+                                    <span class="invalid-feedback text-danger text-xs" role="alert">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+                            <div class="col-lg-6 col-sm-6">
+                                <div class="form-group">
+                                    {{ Form::label('dob', __('Date of Birth'), ['class' => 'col-form-label text-dark']) }}
+                                    {{ Form::date('dob', $userDetail->employee->dob, ['class' => 'form-control']) }}
+                                    @error('dob')
+                                    <span class="invalid-feedback text-danger text-xs" role="alert">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6 col-sm-6">
+                                <div class="form-group">
+                                    <label class="col-form-label text-dark">{{__('Gender')}}</label>
+                                    <div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input @error('gender') is-invalid @enderror" type="radio" name="gender" id="male" value="male" {{ $userDetail->employee->gender == 'male' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="male">{{__('Male')}}</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input @error('gender') is-invalid @enderror" type="radio" name="gender" id="female" value="female" {{ $userDetail->employee->gender == 'female' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="female">{{__('Female')}}</label>
+                                        </div>
+                                    </div>
+                                    @error('gender')
+                                    <span class="invalid-feedback text-danger text-xs" role="alert">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="col-lg-6 col-sm-6">
+                                <div class="form-group">
+                                    <label class="col-form-label text-dark">{{__('Address')}}</label>
+                                    <input class="form-control @error('address') is-invalid @enderror" name="address" type="textarea" id="address" placeholder="{{ __('Enter Your Address') }}" value="{{ $userDetail->employee->address }}" required autocomplete="address">
+                                    @error('address')
+                                    <span class="invalid-feedback text-danger text-xs" role="alert">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+
                             <div class="col-lg-12 col-sm-12">
                                 <div class="form-group">
                                 {{Form::label('personal_description',__('Personal Description'),['class'=>'form-label'])}}

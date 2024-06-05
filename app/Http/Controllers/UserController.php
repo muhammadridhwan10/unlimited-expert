@@ -284,6 +284,7 @@ class UserController extends Controller
 
         $userDetail = \Auth::user();
         $user       = User::findOrFail($userDetail['id']);
+        $employee   = Employee::where('user_id', $user->id)->first();
 
         $validator = \Validator::make(
             $request->all(), [
@@ -331,6 +332,13 @@ class UserController extends Controller
         $user['personal_description']  = $request['personal_description'];
         $user['email'] = $request['email'];
         $user->save();
+
+        $employee->phone       = $request['phone'];
+        $employee->dob         = $request['dob'];
+        $employee->gender      = $request['gender'];
+        $employee->address     = $request['address'];
+        $employee->save();
+
         CustomField::saveData($user, $request->customField);
 
         return redirect()->back()->with('success', __('Profile successfully updated.'));
