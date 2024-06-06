@@ -206,7 +206,7 @@ class InvoiceController extends Controller
             ->get()
             ->pluck('name', 'id');
             $partners->prepend('Select Partner', '');
-            $account = ChartOfAccount::where('sub_type', 13)->get()->pluck('name', 'id');
+            $account = ChartOfAccount::where('sub_type', 16)->get()->pluck('name', 'id');
             $account->prepend('Select Account', '');
             $siteCurrencySymbol = Settings::where('name', 'site_currency_symbol')->value('value');
             $siteCurrencySymbol2 = Settings::where('name', 'site_currency_symbol_2')->value('value');
@@ -375,7 +375,7 @@ class InvoiceController extends Controller
                  ->get()
                  ->pluck('name', 'id');
             $partners->prepend('Select Partner', '');
-            $account = ChartOfAccount::where('sub_type', 13)->get()->pluck('name', 'id');
+            $account = ChartOfAccount::where('sub_type', 16)->get()->pluck('name', 'id');
             $account->prepend('Select Account', '');
             $siteCurrencySymbol = Settings::where('name', 'site_currency_symbol')->value('value');
             $siteCurrencySymbol2 = Settings::where('name', 'site_currency_symbol_2')->value('value');

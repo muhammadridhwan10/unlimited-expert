@@ -211,7 +211,7 @@ class LeaveController extends Controller
                 Mail::to($email)->send(new LeaveNotification($leave));
             }
 
-            return redirect()->route('absence-request.index')->with('success', __('Leave  successfully created.'));
+            return redirect()->route('absence-request.index')->with('success', __('Absence Request successfully created.'));
         }
         else
         {
@@ -360,7 +360,7 @@ class LeaveController extends Controller
 
             $leave->save();
 
-            return redirect()->route('absence-request.index')->with('success', __('Leave successfully updated.'));
+            return redirect()->route('absence-request.index')->with('success', __('Absence Request successfully updated.'));
         }
         else
         {
