@@ -144,7 +144,7 @@ $settings = \App\Models\Utility::settings();
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Mohon agar pembayaran dapat dilakukan sesuai dengan batas waktu yang telah ditentukan dalam invoice. Untuk segala pertanyaan atau klarifikasi lebih lanjut, silakan hubungi tim keuangan kami di info@au-partners.com</p>
                                                         <br>
-                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Kami mengucapkan terima kasih atas kerja sama dan kepercayaan Anda. Kami berharap agar transaksi ini dapat berjalan lancar, dan kami siap membantu jika ada yang diperlukan./p>
+                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Kami mengucapkan terima kasih atas kerja sama dan kepercayaan Anda. Kami berharap agar transaksi ini dapat berjalan lancar, dan kami siap membantu jika ada yang diperlukan.</p>
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Terima kasih dan salam hormat,</p>
                                                         <br>
