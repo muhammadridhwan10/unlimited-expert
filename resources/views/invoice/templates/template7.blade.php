@@ -803,12 +803,12 @@
                                                 </div>
                                             </div>
 
-                                            <div data-v-f2a183a6="" class="d-header-50">
+                                            {{-- <div data-v-f2a183a6="" class="d-header-50">
                                                 <p data-v-f2a183a6="">
                                                     {{$settings['footer_title']}} <br>
                                                     {{$settings['footer_notes']}}
                                                 </p>
-                                            </div>
+                                            </div> --}}
                                         </div>
                                     </div>
                                     <div class="row">
