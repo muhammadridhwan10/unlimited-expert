@@ -48,6 +48,8 @@ class User extends Authenticatable
         'client_accounting_standard_id',
         'client_id',
         'personal_description',
+        'refresh_token',
+		'refresh_token_expires_at',
     ];
 
     protected $hidden = [

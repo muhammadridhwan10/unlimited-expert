@@ -24,6 +24,7 @@ use DatePeriod;
 use DateInterval;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 
 class ApiController extends Controller
@@ -42,7 +43,8 @@ class ApiController extends Controller
         if (!Auth::attempt($attr)) {
             return $this->error('Credentials not match', 401);
         }
-
+		
+		$user = Auth::user();
         $settings              = Utility::settings(\Auth::user()->creatorId());
 
         $employee = Employee::where('user_id', auth()->user()->id)->first();
@@ -69,9 +71,16 @@ class ApiController extends Controller
         $settings = [
             'shot_time'=> isset($settings['interval_time'])?$settings['interval_time']:0.5,
         ];
+		
+		$refreshToken = Str::random(60);
+
+		$user->refresh_token = $refreshToken;
+		$user->refresh_token_expires_at = now()->addDays(30);
+		$user->save();
 
         return $this->success([
             'token' => auth()->user()->createToken('API Token')->plainTextToken,
+			'refresh_token' => $refreshToken,
             'user'=> auth()->user()->name,
 			'employee_id'=> auth()->user()->employee->id,
 			'branch_id' => $employee->branch_id,
@@ -323,56 +332,47 @@ class ApiController extends Controller
 			}
     }
 	
-	public function clockOut(Request $request, $id)
-    {
-			$settings = Utility::settings(\Auth::user()->creatorId());
-        	$employeeId = $request->employee_id;
-			$todayAttendance = AttendanceEmployee::where('employee_id', '=', $employeeId)->where('date', date('Y-m-d'))->first();
+	public function clockOut(Request $request)
+	{
+		$settings = Utility::settings(\Auth::user()->creatorId());
+		$employeeId = $request->employee_id;
+		$todayAttendance = AttendanceEmployee::where('employee_id', '=', $employeeId)->where('date', date('Y-m-d'))->first();
 
-			if(!empty($todayAttendance) && $todayAttendance->clock_out == '00:00:00')
-			{
-				$employee = Employee::where('id', $employeeId)->first();
+		if (!empty($todayAttendance) && $todayAttendance->clock_out == '00:00:00') {
+			$employee = Employee::where('id', $employeeId)->first();
 
-				if($employee->branch_id == 1)
-				{
-					$startTime = Utility::getValByName('company_start_time');
-					$endTime   = Utility::getValByName('company_end_time');
-				}
-				elseif($employee->branch_id == 2)
-				{
-					$startTime = "08:30";
-					$endTime   = "17:30";
-				}
-				elseif($employee->branch_id == 3)
-				{
-					$startTime = "08:00";
-					$endTime   = "17:00";
-				}
-
-				$date = date("Y-m-d");
-				$time = date("H:i:s");
-
-				//late
-				$totalEarlyLeavingSeconds = strtotime($date . $endTime) - time();
-                $hours                    = floor($totalEarlyLeavingSeconds / 3600);
-                $mins                     = floor($totalEarlyLeavingSeconds / 60 % 60);
-                $secs                     = floor($totalEarlyLeavingSeconds % 60);
-                $earlyLeaving             = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
-
-				$attendanceEmployee['clock_out']     = $time;
-                $attendanceEmployee['early_leaving'] = $earlyLeaving;
-				
-				AttendanceEmployee::where('id',$id)->update($attendanceEmployee);
-				
-				return response()->json(['message' => 'Employee Successfully Clock Out'], 200);
-
-
+			if ($employee->branch_id == 1) {
+				$startTime = Utility::getValByName('company_start_time');
+				$endTime = Utility::getValByName('company_end_time');
+			} elseif ($employee->branch_id == 2) {
+				$startTime = "08:30";
+				$endTime = "17:30";
+			} elseif ($employee->branch_id == 3) {
+				$startTime = "08:00";
+				$endTime = "17:00";
 			}
-			else
-			{
-				return response()->json(['error' => 'Employee are not allowed multiple time clock in & clock out for every day'], 400);
-			}
-    }
+
+			$date = date("Y-m-d");
+			$time = date("H:i:s");
+
+			// Calculate early leaving time
+			$totalEarlyLeavingSeconds = strtotime($date . ' ' . $endTime) - strtotime($time);
+			$hours = floor($totalEarlyLeavingSeconds / 3600);
+			$mins = floor($totalEarlyLeavingSeconds / 60 % 60);
+			$secs = floor($totalEarlyLeavingSeconds % 60);
+			$earlyLeaving = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
+
+			// Update attendance details
+			$todayAttendance->clock_out = $time;
+			$todayAttendance->early_leaving = $earlyLeaving;
+			$todayAttendance->save();
+
+			return response()->json(['message' => 'Employee Successfully Clock Out'], 200);
+		} else {
+			return response()->json(['error' => 'Employee are not allowed multiple time clock in & clock out for every day'], 400);
+		}
+	}
+
 	
 	public function attendanceHistory(Request $request)
 	{
@@ -405,6 +405,26 @@ class ApiController extends Controller
 		return response()->json(['attendance_history' => $attendanceHistory], 200);
 	}
 	
+	public function getTodayAttendance($employeeId)
+    {
+        $today = Carbon::today();
+
+        $attendance = AttendanceEmployee::where('employee_id', $employeeId)
+                        ->whereDate('date', $today)
+                        ->first();
+
+        if ($attendance) {
+            return response()->json([
+                'clock_in' => $attendance->clock_in,
+                'clock_out' => $attendance->clock_out,
+            ], 200);
+        } else {
+            return response()->json([
+                'message' => 'No attendance data found for today.'
+            ], 404);
+        }
+    }
+	
 	public function getProfile($id)
 	{
 		$employee = Employee::with('user')->find($id);
@@ -415,6 +435,36 @@ class ApiController extends Controller
 
 		return response()->json($employee);
 	}
+	
+	public function refreshToken(Request $request)
+    {
+        $request->validate([
+            'refresh_token' => 'required|string',
+        ]);
+		
+		$employeeId = $request->employee_id;
+
+		$employee = Employee::find($employeeId);
+
+        $user = User::where('id', $employee->user_id)->first();
+
+        if (!$user || $user->refresh_token !== $request->refresh_token || $user->refresh_token_expires_at < now()) {
+            return response()->json(['error' => 'Invalid or expired refresh token'], 401);
+        }
+
+        $newToken = $user->createToken('API Token')->plainTextToken;
+
+        $newRefreshToken = Str::random(60);
+        $user->update([
+            'refresh_token' => $newRefreshToken,
+            'refresh_token_expires_at' => Carbon::now()->addDays(30),
+        ]);
+
+        return response()->json([
+            'token' => $newToken,
+            'refresh_token' => $newRefreshToken,
+        ], 200);
+    }
 	
 
     

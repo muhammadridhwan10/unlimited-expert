@@ -1104,6 +1104,12 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                             </li>
                         @endif
 
+                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'document-request')?'active':''}}">
+                            <a href="{{route('document-request.index')}}" class="dash-link">
+                                <span class="dash-micon"><i class="ti ti-file"></i></span><span class="dash-mtext">{{__('Document Request')}}</span><sup style="color: red;">New</sup>
+                            </a>
+                        </li>
+
                         {{-- <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'share-screen')?'active':''}}">
                             <a href="{{route('share-screen.index')}}" class="dash-link">
                                 <span class="dash-micon"><i class="ti ti-device-desktop"></i></span><span class="dash-mtext">{{__('Share Screen')}}</span><sup style="color: red;">New</sup>

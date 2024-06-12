@@ -24,10 +24,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('stop-tracker', 'ApiController@stopTracker');
     Route::post('upload-photos', 'ApiController@uploadImage');
 	Route::post('clock-in', 'ApiController@clockIn');
-	Route::post('clock-out/{id}', 'ApiController@clockOut');
+	Route::post('clock-out', 'ApiController@clockOut');
 	Route::get('attendance-history', 'ApiController@attendanceHistory');
 	Route::get('attendance-status', 'ApiController@getStatus');
 	Route::get('profile/{id}', 'ApiController@getProfile');
+	Route::get('attendance/today/{employeeId}', 'ApiController@getTodayAttendance');
+	Route::post('refresh-token', 'ApiController@refreshToken');
 
 	
 });

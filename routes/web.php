@@ -4436,3 +4436,17 @@ Route::resource('document-request', 'DocumentRequestController')->middleware(
         'XSS',
     ]
 );
+Route::post('document-request/file', ['as' => 'document-request.image.view','uses' => 'DocumentRequestController@getFileRequest']);
+Route::get('document-request/{id}/action', 'DocumentRequestController@action')->name('documet-request.action')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post('document-request/changeaction', 'DocumentRequestController@changeaction')->name('documet-request.changeaction')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
