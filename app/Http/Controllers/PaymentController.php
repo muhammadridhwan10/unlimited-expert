@@ -191,7 +191,7 @@ class PaymentController extends Controller
                 $payment->created_by     = \Auth::user()->creatorId();
                 
                 //notification
-                $user = User::where('email', '=', 'company')->orWhere('type', 'senior accounting')->get();
+                $users = User::where('type', '=', 'company')->orWhere('type', '=', 'senior accounting')->get();
                 
                 foreach ($users as $user) {
                     Mail::to($user->email)->send(new BillPartnerNotification($payment));
@@ -483,7 +483,7 @@ class PaymentController extends Controller
         if($status == 'Approved')
         {
             $payment->status = 1;
-            $user = User::where('email', '=', 'company')->orWhere('type', 'senior accounting')->get(); 
+            $users = User::where('type', '=', 'company')->orWhere('type', '=', 'senior accounting')->get(); 
             foreach ($users as $user) {
                 Mail::to($user->email)->send(new BillApprovedNotification($payment));
             }

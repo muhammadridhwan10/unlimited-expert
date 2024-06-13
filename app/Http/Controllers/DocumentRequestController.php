@@ -117,6 +117,42 @@ class DocumentRequestController extends Controller
             $document->created_by  = \Auth::user()->creatorId();
             $document->save();
 
+            $firebaseToken = User::whereIn('id', $request->approval)->whereNotNull('device_token')->pluck('device_token');
+            $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
+
+            $data = [
+                "registration_ids" => $firebaseToken,
+                "notification" => [
+                    "title" => 'AUP-APPS',
+                    "body" => \Auth::user()->name . '  Requests Document ' . $request->document_type,  
+                    "icon" => 'https://i.postimg.cc/8z1vzXPV/logo-tgs-fix.png',
+                    "content_available" => true,
+                    "priority" => "high",
+                ]
+            ];
+            $dataString = json_encode($data);
+        
+            $headers = [
+                'Authorization: key=' . $SERVER_API_KEY,
+                'Content-Type: application/json',
+            ];
+        
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
+
+            $response = curl_exec($ch);
+
+            $users = User::where('email', '=', 'info@au-partners.com')->orWhere('email', '=', 'luqman@au-partners.com')->orWhere('email', '=', 'melya.lubis@au-partners.com')->get();
+                
+            foreach ($users as $user) {
+                Mail::to($user->email)->send(new BillPartnerNotification($document));
+            }
+
             return redirect()->route('document-request.index')->with('success', __('Document Request successfully created.'));
         }
         else
