@@ -228,8 +228,8 @@ function printLabel() {
     newWindow.document.write('</style>');
     newWindow.document.write('</head><body>');
     
-    var top = (row - 1) * (3.8 + 1) + 'cm';
-    var left = (column - 1) * (10 + 1) + 'cm';
+    var top = (row - 1) * (3.8 + 0.2) + 'cm';
+    var left = (column - 1) * (10 + 0.3) + 'cm';
     newWindow.document.write('<div class="print-content" style="top:' + top + '; left:' + left + ';">');
     newWindow.document.write(printContents);
     newWindow.document.write('</div>');
@@ -243,6 +243,7 @@ function printLabel() {
     printDialog.hide();
 }
 </script>
+
 
 
 {{Form::close()}}
