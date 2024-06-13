@@ -8,6 +8,8 @@ use App\Models\User;
 use App\Models\ProductServiceCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Mail\DocumentRequestNotification;
+use Illuminate\Support\Facades\Mail;
 
 class DocumentRequestController extends Controller
 {
@@ -150,7 +152,7 @@ class DocumentRequestController extends Controller
             $users = User::where('email', '=', 'info@au-partners.com')->orWhere('email', '=', 'luqman@au-partners.com')->orWhere('email', '=', 'melya.lubis@au-partners.com')->get();
                 
             foreach ($users as $user) {
-                Mail::to($user->email)->send(new BillPartnerNotification($document));
+                Mail::to($user->email)->send(new DocumentRequestNotification($document));
             }
 
             return redirect()->route('document-request.index')->with('success', __('Document Request successfully created.'));
