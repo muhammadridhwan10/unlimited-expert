@@ -117,7 +117,7 @@ class DocumentRequestController extends Controller
             $document->created_by  = \Auth::user()->creatorId();
             $document->save();
 
-            $firebaseToken = User::whereIn('id', $request->approval)->whereNotNull('device_token')->pluck('device_token');
+            $firebaseToken = User::where('id', $request->approval)->whereNotNull('device_token')->pluck('device_token');
             $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
 
             $data = [
