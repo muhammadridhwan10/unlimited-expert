@@ -8,7 +8,7 @@
 .print-content {
     width: 10cm; 
     height: 3.8cm; 
-    padding: 10px;
+    padding: 10px 0.5cm;
     font-size: 11px; 
     word-wrap: break-word;
     border: 1px solid black; 
@@ -162,6 +162,19 @@
         @endif
     @endif
 </div>
+@if($document->status == 'Pending')
+    <div class="modal-footer">
+        <input type="button" value="{{ __('Cancel') }}" class="btn btn-light" data-bs-dismiss="modal">
+        <input type="submit" value="{{ __('Completed') }}" class="btn btn-primary">
+    </div>
+@else
+    @if($document->document_type == 'Contract Employee'  && $document->file_feedback == NULL)
+    <div class="modal-footer">
+        <input type="button" value="{{ __('Cancel') }}" class="btn btn-light" data-bs-dismiss="modal">
+        <input type="submit" value="{{ __('Send') }}" class="btn btn-primary">
+    </div>
+    @endif
+@endif
 <div class="modal fade" id="printDialog" tabindex="-1" aria-labelledby="printDialogLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -196,19 +209,6 @@
         </div>
     </div>
 </div>
-@if($document->status == 'Pending')
-    <div class="modal-footer">
-        <input type="button" value="{{ __('Cancel') }}" class="btn btn-light" data-bs-dismiss="modal">
-        <input type="submit" value="{{ __('Completed') }}" class="btn btn-primary">
-    </div>
-@else
-    @if($document->document_type == 'Contract Employee'  && $document->file_feedback == NULL)
-    <div class="modal-footer">
-        <input type="button" value="{{ __('Cancel') }}" class="btn btn-light" data-bs-dismiss="modal">
-        <input type="submit" value="{{ __('Send') }}" class="btn btn-primary">
-    </div>
-    @endif
-@endif
 <script>
 function openPrintDialog() {
     var printDialog = new bootstrap.Modal(document.getElementById('printDialog'));
@@ -224,7 +224,7 @@ function printLabel() {
     newWindow.document.write('<style>');
     newWindow.document.write('@page { size: A4; margin: 0; }');
     newWindow.document.write('body { margin: 0; padding: 0; }');
-    newWindow.document.write('.print-content { width: 10cm; height: 3.8cm; font-size: 11px; padding: 10px; box-sizing: border-box; position: absolute; }');
+    newWindow.document.write('.print-content { width: 10cm; height: 3.8cm; font-size: 11px; padding: 10px 0.5cm; box-sizing: border-box; position: absolute; }');
     newWindow.document.write('</style>');
     newWindow.document.write('</head><body>');
     
@@ -243,7 +243,5 @@ function printLabel() {
     printDialog.hide();
 }
 </script>
-
-
 
 {{Form::close()}}
