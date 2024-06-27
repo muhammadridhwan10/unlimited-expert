@@ -118,7 +118,7 @@
             var tax = $(el.find('.tax')).val();
             var totalItemPrice = (1 * price);
 
-            var amount = (totalItemPrice);
+            var amount = (Math.round(totalItemPrice));
             $(el.find('.amount')).html(amount);
 
 
@@ -151,7 +151,7 @@
 
             var totalItemPrice = (1 * price);
 
-            var amount = (totalItemPrice);
+            var amount = (Math.round(totalItemPrice));
             $(el.find('.amount')).html(amount);
 
             console.log(amount);

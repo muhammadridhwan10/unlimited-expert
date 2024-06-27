@@ -409,7 +409,9 @@ class InvoiceController extends Controller
                     $messages = $validator->getMessageBag();
 
                     return redirect()->route('invoice.index')->with('error', $messages->first());
+                
                 }
+                $invoice->invoice_id     = $request->invoice_id;
                 $invoice->client_id      = $request->client_id;
                 $invoice->issue_date     = $request->issue_date;
                 $invoice->due_date       = $request->due_date;
