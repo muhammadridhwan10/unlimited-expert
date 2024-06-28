@@ -19,6 +19,11 @@ use App\Models\Timesheet;
 use App\Models\LogDesktop;
 use App\Models\AttendanceEmployee;
 use App\Models\Employee;
+use App\Models\LeaveType;
+use App\Models\Leave;
+use App\Models\Reimbursment;
+use App\Models\UserOvertime;
+use App\Models\ReimbursmentType;
 use DateTime;
 use DatePeriod;
 use DateInterval;
@@ -82,6 +87,7 @@ class ApiController extends Controller
             'token' => auth()->user()->createToken('API Token')->plainTextToken,
 			'refresh_token' => $refreshToken,
             'user'=> auth()->user()->name,
+			'user_type'=> auth()->user()->type,
 			'employee_id'=> auth()->user()->employee->id,
 			'branch_id' => $employee->branch_id,
             // 'rest_time'=> $branch_rest_time,
@@ -465,8 +471,346 @@ class ApiController extends Controller
             'refresh_token' => $newRefreshToken,
         ], 200);
     }
-	
 
+    public function getApprovals(Request $request)
+    {
+        $user = \Auth::user();
+        $approvals = [];
+
+        $approvals = User::where(function ($query) {
+            $query->where('type', 'company');
+        })->get()->pluck('name', 'id');
+
+        return response()->json($approvals, 200);
+    }
+	
+	public function getApprovalsFinance(Request $request)
+    {
+        $user = \Auth::user();
+        $approvals = [];
+
+        $approvals = User::where(function ($query) {
+            $query->where('type', 'senior accounting');
+        })->get()->pluck('name', 'id');
+
+        return response()->json($approvals, 200);
+    }
+	
+	public function getApprovalsOvertime(Request $request)
+    {
+        $user = \Auth::user();
+        $approvals = [];
+		
+		if($user->type == 'staff IT' || $user->type == 'junior accounting' || $user->type == 'junior audit' || $user->type == 'staff')
+		{
+
+			$approvals = User::where(function($query) {
+                    $query->where('type', 'company')
+                    ->orWhere('type', 'senior audit')
+						->orWhere('type', 'senior accounting')
+						->orWhere('type', 'manager audit');
+                })
+                ->get()
+                ->pluck('name', 'id');  
+			
+		}
+		elseif($user->type == 'senior accounting' || $user->type == 'senior audit' || $user->type == 'manager audit' || $user->type == 'partners')
+		{
+			
+			$approvals = User::where(function($query) {
+                    $query->where('type', 'company');
+                })
+                ->get()
+                ->pluck('name', 'id');  
+			
+		}
+		else
+		{
+			$approvals = User::where(function($query) {
+                    $query->where('type', 'company')
+                    ->orWhere('type', 'senior audit')
+						->orWhere('type', 'junior audit')
+						->orWhere('type', 'senior accounting')
+						->orWhere('type', 'junior accounting')
+						->orWhere('type', 'manager audit');
+                })
+                ->get()
+                ->pluck('name', 'id');  
+		}
+
+        return response()->json($approvals, 200);
+    }
+	
+	public function getProject(Request $request)
+    {
+        $user = \Auth::user();
+        $projects = [];
+
+        $projects = Project::all();
+
+        return response()->json($projects, 200);
+    }
+
+    public function getLeaveTypes(Request $request)
+    {
+        $user = \Auth::user();
+        $leaveTypes = [];
+
+        $leaveTypes = LeaveType::all();
+
+        return response()->json($leaveTypes, 200);
+    }
+	
+	public function getBranch(Request $request)
+    {
+        $user = \Auth::user();
+        $branches = [];
+		
+		$branches = User::where('type', '=', 'client')
+            ->whereIn('name', ['Kantor Pusat', 'Kantor Cabang Bekasi', 'Kantor Cabang Malang'])
+            ->get()
+            ->pluck('name', 'id');
+
+        return response()->json($branches, 200);
+    }
+	
+	public function getClient(Request $request)
+    {
+        $user = \Auth::user();
+        $clients = [];
+
+        $clients = User::where('type', '=', 'client')->get();
+
+        return response()->json($clients, 200);
+    }
+	
+	public function createLeave(Request $request)
+    {
+        // Validasi input dari request
+        $validator = Validator::make($request->all(), [
+            'approval' => 'required',  
+            'leave_type_id' => 'required|exists:leave_types,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'leave_reason' => 'required|string',
+            'employee_id' => 'required|exists:employees,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 400);
+        }
+
+        $leave = new Leave();
+        $leave->approval = $request->approval;
+        $leave->leave_type_id = $request->leave_type_id;
+        $leave->start_date = $request->start_date;
+        $leave->end_date = $request->end_date;
+        $leave->leave_reason = $request->leave_reason;
+        $leave->employee_id = $request->employee_id;
+        $leave->applied_on       = date('Y-m-d');
+        $leave->total_leave_days = 0;
+        $leave->status           = 'Pending';
+        $leave->created_by       = \Auth::user()->creatorId();
+
+        try {
+            $leave->save();
+            return response()->json(['message' => 'Leave request created successfully', 'data' => $leave], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to create leave request: ' . $e->getMessage()], 500);
+        }
+    }
+	
+	public function createMedical(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'employee_id' => 'required|integer',
+            'approval' => 'required|string',
+            'reimbursment_type' => 'required|string',
+            'date' => 'required|date',
+            'amount' => 'required|numeric',
+            'description' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        $input = $request->all();
+		
+		if(!empty($request->reimbursment_image))
+        {
+            $filenameWithExt = $request->file('reimbursment_image')->getClientOriginalName();
+            $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+            $extension       = $request->file('reimbursment_image')->getClientOriginalExtension();
+            $fileNameToStore = $filename . '_' . time() . '.' . $extension;
+            $dir             = storage_path('uploads/reimbursment/');
+
+            if(!file_exists($dir))
+            {
+                mkdir($dir, 0777, true);
+            }
+            // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
+            $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
+        }
+		
+		$input['status'] = 'Pending';
+		$input['reimbursment_image'] = !empty('uploads/reimbursment/' . $request->reimbursment_image) ? 'uploads/reimbursment/' . $fileNameToStore : '';
+		$input['created_by'] = \Auth::user()->creatorId();
+		$input['created_date'] = Carbon::now()->format('Y-m-d');
+
+        $medicalAllowance = Reimbursment::create($input);
+
+        return response()->json(['message' => 'Medical Allowance Request successfully created', 'data' => $medicalAllowance], 200);
+    }
+	
+	public function createReimbursment(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'employee_id' => 'required|integer',
+            'approval' => 'required|string',
+            'reimbursment_type' => 'required|string',
+            'date' => 'required|date',
+            'amount' => 'required|numeric',
+            'description' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        $input = $request->all();
+		
+		if(!empty($request->reimbursment_image))
+        {
+            $filenameWithExt = $request->file('reimbursment_image')->getClientOriginalName();
+            $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+            $extension       = $request->file('reimbursment_image')->getClientOriginalExtension();
+            $fileNameToStore = $filename . '_' . time() . '.' . $extension;
+            $dir             = storage_path('uploads/reimbursment/');
+
+            if(!file_exists($dir))
+            {
+                mkdir($dir, 0777, true);
+            }
+            // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
+            $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
+        }
+		
+		$input['status'] = 'Pending';
+		$input['reimbursment_image'] = !empty('uploads/reimbursment/' . $request->reimbursment_image) ? 'uploads/reimbursment/' . $fileNameToStore : '';
+		$input['created_by'] = \Auth::user()->creatorId();
+		$input['created_date'] = Carbon::now()->format('Y-m-d');
+
+        $reimbursment = Reimbursment::create($input);
+
+        return response()->json(['message' => 'Medical Allowance Request successfully created', 'data' => $reimbursment], 200);
+    }
+	
+	public function createOvertime(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+               'start_time' => 'required',
+			   'end_time' => 'required',
+			   'start_date' => 'required',
+			   'approval' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 400);
+        }
+		
+		$employees                = Employee::where('user_id', '=', $request->approval)->first();
+
+        $overtime                   = new UserOvertime();
+		$overtime->user_id          = $request->user_id;
+        $overtime->project_id       = $request->project_id;
+		$overtime->start_time       = $request->start_time;
+		$overtime->end_time         = $request->end_time;
+		$overtime->start_date       = $request->start_date;
+		$overtime->approval         = $employees->id;
+		$overtime->status           = 'Pending';
+		$overtime->created_date     = Carbon::now()->format('Y-m-d');
+		$overtime->total_time       = 0;
+		$overtime->note             = $request->note;
+		$overtime->save();
+
+        try {
+            $overtime->save();
+            return response()->json(['message' => 'Overtime created successfully', 'data' => $overtime], 200);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to create overtime request: ' . $e->getMessage()], 500);
+        }
+    }
+	
+	public function getReimbursmentTypes(Request $request)
+	{
+		$employee_id = $request->input('employee_id');
+		$currentYear = now()->year;
+
+		$reimbursment_counts = [];
+		$reimbursment_types = ReimbursmentType::where('created_by', \Auth::user()->creatorId())->get();
+
+		foreach ($reimbursment_types as $type) {
+			$counts = Reimbursment::select(\DB::raw('COALESCE(SUM(reimbursment.amount),0) AS total_amount'))
+				->where('reimbursment_type', $type->title)
+				->whereYear('date', $currentYear)
+				->where('employee_id', $employee_id)
+				->where('status', '=', 'Paid')
+				->groupBy('reimbursment.reimbursment_type')
+				->first();
+
+			$reimbursment_count = [];
+			$reimbursment_count['total_amount'] = !empty($counts) ? $counts['total_amount'] : 0;
+			$reimbursment_count['title'] = $type->title;
+			$reimbursment_count['amount'] = $type->amount;
+			$reimbursment_count['id'] = $type->id;
+			$reimbursment_count['remaining_amount'] = $type->amount - $reimbursment_count['total_amount'];
+
+			$reimbursment_counts[] = $reimbursment_count;
+		}
+
+		return response()->json($reimbursment_counts);
+	}
+	
+	public function createAbsence(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'employee_id' => 'required|integer',
+            'total_sick_days' => 'required|string',
+            'date_sick_letter' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        $input = $request->all();
+		
+		if(!empty($request->sick_letter))
+            {
+                $filenameWithExt = $request->file('sick_letter')->getClientOriginalName();
+                $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+                $extension       = $request->file('sick_letter')->getClientOriginalExtension();
+                $fileNameToStore = $filename . '_' . time() . '.' . $extension;
+                $dir             = storage_path('uploads/sick_letter/' . \Auth::user()->name . '/');
+
+                if(!file_exists($dir))
+                {
+                    mkdir($dir, 0777, true);
+                }
+                $path = $request->file('sick_letter')->storeAs('uploads/sick_letter/' . \Auth::user()->name . '/', $fileNameToStore, 's3');
+            }
+		
+		$input['sick_letter'] = !empty('uploads/sick_letter/' .\Auth::user()->name . '/' . $request->sick_letter) ? 'uploads/sick_letter/' .\Auth::user()->name . '/' . $fileNameToStore : '';
+		$input['absence_type'] = 'sick';
+		$input['status'] = 'Approved';
+		$input['created_by'] = \Auth::user()->creatorId();
+		$input['applied_on'] = Carbon::now()->format('Y-m-d');
+
+        $absence = Leave::create($input);
+
+        return response()->json(['message' => 'Absence Request successfully created', 'data' => $absence], 200);
+    }
     
 
 }

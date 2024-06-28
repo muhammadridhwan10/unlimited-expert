@@ -21,6 +21,7 @@ class Reimbursment extends Model
         'description',
         'status',
         'reimbursment_image',
+		'created_date',
         'created_by',
     ];
 

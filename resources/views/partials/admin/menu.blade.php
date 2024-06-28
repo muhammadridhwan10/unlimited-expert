@@ -1087,7 +1087,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                             <li class="dash-item dash-hasmenu">
                                 <a href="#!" class="dash-link {{ (Request::segment(1) == 'medical-allowance' || Request::segment(1) == 'reimbursment-personal' || Request::segment(1) == 'reimbursment-client')?' active dash-trigger':''}}"><span class="dash-micon"><i class="ti ti-receipt"></i></span><span class="dash-mtext">{{__('Reimbursement')}}</span><sup style="color: red;">New</sup><span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                 <ul class="dash-submenu">
-                                    @if(Auth::user()->type !== 'staff_client' || Auth::user()->type !== 'intern')
+                                    @if(Auth::user()->type !== 'intern')
                                         @if($employee->branch_id == 1)
                                         <li class="dash-item {{ (Request::route()->getName() == 'medical-allowance.index' || Request::route()->getName() == 'medical-allowance.create' || Request::route()->getName() == 'medical-allowance.edit') ? ' active' : '' }}">
                                             <a class="dash-link" href="{{ route('medical-allowance.index') }}">{{__('Medical Allowance')}}</a>

@@ -30,6 +30,20 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 	Route::get('profile/{id}', 'ApiController@getProfile');
 	Route::get('attendance/today/{employeeId}', 'ApiController@getTodayAttendance');
 	Route::post('refresh-token', 'ApiController@refreshToken');
+	Route::get('approvals', 'ApiController@getApprovals');
+    Route::get('leavetypes', 'ApiController@getLeaveTypes');
+	Route::post('create-leave', 'ApiController@createLeave');
+	Route::post('create-overtime', 'ApiController@createOvertime');
+	Route::get('approvalsfinance', 'ApiController@getApprovalsFinance');
+	Route::get('approvalsovertime', 'ApiController@getApprovalsOvertime');
+	Route::get('getproject', 'ApiController@getProject');
+	Route::get('getclient', 'ApiController@getClient');
+	Route::get('getbranch', 'ApiController@getBranch');
+	Route::post('reimbursment-types', 'ApiController@getReimbursmentTypes');
+	Route::post('create-medical-allowance', 'ApiController@createMedical');
+	Route::post('create-reimbursment', 'ApiController@createReimbursment');
+	Route::post('create-absence', 'ApiController@createAbsence');
+
 
 	
 });

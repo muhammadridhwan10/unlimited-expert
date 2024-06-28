@@ -103,7 +103,7 @@
     </div>
     <div>
         <p style="color:red">
-            *Input reimbursement client maximal dilakukan <strong>1 MINGGU SEJAK TRANSAKSI KELUAR</strong>.
+            *Maximum client reimbursement input is done  <strong>1 WEEK AFTER TRANSACTION OUT</strong>.
         </p>
     </div>
     <div class="row">
