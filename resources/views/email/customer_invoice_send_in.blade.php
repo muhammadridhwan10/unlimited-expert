@@ -27,7 +27,7 @@ $settings = \App\Models\Utility::settings();
 
 ?>
 <div style="background-color:#f6f6f6;font-family:sans-serif;font-size:14px;line-height:1.4;margin:0;padding:0">
-    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Kepada {{ $invoice->client->clients->name_invoice }} Salam Hormat, Kami berharap Bapak/Ibu dalam keadaan baik. Sehubungan dengan Jasa @foreach($productNames as $productName)
+    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Kepada {{ $invoice->client->clients->name_invoice ?? 'Client' }} Salam Hormat, Kami berharap Bapak/Ibu dalam keadaan baik. Sehubungan dengan Jasa @foreach($productNames as $productName)
         {{ $productName }},
     @endforeach yang telah kami sediakan, bersama ini kami lampirkan invoice terkait untuk pembayaran .</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse:separate;background-color:#f6f6f6;width:100%" width="100%" bgcolor="#f6f6f6">
@@ -72,8 +72,11 @@ $settings = \App\Models\Utility::settings();
                                                             <li style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin-bottom:5px;">
                                                                 <strong>Deskripsi Jasa:</strong> 
                                                                 @foreach ($productNames as $item)
-                                                                    {{ 'Jasa ' . $item }},
-                                                                    @if (!$loop->last)
+                                                                    {{ 'Jasa ' . $item }}
+                                                                    @if (!$loop->last && count($productNames) > 1)
+                                                                        ,
+                                                                    @endif
+                                                                    @if ($loop->last)
                                                                         <br>
                                                                     @endif
                                                                 @endforeach
