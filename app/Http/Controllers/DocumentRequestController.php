@@ -98,6 +98,7 @@ class DocumentRequestController extends Controller
                 $document->position_attention = $request->position_attention_invoice;
                 $document->address = $request->address_invoice;
                 $document->no_pic = $request->no_pic_invoice;
+                $document->sender_or_receiver = $request->sender_or_receiver;
             } elseif ($request->document_type == 'Proposal' || $request->document_type == 'EL') {
                 $document->client_name = $request->client_name_proposal;
                 $document->email_attention = $request->email_attention_proposal;
@@ -215,6 +216,7 @@ class DocumentRequestController extends Controller
                 $document_request->position_attention = $request->position_attention_invoice;
                 $document_request->address = $request->address_invoice;
                 $document_request->no_pic = $request->no_pic_invoice;
+                $document_request->sender_or_receiver = $request->sender_or_receiver;
             } elseif ($request->document_type == 'Proposal' || $request->document_type == 'EL') {
                 $document_request->client_name = $request->client_name_proposal;
                 $document_request->email_attention = $request->email_attention_proposal;

@@ -31,6 +31,7 @@ class DocumentRequest extends Model
         'file_feedback',
         'note',
         'status',
+        'sender_or_receiver',
         'created_by',
     ];
 
@@ -41,6 +42,11 @@ class DocumentRequest extends Model
         'Barcode LAI' => 'Barcode LAI', 
         'Contract Employee' => 'Contract Employee', 
         'Other Letters' => 'Other Letters'
+    ];
+
+    public static $to =[
+        'Pengirim' => 'Pengirim', 
+        'Penerima' => 'Penerima', 
     ];
 
     public function employee()

@@ -45,40 +45,52 @@
 
             <div class="col-md-6">
                 <div class="form-group">
-                    {{ Form::label('email_attention_invoice', __('Email Attention'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::text('email_attention_invoice',null,array('class'=>'form-control'))}}
+                    {{ Form::label('sender_or_receiver', __('Sender/Receiver'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    <select name="sender_or_receiver" class="form-control main-element">
+                        <option value="0">{{__('Select Sender Or Receiver')}}</option>
+                        @foreach(\App\Models\DocumentRequest::$to as $k => $v)
+                            <option value="{{$k}}">{{__($v)}}</option>
+                        @endforeach
+                    </select>
                 </div>
             </div>
         </div>
 
         <div class="row">
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ Form::label('email_attention_invoice', __('Email Attention'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{Form::text('email_attention_invoice',null,array('class'=>'form-control'))}}
+                </div>
+            </div>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('name_attention_invoice', __('Name Attention'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                     {{ Form::text('name_attention_invoice', null, array('class'=>'form-control'))}}
                 </div>
             </div>
+        </div>
 
+        <div class="row">
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('position_attention_invoice', __('Position Attention'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                     {{Form::text('position_attention_invoice',null,array('class'=>'form-control'))}}
                 </div>
             </div>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6">
-                <div class="form-group">
-                    {{ Form::label('address_invoice', __('Address'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{ Form::text('address_invoice', null, array('class'=>'form-control'))}}
-                </div>
-            </div>
-
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('no_pic_invoice', __('Phone Number PIC'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                     {{Form::text('no_pic_invoice',null,array('class'=>'form-control'))}}
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group">
+                    {{ Form::label('address_invoice', __('Address'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{ Form::textarea('address_invoice', null, array('class'=>'form-control'))}}
                 </div>
             </div>
         </div>
