@@ -13,8 +13,6 @@
 <meta name="csrf-token" id="csrf-token" content="{{ csrf_token() }}">
 <head>
     <title>{{(Utility::getValByName('title_text')) ? Utility::getValByName('title_text') : config('app.name', 'TGS AU-Partners Apps')}} - Form New Client</title>
-    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 
     <!-- Meta -->
     <meta charset="utf-8"/>
@@ -91,211 +89,213 @@
                     <div class="col-sm-10 col-lg-8"> <!-- Adjusted to make form wider -->
                         <div class="row justify-content-center mb-3 text-center">
                             <a class="navbar-brand" href="#">
-                                <img src="{{ asset(Storage::url('uploads/logo/logo-dark.png')) }}" class="navbar-brand-img big-logo">
+                                <img src="{{ asset(Storage::url('uploads/logo/logo-dark.png')) }}" class="navbar-brand-img big-logo" style="width: 200px; height: 60px;">
                             </a>
                         </div>
-                        <div class="card shadow zindex-100 mb-0 form-wizard"><!-- Added form-wizard class -->
-                            {{Form::open(array('route'=>array('form.client.store'),'method'=>'post'))}}
-                                <div class="card-body px-md-5 py-5">
-                                    @if (session('success'))
-                                        <div class="alert alert-success">
-                                            {{ session('success') }}
-                                        </div>
-                                    @endif
+                        <div class="card shadow zindex-100 mb-0 form-wizard">
+                            <!-- Added form-wizard class -->
+                            {{ Form::open(array('route' => array('form.client.store'), 'method' => 'post')) }}
+                            <div class="card-body px-md-5 py-5">
+                                @if (session('success'))
+                                    <div class="alert alert-success">
+                                        {{ session('success') }}
+                                    </div>
+                                @endif
 
-                                    @if (session('error'))
-                                        <div class="alert alert-danger">
-                                            {{ session('error') }}
-                                        </div>
-                                    @endif
-                                    <div class="progress-container">
-                                        <div class="progress-bar" id="progressBar"></div>
+                                @if (session('error'))
+                                    <div class="alert alert-danger">
+                                        {{ session('error') }}
                                     </div>
-                                    <div class="step active">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('name', __('Client Name'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{ Form::text('name', null, array('class'=>'form-control'))}}
-                                                </div>
-                                            </div>
-                                             <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('email', __('Client Email'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('email',null,array('class'=>'form-control'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('address', __('Address'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('address',null,array('class'=>'form-control'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('country', __('Country'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('country',null,array('class'=>'form-control'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('state', __('State'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('state',null,array('class'=>'form-control'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('city', __('City'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('city',null,array('class'=>'form-control'))}}
-                                                </div>
+                                @endif
+                                <div class="progress-container">
+                                    <div class="progress-bar" id="progressBar"></div>
+                                </div>
+                                <div class="step active">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('name', __('Client Name'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::text('name', null, array('class' => 'form-control', 'placeholder' => 'Enter Client Name')) }}
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="step">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('name_pic', __('Name PIC'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('name_pic',null,array('class'=>'form-control'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('email_pic', __('Email PIC'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('email_pic',null,array('class'=>'form-control'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('telp_pic', __('Phone Number / WA number PIC'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::number('telp_pic',null,array('class'=>'form-control'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('name_invoice', __('Invoice Recipient Name'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('name_invoice',null,array('class'=>'form-control'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('position', __('Position On Invoice'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('position',null,array('class'=>'form-control'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('telp', __('Phone Number / WA number on Invoice'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::number('telp',null,array('class'=>'form-control'))}}
-                                                </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('email', __('Client Email'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::text('email', null, array('class' => 'form-control', 'placeholder' => 'Enter Client Email')) }}
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="step">
-                                        <div class="row">
-                                            <div class="col-md-6">  
-                                                <div class="form-group">
-                                                    {{ Form::label('client_business_sector_id', __('Client Business Sector'),['class'=>'form-label']) }}
-                                                    {{ Form::select('client_business_sector_id', $businesssector,null, array('class' => 'form-control select')) }}
-                                                </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('address', __('Address'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::text('address', null, array('class' => 'form-control', 'placeholder' => 'Enter Address')) }}
                                             </div>
-                                            <div class="col-md-6">  
-                                                <div class="form-group">
-                                                    {{ Form::label('category_services', __('Category Services Order'),['class'=>'form-label']) }}
-                                                    <select name="category_services" id="category_services" class="form-control main-element">
-                                                        <option value="0">{{__('Select Category')}}</option>
-                                                        @foreach(\App\Models\ProjectOrders::$label as $k => $v)
-                                                            <option value="{{$k}}">{{__($v)}}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6" id="client_ownership_id" style="display: none;">  
-                                                <div class="form-group">
-                                                    {{ Form::label('client_ownership_id', __('Client Ownership'),['class'=>'form-label']) }}
-                                                    {{ Form::select('client_ownership_id', $ownership,null, array('class' => 'form-control select')) }}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6" id="accounting_standars_id" style="display: none;">  
-                                                <div class="form-group">
-                                                    {{ Form::label('accounting_standars_id', __('Accounting Standars'),['class'=>'form-label']) }}
-                                                    {{ Form::select('accounting_standars_id', $accountingstandards,null, array('class' => 'form-control select')) }}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('total_company_assets_value', __('Total Company Assets Value'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::number('total_company_assets_value',null,array('class'=>'form-control'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('total_company_income_per_year', __('Total Company Income Per Year'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::number('total_company_income_per_year',null,array('class'=>'form-control'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('total_company_profit_or_loss', __('Total Company Profit Or Loss For The Year'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::number('total_company_profit_or_loss',null,array('class'=>'form-control'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('periode', __('Periode Order'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    <input type="text" name="periode" class="form-control"/>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('total_employee', __('Total Employee'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::number('total_employee',null,array('class'=>'form-control'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('total_branch_offices', __('Total Branch Offices'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::number('total_branch_offices',null,array('class'=>'form-control'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('npwp', __('Tax Number'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('npwp',null,array('class'=>'form-control'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('where_did_you_find_out_about_us', __('Where Did You Find Out About Us?'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{ Form::select('where_did_you_find_out_about_us', [
-                                                        'Internet' => 'Internet',
-                                                        'Social Media' => 'Social Media',
-                                                        'Website' => 'Website',
-                                                        'Recommendation From Bank Mandiri' => 'Recommendation From Bank Mandiri',
-                                                        'Other' => 'Other'
-                                                    ], null, array('class' => 'form-control select')) }}
-                                                </div>
-                                            </div>
-                                            @if(env('RECAPTCHA_MODULE') == 'yes')
-                                                <div class="form-group mb-3">
-                                                    {!! NoCaptcha::display() !!}
-                                                    @error('g-recaptcha-response')
-                                                    <span class="small text-danger" role="alert">
-                                                        <strong>{{ $message }}</strong>
-                                                    </span>
-                                                    @enderror
-                                                </div>
-                                            @endif
                                         </div>
-                                    </div>
-                                    <div class="step-buttons">
-                                        <button type="button" class="btn btn-secondary" onclick="prevStep()">Previous</button>
-                                        <button type="button" class="btn btn-success" onclick="nextStep()">Next</button>
-                                        <button type="submit" class="btn btn-primary" style="display:none">Submit</button>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('country', __('Country'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::text('country', null, array('class' => 'form-control', 'placeholder' => 'Enter Country')) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('state', __('State'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::text('state', null, array('class' => 'form-control', 'placeholder' => 'Enter State')) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('city', __('City'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::text('city', null, array('class' => 'form-control', 'placeholder' => 'Enter City')) }}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            {{Form::close()}}
+                                <div class="step">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('name_pic', __('Name PIC'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::text('name_pic', null, array('class' => 'form-control', 'placeholder' => 'Enter Name PIC')) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('email_pic', __('Email PIC'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::text('email_pic', null, array('class' => 'form-control', 'placeholder' => 'Enter Email PIC')) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('telp_pic', __('Phone Number / WA number PIC'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::number('telp_pic', null, array('class' => 'form-control', 'placeholder' => 'Enter Phone Number / WA number PIC')) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('name_invoice', __('Invoice Recipient Name'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::text('name_invoice', null, array('class' => 'form-control', 'placeholder' => 'Enter Invoice Recipient Name')) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('position', __('Position On Invoice'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::text('position', null, array('class' => 'form-control', 'placeholder' => 'Enter Position On Invoice')) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('telp', __('Phone Number / WA number on Invoice'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::number('telp', null, array('class' => 'form-control', 'placeholder' => 'Enter Phone Number / WA number on Invoice')) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('client_business_sector_id', __('Client Business Sector'), ['class' => 'form-label']) }}
+                                                {{ Form::select('client_business_sector_id', $businesssector, null, array('class' => 'form-control select', 'placeholder' => 'Select Client Business Sector')) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('category_services', __('Category Services Order'), ['class' => 'form-label']) }}
+                                                <select name="category_services" id="category_services" class="form-control main-element">
+                                                    <option value="0">{{ __('Select Category') }}</option>
+                                                    @foreach (\App\Models\ProjectOrders::$label as $k => $v)
+                                                        <option value="{{ $k }}">{{ __($v) }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" id="client_ownership_id" style="display: none;">
+                                            <div class="form-group">
+                                                {{ Form::label('client_ownership_id', __('Client Ownership'), ['class' => 'form-label']) }}
+                                                {{ Form::select('client_ownership_id', $ownership, null, array('class' => 'form-control select')) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" id="accounting_standars_id" style="display: none;">
+                                            <div class="form-group">
+                                                {{ Form::label('accounting_standars_id', __('Accounting Standards'), ['class' => 'form-label']) }}
+                                                {{ Form::select('accounting_standars_id', $accountingstandards, null, array('class' => 'form-control select', 'placeholder' => 'Select Accounting Standards')) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('total_company_assets_value', __('Total Company Assets Value'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::number('total_company_assets_value', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Company Assets Value')) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('total_company_income_per_year', __('Total Company Income Per Year'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::number('total_company_income_per_year', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Company Income Per Year')) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('total_company_profit_or_loss', __('Total Company Profit Or Loss For The Year'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::number('total_company_profit_or_loss', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Company Profit Or Loss For The Year')) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('periode', __('Periode Order'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                <input type="text" name="periode" class="form-control" placeholder="2023 / 2023 - 2024"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('total_employee', __('Total Employee'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::number('total_employee', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Employee')) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('total_branch_offices', __('Total Branch Offices'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::number('total_branch_offices', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Branch Offices')) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('npwp', __('Tax Number'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::text('npwp', null, array('class' => 'form-control', 'placeholder' => 'Enter Tax Number')) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('where_did_you_find_out_about_us', __('Where Did You Find Out About Us?'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::select('where_did_you_find_out_about_us', [
+                                                    'Internet' => 'Internet',
+                                                    'Social Media' => 'Social Media',
+                                                    'Website' => 'Website',
+                                                    'Recommendation From Bank Mandiri' => 'Recommendation From Bank Mandiri',
+                                                    'Other' => 'Other'
+                                                ], null, array('class' => 'form-control select', 'placeholder' => 'Select an option')) }}
+                                            </div>
+                                        </div>
+                                        @if(env('RECAPTCHA_MODULE') == 'yes')
+                                            <div class="form-group mb-3">
+                                                {!! NoCaptcha::display() !!}
+                                                @error('g-recaptcha-response')
+                                                <span class="small text-danger" role="alert">
+                                                    <strong>{{ $message }}</strong>
+                                                </span>
+                                                @enderror
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                                <div class="step-buttons">
+                                    <button type="button" class="btn btn-secondary" onclick="prevStep()">Previous</button>
+                                    <button type="button" class="btn btn-success" onclick="nextStep()">Next</button>
+                                    <button type="submit" class="btn btn-primary" style="display:none">Submit</button>
+                                </div>
+                            </div>
+                            {{ Form::close() }}
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -366,7 +366,7 @@
             showStep(currentStep);
         });
 
-        $(function() {
+        {{-- $(function() {
             $('input[name="periode"]').daterangepicker({
                 opens: 'left',
                 locale: {
@@ -375,7 +375,7 @@
             }, function(start, end, label) {
                 console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
             });
-        });
+        }); --}}
     </script>
 </body>
 

@@ -87,7 +87,7 @@
                     <div class="col-sm-10 col-lg-8"> <!-- Adjusted to make form wider -->
                         <div class="row justify-content-center mb-3 text-center">
                             <a class="navbar-brand" href="#">
-                                <img src="{{ asset(Storage::url('uploads/logo/logo-dark.png')) }}" class="navbar-brand-img big-logo">
+                                <img src="{{ asset(Storage::url('uploads/logo/logo-dark.png')) }}" class="navbar-brand-img big-logo" style="width: 200px; height: 60px;">
                             </a>
                         </div>
                         <div class="card shadow zindex-100 mb-0 form-wizard"> <!-- Added form-wizard class -->
