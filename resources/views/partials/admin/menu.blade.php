@@ -553,18 +553,21 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
 
                          <!--------------------- Start Account ----------------------------------->
 
-                            {{-- @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting')
-                            <li class="dash-item dash-hasmenu {{ ( Request::segment(1) == 'project-orders')?' active dash-trigger':''}}">
-                                <a href="#!" class="dash-link"><span class="dash-micon"><i class="ti ti-shopping-cart"></i></span><span class="dash-mtext">{{__('Sales Order ')}}
-                                    </span><span class="dash-arrow"><i data-feather="chevron-right"></i></span>
-                                </a>
-                                <ul class="dash-submenu">
-                                        <li class="dash-item  {{Request::segment(1) == 'project-orders' ||Request::route()->getName() == 'project-orders.index' || Request::route()->getName() == 'project-orders.show' || request()->is('project-orders/*') ? 'active' : ''}}">
-                                            <a class="dash-link" href="{{route('project-orders.index')}}">{{__('Project Orders')}}</a>
-                                        </li>
-                                </ul>
-                            </li>
-                            @endif --}}
+                            @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting')
+                                <li class="dash-item dash-hasmenu {{ ( Request::segment(1) == 'project-orders')?' active dash-trigger':''}}">
+                                    <a href="#!" class="dash-link"><span class="dash-micon"><i class="ti ti-shopping-cart"></i></span><span class="dash-mtext">{{__('Sales Order ')}}
+                                        </span><span class="dash-arrow"><i data-feather="chevron-right"></i></span>
+                                    </a>
+                                    <ul class="dash-submenu">
+                                            <li class="dash-item {{ (Request::segment(1) == 'form_client' || Request::segment(1) == 'form_response')?'active open':''}}">
+                                                <a class="dash-link" href="{{route('form_client.index')}}">{{__('Form Client')}}</a>
+                                            </li>
+                                            <li class="dash-item  {{Request::segment(1) == 'project-orders' ||Request::route()->getName() == 'project-orders.index' || Request::route()->getName() == 'project-orders.show' || request()->is('project-orders/*') ? 'active' : ''}}">
+                                                <a class="dash-link" href="{{route('project-orders.index')}}">{{__('Project Orders')}}</a>
+                                            </li>
+                                    </ul>
+                                </li>
+                            @endif
 
                         <!--------------------- Start Account ----------------------------------->
 
@@ -786,10 +789,10 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
 
                         <!--------------------- Start CRM ----------------------------------->
 
-                        @if(\Auth::user()->show_crm() == 1)
+                        {{-- @if(\Auth::user()->show_crm() == 1)
                             @if( Gate::check('manage lead') || Gate::check('manage deal') || Gate::check('manage form builder'))
                                 <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'stages' || Request::segment(1) == 'labels' || Request::segment(1) == 'sources' || Request::segment(1) == 'lead_stages' || Request::segment(1) == 'pipelines' || Request::segment(1) == 'deals' || Request::segment(1) == 'leads'  || Request::segment(1) == 'form_builder' || Request::segment(1) == 'form_response')?' active dash-trigger':''}}">
-                                    {{-- <a href="#!" class="dash-link"><span class="dash-micon"><i class="ti ti-layers-difference"></i></span><span class="dash-mtext">{{__('CRM System')}}</span><span class="dash-arrow"><i data-feather="chevron-right"></i></span></a> --}}
+                                    <a href="#!" class="dash-link"><span class="dash-micon"><i class="ti ti-layers-difference"></i></span><span class="dash-mtext">{{__('CRM System')}}</span><span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                         <ul class="dash-submenu {{ (Request::segment(1) == 'stages' || Request::segment(1) == 'labels' || Request::segment(1) == 'sources' || Request::segment(1) == 'lead_stages' || Request::segment(1) == 'leads'  || Request::segment(1) == 'form_builder' || Request::segment(1) == 'form_response' || Request::segment(1) == 'deals' || Request::segment(1) == 'pipelines')?'show':''}}">
                                             @can('manage lead')
                                             <li class="dash-item {{ (Request::route()->getName() == 'leads.list' || Request::route()->getName() == 'leads.index' || Request::route()->getName() == 'leads.show') ? ' active' : '' }}">
@@ -814,42 +817,42 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             @if(Gate::check('manage lead stage') || Gate::check('manage pipeline') ||Gate::check('manage source') ||Gate::check('manage label') || Gate::check('manage stage'))
                                             <li class="dash-item  {{(Request::segment(1) == 'stages' || Request::segment(1) == 'labels' || Request::segment(1) == 'sources' || Request::segment(1) == 'lead_stages' || Request::segment(1) == 'pipelines' || Request::segment(1) == 'product-category' || Request::segment(1) == 'product-unit' || Request::segment(1) == 'payment-method' || Request::segment(1) == 'custom-field' || Request::segment(1) == 'chart-of-account-type')? 'active dash-trigger' :''}}">
                                                 <a class="dash-link" href="{{ route('pipelines.index') }}   ">{{__('CRM System')}}</a>
-                                                {{-- <ul class="dash-submenu">--}}
-                                                {{-- @can('manage pipeline')--}}
-                                                {{-- <li class="dash-item  {{ (Request::route()->getName() == 'pipelines.index' ) ? ' active' : '' }}">--}}
-                                                {{-- <a class="dash-link" href="{{ route('pipelines.index') }}">{{__('Pipeline')}}</a>--}}
-                                                {{-- </li>--}}
-                                                {{-- @endcan--}}
-                                                {{-- @can('manage lead stage')--}}
-                                                {{-- <li class="dash-item {{ (Request::route()->getName() == 'lead_stages.index' ) ? 'active' : '' }}">--}}
-                                                {{-- <a class="dash-link" href="{{route('lead_stages.index')}}">{{__('Lead Stages')}}</a>--}}
-                                                {{-- </li>--}}
-                                                {{-- @endcan--}}
-                                                {{-- @can('manage stage')--}}
-                                                {{-- <li class="dash-item {{ (Request::route()->getName() == 'stages.index' ) ? 'active' : '' }}">--}}
-                                                {{-- <a class="dash-link" href="{{route('stages.index')}}">{{__('Deal Stages')}}</a>--}}
-                                                {{-- </li>--}}
-                                                {{-- @endcan--}}
-                                                {{-- @can('manage source')--}}
-                                                {{-- <li class="dash-item {{ (Request::route()->getName() == 'sources.index' ) ? ' active' : '' }}">--}}
-                                                {{-- <a class="dash-link" href="{{route('sources.index')}}">{{__('Sources')}}</a>--}}
-                                                {{-- </li>--}}
-                                                {{-- @endcan--}}
-                                                {{-- @can('manage label')--}}
-                                                {{-- <li class="dash-item {{ (Request::route()->getName() == 'labels.index' ) ? 'active' : '' }}">--}}
-                                                {{-- <a class="dash-link" href="{{route('labels.index')}}">{{__('Labels')}}</a>--}}
-                                                {{-- </li>--}}
-                                                {{-- @endcan--}}
-                                                {{-- <li class="dash-item {{ (Request::segment(1) == 'contractType')?'active open':''}}">--}}
-                                                {{-- <a class="dash-link" href="{{ route('contractType.index') }}">{{__('Contract Type')}}</a>--}}
-                                                {{-- </li>--}}
-                                                {{-- </ul>--}}
+                                                <ul class="dash-submenu">
+                                                @can('manage pipeline')
+                                                <li class="dash-item  {{ (Request::route()->getName() == 'pipelines.index' ) ? ' active' : '' }}">
+                                                <a class="dash-link" href="{{ route('pipelines.index') }}">{{__('Pipeline')}}</a>
+                                                </li>
+                                                @endcan
+                                                @can('manage lead stage')
+                                                <li class="dash-item {{ (Request::route()->getName() == 'lead_stages.index' ) ? 'active' : '' }}">
+                                                <a class="dash-link" href="{{route('lead_stages.index')}}">{{__('Lead Stages')}}</a>
+                                                </li>
+                                                @endcan
+                                                @can('manage stage')
+                                                <li class="dash-item {{ (Request::route()->getName() == 'stages.index' ) ? 'active' : '' }}">
+                                                <a class="dash-link" href="{{route('stages.index')}}">{{__('Deal Stages')}}</a>
+                                                </li>
+                                                @endcan
+                                                @can('manage source')
+                                                <li class="dash-item {{ (Request::route()->getName() == 'sources.index' ) ? ' active' : '' }}">
+                                                <a class="dash-link" href="{{route('sources.index')}}">{{__('Sources')}}</a>
+                                                </li>
+                                                @endcan
+                                                @can('manage label')
+                                                <li class="dash-item {{ (Request::route()->getName() == 'labels.index' ) ? 'active' : '' }}">
+                                                <a class="dash-link" href="{{route('labels.index')}}">{{__('Labels')}}</a>
+                                                </li>
+                                                @endcan
+                                                <li class="dash-item {{ (Request::segment(1) == 'contractType')?'active open':''}}">
+                                                <a class="dash-link" href="{{ route('contractType.index') }}">{{__('Contract Type')}}</a>
+                                                </li>
+                                                </ul>
                                             </li>
                                             @endif
                                         </ul>
                                 </li>
                             @endif
-                        @endif
+                        @endif --}}
 
                         <!--------------------- End CRM ----------------------------------->
 

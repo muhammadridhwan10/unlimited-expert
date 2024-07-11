@@ -41,6 +41,7 @@ Route::get('/register', function () {
 Route::get('/login/{lang?}', 'Auth\AuthenticatedSessionController@showLoginForm')->name('login');
 Route::get('/download_win', 'Auth\AuthenticatedSessionController@download_win')->name('filewin.download');
 Route::get('/download_mac', 'Auth\AuthenticatedSessionController@download_mac')->name('filemac.download');
+Route::get('/form/new-client', 'FormClientController@formClientView')->name('form.client.view')->middleware(['XSS']);
 
 // Route::get('/password/resets/{lang?}', 'Auth\AuthenticatedSessionController@showLinkRequestForm')->name('change.langPass');
 // Route::get('/password/resets/{lang?}', 'Auth\LoginController@showLinkRequestForm')->name('change.langPass');
@@ -3617,6 +3618,19 @@ Route::resource('form_builder', 'FormBuilderController')->middleware(
     ]
 );
 
+Route::resource('form_client', 'FormClientController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('form/client/{id}/time-budget', 'FormClientController@formTimeBudget')->name('form.time.budget');
+Route::post('form/client/{id}/add-time-budget', 'FormClientController@addTimeBudget')->name('save.time.budget');
+Route::get('form/client/{id}/view', 'FormClientController@show')->name('form.client.views');
+Route::post('form/client/{id}', 'FormClientController@updateStatus')->name('form.client.status');
+Route::get('form/client/{id}/edit', 'FormClientController@edit')->name('form.client.edit');
+Route::put('form/client/{id}', 'FormClientController@update')->name('form.client.update');
+Route::post('/form-client-store', 'FormClientController@formClientViewStore')->name('form.client.store')->middleware(['XSS']);
 // Form link base view
 Route::get('/form/{code}', 'FormBuilderController@formView')->name('form.view')->middleware(['XSS']);
 Route::post('/form_view_store', 'FormBuilderController@formViewStore')->name('form.view.store')->middleware(['XSS']);

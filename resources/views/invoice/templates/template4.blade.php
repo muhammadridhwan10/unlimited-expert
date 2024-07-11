@@ -816,12 +816,12 @@
                                             <strong data-v-f2a183a6="">{{__('Thank you for your business!')}}</strong>
                                             <strong data-v-f2a183a6="">{{__('Payment Instructions')}}:</strong>
                                             <p>
-                                                {{"Payment by bank transfer : "}}<br>
-                                                {{"PT Bank Negara Indonesia (Persero)"}}<br>
-                                                {{"Branch Address :"}}<br>
-                                                {{"Jl. Jatinegara Timur No. 67, Jakarta Timur"}}<br>
-                                                {{"Account Name :"}}<br>
-                                                {{"All Rich Associate"}}<br>
+                                                {{"Payment by bank transfer : PT Bank Negara Indonesia (Persero)"}}<br>
+                                                {{-- {{"PT Bank Negara Indonesia (Persero)"}}<br> --}}
+                                                {{"Branch Address : Jl. Jatinegara Timur No. 67, Jakarta Timur"}}<br>
+                                                {{-- {{"Jl. Jatinegara Timur No. 67, Jakarta Timur"}}<br> --}}
+                                                {{"Account Name : All Rich Associate"}}<br>
+                                                {{-- {{"All Rich Associate"}}<br> --}}
                                                 <strong>{{"Account Number (Rp) : 05666-47352"}}</strong><br>
                                                 {{"Account Currency : IDR"}}<br>
                                                 <strong>{{"Account Number ($) : 0566791928"}}</strong><br>
@@ -839,6 +839,7 @@
                                             </p>
                                         </div>
                                     </div>
+                                    <br>
                                     <p style="text-align:center; font-size: 9px;">
                                         ALLRICH ASSOCIATE<br>
                                         Wisma Staco 6th Fl, Jl Casablanca Kav 18, Jakarta 12870 | (+62) 21-8298265 | info@au-partners.com

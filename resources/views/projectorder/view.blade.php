@@ -299,20 +299,20 @@
                                                     <div class="p-4">
                                                         <p class="card-text mb-0">{{ __('Project Name ') }}</p>
                                                         <h6 class="report-text mb-3">
-                                                            {{ $projectOrder->project_name }}
+                                                            {{ $projectOrder->project_name ? $projectOrder->project_name : '-'  }}
                                                         </h6>
                                                         <p class="card-text mb-0">{{ __('Project Fee') }}</p>
-                                                        <h6 class="report-text mb-0">{{ \Auth::user()->priceFormat($projectOrder->budget) }}</h6>
+                                                        <h6 class="report-text mb-0">{{ \Auth::user()->priceFormat($projectOrder->budget  ? $projectOrder->budget : '-') }}</h6>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3 col-sm-6">
                                                     <div class="p-4">
                                                         <p class="card-text mb-0">{{ __('Project Start Date') }}</p>
                                                         <h6 class="report-text mb-3">
-                                                            {{$projectOrder->start_date}}
+                                                            {{$projectOrder->start_date ? $projectOrder->start_date : '-'}}
                                                         </h6>
                                                         <p class="card-text mb-0">{{ __('Project End Date') }}</p>
-                                                        <h6 class="report-text mb-0">{{$projectOrder->end_date}}</h6>
+                                                        <h6 class="report-text mb-0">{{$projectOrder->end_date ? $projectOrder->end_date : '-'}}</h6>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3 col-sm-6">
@@ -339,10 +339,10 @@
                                                     <div class="p-4">
                                                         <p class="card-text mb-0">{{ __('Public Accountant ') }}</p>
                                                         <h6 class="report-text mb-3">
-                                                            {{ $projectOrder->accountant->name ? $projectOrder->accountant->name : '-' }}
+                                                            {{ isset($projectOrder->accountant) ? $projectOrder->accountant->name : '-' }}
                                                         </h6>
                                                         <p class="card-text mb-0">{{ __('Leader Project') }}</p>
-                                                        <h6 class="report-text mb-3">{{ $projectOrder->user->name ? $projectOrder->user->name : '-' }}</h6>
+                                                        <h6 class="report-text mb-3">{{ isset($projectOrder->user->name) ? $projectOrder->user->name : '-' }}</h6>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3 col-sm-6">

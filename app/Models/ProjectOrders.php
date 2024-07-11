@@ -30,6 +30,8 @@ class ProjectOrders extends Model
         'client_business_sector_id',
         'client_ownership_id',
         'accounting_standars_id',
+        'total_company_profit_or_loss',
+        'periode',
         'project_name',
         'start_date',
         'end_date',
@@ -53,7 +55,9 @@ class ProjectOrders extends Model
         'rate_associate',
         'rate_assistant',
         'is_approve',
+        'status_client',
         'created_by',
+        'where_did_you_find_out_about_us'
     ];
 
     public static $label=[
@@ -63,10 +67,19 @@ class ProjectOrders extends Model
         'Accounting&Tax' => 'Accounting&Tax',
         'KPPK' => 'KPPK',
         'Agreed Upon Procedures (AUP)' => 'Agreed Upon Procedures (AUP)',
+        'Other' => 'Other',
     ];
 
     public function sector(){
         return $this->hasOne('App\Models\ClientBusinessSector', 'id', 'client_business_sector_id');
+    }
+
+    public function ownership(){
+        return $this->hasOne('App\Models\ClientOwnershipStatus', 'id', 'client_ownership_id');
+    }
+
+    public function accountingstandard(){
+        return $this->hasOne('App\Models\ClientAccountingStandard', 'id', 'accounting_standars_id');
     }
 
     public function user()

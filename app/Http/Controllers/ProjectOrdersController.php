@@ -29,7 +29,7 @@ class ProjectOrdersController extends Controller
     {
         if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting')
         {
-            $orders = ProjectOrders::all();
+            $orders = ProjectOrders::where('status_client', '=', 'Approved')->get();
             return view('projectorder.index', compact('orders'));
         }
         else
