@@ -20,7 +20,7 @@
 
     <nav class="navbar navbar-main navbar-expand-lg navbar-transparent navbar-light bg-white" id="navbar-main">
         <div class="container px-lg-0">
-            <a class="navbar-brand mr-lg-5" href="#">
+            <a class="navbar-brand mr-lg-5" href="https://au-partners.com/">
                 <img class="hweb" alt="Image placeholder" src="{{asset(Storage::url('uploads/logo/')).'/'.(isset($companySettings['company_logo']) && !empty($companySettings['company_logo'])?$companySettings['company_logo']->value:'logo-dark.png')}}" id="navbar-logo" style="height: 50px;">
             </a>
             <button class="navbar-toggler pr-0" type="button" data-toggle="collapse" data-target="#navbar-main-collapse" aria-controls="navbar-main-collapse" aria-expanded="false" aria-label="Toggle navigation">
