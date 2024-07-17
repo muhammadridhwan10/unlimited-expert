@@ -82,18 +82,16 @@ class AnnouncementController extends Controller
         {
             $validator = \Validator::make(
                 $request->all(), [
-                                   'title' => 'required',
-                                   'start_date' => 'required',
-                                   'end_date' => 'required',
-                                   'branch_id' => 'required',
-                                   'department_id' => 'required',
-                                   'employee_id' => 'required',
-                               ]
+                                'title' => 'required',
+                                'start_date' => 'required',
+                                'end_date' => 'required',
+                                'branch_id' => 'required',
+                                'employee_id' => 'required',
+                            ]
             );
             if($validator->fails())
             {
                 $messages = $validator->getMessageBag();
-
                 return redirect()->back()->with('error', $messages->first());
             }
 
@@ -102,23 +100,22 @@ class AnnouncementController extends Controller
             $announcement->start_date    = $request->start_date;
             $announcement->end_date      = $request->end_date;
             $announcement->branch_id     = $request->branch_id;
-            $announcement->department_id = json_encode($request->department_id);
+            $announcement->department_id = $request->department_id ?? 0;
             $announcement->employee_id   = json_encode($request->employee_id);
             $announcement->description   = $request->description;
             $announcement->created_by    = \Auth::user()->creatorId();
             $announcement->save();
 
-            if(in_array('0', $request->employee_id))
-            {
-                $departmentEmployee = Employee::whereIn('department_id', $request->department_id)->get()->pluck('id');
-                $departmentEmployee = $departmentEmployee;
+            $branch_id = is_array($request->branch_id) ? $request->branch_id : [$request->branch_id];
+            $employee_id = is_array($request->employee_id) ? $request->employee_id : [$request->employee_id];
 
+            if (in_array('0', $employee_id)) {
+                $branchEmployee = Employee::whereIn('branch_id', $branch_id)->get()->pluck('id')->toArray();
+            } else {
+                $branchEmployee = $employee_id;
             }
-            else
-            {
-                $departmentEmployee = $request->employee_id;
-            }
-            foreach($departmentEmployee as $employee)
+
+            foreach($branchEmployee as $employee)
             {
                 $announcementEmployee                  = new AnnouncementEmployee();
                 $announcementEmployee->announcement_id = $announcement->id;
@@ -127,32 +124,30 @@ class AnnouncementController extends Controller
                 $announcementEmployee->save();
             }
 
-
             //Slack Notification
-            $setting  = Utility::settings(\Auth::user()->creatorId());
-            $branch = Branch::find($request->branch_id);
-            if(isset($setting['announcement_notification']) && $setting['announcement_notification'] ==1){
-                $msg = $request->title .' '.__("announcement created for branch").' '. $branch->name.' '. __("from").' '. $request->start_date. ' '.__("to").' '.$request->end_date.'.';
-                Utility::send_slack_msg($msg);
-            }
+            // $setting  = Utility::settings(\Auth::user()->creatorId());
+            // $branch = Branch::find($request->branch_id);
+            // if(isset($setting['announcement_notification']) && $setting['announcement_notification'] ==1){
+            //     $msg = $request->title .' '.__("announcement created for branch").' '. $branch->name.' '. __("from").' '. $request->start_date. ' '.__("to").' '.$request->end_date.'.';
+            //     Utility::send_slack_msg($msg);
+            // }
 
-            //Telegram Notification
-            $setting  = Utility::settings(\Auth::user()->creatorId());
-            $branch = Branch::find($request->branch_id);
-            if(isset($setting['telegram_announcement_notification']) && $setting['telegram_announcement_notification'] ==1){
-                $msg = $request->title .' '.__("announcement created for branch").' '. $branch->name.' '. __("from").' '. $request->start_date. ' '.__("to").' '.$request->end_date.'.';
-                Utility::send_telegram_msg($msg);
-            }
+            // //Telegram Notification
+            // $setting  = Utility::settings(\Auth::user()->creatorId());
+            // $branch = Branch::find($request->branch_id);
+            // if(isset($setting['telegram_announcement_notification']) && $setting['telegram_announcement_notification'] ==1){
+            //     $msg = $request->title .' '.__("announcement created for branch").' '. $branch->name.' '. __("from").' '. $request->start_date. ' '.__("to").' '.$request->end_date.'.';
+            //     Utility::send_telegram_msg($msg);
+            // }
 
-
-            return redirect()->route('announcement.index')->with('success', __('Announcement  successfully created.'));
+            return redirect()->route('announcement.index')->with('success', __('Announcement successfully created.'));
         }
-
         else
         {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
     }
+
 
     public function show(Announcement $announcement)
     {
@@ -202,7 +197,6 @@ class AnnouncementController extends Controller
                                        'start_date' => 'required',
                                        'end_date' => 'required',
                                        'branch_id' => 'required',
-                                       'department_id' => 'required',
                                    ]
                 );
                 if($validator->fails())
@@ -216,7 +210,7 @@ class AnnouncementController extends Controller
                 $announcement->start_date    = $request->start_date;
                 $announcement->end_date      = $request->end_date;
                 $announcement->branch_id     = $request->branch_id;
-                $announcement->department_id = $request->department_id;
+                $announcement->department_id = $request->department_id ?? 0;
                 $announcement->description   = $request->description;
                 $announcement->save();
 
@@ -230,7 +224,6 @@ class AnnouncementController extends Controller
                                        'start_date' => 'required',
                                        'end_date' => 'required',
                                        'branch_id' => 'required',
-                                       'department_id' => 'required',
                                    ]
                 );
                 if($validator->fails())
@@ -244,7 +237,7 @@ class AnnouncementController extends Controller
                 $announcement->start_date    = $request->start_date;
                 $announcement->end_date      = $request->end_date;
                 $announcement->branch_id     = $request->branch_id;
-                $announcement->department_id = $request->department_id;
+                $announcement->department_id = $request->department_id ?? 0;
                 $announcement->description   = $request->description;
                 $announcement->save();
 
@@ -305,14 +298,14 @@ class AnnouncementController extends Controller
 
     public function getemployee(Request $request)
     {
-        // dd(department_id);
-        if(!$request->department_id )
+        // dd($request->all());
+        if(!$request->branch_id )
         {
             $employees = Employee::all()->pluck('name', 'id')->toArray();
         }
         else
         {
-            $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->where('department_id', $request->department_id)->get()->pluck('name', 'id')->toArray();
+            $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->where('branch_id', $request->branch_id)->get()->pluck('name', 'id')->toArray();
         }
 
         return response()->json($employees);

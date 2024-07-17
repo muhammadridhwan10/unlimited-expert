@@ -83,7 +83,7 @@
 @endsection
 
 @push('script-page')
-    <script>
+    {{-- <script>
 
         //Branch Wise Deapartment Get
         $(document).ready(function () {
@@ -141,5 +141,5 @@
                 }
             });
         }
-    </script>
+    </script> --}}
 @endpush

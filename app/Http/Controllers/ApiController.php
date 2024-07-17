@@ -24,6 +24,16 @@ use App\Models\Leave;
 use App\Models\Reimbursment;
 use App\Models\UserOvertime;
 use App\Models\ReimbursmentType;
+use App\Models\Announcement;
+use App\Models\AnnouncementEmployee;
+use App\Models\DocumentRequest;
+use App\Mail\LeaveNotification;
+use App\Mail\MedicalAllowanceNotification;
+use App\Mail\ReimbursmentClientNotification;
+use App\Mail\ReimbursmentPersonalNotification;
+use App\Mail\OvertimeNotification;
+use App\Mail\DocumentRequestNotification;
+use Illuminate\Support\Facades\Mail;
 use DateTime;
 use DatePeriod;
 use DateInterval;
@@ -584,6 +594,19 @@ class ApiController extends Controller
         return response()->json($clients, 200);
     }
 	
+	public function getAnnouncement(Request $request)
+	{
+		$current_employee = $request->employee_id;
+
+		$announcement_ids = AnnouncementEmployee::where('employee_id', $current_employee)->pluck('announcement_id');
+
+		$announcements = Announcement::whereIn('id', $announcement_ids)->orderBy('id', 'desc')->get();
+
+		return response()->json($announcements, 200);
+	}
+
+
+	
 	public function createLeave(Request $request)
     {
         // Validasi input dari request
@@ -614,6 +637,11 @@ class ApiController extends Controller
 
         try {
             $leave->save();
+
+            $user = User::where('id', $leave->approval)->first();
+            $email = $user->email;
+            Mail::to($email)->send(new LeaveNotification($leave));
+
             return response()->json(['message' => 'Leave request created successfully', 'data' => $leave], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to create leave request: ' . $e->getMessage()], 500);
@@ -660,6 +688,10 @@ class ApiController extends Controller
 
         $medicalAllowance = Reimbursment::create($input);
 
+        $user = User::where('id', $medicalAllowance->approval)->first();
+        $email = $user->email;
+        Mail::to($email)->send(new MedicalAllowanceNotification($medicalAllowance));
+
         return response()->json(['message' => 'Medical Allowance Request successfully created', 'data' => $medicalAllowance], 200);
     }
 	
@@ -703,6 +735,19 @@ class ApiController extends Controller
 
         $reimbursment = Reimbursment::create($input);
 
+        if($reimbursment->reimbursment_type == "Reimbursment Client")
+        {
+            $user = User::where('id', $reimbursment->approval)->first();
+            $email = $user->email;
+            Mail::to($email)->send(new ReimbursmentClientNotification($reimbursment));
+        }
+        elseif($reimbursment->reimbursment_type == "Reimbursment Personal")
+        {
+            $user = User::where('id', $reimbursment->approval)->first();
+            $email = $user->email;
+            Mail::to($email)->send(new ReimbursmentPersonalNotification($reimbursment));
+        }
+
         return response()->json(['message' => 'Medical Allowance Request successfully created', 'data' => $reimbursment], 200);
     }
 	
@@ -736,6 +781,11 @@ class ApiController extends Controller
 
         try {
             $overtime->save();
+
+            $user = Employee::where('id', $overtime->approval)->first();
+            $email = $user->email;
+            Mail::to($email)->send(new OvertimeNotification($overtime));
+            
             return response()->json(['message' => 'Overtime created successfully', 'data' => $overtime], 200);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to create overtime request: ' . $e->getMessage()], 500);
@@ -812,5 +862,90 @@ class ApiController extends Controller
         return response()->json(['message' => 'Absence Request successfully created', 'data' => $absence], 200);
     }
     
+    public function createDocumentRequest(Request $request)
+    {
+        $validator = \Validator::make(
+            $request->all(), [
+                               'document_type' => 'required',
+                           ]
+        );
+
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 400);
+        }
+
+        $employee_id           = $request->input('employee_id');
+
+        $document              = new DocumentRequest();
+        $document->employee_id   = $employee_id;
+        $document->approval      = $request->approval;
+        $document->document_type = $request->document_type;
+        if ($request->document_type == 'Invoice') {
+            $document->client_name = $request->client_name_invoice;
+            $document->email_attention = $request->email_attention_invoice;
+            $document->name_attention = $request->name_attention_invoice;
+            $document->position_attention = $request->position_attention_invoice;
+            $document->address = $request->address_invoice;
+            $document->no_pic = $request->no_pic_invoice;
+            $document->sender_or_receiver = $request->sender_or_receiver;
+        } elseif ($request->document_type == 'Proposal' || $request->document_type == 'EL') {
+            $document->client_name = $request->client_name_proposal;
+            $document->email_attention = $request->email_attention_proposal;
+            $document->name_attention = $request->name_attention_proposal;
+            $document->position_attention = $request->position_attention_proposal;
+            $document->address = $request->address_proposal;
+            $document->service_type = $request->service_type_proposal;
+            $document->period = $request->period_proposal;
+            $document->termin1 = $request->termin1_proposal;
+            $document->termin2 = $request->termin2_proposal;
+            $document->termin3 = $request->termin3_proposal;
+            $document->fee = $request->fee_proposal;
+            $document->pph23 = $request->pph23_proposal;
+        } elseif ($request->document_type == 'Barcode LAI') {
+            $document->client_name = $request->client_name_barcode;
+        }
+        $document->note = $request->note;
+        $document->status = 'Pending';
+        $document->created_by  = \Auth::user()->creatorId();
+        $document->save();
+
+        $firebaseToken = User::where('id', $request->approval)->whereNotNull('device_token')->pluck('device_token');
+        $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
+
+        $data = [
+            "registration_ids" => $firebaseToken,
+            "notification" => [
+                "title" => 'AUP-APPS',
+                "body" => \Auth::user()->name . '  Requests Document ' . $request->document_type,  
+                "icon" => 'https://i.postimg.cc/8z1vzXPV/logo-tgs-fix.png',
+                "content_available" => true,
+                "priority" => "high",
+            ]
+        ];
+        $dataString = json_encode($data);
+    
+        $headers = [
+            'Authorization: key=' . $SERVER_API_KEY,
+            'Content-Type: application/json',
+        ];
+    
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
+
+        $response = curl_exec($ch);
+
+        $users = User::where('email', '=', 'info@au-partners.com')->orWhere('email', '=', 'luqman@au-partners.com')->orWhere('email', '=', 'melya.lubis@au-partners.com')->get();
+            
+        foreach ($users as $user) {
+            Mail::to($user->email)->send(new DocumentRequestNotification($document));
+        }
+
+        return response()->json(['message' => 'Document Request successfully created', 'data' => $document], 200);
+    }
 
 }

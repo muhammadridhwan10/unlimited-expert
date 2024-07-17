@@ -39,10 +39,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 	Route::get('getproject', 'ApiController@getProject');
 	Route::get('getclient', 'ApiController@getClient');
 	Route::get('getbranch', 'ApiController@getBranch');
+	Route::post('getannouncement', 'ApiController@getAnnouncement');
 	Route::post('reimbursment-types', 'ApiController@getReimbursmentTypes');
 	Route::post('create-medical-allowance', 'ApiController@createMedical');
 	Route::post('create-reimbursment', 'ApiController@createReimbursment');
 	Route::post('create-absence', 'ApiController@createAbsence');
+	Route::post('create-document-request', 'ApiController@createDocumentRequest');
 
 
 	

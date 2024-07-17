@@ -374,7 +374,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                         </ul>
                                     </li>
                                     @endif
-
+                                    @if(Gate::check('manage announcement'))
+                                    <li class="dash-item {{ (request()->is('announcement*') ? 'active' : '')}}">
+                                        <a class="dash-link" href="{{route('announcement.index')}}">{{__('Announcement')}}</a>
+                                    </li>
+                                    @endif
                                     {{-- @if( Gate::check('manage award') || Gate::check('manage transfer') || Gate::check('manage resignation') || Gate::check('manage travel') || Gate::check('manage promotion') || Gate::check('manage complaint') || Gate::check('manage warning') || Gate::check('manage termination') || Gate::check('manage announcement') || Gate::check('manage holiday') )
                                     <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'holiday-calender' || Request::segment(1) == 'holiday' || Request::segment(1) == 'policies' || Request::segment(1) == 'award' || Request::segment(1) == 'transfer' || Request::segment(1) == 'resignation' || Request::segment(1) == 'travel' || Request::segment(1) == 'promotion' || Request::segment(1) == 'complaint' || Request::segment(1) == 'warning' || Request::segment(1) == 'termination' || Request::segment(1) == 'announcement' || Request::segment(1) == 'competencies') ? 'active dash-trigger' : ''}}">
                                         <a class="dash-link" href="#">{{__('HR Admin')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>

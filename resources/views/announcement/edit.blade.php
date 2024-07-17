@@ -13,12 +13,12 @@
                 {{Form::select('branch_id',$branch,null,array('class'=>'form-control select'))}}
             </div>
         </div>
-        <div class="col-md-6">
+        {{-- <div class="col-md-6">
             <div class="form-group">
                 {{Form::label('department_id',__('Department'),['class'=>'form-label'])}}
                 {{Form::select('department_id',$departments,null,array('class'=>'form-control select'))}}
             </div>
-        </div>
+        </div> --}}
         <div class="col-md-6">
             <div class="form-group">
                 {{Form::label('start_date',__('Announcement start Date'),['class'=>'form-label'])}}

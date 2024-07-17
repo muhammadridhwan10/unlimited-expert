@@ -20,7 +20,7 @@
             </div>
         </div>
 
-        <div class="col-md-6">
+        {{-- <div class="col-md-6">
             <div class="form-group">
                 {{Form::label('department_id',__('Department'),['class'=>'form-label'])}}
                 <select class="form-control select" name="department_id[]" id="department_id" placeholder="Select Department" >
@@ -28,7 +28,7 @@
 
                 </select>
             </div>
-        </div>
+        </div> --}}
         <div class="col-md-6">
             <div class="form-group">
                 {{Form::label('employee_id',__('Employee'),['class'=>'form-label'])}}
@@ -70,7 +70,7 @@
 <script>
 
     //Branch Wise Deapartment Get
-    $(document).ready(function () {
+    {{-- $(document).ready(function () {
         var b_id = $('#branch_id').val();
         getDepartment(b_id);
     });
@@ -98,20 +98,25 @@
                 });
             }
         });
-    }
+    } --}}
 
-    $(document).on('change', '#department_id', function () {
+    {{-- $(document).on('change', '#department_id', function () {
         var department_id = $(this).val();
         getEmployee(department_id);
+    }); --}}
+
+    $(document).on('change', 'select[name=branch_id]', function () {
+        var branch_id = $(this).val();
+        getEmployee(branch_id);
     });
 
-    function getEmployee(did) {
+    function getEmployee(bid) {
 
         $.ajax({
             url: '{{route('announcement.getemployee')}}',
             type: 'POST',
             data: {
-                "department_id": did, "_token": "{{ csrf_token() }}",
+                "branch_id": bid, "_token": "{{ csrf_token() }}",
             },
             success: function (data) {
 
