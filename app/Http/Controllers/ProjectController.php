@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\AuditPlan;
 use App\Models\ProjectOfferings;
 use App\Models\Project;
+use App\Models\El;
 use App\Models\Utility;
 use App\Models\Bug;
 use App\Models\BugStatus;
@@ -559,8 +560,9 @@ class ProjectController extends Controller
 
                 $auditplan = AuditPlan::where('project_id', $project->id)->get();
                 $project_offerings = ProjectOfferings::where('project_id', $project->id)->first();
+                $el = El::where('project_id', $project->id)->get();
 
-                return view('projects.view',compact('project','project_offerings','project_data','auditplan'));
+                return view('projects.view',compact('project','project_offerings','project_data','auditplan','el'));
             }
             else
             {

@@ -497,11 +497,21 @@ class ApiController extends Controller
 	public function getApprovalsFinance(Request $request)
     {
         $user = \Auth::user();
+		$employee = Employee::where('user_id', $user->id)->first();
         $approvals = [];
 
-        $approvals = User::where(function ($query) {
-            $query->where('type', 'senior accounting');
-        })->get()->pluck('name', 'id');
+		if($employee->branch_id == 2 || $employee->branch_id == 3)
+		{
+			$approvals = User::where(function ($query) {
+				$query->where('type', 'company');
+			})->get()->pluck('name', 'id');
+		}
+		else
+		{
+			$approvals = User::where(function ($query) {
+				$query->where('type', 'senior accounting');
+			})->get()->pluck('name', 'id');
+		}
 
         return response()->json($approvals, 200);
     }

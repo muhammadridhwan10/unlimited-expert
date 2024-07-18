@@ -4464,3 +4464,21 @@ Route::post('document-request/changeaction', 'DocumentRequestController@changeac
         'XSS',
     ]
 );
+Route::resource('el', 'ElController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get(
+    'create-el/{id}/{cid}', [
+    'as' => 'create.el.project',
+    'uses' => 'ElController@create',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::post('el/file', ['as' => 'el.image.view','uses' => 'ElController@getFileRequest']);

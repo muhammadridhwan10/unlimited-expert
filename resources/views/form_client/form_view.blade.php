@@ -114,19 +114,19 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                {{ Form::label('name', __('Client Name'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::label('name', __('Company Name'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
                                                 {{ Form::text('name', null, array('class' => 'form-control', 'placeholder' => 'Enter Client Name')) }}
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                {{ Form::label('email', __('Client Email'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::label('email', __('Company Email'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
                                                 {{ Form::text('email', null, array('class' => 'form-control', 'placeholder' => 'Enter Client Email')) }}
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                {{ Form::label('address', __('Address'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::label('address', __('Company Address'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
                                                 {{ Form::text('address', null, array('class' => 'form-control', 'placeholder' => 'Enter Address')) }}
                                             </div>
                                         </div>
@@ -170,7 +170,7 @@
                                                 {{ Form::number('telp_pic', null, array('class' => 'form-control', 'placeholder' => 'Enter Phone Number / WA number PIC')) }}
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
+                                        {{-- <div class="col-md-6">
                                             <div class="form-group">
                                                 {{ Form::label('name_invoice', __('Invoice Recipient Name'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
                                                 {{ Form::text('name_invoice', null, array('class' => 'form-control', 'placeholder' => 'Enter Invoice Recipient Name')) }}
@@ -187,7 +187,7 @@
                                                 {{ Form::label('telp', __('Phone Number / WA number on Invoice'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
                                                 {{ Form::number('telp', null, array('class' => 'form-control', 'placeholder' => 'Enter Phone Number / WA number on Invoice')) }}
                                             </div>
-                                        </div>
+                                        </div> --}}
                                     </div>
                                 </div>
                                 <div class="step">

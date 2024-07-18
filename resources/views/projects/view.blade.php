@@ -20,6 +20,21 @@
 
 
     </script>
+    <script>
+
+        $(document).on('click', '.view-images', function () {
+
+                var p_url = "{{route('el.image.view')}}";
+                var data = {
+                    'id': $(this).attr('data-id')
+                };
+                    postAjax(p_url, data, function (res) {
+                        $('.image_sider_div').html(res);
+                        $('#exampleModalCenter').modal('show');
+                    });
+        });
+
+    </script>
 @endpush
 @push('script-page')
     <script>
@@ -539,7 +554,7 @@
             </div>
         </div> --}}
             @if(Auth::user()->type == "admin" || Auth::user()->type == "company")
-            <div class="col-md-6">
+                <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
                             <h5>{{ __('Project Offerings')}}</h5>
@@ -593,6 +608,57 @@
                                                 </strong>
                                             </td>
                                         </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-lg ss_modale " role="document">
+                                <div class="modal-content image_sider_div">
+
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h5>{{ __('Contract Data')}}</h5>
+                                @can('edit project')
+                                    <div class="float-end">
+                                        <a href="#" data-size="lg" data-url="{{ route('create.el.project', [$project->id, $project->client_id]) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="" class="btn btn-sm btn-primary" data-bs-original-title="{{__('Add Contract')}}">
+                                            <i class="ti ti-plus"></i>
+                                        </a>
+                                    </div>
+                                @endcan
+                            </div>
+                        </div>
+                        <div class="card-body" style="min-height: 280px;">
+                            <div class="row">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>{{ __('El Number') }}</th>
+                                            <th>{{ __('File Contract') }}</th>
+                                            <th>{{ __('Action') }}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody> 
+                                        @foreach ($el as $els)
+                                            <tr class="font-style">
+                                                <td>{{ $els->el_number}}</td>
+                                                <td>
+                                                    <img alt="Image placeholder" src="{{ asset('assets/images/gallery.png')}}" class="avatar view-images rounded-circle avatar-sm" data-bs-toggle="tooltip" title="{{__('View File')}}" data-original-title="{{__('View File')}}" style="height: 25px;width:24px;margin-right:10px;cursor: pointer;" data-id="{{$els->id}}" id="track-images-{{$els->id}}">
+                                                </td>
+                                                <td>
+                                                    <div class="action-btn bg-primary ms-2">
+                                                        <a href="#" data-url="{{ URL::to('el/'.$els->id.'/edit') }}" data-size="lg" data-ajax-popup="true" data-title="{{__('Edit Contract')}}" class="mx-3 btn btn-sm  align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-original-title="{{__('Edit')}}"><i class="ti ti-pencil text-white"></i></a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
