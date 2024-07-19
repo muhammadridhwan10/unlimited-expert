@@ -103,13 +103,13 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('name', __('Client Name'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                                                    {{ Form::label('name', __('Company Name'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                                                     {{ Form::text('name', $projectOrder->name, array('class'=>'form-control','readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
                                              <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('email', __('Client Email'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                                                    {{ Form::label('email', __('Company Email'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                                                     {{Form::text('email',$projectOrder->email,array('class'=>'form-control', 'readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
@@ -183,13 +183,13 @@
                                         <div class="row">
                                             <div class="col-md-6">  
                                                 <div class="form-group">
-                                                    {{ Form::label('client_business_sector_id', __('Client Business Sector'),['class'=>'form-label']) }}
+                                                    {{ Form::label('client_business_sector_id', __('Company Business Sector'),['class'=>'form-label']) }}
                                                     {{ Form::text('client_business_sector_id', $projectOrder->sector->name, array('class' => 'form-control', 'readonly'=>'readonly')) }}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">  
                                                 <div class="form-group">
-                                                    {{ Form::label('client_ownership_id', __('Client Ownership'), ['class'=>'form-label']) }}
+                                                    {{ Form::label('client_ownership_id', __('Company Ownership'), ['class'=>'form-label']) }}
                                                     {{ Form::text('client_ownership_id', isset($projectOrder->ownership) ? $projectOrder->ownership->name : '-', ['class' => 'form-control', 'readonly' => 'readonly']) }}
                                                 </div>
                                             </div>

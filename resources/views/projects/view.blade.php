@@ -611,16 +611,10 @@
                                     </tbody>
                                 </table>
                             </div>
-                            <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                                <div class="modal-dialog modal-dialog-centered modal-lg ss_modale " role="document">
-                                <div class="modal-content image_sider_div">
-
-                                </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
+            @endif
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
@@ -662,10 +656,16 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered modal-lg ss_modale " role="document">
+                                <div class="modal-content image_sider_div">
+
+                                </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            @endif
             {{-- <div class="col-lg-6 col-md-6">
                 <div class="card">
                     <div class="card-header">

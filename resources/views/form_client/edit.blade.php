@@ -199,7 +199,7 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('client_business_sector_id', __('Client Business Sector'),['class'=>'form-label']) }}
+                                                    {{ Form::label('client_business_sector_id', __('Company Business Sector'),['class'=>'form-label']) }}
                                                     {{ Form::select('client_business_sector_id', $businesssector,null, array('class' => 'form-control select')) }}
                                                 </div>
                                             </div>
@@ -216,7 +216,7 @@
                                             </div>
                                             <div class="col-md-6" id="client_ownership_id" style="display: none;">  
                                                 <div class="form-group">
-                                                    {{ Form::label('client_ownership_id', __('Client Ownership'),['class'=>'form-label']) }}
+                                                    {{ Form::label('client_ownership_id', __('Company Ownership'),['class'=>'form-label']) }}
                                                     {{ Form::select('client_ownership_id', $ownership,null, array('class' => 'form-control select')) }}
                                                 </div>
                                             </div>
