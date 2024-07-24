@@ -648,7 +648,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                     @endif
                                     @if( Gate::check('manage bill')  ||  Gate::check('manage payment') ||  Gate::check('manage debit note'))
                                          <li class="dash-item {{ (Request::route()->getName() == 'revenue.index' || Request::route()->getName() == 'revenue.create' || Request::route()->getName() == 'revenue.edit') ? ' active' : '' }}">
-                                            <a class="dash-link" href="{{route('revenue.index')}}">{{__('Revenue')}}</a>
+                                            <a class="dash-link" href="{{route('revenue.index')}}">{{__('Balance Partners')}}</a>
                                         </li>
                                         <li class="dash-item {{ (Request::route()->getName() == 'payment.index' || Request::route()->getName() == 'payment.create' || Request::route()->getName() == 'payment.edit') ? ' active' : '' }}">
                                             <a class="dash-link" href="{{route('payment.index')}}">{{__('Bill')}}</a>

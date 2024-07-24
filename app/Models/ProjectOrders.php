@@ -57,7 +57,9 @@ class ProjectOrders extends Model
         'is_approve',
         'status_client',
         'created_by',
-        'where_did_you_find_out_about_us'
+        'where_did_you_find_out_about_us',
+        'category_service',
+        'note'
     ];
 
     public static $label=[
@@ -67,6 +69,17 @@ class ProjectOrders extends Model
         'Accounting&Tax' => 'Accounting&Tax',
         'KPPK' => 'KPPK',
         'Agreed Upon Procedures (AUP)' => 'Agreed Upon Procedures (AUP)',
+        'Asset Impairment Testing' => 'Asset Impairment Testing',
+        'Bid Advisory' => 'Bid Advisory',
+        'Business Valuation' => 'Business Valuation',
+        'Financial Due Diligence' => 'Financial Due Diligence',
+        'Financial Instrument Valuation' => 'Financial Instrument Valuation',
+        'Financial Modelling & Audit' => 'Financial Modelling & Audit',
+        'Intangible Asset Valuation' => 'Intangible Asset Valuation',
+        'Mergers & Acquisitions' => 'Mergers & Acquisitions',
+        'Portfolio Company Investment Valuation' => 'Portfolio Company Investment Valuation',
+        'Purchase Price Allocation' => 'Purchase Price Allocation',
+        'Share-based Payment Valuation' => 'Share-based Payment Valuation',
         'Other' => 'Other',
     ];
 

@@ -187,15 +187,15 @@
                               <small>
                                   <strong>{{__('Status')}} :</strong><br>
                                   @if($invoice->status == 0)
-                                      <span class="badge bg-primary">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
-                                  @elseif($invoice->status == 1)
                                       <span class="badge bg-warning">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                  @elseif($invoice->status == 1)
+                                      <span class="badge bg-secondary">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                   @elseif($invoice->status == 2)
-                                      <span class="badge bg-danger">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
-                                  @elseif($invoice->status == 3)
-                                      <span class="badge bg-info">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
-                                  @elseif($invoice->status == 4)
                                       <span class="badge bg-primary">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                  @elseif($invoice->status == 3)
+                                      <span class="badge bg-success">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                  @elseif($invoice->status == 4)
+                                      <span class="badge bg-danger">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                   @endif
                               </small>
                           </div>

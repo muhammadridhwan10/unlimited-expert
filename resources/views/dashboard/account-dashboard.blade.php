@@ -367,15 +367,15 @@
                                                     <td>{{\Auth::user()->priceFormat($invoice->getTotal())}}</td>
                                                     <td>
                                                         @if($invoice->status == 0)
-                                                            <span class="p-2 px-3 rounded badge bg-secondary">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
-                                                        @elseif($invoice->status == 1)
                                                             <span class="p-2 px-3 rounded badge bg-warning">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                        @elseif($invoice->status == 1)
+                                                            <span class="p-2 px-3 rounded badge bg-secondary">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                                         @elseif($invoice->status == 2)
-                                                            <span class="p-2 px-3 rounded badge bg-danger">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                            <span class="p-2 px-3 rounded badge bg-primary">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                                         @elseif($invoice->status == 3)
-                                                            <span class="p-2 px-3 rounded badge bg-info">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
-                                                        @elseif($invoice->status == 4)
                                                             <span class="p-2 px-3 rounded badge bg-success">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                        @elseif($invoice->status == 4)
+                                                            <span class="p-2 px-3 rounded badge bg-danger">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                                         @endif
                                                     </td>
                                                 </tr>

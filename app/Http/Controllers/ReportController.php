@@ -85,48 +85,48 @@ class ReportController extends Controller
             $data['currentYear'] = $year;
 
             // ------------------------------REVENUE INCOME-----------------------------------
-            $incomes = Revenue::selectRaw('sum(revenues.amount) as amount,MONTH(date) as month,YEAR(date) as year,category_id')->leftjoin('product_service_categories', 'revenues.category_id', '=', 'product_service_categories.id')->where('product_service_categories.type', '=', 1);
-            $incomes->where('revenues.created_by', '=', \Auth::user()->creatorId());
-            $incomes->whereRAW('YEAR(date) =?', [$year]);
+            // $incomes = Revenue::selectRaw('sum(revenues.amount) as amount,MONTH(date) as month,YEAR(date) as year');
+            // $incomes->where('revenues.created_by', '=', \Auth::user()->creatorId());
+            // $incomes->whereRAW('YEAR(date) =?', [$year]);
 
-            if(!empty($request->category))
-            {
-                $incomes->where('category_id', '=', $request->category);
-                $cat                = ProductServiceCategory::find($request->category);
-                $filter['category'] = !empty($cat) ? $cat->name : '';
-            }
+            // if(!empty($request->category))
+            // {
+            //     $incomes->where('category_id', '=', $request->category);
+            //     $cat                = ProductServiceCategory::find($request->category);
+            //     $filter['category'] = !empty($cat) ? $cat->name : '';
+            // }
 
-            if(!empty($request->customer))
-            {
-                $incomes->where('customer_id', '=', $request->customer);
-                $cust               = Customer::find($request->customer);
-                $filter['customer'] = !empty($cust) ? $cust->name : '';
-            }
-            $incomes->groupBy('month', 'year', 'category_id');
-            $incomes = $incomes->get();
+            // if(!empty($request->customer))
+            // {
+            //     $incomes->where('customer_id', '=', $request->customer);
+            //     $cust               = Customer::find($request->customer);
+            //     $filter['customer'] = !empty($cust) ? $cust->name : '';
+            // }
+            // $incomes->groupBy('month', 'year');
+            // $incomes = $incomes->get();
 
-            $tmpArray = [];
-            foreach($incomes as $income)
-            {
-                $tmpArray[$income->category_id][$income->month] = $income->amount;
-            }
-            $array = [];
-            foreach($tmpArray as $cat_id => $record)
-            {
-                $tmp             = [];
-                $tmp['category'] = !empty(ProductServiceCategory::where('id', '=', $cat_id)->first()) ? ProductServiceCategory::where('id', '=', $cat_id)->first()->name : '';
-                $tmp['data']     = [];
-                for($i = 1; $i <= 12; $i++)
-                {
-                    $tmp['data'][$i] = array_key_exists($i, $record) ? $record[$i] : 0;
-                }
-                $array[] = $tmp;
-            }
+            // $tmpArray = [];
+            // foreach($incomes as $income)
+            // {
+            //     $tmpArray[$income->category_id][$income->month] = $income->amount;
+            // }
+            // $array = [];
+            // foreach($tmpArray as $cat_id => $record)
+            // {
+            //     $tmp             = [];
+            //     $tmp['category'] = !empty(ProductServiceCategory::where('id', '=', $cat_id)->first()) ? ProductServiceCategory::where('id', '=', $cat_id)->first()->name : '';
+            //     $tmp['data']     = [];
+            //     for($i = 1; $i <= 12; $i++)
+            //     {
+            //         $tmp['data'][$i] = array_key_exists($i, $record) ? $record[$i] : 0;
+            //     }
+            //     $array[] = $tmp;
+            // }
 
             //---------------------------INVOICE INCOME-----------------------------------------------
 
             $invoices = Invoice::selectRaw('MONTH(send_date) as month, YEAR(send_date) as year, category_id, invoice_id, id, currency')
-            ->where('status', '=', 2);
+            ->where('status', '=', 3);
 
             $invoices->whereRAW('YEAR(send_date) =?', [$year]);
 
@@ -213,7 +213,7 @@ class ReportController extends Controller
             $data['chartIncomeArrUsd'] = $chartIncomeArrUsd;
             $data['totalInvoiceRp'] = $totalInvoiceRp;
             $data['totalInvoiceDollar'] = $totalInvoiceDollar;
-            $data['incomeArr']      = $array;
+            // $data['incomeArr']      = $array;
             $data['invoiceArray']   = $invoiceArray;
             $data['account']        = $account;
             $data['client']         = $client;

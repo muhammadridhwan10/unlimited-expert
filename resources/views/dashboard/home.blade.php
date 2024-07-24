@@ -794,7 +794,7 @@
                                         <i class="ti ti-circle-plus"></i>
                                     </div>
                                     <div class="ms-3">
-                                        <small class="text-muted h6">{{__('Total Income (Debit)')}}</small>
+                                        <small class="text-muted h6">{{__('Total Income (Cash In)')}}</small>
                                         <h6 class="m-0">{{\Auth::user()->priceFormat(\Auth::user()->IncomePartners())}}</h6>
                                         <small>{{__('All Invoice Paid')}}</small>
                                     </div>
@@ -814,7 +814,7 @@
                                         <i class="ti ti-circle-minus"></i>
                                     </div>
                                     <div class="ms-3">
-                                        <small class="text-muted h6">{{__('Total Expense (Credit)')}}</small>
+                                        <small class="text-muted h6">{{__('Total Expense (Cash Out)')}}</small>
                                         <h6 class="m-0">{{\Auth::user()->priceFormat(\Auth::user()->ExpensePartners())}}</h6>
                                         <small>{{__('Bill + Tax Invoice (%6)')}}</small>
                                     </div>

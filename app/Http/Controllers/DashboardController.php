@@ -1872,9 +1872,9 @@ class DashboardController extends Controller
                 }
 
 
-                $invoicePaidCount = Invoice::where('status', '=', 2)->count();
-                $invoiceDraftCount = Invoice::where('status', '=', 0)->count();
-                $invoiceUnpaidCount = Invoice::where('status', '=', 1)->count();
+                $invoicePaidCount = Invoice::where('status', '=', 3)->count();
+                $invoiceDraftCount = Invoice::where('status', '=', 1)->count();
+                $invoiceUnpaidCount = Invoice::where('status', '=', 2)->count();
                 $totalInvoiceCount = Invoice::count();
 
                 $data['chartIncomeArrRp'] = $chartIncomeArrRp;

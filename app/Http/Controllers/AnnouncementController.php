@@ -9,6 +9,7 @@ use App\Models\Department;
 use App\Models\Employee;
 use App\Models\Utility;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 class AnnouncementController extends Controller
@@ -78,22 +79,21 @@ class AnnouncementController extends Controller
 
     public function store(Request $request)
     {
-        if(\Auth::user()->can('create announcement'))
-        {
+        if (\Auth::user()->can('create announcement')) {
             $validator = \Validator::make(
                 $request->all(), [
-                                'title' => 'required',
-                                'start_date' => 'required',
-                                'end_date' => 'required',
-                                'branch_id' => 'required',
-                                'employee_id' => 'required',
-                            ]
+                    'title' => 'required',
+                    'start_date' => 'required',
+                    'branch_id' => 'required',
+                    'employee_id' => 'required',
+                ]
             );
-            if($validator->fails())
-            {
+            if ($validator->fails()) {
                 $messages = $validator->getMessageBag();
                 return redirect()->back()->with('error', $messages->first());
             }
+
+            $status = (Carbon::parse($request->start_date)->isFuture()) ? 'pending' : 'sending';
 
             $announcement                = new Announcement();
             $announcement->title         = $request->title;
@@ -104,6 +104,7 @@ class AnnouncementController extends Controller
             $announcement->employee_id   = json_encode($request->employee_id);
             $announcement->description   = $request->description;
             $announcement->created_by    = \Auth::user()->creatorId();
+            $announcement->status        = $status;
             $announcement->save();
 
             $branch_id = is_array($request->branch_id) ? $request->branch_id : [$request->branch_id];
@@ -115,8 +116,7 @@ class AnnouncementController extends Controller
                 $branchEmployee = $employee_id;
             }
 
-            foreach($branchEmployee as $employee)
-            {
+            foreach ($branchEmployee as $employee) {
                 $announcementEmployee                  = new AnnouncementEmployee();
                 $announcementEmployee->announcement_id = $announcement->id;
                 $announcementEmployee->employee_id     = $employee;
@@ -124,29 +124,12 @@ class AnnouncementController extends Controller
                 $announcementEmployee->save();
             }
 
-            //Slack Notification
-            // $setting  = Utility::settings(\Auth::user()->creatorId());
-            // $branch = Branch::find($request->branch_id);
-            // if(isset($setting['announcement_notification']) && $setting['announcement_notification'] ==1){
-            //     $msg = $request->title .' '.__("announcement created for branch").' '. $branch->name.' '. __("from").' '. $request->start_date. ' '.__("to").' '.$request->end_date.'.';
-            //     Utility::send_slack_msg($msg);
-            // }
-
-            // //Telegram Notification
-            // $setting  = Utility::settings(\Auth::user()->creatorId());
-            // $branch = Branch::find($request->branch_id);
-            // if(isset($setting['telegram_announcement_notification']) && $setting['telegram_announcement_notification'] ==1){
-            //     $msg = $request->title .' '.__("announcement created for branch").' '. $branch->name.' '. __("from").' '. $request->start_date. ' '.__("to").' '.$request->end_date.'.';
-            //     Utility::send_telegram_msg($msg);
-            // }
-
             return redirect()->route('announcement.index')->with('success', __('Announcement successfully created.'));
-        }
-        else
-        {
+        } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
     }
+
 
 
     public function show(Announcement $announcement)
@@ -186,25 +169,22 @@ class AnnouncementController extends Controller
 
     public function update(Request $request, Announcement $announcement)
     {
-        if(\Auth::user()->can('edit announcement'))
-        {
-            if($announcement->created_by == \Auth::user()->creatorId())
-            {
+        if (\Auth::user()->can('edit announcement')) {
+            if ($announcement->created_by == \Auth::user()->creatorId() || \Auth::user()->type == 'admin' || \Auth::user()->type == 'company') {
 
                 $validator = \Validator::make(
                     $request->all(), [
-                                       'title' => 'required',
-                                       'start_date' => 'required',
-                                       'end_date' => 'required',
-                                       'branch_id' => 'required',
-                                   ]
+                        'title' => 'required',
+                        'start_date' => 'required',
+                        'branch_id' => 'required',
+                    ]
                 );
-                if($validator->fails())
-                {
+                if ($validator->fails()) {
                     $messages = $validator->getMessageBag();
-
                     return redirect()->back()->with('error', $messages->first());
                 }
+                
+                $status = (Carbon::parse($request->start_date)->isFuture()) ? 'pending' : 'sending';
 
                 $announcement->title         = $request->title;
                 $announcement->start_date    = $request->start_date;
@@ -212,47 +192,18 @@ class AnnouncementController extends Controller
                 $announcement->branch_id     = $request->branch_id;
                 $announcement->department_id = $request->department_id ?? 0;
                 $announcement->description   = $request->description;
+                $announcement->status        = $status;
                 $announcement->save();
 
                 return redirect()->route('announcement.index')->with('success', __('Announcement successfully updated.'));
-            }
-            elseif(\Auth::user()->type = 'admin'  || \Auth::user()->type = 'company')
-            {
-                $validator = \Validator::make(
-                    $request->all(), [
-                                       'title' => 'required',
-                                       'start_date' => 'required',
-                                       'end_date' => 'required',
-                                       'branch_id' => 'required',
-                                   ]
-                );
-                if($validator->fails())
-                {
-                    $messages = $validator->getMessageBag();
-
-                    return redirect()->back()->with('error', $messages->first());
-                }
-
-                $announcement->title         = $request->title;
-                $announcement->start_date    = $request->start_date;
-                $announcement->end_date      = $request->end_date;
-                $announcement->branch_id     = $request->branch_id;
-                $announcement->department_id = $request->department_id ?? 0;
-                $announcement->description   = $request->description;
-                $announcement->save();
-
-                return redirect()->route('announcement.index')->with('success', __('Announcement successfully updated.'));
-            }
-            else
-            {
+            } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }
-        }
-        else
-        {
+        } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
     }
+
 
     public function destroy(Announcement $announcement)
     {

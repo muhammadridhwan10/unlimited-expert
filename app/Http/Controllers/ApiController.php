@@ -605,15 +605,19 @@ class ApiController extends Controller
     }
 	
 	public function getAnnouncement(Request $request)
-	{
-		$current_employee = $request->employee_id;
+    {
+        $current_employee = $request->employee_id;
 
-		$announcement_ids = AnnouncementEmployee::where('employee_id', $current_employee)->pluck('announcement_id');
+        $announcement_ids = AnnouncementEmployee::where('employee_id', $current_employee)->pluck('announcement_id');
 
-		$announcements = Announcement::whereIn('id', $announcement_ids)->orderBy('id', 'desc')->get();
+        $announcements = Announcement::whereIn('id', $announcement_ids)
+            ->where('status', 'sending')
+            ->orderBy('id', 'desc')
+            ->get();
 
-		return response()->json($announcements, 200);
-	}
+        return response()->json($announcements, 200);
+    }
+
 
 
 	
@@ -886,34 +890,37 @@ class ApiController extends Controller
 
         $employee_id           = $request->input('employee_id');
 
-        $document              = new DocumentRequest();
-        $document->employee_id   = $employee_id;
-        $document->approval      = $request->approval;
-        $document->document_type = $request->document_type;
-        if ($request->document_type == 'Invoice') {
-            $document->client_name = $request->client_name_invoice;
-            $document->email_attention = $request->email_attention_invoice;
-            $document->name_attention = $request->name_attention_invoice;
-            $document->position_attention = $request->position_attention_invoice;
-            $document->address = $request->address_invoice;
-            $document->no_pic = $request->no_pic_invoice;
-            $document->sender_or_receiver = $request->sender_or_receiver;
-        } elseif ($request->document_type == 'Proposal' || $request->document_type == 'EL') {
-            $document->client_name = $request->client_name_proposal;
-            $document->email_attention = $request->email_attention_proposal;
-            $document->name_attention = $request->name_attention_proposal;
-            $document->position_attention = $request->position_attention_proposal;
-            $document->address = $request->address_proposal;
-            $document->service_type = $request->service_type_proposal;
-            $document->period = $request->period_proposal;
-            $document->termin1 = $request->termin1_proposal;
-            $document->termin2 = $request->termin2_proposal;
-            $document->termin3 = $request->termin3_proposal;
-            $document->fee = $request->fee_proposal;
-            $document->pph23 = $request->pph23_proposal;
-        } elseif ($request->document_type == 'Barcode LAI') {
-            $document->client_name = $request->client_name_barcode;
+        $employee_id = $request->input('employee_id');
+        $document = new DocumentRequest();
+        $document->employee_id = $employee_id;
+        $document->approval = $request->input('approval');
+        $document->document_type = $request->input('document_type');
+
+        if ($document->document_type == 'Invoice') {
+            $document->client_name = $request->input('client_name');
+            $document->email_attention = $request->input('email_attention');
+            $document->name_attention = $request->input('name_attention');
+            $document->position_attention = $request->input('position_attention');
+            $document->address = $request->input('address');
+            $document->no_pic = $request->input('no_pic');
+            $document->sender_or_receiver = $request->input('sender_or_receiver');
+        } elseif ($document->document_type == 'Proposal' || $document->document_type == 'EL') {
+            $document->client_name = $request->input('client_name');
+            $document->email_attention = $request->input('email_attention');
+            $document->name_attention = $request->input('name_attention');
+            $document->position_attention = $request->input('position_attention');
+            $document->address = $request->input('address');
+            $document->service_type = $request->input('service_type');
+            $document->period = $request->input('period');
+            $document->termin1 = $request->input('termin1');
+            $document->termin2 = $request->input('termin2');
+            $document->termin3 = $request->input('termin3');
+            $document->fee = $request->input('fee');
+            $document->pph23 = $request->input('pph23');
+        } elseif ($document->document_type == 'Barcode LAI') {
+            $document->client_name = $request->input('client_name');
         }
+        
         $document->note = $request->note;
         $document->status = 'Pending';
         $document->created_by  = \Auth::user()->creatorId();

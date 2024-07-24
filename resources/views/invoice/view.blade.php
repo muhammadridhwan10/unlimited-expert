@@ -230,7 +230,7 @@
 
     @can('send invoice')
 
-        @if($invoice->status!=4)
+        @if($invoice->status!=5)
             <div class="row">
                 <div class="card ">
                     <div class="card-body">
@@ -251,7 +251,7 @@
                                 </div>
                                 <h6 class="text-warning my-3">{{__('Send Invoice')}}</h6>
                                 <p class="text-muted text-sm mb-3">
-                                    @if($invoice->status!=0)
+                                    @if($invoice->status!=1)
                                         <i class="ti ti-clock mr-2"></i>{{__('Sent on')}} {{\Auth::user()->dateFormat($invoice->send_date)}}
                                     @else
                                         @can('send invoice')
@@ -260,7 +260,7 @@
                                     @endif
                                 </p>
 
-                                @if($invoice->status==0)
+                                @if($invoice->status==1)
                                     @can('send bill')
                                         <a href="#" data-size="lg" data-url="{{ route('invoice.languages',$invoice->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Select Languages')}}" class="btn btn-sm btn-primary">
                                             <i class="ti ti-send mr-2"></i>{{__('Send')}}
@@ -290,7 +290,7 @@
     @endcan
 
     @if(\Auth::user()->type=='company' ||  \Auth::user()->type=='admin')
-        @if($invoice->status!=0)
+        @if($invoice->status!=1)
             <div class="row justify-content-between align-items-center mb-3">
                 <div class="col-md-12 d-flex align-items-center justify-content-between justify-content-md-end">
                     @if(!empty($invoicePayment))
@@ -300,7 +300,7 @@
                             </a>
                         </div>
                     @endif
-                    @if($invoice->status!=4)
+                    @if($invoice->status!=5)
                         <div class="all-button-box mr-2">
                             <a href="#" data-size="lg" data-url="{{ route('invoice.cc',$invoice->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('CC Email')}}" class="btn btn-sm btn-primary me-2">
                                             {{__('Invoice Reminder')}}
@@ -326,7 +326,7 @@
                             </button>
                             <div class="dropdown-menu" aria-labelledby="changeStatusDropdown">
                                 @foreach(\App\Models\Invoice::$statues as $key => $status)
-                                    @if($key != $invoice->status)
+                                    @if($key != $invoice->status && $status != 'All')
                                         <a class="dropdown-item" href="{{ route('invoice.change-status', ['invoice' => $invoice->id, 'status' => $key]) }}">
                                             {{ $status }}
                                         </a>
@@ -433,10 +433,14 @@
                                     <small>
                                         <strong>{{__('Status')}} :</strong><br>
                                         @if($invoice->status == 0)
-                                            <span class="badge bg-primary">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
-                                        @elseif($invoice->status == 1)
                                             <span class="badge bg-warning">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                        @elseif($invoice->status == 1)
+                                            <span class="badge bg-secondary">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                         @elseif($invoice->status == 2)
+                                            <span class="badge bg-primary">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                        @elseif($invoice->status == 3)
+                                            <span class="badge bg-success">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                        @elseif($invoice->status == 4)
                                             <span class="badge bg-danger">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                         @endif
                                     </small>

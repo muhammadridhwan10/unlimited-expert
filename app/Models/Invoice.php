@@ -20,13 +20,21 @@ class Invoice extends Model
         'account_id',
         'client_id',
         'currency',
+        'category_invoice',
         'invoice_template'
     ];
 
     public static $statues = [
+        'All',
         'Draft',
         'Unpaid',
         'Paid',
+        'Cancel',
+    ];
+
+    public static $categoryInvoice = [
+       'Services' => 'Services',
+       'Reimbursment' => 'Reimbursment',
     ];
 
     public static $company=[

@@ -14,5 +14,6 @@ class Announcement extends Model
         'department_id',
         'description',
         'created_by',
+        'status',
     ];
 }

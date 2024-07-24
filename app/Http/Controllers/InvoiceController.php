@@ -60,6 +60,7 @@ class InvoiceController extends Controller
                 $partner->prepend('Select Partner', '');
     
                 $status = Invoice::$statues;
+                $category_invoice = Invoice::$categoryInvoice;
                 $companies = Invoice::$company;
     
                 $query = Invoice::where('user_id', \Auth::user()->id);
@@ -92,6 +93,10 @@ class InvoiceController extends Controller
                 if(!empty($request->status))
                 {
                     $query->where('status', '=', $request->status);
+                }
+                if(!empty($request->category_invoice))
+                {
+                    $query->where('category_invoice', '=', $request->category_invoice);
                 }
 
                 $invoices = $query->get();
@@ -129,6 +134,7 @@ class InvoiceController extends Controller
                 $partner->prepend('Select Partner', '');
     
                 $status = Invoice::$statues;
+                $category_invoice = Invoice::$categoryInvoice;
                 $companies = Invoice::$company;
                 $query = Invoice::query();
 
@@ -158,6 +164,10 @@ class InvoiceController extends Controller
                 {
                     $query->where('status', '=', $request->status);
                 }
+                if(!empty($request->category_invoice))
+                {
+                    $query->where('category_invoice', '=', $request->category_invoice);
+                }
                 $invoices = $query->get();
 
                 $monthlyData = [];
@@ -182,7 +192,7 @@ class InvoiceController extends Controller
                 }         
 
             }
-            return view('invoice.index', compact('invoices', 'client','companies','partner', 'status','monthlyData', 'yearlyData'));
+            return view('invoice.index', compact('invoices', 'client','companies','partner', 'status','monthlyData', 'yearlyData','category_invoice'));
         }
         else
         {
@@ -269,9 +279,10 @@ class InvoiceController extends Controller
             $invoice                 = new Invoice();
             $invoice->invoice_id     = $request->invoice_id;
             $invoice->client_id      = $request->client_id;
-            $invoice->status         = 0;
+            $invoice->status         = 1;
             $invoice->issue_date     = $request->issue_date;
             $invoice->due_date       = $request->due_date;
+            $invoice->category_invoice = $request->category_invoice;
             $invoice->category_id    = $categoryIds;
             $invoice->ref_number     = $request->ref_number;
             $invoice->invoice_template = $request->invoice_template;
@@ -390,81 +401,77 @@ class InvoiceController extends Controller
 
     public function update(Request $request, Invoice $invoice)
     {
-
         if (\Auth::user()->can('edit invoice')) {
-                $validator = \Validator::make(
-                    $request->all(),
-                    [
-                        'client_id' => 'required',
-                        'issue_date' => 'required',
-                        'user_id' => 'required',
-                        'company' => 'required',
-                        'account_id' => 'required',
-                        'due_date' => 'required',
-                        'category_id' => 'required|array',
-                        'items' => 'required',
-                    ]
-                );
-                if ($validator->fails()) {
-                    $messages = $validator->getMessageBag();
+            // Validasi input (komentar jika tidak digunakan)
+            // $validator = \Validator::make($request->all(), [
+            //     'client_id' => 'required',
+            //     'issue_date' => 'required',
+            //     'user_id' => 'required',
+            //     'company' => 'required',
+            //     'account_id' => 'required',
+            //     'due_date' => 'required',
+            //     'category_id' => 'required|array',
+            //     'price' => 'required|array',
+            //     'tax' => 'required|array',
+            //     'item' => 'required|array',
+            // ]);
 
-                    return redirect()->route('invoice.index')->with('error', $messages->first());
-                
+            // if ($validator->fails()) {
+            //     $messages = $validator->getMessageBag();
+            //     return redirect()->route('invoice.index')->with('error', $messages->first());
+            // }
+
+            $invoice->invoice_id = $request->invoice_id;
+            $invoice->client_id = $request->client_id;
+            $invoice->issue_date = $request->issue_date;
+            $invoice->due_date = $request->due_date;
+            $invoice->ref_number = $request->ref_number;
+            $invoice->invoice_template = $request->invoice_template;
+            $invoice->category_invoice = $request->category_invoice;
+            $invoice->currency = $request->currency;
+            $invoice->category_id = implode(',', $request->input('category_id'));
+            $invoice->user_id = $request->user_id;
+            $invoice->company = $request->company;
+            $invoice->account_id = $request->account_id;
+            $invoice->save();
+
+            $productIds = $request->input('id', []);
+            $products = $request->input('item', []);
+            $prices = $request->input('price', []);
+            $taxes = $request->input('tax', []);
+            $descriptions = $request->input('description', []);
+
+            $existingItems = $invoice->items->pluck('id')->toArray();
+
+            foreach ($productIds as $key => $id) {
+                $invoiceItem = InvoiceProduct::find($id);
+                if ($invoiceItem) {
+                    $invoiceItem->product_id = $products[$key];
+                    $invoiceItem->price = $prices[$key];
+                    $invoiceItem->tax = $taxes[$key];
+                    $invoiceItem->description = $descriptions[$key];
+                    $invoiceItem->save();
+                } else {
+                    InvoiceProduct::create([
+                        'invoice_id' => $invoice->id,
+                        'product_id' => $products[$key],
+                        'price' => $prices[$key],
+                        'tax' => $taxes[$key],
+                        'description' => $descriptions[$key]
+                    ]);
                 }
-                $invoice->invoice_id     = $request->invoice_id;
-                $invoice->client_id      = $request->client_id;
-                $invoice->issue_date     = $request->issue_date;
-                $invoice->due_date       = $request->due_date;
-                $invoice->ref_number     = $request->ref_number;
-                $invoice->invoice_template = $request->invoice_template;
-                $invoice->currency = $request->currency;
-//                $invoice->discount_apply = isset($request->discount_apply) ? 1 : 0;
-                $invoice->category_id = implode(',', $request->input('category_id'));
-                $invoice->user_id        = $request->user_id;
-                $invoice->company        = $request->company;
-                $invoice->account_id     = $request->account_id;
-                $invoice->save();
+            }
 
-                // Utility::starting_number( $invoice->invoice_id + 1, 'invoice');
-                // CustomField::saveData($invoice, $request->customField);
-                $products = $request->items;
+            $deletedItems = array_diff($existingItems, $productIds);
+            InvoiceProduct::destroy($deletedItems);
 
-                for ($i = 0; $i < count($products); $i++) {
-                    $invoiceProduct = InvoiceProduct::find($products[$i]['id']);
-
-
-                    if (isset($products[$i]['item'])) {
-                        $invoiceProduct->product_id = $products[$i]['item'];
-                    }
-
-                    $invoiceProduct->tax         = $products[$i]['tax'];
-                    $invoiceProduct->price       = $products[$i]['price'];
-                    $invoiceProduct->description = $products[$i]['description'];
-                    $invoiceProduct->save();
-
-                    // Utility::total_quantity('plus',$products[$i]['quantity'],$invoiceProduct->product_id);
-                    // if($products[$i]['id'] > 0){
-                    //     Utility::total_quantity('minus',$products[$i]['quantity'],$invoiceProduct->product_id);
-                    // }
-
-
-                    //Product Stock Report
-                    // $type='invoice';
-                    // $type_id = $invoice->id;
-                    // StockReport::where('type','=','invoice')->where('type_id' ,'=', $invoice->id)->delete();
-                    // $description=$products[$i]['quantity'].'  '.__(' quantity sold in invoice').' '. \Auth::user()->invoiceNumberFormat($invoice->invoice_id);
-                    // if(empty($products[$i]['id'])){
-                    //     Utility::addProductStock( $products[$i]['item'],$products[$i]['quantity'],$type,$description,$type_id);
-                    // }
-
-
-                }
-
-                return redirect()->route('invoice.index')->with('success', __('Invoice successfully updated.'));
+            return redirect()->route('invoice.index')->with('success', __('Invoice updated successfully.'));
         } else {
-            return redirect()->back()->with('error', __('Permission denied.'));
+            return redirect()->route('invoice.index')->with('error', __('Permission denied.'));
         }
     }
+
+
 
     function invoiceNumber()
     {
@@ -536,7 +543,7 @@ class InvoiceController extends Controller
 
                 }
 
-                if($invoice->client_id != 0 && $invoice->status!=0)
+                if($invoice->client_id != 0 && $invoice->status!=1)
                 {
                     Utility::updateUserBalance('client', $invoice->client_id, $invoice->getDue(), 'debit');
                 }
@@ -645,7 +652,7 @@ class InvoiceController extends Controller
 
             $invoice            = Invoice::where('id', $id)->first();
             $invoice->send_date = date('Y-m-d');
-            $invoice->status    = 1;
+            $invoice->status    = 2;
             $invoice->save();
 
             $customer         = User::where('id', $invoice->client_id)->first();
@@ -806,7 +813,7 @@ class InvoiceController extends Controller
             $invoice = Invoice::where('id', $invoice_id)->first();
             $due     = $invoice->getDue();
             $total   = $invoice->getTotal();
-            if($invoice->status == 0)
+            if($invoice->status == 1)
             {
                 $invoice->send_date = date('Y-m-d');
                 $invoice->save();
@@ -814,12 +821,12 @@ class InvoiceController extends Controller
 
             if($due <= 0)
             {
-                $invoice->status = 4;
+                $invoice->status = 3;
                 $invoice->save();
             }
             else
             {
-                $invoice->status = 3;
+                $invoice->status = 2;
                 $invoice->save();
             }
             $invoicePayment->user_id    = $invoice->client_id;
@@ -1565,14 +1572,14 @@ class InvoiceController extends Controller
 
         if (Auth::user()->can('edit invoice')) {
 
-            if (in_array($status, [0, 1, 2])) {
+            if (in_array($status, [0, 1, 2, 3, 4])) {
 
                 $client = $invoice->client;
                
                 $invoice->status = $status;
                 $invoice->save();
 
-                if ($status == 2) {
+                if ($status == 3) {
                     Mail::to($client->email)->send(new CustomerInvoiceThanksSend($invoice));
                 }
 
@@ -1606,7 +1613,7 @@ class InvoiceController extends Controller
             $revenue->save();
         }
 
-        return redirect()->route('invoice.index')->with('success', __('Invoice successfully convert to Revenue.'));
+        return redirect()->route('invoice.index')->with('success', __('Invoice successfully convert to Balance Partners.'));
     }
 
 

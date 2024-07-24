@@ -44,12 +44,6 @@
                 {{Form::date('start_date',null,array('class'=>'form-control '))}}
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="form-group">
-                {{Form::label('end_date',__('Announcement End Date'),['class'=>'form-label'])}}
-                {{Form::date('end_date',null,array('class'=>'form-control '))}}
-            </div>
-        </div>
         <div class="col-md-12">
             <div class="form-group">
                 {{Form::label('description',__('Announcement Description'),['class'=>'form-label'])}}

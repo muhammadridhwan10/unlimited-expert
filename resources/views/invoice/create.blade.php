@@ -254,6 +254,17 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="col-sm-6 col-md-6">
+                                    <div class="form-group">
+                                        {{ Form::label('category_invoice', __('Category Invoice'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                        <select name="category_invoice" id="category_invoice" class="form-control main-element" required>
+                                            <option value="0">{{__('Select Category Invoice')}}</option>
+                                            @foreach(\App\Models\Invoice::$categoryInvoice as $k => $v)
+                                                <option value="{{$k}}">{{__($k)}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
                                         {{ Form::label('category_id', __('Category'), ['class' => 'form-label']) }}

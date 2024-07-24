@@ -95,7 +95,7 @@
                     url: url,
                     data: data,
                     success: function (response) {
-                        alert('Invoice have been convert to revenue successfully.');
+                        alert('Invoice have been convert to Balance Partners successfully.');
                         window.location.reload();
                     },
                     error: function () {
@@ -181,6 +181,13 @@
 
                                 </div>
                             </div>
+                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
+                                <div class="btn-box">
+                                    {{ Form::label('category_invoice', __('Category Invoice'),['class'=>'form-label'])}}
+                                    {{ Form::select('category_invoice', [''=>'Select Category Invoice'] + $category_invoice,isset($_GET['category_invoice'])?$_GET['category_invoice']:'', array('class' => 'form-control select')) }}
+
+                                </div>
+                            </div>
                             <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
                                 <div class="btn-box">
                                     {{ Form::label('company', __('Company'), ['class' => 'form-label']) }}
@@ -228,7 +235,7 @@
                     <h5></h5>
                     @if (Auth::user()->type == 'company')
                     <div class="float-end">
-                        <button class="btn btn-primary" id="approve-selected">Convert to Revenue</button>
+                        <button class="btn btn-primary" id="approve-selected">Convert to Balance Partners</button>
                     </div>
                     <div class="table-responsive">
                         <table class="table datatable">
@@ -271,7 +278,7 @@
                                     }
                                 @endphp
                                 <tr>
-                                    @if ($invoice->status == 2)
+                                    @if ($invoice->status == 3)
                                         <td><input type="checkbox" class="approval-checkbox" data-id="{{ $invoice->id }}"></td>
                                     @else
                                         <td></td>
@@ -308,19 +315,19 @@
                                     <td>
                                         @if ($invoice->status == 0)
                                             <span
-                                                class="status_badge badge bg-secondary p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                class="status_badge badge bg-warning p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                         @elseif($invoice->status == 1)
                                             <span
-                                                class="status_badge badge bg-warning p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                class="status_badge badge bg-secondary p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                         @elseif($invoice->status == 2)
                                             <span
-                                                class="status_badge badge bg-danger p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                class="status_badge badge bg-primary p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                         @elseif($invoice->status == 3)
                                             <span
-                                                class="status_badge badge bg-info p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                class="status_badge badge bg-success p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                         @elseif($invoice->status == 4)
                                             <span
-                                                class="status_badge badge bg-primary p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                class="status_badge badge bg-danger p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                         @endif
                                     </td>
                                     @if (Gate::check('edit invoice') || Gate::check('delete invoice') || Gate::check('show invoice'))
@@ -462,19 +469,19 @@
                                         <td>
                                             @if ($invoice->status == 0)
                                                 <span
-                                                    class="status_badge badge bg-secondary p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                    class="status_badge badge bg-warning p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                             @elseif($invoice->status == 1)
                                                 <span
-                                                    class="status_badge badge bg-warning p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                    class="status_badge badge bg-secondary p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                             @elseif($invoice->status == 2)
                                                 <span
-                                                    class="status_badge badge bg-danger p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                    class="status_badge badge bg-primary p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                             @elseif($invoice->status == 3)
                                                 <span
-                                                    class="status_badge badge bg-info p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                    class="status_badge badge bg-success p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                             @elseif($invoice->status == 4)
                                                 <span
-                                                    class="status_badge badge bg-primary p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                    class="status_badge badge bg-danger p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                             @endif
                                         </td>
                                         @if (Gate::check('edit invoice') || Gate::check('delete invoice') || Gate::check('show invoice'))

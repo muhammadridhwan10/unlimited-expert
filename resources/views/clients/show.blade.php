@@ -150,19 +150,19 @@
                                                                 <td>
                                                                     @if ($invoice->status == 0)
                                                                         <span
-                                                                            class="badge bg-primary p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                                            class="badge bg-warning p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                                                     @elseif($invoice->status == 1)
                                                                         <span
-                                                                            class="badge bg-warning p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                                            class="badge bg-secondary p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                                                     @elseif($invoice->status == 2)
                                                                         <span
-                                                                            class="badge bg-danger p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                                            class="badge bg-primary p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                                                     @elseif($invoice->status == 3)
                                                                         <span
-                                                                            class="badge bg-info p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                                            class="badge bg-success p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                                                     @elseif($invoice->status == 4)
                                                                         <span
-                                                                            class="badge bg-success p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
+                                                                            class="badge bg-danger p-2 px-3 rounded">{{ __(\App\Models\Invoice::$statues[$invoice->status]) }}</span>
                                                                     @endif
                                                                 </td>
                                                                 @if (Gate::check('invoice edit') || Gate::check('invoice delete') || Gate::check('invoice show'))

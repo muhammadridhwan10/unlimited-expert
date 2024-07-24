@@ -31,7 +31,6 @@
                             <tr>
                                 <th>{{__('Title')}}</th>
                                 <th>{{__('Start Date')}}</th>
-                                <th>{{__('End Date')}}</th>
                                 <th>{{__('description')}}</th>
                                 @if(Gate::check('edit announcement') || Gate::check('delete announcement'))
                                     <th>{{__('Action')}}</th>
@@ -43,7 +42,6 @@
                                 <tr>
                                     <td>{{ $announcement->title }}</td>
                                     <td>{{  \Auth::user()->dateFormat($announcement->start_date) }}</td>
-                                    <td>{{  \Auth::user()->dateFormat($announcement->end_date) }}</td>
                                     <td>{{ $announcement->description }}</td>
                                     @if(Gate::check('edit announcement') || Gate::check('delete announcement'))
                                         <td>

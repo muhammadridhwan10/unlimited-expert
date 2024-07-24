@@ -69,45 +69,55 @@ class FormClientController extends Controller
     public function update(Request $request, $id)
     {
         // Validasi data
-        $validator = \Validator::make(
-            $request->all(), [
-                'name' => 'required|string|max:255',
-                'client_business_sector_id' => 'required|integer',
-                'email' => 'required|string|email|max:255',
-                'name_pic' => 'required|string|max:255',
-                'email_pic' => 'required|string|email|max:255',
-                'telp_pic' => 'required|string|max:20',
-                'total_company_income_per_year' => 'required|numeric',
-                'total_company_assets_value' => 'required|numeric',
-                'total_company_profit_or_loss' => 'required|numeric',
-                'total_employee' => 'required|integer',
-                'total_branch_offices' => 'required|integer',
-                'npwp' => 'required|string|max:25',
-                'address' => 'required|string|max:255',
-                'country' => 'required|string|max:100',
-                'state' => 'required|string|max:100',
-                'city' => 'required|string|max:100',
-                'periode' => 'required|string',
-                'where_did_you_find_out_about_us' => 'required|string',
-                'ph_partners' => 'required|numeric',
-                'rate_partners' => 'required|numeric',
-                'ph_manager' => 'required|numeric',
-                'rate_manager' => 'required|numeric',
-                'ph_senior' => 'required|numeric',
-                'rate_senior' => 'required|numeric',
-                'ph_associate' => 'required|numeric',
-                'rate_associate' => 'required|numeric',
-                'ph_assistant' => 'required|numeric',
-                'rate_assistant' => 'required|numeric',
-                'estimated_hrs' => 'required|numeric',
-                'budget' => 'required|numeric',
-            ]
-        );
+        $rules = [
+            'name' => 'required|string|max:255',
+            'client_business_sector_id' => 'required|integer',
+            'email' => 'required|string|email|max:255',
+            'name_pic' => 'required|string|max:255',
+            'email_pic' => 'required|string|email|max:255',
+            'telp_pic' => 'required|string|max:20',
+            'total_company_income_per_year' => 'required|numeric',
+            'total_company_assets_value' => 'required|numeric',
+            'total_company_profit_or_loss' => 'required|numeric',
+            'total_employee' => 'required|integer',
+            'total_branch_offices' => 'required|integer',
+            'npwp' => 'required|string|max:25',
+            'country' => 'required|string|max:100',
+            'city' => 'required|string|max:100',
+            'periode' => 'required|string',
+            'where_did_you_find_out_about_us' => 'required|string',
+            'ph_partners' => 'required|numeric',
+            'rate_partners' => 'required|numeric',
+            'ph_manager' => 'required|numeric',
+            'rate_manager' => 'required|numeric',
+            'ph_senior' => 'required|numeric',
+            'rate_senior' => 'required|numeric',
+            'ph_associate' => 'required|numeric',
+            'rate_associate' => 'required|numeric',
+            'ph_assistant' => 'required|numeric',
+            'rate_assistant' => 'required|numeric',
+            'estimated_hrs' => 'required|numeric',
+            'budget' => 'required|numeric',
+        ];
+    
+        if ($request->category_services === 'Audit') {
+            $rules['client_ownership_id'] = 'required';
+            $rules['accounting_standars_id'] = 'required';
+        }
+    
+        if (in_array($request->category_services, ['KPPK', 'Agreed Upon Procedures (AUP)', 'Other'])) {
+            unset($rules['periode']);
+        }
+    
+        if ($request->category_services === 'KPPK') {
+            unset($rules['total_company_assets_value']);
+        }
 
-        if($validator->fails())
-        {
+        $validator = \Validator::make($request->all(), $rules);
+    
+        if ($validator->fails()) {
             $messages = $validator->getMessageBag();
-
+    
             return redirect()->back()->with('error', $messages->first());
         }
 
@@ -138,6 +148,8 @@ class FormClientController extends Controller
         $projectOrder->city = $request->city;
         $projectOrder->periode = $request->periode;
         $projectOrder->where_did_you_find_out_about_us = $request->where_did_you_find_out_about_us;
+        $projectOrder->category_service = $request->category_services;
+        $projectOrder->note = $request->note;
         $projectOrder->ph_partners = $request->ph_partners;
         $projectOrder->rate_partners = $request->rate_partners;
         $projectOrder->ph_manager = $request->ph_manager;
@@ -175,38 +187,46 @@ class FormClientController extends Controller
     public function formClientViewStore(Request $request)
     {
 
-        // Validasi data
-        $validator = \Validator::make(
-            $request->all(), [
-                'name' => 'required|string|max:255',
-                'client_business_sector_id' => 'required|integer',
-                'email' => 'required|string|email|max:255',
-                'name_pic' => 'required|string|max:255',
-                'email_pic' => 'required|string|email|max:255',
-                'telp_pic' => 'required|string|max:20',
-                'total_company_income_per_year' => 'required|numeric',
-                'total_company_assets_value' => 'required|numeric',
-                'total_company_profit_or_loss' => 'required|numeric',
-                'total_employee' => 'required|integer',
-                'total_branch_offices' => 'required|integer',
-                'npwp' => 'required|string|max:25',
-                'address' => 'required|string|max:255',
-                'country' => 'required|string|max:100',
-                'state' => 'required|string|max:100',
-                'city' => 'required|string|max:100',
-                'periode' => 'required|string',
-                'where_did_you_find_out_about_us' => 'required|string',
-            ]
-        );
-
-        if($validator->fails())
-        {
+        $rules = [
+            'name' => 'required|string|max:255',
+            'client_business_sector_id' => 'required|integer',
+            'email' => 'required|string|email|max:255',
+            'name_pic' => 'required|string|max:255',
+            'email_pic' => 'required|string|email|max:255',
+            'telp_pic' => 'required|string|max:20',
+            'total_company_income_per_year' => 'required|numeric',
+            'total_company_assets_value' => 'required|numeric',
+            'total_company_profit_or_loss' => 'required|numeric',
+            'total_employee' => 'required|integer',
+            'total_branch_offices' => 'required|integer',
+            'npwp' => 'required|string|max:25',
+            'country' => 'required|string|max:100',
+            'city' => 'required|string|max:100',
+            'periode' => 'required|string',
+            'where_did_you_find_out_about_us' => 'required|string',
+        ];
+    
+        if ($request->category_services === 'Audit') {
+            $rules['client_ownership_id'] = 'required';
+            $rules['accounting_standars_id'] = 'required';
+        }
+    
+        if (in_array($request->category_services, ['KPPK', 'Agreed Upon Procedures (AUP)', 'Other'])) {
+            unset($rules['periode']);
+        }
+    
+        if ($request->category_services === 'KPPK') {
+            unset($rules['total_company_assets_value']);
+        }
+    
+        $validator = \Validator::make($request->all(), $rules);
+    
+        if ($validator->fails()) {
             $messages = $validator->getMessageBag();
-
+    
             return redirect()->back()->with('error', $messages->first());
         }
 
-        // Menyimpan data ke database
         $projectOrder = new ProjectOrders();
         $projectOrder->name = $request->name;
         $projectOrder->client_business_sector_id = $request->client_business_sector_id;
@@ -231,11 +251,13 @@ class FormClientController extends Controller
         $projectOrder->city = $request->city;
         $projectOrder->periode = $request->periode;
         $projectOrder->where_did_you_find_out_about_us = $request->where_did_you_find_out_about_us;
+        $projectOrder->category_service = $request->category_services;
+        $projectOrder->note = $request->note;
         $projectOrder->created_by = \Auth::user()->creatorId();
 
         $projectOrder->save();
 
-        return redirect()->back()->with('success', __('Data submit successfully.'));
+        return redirect()->back()->with('success', __('Data submit successfully. We will contact you soon, please wait up to 7 days.'));
     }
 
     public function updateStatus($id, Request $request)

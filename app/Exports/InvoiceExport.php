@@ -51,7 +51,7 @@ class InvoiceExport implements FromCollection, WithHeadings
             {
                 if($invoice->currency == '$')
                 {
-                    $projectName = $product->project ? $product->project->name : '-';
+                    $projectName = $product->projects ? $product->projects->project_name : '-';
                     $result[] = array_merge($formattedInvoice, [
                         "project_name" => $projectName,
                     ]);
