@@ -543,12 +543,12 @@ class InvoiceController extends Controller
 
                 }
 
-                if($invoice->client_id != 0 && $invoice->status!=1)
-                {
-                    Utility::updateUserBalance('client', $invoice->client_id, $invoice->getDue(), 'debit');
-                }
+                // if($invoice->client_id != 0 && $invoice->status!=1)
+                // {
+                //     Utility::updateUserBalance('client', $invoice->client_id, $invoice->getDue(), 'debit');
+                // }
 
-                CreditNote::where('invoice', '=', $invoice->id)->delete();
+                // CreditNote::where('invoice', '=', $invoice->id)->delete();
 
                 InvoiceProduct::where('invoice_id', '=', $invoice->id)->delete();
                 $invoice->delete();

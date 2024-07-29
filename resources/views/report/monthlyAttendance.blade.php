@@ -129,6 +129,18 @@
                                 <div class="row">
                                     <div class="col-auto">
                                         <div class="btn-box">
+                                            {{Form::label('start_date',__('Start Date'),['class'=>'form-label'])}}
+                                            {{Form::date('start_date', isset($_GET['start_date']) ? $_GET['start_date'] : null, ['class'=>'form-control'])}}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="btn-box">
+                                            {{Form::label('end_date',__('End Date'),['class'=>'form-label'])}}
+                                            {{Form::date('end_date', isset($_GET['end_date']) ? $_GET['end_date'] : null, ['class'=>'form-control'])}}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <div class="btn-box">
                                             {{Form::label('month',__('Month'),['class'=>'form-label'])}}
                                             {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
                                         </div>
@@ -185,38 +197,6 @@
     </div>
 
     <div id="printableArea">
-        {{-- <div class="row">
-            <div class="col">
-                <input type="hidden" value="{{  $data['branch'] .' '.__('Branch') .' '.$data['curMonth'].' '.__('Attendance Report of').' '. $data['department'].' '.'Department'}}" id="filename">
-                <div class="card p-4 mb-4">
-                    <h6 class="mb-0">{{__('Report')}} :</h6>
-                    <h7 class="text-sm mb-0">{{__('Attendance Summary')}}</h7>
-                </div>
-            </div>
-            @if($data['branch']!='All')
-                <div class="col">
-                    <div class="card p-4 mb-4">
-                        <h6 class=" mb-0">{{__('Branch')}} :</h6>
-                        <h7 class="text-sm mb-0">{{$data['branch']}}</h7>
-                    </div>
-                </div>
-            @endif
-            @if($data['department']!='All')
-                <div class="col">
-                    <div class="card p-4 mb-4">
-                        <h6 class=" mb-0">{{__('Department')}} :</h6>
-                        <h7 class="text-sm mb-0">{{$data['department']}}</h7>
-                    </div>
-                </div>
-            @endif
-            <div class="col">
-                <div class="card p-4 mb-4">
-                    <h6 class=" mb-0">{{__('Duration')}} :</h6>
-                    <h7 class="text-sm mb-0">{{$data['curMonth']}}</h7>
-                </div>
-            </div>
-        </div> --}}
-
 
         <div class="row">
             <div class="col">
@@ -229,24 +209,6 @@
 
                 </div>
             </div>
-            {{-- <div class="col-xl-3 col-md-6 col-lg-3">
-                <div class="card p-4 mb-4">
-                    <h6 class=" mb-0">{{__('Overtime')}}</h6>
-                    <h7 class="text-sm mb-0">{{__('Total overtime in hours')}} : {{number_format($data['totalOvertime'],2)}}</h7>
-                </div>
-            </div>
-            <div class="col-xl-3 col-md-6 col-lg-3">
-                <div class="card p-4 mb-4">
-                    <h6 class=" mb-0">{{__('Early leave')}}</h6>
-                    <h7 class="text-sm mb-0">{{__('Total early leave in hours')}} : {{number_format($data['totalEarlyLeave'],2)}}</h7>
-                </div>
-            </div>
-            <div class="col-xl-3 col-md-6 col-lg-3">
-                <div class="card p-4 mb-4">
-                    <h6 class=" mb-0">{{__('Employee late')}}</h6>
-                    <h7 class="text-sm mb-0">{{__('Total late in hours')}} : {{number_format($data['totalLate'],2)}}</h7>
-                </div>
-            </div> --}}
         </div>
 
 

@@ -112,7 +112,7 @@
                                     @endif
                                     <th>{{__('Total Days')}}</th>
                                     <th>{{__('Sick Letter')}}</th>
-                                    <th width="200px">{{__('Action')}}</th>
+                                    <th>{{__('Date Sick Letter')}}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -125,22 +125,7 @@
                                         <td>
                                             <img alt="Image placeholder" src="{{ asset('assets/images/gallery.png')}}" class="avatar view-images rounded-circle avatar-sm" data-bs-toggle="tooltip" title="{{__('View Sick Letter')}}" data-original-title="{{__('View Sick Letter')}}" style="height: 25px;width:24px;margin-right:10px;cursor: pointer;" data-id="{{$sick->id}}" id="track-images-{{$sick->id}}">
                                         </td>
-                                        <td>
-                                            @if($sick->status == "Pending")
-                                                @can('edit leave')
-                                                <div class="action-btn bg-primary ms-2">
-                                                    <a href="#" data-url="{{ URL::to('absence-request/'.$sick->id.'/edit') }}" data-size="lg" data-ajax-popup="true" data-title="{{__('Edit Absence Request')}}" class="mx-3 btn btn-sm  align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-original-title="{{__('Edit')}}"><i class="ti ti-pencil text-white"></i></a>
-                                                </div>
-                                                @endcan
-                                            @endif
-                                            {{-- @can('delete leave')
-                                            <div class="action-btn bg-danger ms-2">
-                                                {!! Form::open(['method' => 'DELETE', 'route' => ['absence-request.destroy', $leave->id],'id'=>'delete-form-'.$leave->id]) !!}
-                                                <a href="#" class="mx-3 btn btn-sm  align-items-center bs-pass-para" data-bs-toggle="tooltip" title="{{__('Delete')}}" data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$leave->id}}').submit();">
-                                                <i class="ti ti-trash text-white"></i></a>
-                                                {!! Form::close() !!}
-                                            </div> --}}
-                                        </td>
+                                         <td>{{ !empty($sick->date_sick_letter)?$sick->date_sick_letter:'-' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>

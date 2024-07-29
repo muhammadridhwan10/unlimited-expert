@@ -75,7 +75,7 @@
             border-radius: 5px;
         }
         .form-wizard {
-            max-width: 900px; /* Increase max-width to widen the form */
+            max-width: 900px;
             margin: auto;
         }
         .step-title {
@@ -85,8 +85,14 @@
         }
         .step-desc {
             font-size: 1em;
-            margin-bottom: 20px;
+            margin-top: 20px;
             color: #6c757d;
+            text-align: center;
+        }
+        .error-message {
+            color: red;
+            font-size: 0.875em;
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -122,133 +128,144 @@
                                     <div class="progress-bar" id="progressBar"></div>
                                 </div>
                                 <div class="step active">
-                                    <div class="step-title">Category Services Order</div>
-                                    <div class="step-desc">Page 1/3</div>
+                                    <div class="step-title text-center">Request Services</div>
+                                    <br>
                                     <div class="row">
                                         <div class="col-md-12">
                                             <div class="form-group">
-                                                {{ Form::label('category_services', __('Category Services Order'), ['class' => 'form-label']) }}
+                                                {{ Form::label('category_services', __('Request For The Services You Need'), ['class' => 'form-label']) }}
                                                 <select name="category_services" id="category_services" class="form-control main-element">
-                                                    <option value="0">{{ __('Select Category') }}</option>
+                                                    <option value="0">{{ __('Select Services') }}</option>
                                                     @foreach (\App\Models\ProjectOrders::$label as $k => $v)
                                                         <option value="{{ $k }}">{{ __($v) }}</option>
                                                     @endforeach
                                                 </select>
+                                                <div class="error-message" id="category_services_error"></div>
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="step-desc">Page 1/3</div>
                                 </div>
                                 <div class="step">
-                                    <div class="step-title">Company Information</div>
-                                    <div class="step-desc">Page 2/3</div>
+                                    <div class="step-title text-center">Company Information</div>
+                                    <br>
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 {{ Form::label('name', __('Company Name'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                                                {{ Form::text('name', null, array('class' => 'form-control', 'placeholder' => 'Enter Company Name')) }}
+                                                {{ Form::text('name', null, array('class' => 'form-control', 'placeholder' => 'Enter Company Name', 'required')) }}
+                                                <div class="error-message" id="name_error"></div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 {{ Form::label('email', __('Company Email'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                                                {{ Form::text('email', null, array('class' => 'form-control', 'placeholder' => 'Enter Company Email')) }}
+                                                {{ Form::text('email', null, array('class' => 'form-control', 'placeholder' => 'Enter Company Email', 'required')) }}
+                                                <div class="error-message" id="email_error"></div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 {{ Form::label('country', __('Country'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                                                {{ Form::text('country', null, array('class' => 'form-control', 'placeholder' => 'Enter Country')) }}
+                                                {{ Form::text('country', null, array('class' => 'form-control', 'placeholder' => 'Enter Country', 'required')) }}
+                                                <div class="error-message" id="country_error"></div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 {{ Form::label('city', __('City'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                                                {{ Form::text('city', null, array('class' => 'form-control', 'placeholder' => 'Enter City')) }}
+                                                {{ Form::text('city', null, array('class' => 'form-control', 'placeholder' => 'Enter City', 'required')) }}
+                                                <div class="error-message" id="city_error"></div>
                                             </div>
                                         </div>
-                                        <div class="step-title">PIC Information</div>
+                                        <div class="step-title text-center">Contact Person</div>
+                                        <br>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                {{ Form::label('name_pic', __('Name PIC'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                                                {{ Form::text('name_pic', null, array('class' => 'form-control', 'placeholder' => 'Enter Name PIC')) }}
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <div class="form-group">
-                                                {{ Form::label('email_pic', __('Email PIC'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                                                {{ Form::text('email_pic', null, array('class' => 'form-control', 'placeholder' => 'Enter Email PIC')) }}
+                                                {{ Form::label('name_pic', __('Name'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::text('name_pic', null, array('class' => 'form-control', 'placeholder' => 'Enter Name', 'required')) }}
+                                                <div class="error-message" id="name_pic_error"></div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                {{ Form::label('telp_pic', __('Phone Number / Whatsapp number PIC'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                                                {{ Form::number('telp_pic', null, array('class' => 'form-control', 'placeholder' => 'Enter Phone Number / Whatsapp number PIC')) }}
+                                                {{ Form::label('email_pic', __('Email'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::text('email_pic', null, array('class' => 'form-control', 'placeholder' => 'Enter Email', 'required')) }}
+                                                <div class="error-message" id="email_pic_error"></div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                {{ Form::label('phone_pic', __('Phone'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::text('phone_pic', null, array('class' => 'form-control', 'placeholder' => 'Enter Phone', 'required')) }}
+                                                <div class="error-message" id="phone_pic_error"></div>
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="step-desc">Page 2/3</div>
                                 </div>
                                 <div class="step">
-                                    <div class="step-title">Other Information</div>
-                                    <div class="step-desc">Page 3/3</div>
+                                    <div class="step-title text-center">Other Information</div>
+                                    <br>
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 {{ Form::label('client_business_sector_id', __('Company Business Sector'), ['class' => 'form-label']) }}
-                                                {{ Form::select('client_business_sector_id', $businesssector, null, array('class' => 'form-control select')) }}
+                                                {{ Form::select('client_business_sector_id', $businesssector, null, array('class' => 'form-control select', 'required')) }}
                                             </div>
                                         </div>
                                         <div class="col-md-6" id="client_ownership_id" style="display: none;">
                                             <div class="form-group">
                                                 {{ Form::label('client_ownership_id', __('Company Ownership'), ['class' => 'form-label']) }}
-                                                {{ Form::select('client_ownership_id', $ownership, null, array('class' => 'form-control select')) }}
+                                                {{ Form::select('client_ownership_id', $ownership, null, array('class' => 'form-control select', 'required')) }}
                                             </div>
                                         </div>
                                         <div class="col-md-6" id="accounting_standars_id" style="display: none;">
                                             <div class="form-group">
                                                 {{ Form::label('accounting_standars_id', __('Accounting Standards'), ['class' => 'form-label']) }}
-                                                {{ Form::select('accounting_standars_id', $accountingstandards, null, array('class' => 'form-control select')) }}
+                                                {{ Form::select('accounting_standars_id', $accountingstandards, null, array('class' => 'form-control select', 'required')) }}
                                             </div>
                                         </div>
                                         <div class="col-md-6" id= "total_company_assets_value">
                                             <div class="form-group">
                                                 {{ Form::label('total_company_assets_value', __('Total Company Assets'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                                                {{ Form::number('total_company_assets_value', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Company Assets')) }}
+                                                {{ Form::number('total_company_assets_value', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Company Assets', 'required')) }}
                                             </div>
                                         </div>
                                         <div class="col-md-6" id="periode" style="display: none;">
                                             <div class="form-group">
                                                 {{ Form::label('periode', __('Periode Order'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                                                <input type="text" name="periode" class="form-control" placeholder="2023 / 2023 - 2024"/>
+                                                <input type="text" name="periode" class="form-control" placeholder="2023 / 2023 - 2024" required/>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 {{ Form::label('total_company_income_per_year', __('Total Company Revenue'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                                                {{ Form::number('total_company_income_per_year', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Company Revenue')) }}
+                                                {{ Form::number('total_company_income_per_year', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Company Revenue', 'required')) }}
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 {{ Form::label('total_company_profit_or_loss', __('Total Company Profit Or Loss For The Year'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                                                {{ Form::number('total_company_profit_or_loss', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Company Profit Or Loss For The Year')) }}
+                                                {{ Form::number('total_company_profit_or_loss', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Company Profit Or Loss For The Year', 'required')) }}
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 {{ Form::label('total_employee', __('Total Employee'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                                                {{ Form::number('total_employee', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Employee')) }}
+                                                {{ Form::number('total_employee', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Employee', 'required')) }}
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 {{ Form::label('total_branch_offices', __('Total Branch Offices'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                                                {{ Form::number('total_branch_offices', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Branch Offices')) }}
+                                                {{ Form::number('total_branch_offices', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Branch Offices', 'required')) }}
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 {{ Form::label('npwp', __('Tax Number'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                                                {{ Form::text('npwp', null, array('class' => 'form-control', 'placeholder' => 'Enter Tax Number')) }}
+                                                {{ Form::text('npwp', null, array('class' => 'form-control', 'placeholder' => 'Enter Tax Number', 'required')) }}
                                             </div>
                                         </div>
                                         <div class="col-md-6">
@@ -265,7 +282,7 @@
                                         </div>
                                         <div class="col-md-12">
                                             <div class="form-group">
-                                                {{ Form::label('note', __('Notes'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::label('note', __('Notes'), ['class' => 'form-label']) }}
                                                 {{ Form::textarea('note', null, array('class' => 'form-control', 'placeholder' => 'Enter Note')) }}
                                             </div>
                                         </div>
@@ -280,23 +297,21 @@
                                             </div>
                                         @endif
                                     </div>
+                                     <div class="step-desc">Page 3/3</div>
                                 </div>
                                 <div class="step-buttons">
-                                    <button type="button" class="btn btn-secondary" onclick="prevStep()">Previous</button>
-                                    <button type="button" class="btn btn-success" onclick="nextStep()">Next</button>
-                                    <button type="submit" class="btn btn-primary" style="display:none">Submit</button>
+                                    <button type="button" class="btn btn-primary" id="prevBtn" onclick="nextPrev(-1)">Previous</button>
+                                    <button type="button" class="btn btn-primary" id="nextBtn" onclick="nextPrev(1)">Next</button>
+                                    <button type="submit" class="btn btn-success" id="submitBtn">Submit</button>
                                 </div>
                             </div>
                             {{ Form::close() }}
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    @include('partials.admin.footer')
-
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-daterangepicker@3.1.0/daterangepicker.min.js"></script>
 
@@ -328,64 +343,56 @@
         });
 
     </script>
-
     <script>
         let currentStep = 0;
-        const steps = document.querySelectorAll('.step');
-        const nextButton = document.querySelector('.step-buttons .btn-success');
-        const prevButton = document.querySelector('.step-buttons .btn-secondary');
-        const submitButton = document.querySelector('.step-buttons .btn-primary');
-        const progressBar = document.getElementById('progressBar');
+        showStep(currentStep);
 
-        function showStep(step) {
+        function showStep(n) {
+            const steps = document.querySelectorAll('.step');
             steps.forEach((step, index) => {
                 step.classList.remove('active');
-                if (index === currentStep) {
+                if (index === n) {
                     step.classList.add('active');
                 }
             });
-            prevButton.style.display = currentStep === 0 ? 'none' : 'inline-block';
-            nextButton.style.display = currentStep === steps.length - 1 ? 'none' : 'inline-block';
-            submitButton.style.display = currentStep === steps.length - 1 ? 'inline-block' : 'none';
-            updateProgressBar();
+
+            document.getElementById('prevBtn').style.display = n === 0 ? 'none' : 'inline';
+            document.getElementById('nextBtn').style.display = n === (steps.length - 1) ? 'none' : 'inline';
+            document.getElementById('submitBtn').style.display = n === (steps.length - 1) ? 'inline' : 'none';
+
+            updateProgressBar(n);
         }
 
-        function nextStep() {
-            if (currentStep < steps.length - 1) {
-                currentStep++;
-                showStep(currentStep);
+        function nextPrev(n) {
+            const steps = document.querySelectorAll('.step');
+            if (n === 1 && !validateForm()) return false;
+            currentStep += n;
+            if (currentStep >= steps.length) {
+                document.querySelector('form').submit();
+                return false;
             }
-        }
-
-        function prevStep() {
-            if (currentStep > 0) {
-                currentStep--;
-                showStep(currentStep);
-            }
-        }
-
-        function updateProgressBar() {
-            const progress = (currentStep / (steps.length - 1)) * 100;
-            progressBar.style.width = progress + '%';
-            progressBar.innerText = Math.round(progress) + '%';
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
             showStep(currentStep);
-        });
+        }
 
-        {{-- $(function() {
-            $('input[name="periode"]').daterangepicker({
-                opens: 'left',
-                locale: {
-                    format: 'DD/MM/YYYY'
+        function validateForm() {
+            let valid = true;
+            const currentInputs = document.querySelectorAll('.step.active input[required], .step.active select[required]');
+            currentInputs.forEach(input => {
+                if (input.value === "") {
+                    input.nextElementSibling.textContent = `${input.previousElementSibling.textContent} is required`;
+                    valid = false;
+                } else {
+                    input.nextElementSibling.textContent = "";
                 }
-            }, function(start, end, label) {
-                console.log("A new date selection was made: " + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
             });
-        }); --}}
+            return valid;
+        }
+
+        function updateProgressBar(n) {
+            const steps = document.querySelectorAll('.step');
+            const progress = (n + 1) / steps.length * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+        }
     </script>
 </body>
-
-
 </html>
