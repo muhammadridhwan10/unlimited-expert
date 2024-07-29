@@ -638,7 +638,7 @@ class ApiController extends Controller
         }
 
         $leave = new Leave();
-        $leave->approval = $request->approval;
+        $leave->approval = 2;
         $leave->leave_type_id = $request->leave_type_id;
         $leave->start_date = $request->start_date;
         $leave->end_date = $request->end_date;
