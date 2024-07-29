@@ -283,7 +283,7 @@ class JobController extends Controller
 
     public function career($id, $lang)
     {
-        $jobs= Job::where('created_by', $id)->get();
+        $jobs= Job::where('status', 'active')->where('created_by', $id)->get();
 
         \Session::put('lang', $lang);
 

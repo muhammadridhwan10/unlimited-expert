@@ -81,6 +81,17 @@
                     <div class="card">
                         <div class="card-body">
                             {{Form::open(array('route'=>array('job.apply.data',$job->code),'method'=>'post', 'enctype' => "multipart/form-data"))}}
+                            @if (session('success'))
+                                <div class="alert alert-success">
+                                    {{ session('success') }}
+                                </div>
+                            @endif
+
+                            @if (session('error'))
+                                <div class="alert alert-danger">
+                                    {{ session('error') }}
+                                </div>
+                            @endif
                             <div class="row">
                                 <div class="form-group col-md-6">
                                     {{Form::label('name',__('Name'),['class'=>'form-label'])}}<span class="text-danger">*</span>
