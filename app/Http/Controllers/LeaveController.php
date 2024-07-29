@@ -26,10 +26,9 @@ class LeaveController extends Controller
             {
                 $user     = \Auth::user();
                 $employee = Employee::where('user_id', '=', $user->id)->first();
-                $absence_sick   = Leave::where('employee_id', '=', $employee->id)->Orwhere('absence_type', '=', 'sick')->get();
-                $absence_leave  = Leave::where('employee_id', '=', $employee->id)->Orwhere('absence_type', '=', 'leave')->get();
-                $approval      = Leave::where('approval', '=', $user->id)->Orwhere('status','=', 'Pending')->get();
-
+                $absence_sick   = Leave::where('employee_id', '=', $employee->id)->where('absence_type', '=', 'sick')->get();
+                $absence_leave  = Leave::where('employee_id', '=', $employee->id)->where('absence_type', '=', 'leave')->get();
+                $approval      = Leave::where('approval', '=', $user->id)->where('status','=', 'Pending')->get();
             }
             elseif(\Auth::user()->type == 'admin')
             {
@@ -51,9 +50,9 @@ class LeaveController extends Controller
             else
             {
                 $employee      = Employee::where('created_by', '=', \Auth::user()->creatorId())->get();
-                $absence_sick  = Leave::where('absence_type', '=', 'sick')->Orwhere('created_by', '=', \Auth::user()->creatorId())->get();
-                $absence_leave = Leave::where('absence_type', '=', 'leave')->Orwhere('created_by', '=', \Auth::user()->creatorId())->get();
-                $approval      = Leave::where('approval', '=', \Auth::user()->id)->Orwhere('status','=', 'Pending')->get();
+                $absence_sick  = Leave::where('absence_type', '=', 'sick')->where('created_by', '=', \Auth::user()->creatorId())->get();
+                $absence_leave = Leave::where('absence_type', '=', 'leave')->where('created_by', '=', \Auth::user()->creatorId())->get();
+                $approval      = Leave::where('approval', '=', \Auth::user()->id)->where('status','=', 'Pending')->get();
 
             }
 

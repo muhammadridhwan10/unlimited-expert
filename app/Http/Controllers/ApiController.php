@@ -647,6 +647,7 @@ class ApiController extends Controller
         $leave->applied_on       = date('Y-m-d');
         $leave->total_leave_days = 0;
         $leave->status           = 'Pending';
+        $leave->absence_type     = 'leave';
         $leave->created_by       = \Auth::user()->creatorId();
 
         try {
