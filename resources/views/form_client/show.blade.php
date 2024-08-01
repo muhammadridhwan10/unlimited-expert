@@ -7,7 +7,7 @@
 <html lang="en">
 <meta name="csrf-token" id="csrf-token" content="{{ csrf_token() }}">
 <head>
-    <title>{{(Utility::getValByName('title_text')) ? Utility::getValByName('title_text') : config('app.name', 'TGS AU-Partners Apps')}} - Form New Client</title>
+    <title>{{(Utility::getValByName('title_text')) ? Utility::getValByName('title_text') : config('app.name', 'Unlimted Expert')}} - Form New Client</title>
 
     <!-- Meta -->
     <meta charset="utf-8"/>

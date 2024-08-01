@@ -21,9 +21,9 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
             <div class="m-header main-logo">
                 <a href="home" class="b-brand">
                     @if($mode_setting['cust_darklayout'] && $mode_setting['cust_darklayout'] == 'on' )
-                    <img src="{{ $logo . '/' . (isset($company_logos) && !empty($company_logos) ? $company_logos : 'logo-dark.png') }}" alt="{{ config('app.name', 'TGS AU-Partners Apps') }}" class="logo logo-lg">
+                    <img src="{{ $logo . '/' . (isset($company_logos) && !empty($company_logos) ? $company_logos : 'logo-dark.png') }}" alt="{{ config('app.name', 'Unlimited Expert') }}" class="logo logo-lg">
                     @else
-                    <img src="{{ $logo . '/' . (isset($company_logo) && !empty($company_logo) ? $company_logo : 'logo-dark.png') }}" alt="{{ config('app.name', 'TGS AU-Partners Apps') }}" class="logo logo-lg">
+                    <img src="{{ $logo . '/' . (isset($company_logo) && !empty($company_logo) ? $company_logo : 'logo-dark.png') }}" alt="{{ config('app.name', 'Unlimited Expert') }}" class="logo logo-lg">
                     @endif
                 </a>
             </div>

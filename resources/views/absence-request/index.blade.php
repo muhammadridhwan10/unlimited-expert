@@ -235,50 +235,52 @@
         });
 
         $(document).on('change', '#employee_id', function () {
-            var employee_id = $(this).val();
+                    var employee_id = $(this).val();
 
-            $.ajax({
-                url: '{{route('absence-request.jsoncount')}}',
-                type: 'POST',
-                data: {
-                    "employee_id": employee_id, "_token": "{{ csrf_token() }}",
-                },
-                success: function (data) {
-                    $('#leave_type_id').empty();
-                    $('#leave_type_id').append('<option value="">{{__('Select Leave Type')}}</option>');
+                    $.ajax({
+                        url: '{{route('absence-request.jsoncount')}}',
+                        type: 'POST',
+                        data: {
+                            "employee_id": employee_id, "_token": "{{ csrf_token() }}",
+                        },
+                        success: function (data) {
+                            $('#leave_type_id').empty();
+                            $('#leave_type_id').append('<option value="">{{__('Select Leave Type')}}</option>');
 
-                    $.each(data, function (key, value) {
-                        var optionText = value.title + ' (' + value.total_leave + '/' + value.days + ')';
-                        var optionValue = value.id;
+                            $.each(data, function (key, value) {
+                                var optionText = value.title + ' (' + value.total_leave + '/' + value.days + ')';
+                                var optionValue = value.id;
 
-                        if (value.total_leave >= value.days) {
-                            optionText = optionText + ' (No remaining leave)';
-                            $('#leave_type_id').append('<option value="' + optionValue + '" disabled>' + optionText + '</option>');
-                        } else {
-                            $('#leave_type_id').append('<option value="' + optionValue + '">' + optionText + '</option>');
+                                $('#leave_type_id').append('<option value="' + optionValue + '">' + optionText + '</option>');
+
+                                {{-- if (value.total_leave >= value.days) {
+                                    optionText = optionText + ' (No remaining leave)';
+                                    $('#leave_type_id').append('<option value="' + optionValue + '" disabled>' + optionText + '</option>');
+                                } else {
+                                    $('#leave_type_id').append('<option value="' + optionValue + '">' + optionText + '</option>');
+                                } --}}
+                            });
+
+                            // Reset start_date and end_date inputs
+                            $('#start_date').val('');
+                            $('#end_date').val('');
                         }
                     });
+                });
 
-                    // Reset start_date and end_date inputs
-                    $('#start_date').val('');
-                    $('#end_date').val('');
+                function isWeekend(date) {
+                return date.getDay() === 0 || date.getDay() === 6;
                 }
-            });
-        });
 
-        function isWeekend(date) {
-        return date.getDay() === 0 || date.getDay() === 6;
+                function getNextWorkingDay(date) {
+            while (isWeekend(date) || date.getDay() === 5) {
+                date.setDate(date.getDate() + 1);
+            }
+            return date;
         }
 
-        function getNextWorkingDay(date) {
-    while (isWeekend(date) || date.getDay() === 5) {
-        date.setDate(date.getDate() + 1);
-    }
-    return date;
-}
 
-
-        $(document).on('change', '#start_date', function () {
+        {{-- $(document).on('change', '#start_date', function () {
         var leaveTypeId = $('#leave_type_id').val();
         var leaveType = $('#leave_type_id').find(':selected').text();
 
@@ -299,9 +301,9 @@
             $('#end_date').val('');
             }
         }
-        });
+        }); --}}
 
-        $(document).on('change', '#end_date', function () {
+        {{-- $(document).on('change', '#end_date', function () {
         var startDate = new Date($('#start_date').val());
         var endDate = new Date($(this).val());
 
@@ -309,9 +311,9 @@
             $(this).val('');
             alert('End date cannot be before start date.');
         }
-        });
+        }); --}}
 
-        $(document).on('focus', '#end_date', function () {
+        {{-- $(document).on('focus', '#end_date', function () {
         var startDate = new Date($('#start_date').val());
 
         $(this).prop('disabled', false);
@@ -330,11 +332,11 @@
         if (selectedDate < startDate || isWeekend(selectedDate)) {
             $(this).val('');
         }
-        });
+        }); --}}
 
-        $(document).ready(function () {
+        {{-- $(document).ready(function () {
         $('#end_date').prop('disabled', true);
-        });
+        }); --}}
 
     </script>
 @endpush

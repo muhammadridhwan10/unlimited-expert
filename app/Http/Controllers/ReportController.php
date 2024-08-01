@@ -3725,6 +3725,9 @@ class ReportController extends Controller
             $department = Department::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             $department->prepend('Select Department', '');
 
+            $leave_type = LeaveType::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
+            $leave_type->prepend('Select Leave Type', '');
+
             $filterYear['branch']        = __('All');
             $filterYear['department']    = __('All');
             $filterYear['type']          = __('Monthly');
@@ -3804,9 +3807,24 @@ class ReportController extends Controller
                 $totalReject   += $reject;
                 $totalPending  += $pending;
 
+                if (!empty($request->leave_type_id)) {
+                    $leaveType = LeaveType::find($request->leave_type_id);
+            
+                    $totalApprovedLeaveDays = Leave::where('employee_id', $employee->id)
+                                                    ->where('leave_type_id', $leaveType->id)
+                                                    ->where('status', 'Approved')
+                                                    ->whereYear('created_at', now()->year)
+                                                    ->sum('total_leave_days');
+            
+                    $remainingLeaves = $leaveType->days - $totalApprovedLeaveDays;
+                } else {
+                    $remainingLeaves = 0;
+                }
+
                 $employeeLeave['approved'] = $approved;
                 $employeeLeave['reject']   = $reject;
                 $employeeLeave['pending']  = $pending;
+                $employeeLeave['remaining'] = $remainingLeaves;
 
 
                 $leaves[] = $employeeLeave;
@@ -3823,7 +3841,7 @@ class ReportController extends Controller
             $filter['totalPending']  = $totalPending;
 
 
-            return view('report.leave', compact('department', 'branch', 'leaves', 'filterYear', 'filter'));
+            return view('report.leave', compact('department', 'branch', 'leaves', 'filterYear', 'filter', 'leave_type'));
         }
         else
         {

@@ -100,8 +100,8 @@
                                             <label class="form-check-label" for="monthly">{{__('Monthly')}}</label>
                                         </div>
                                         <div class="form-check form-check-inline form-group">
-                                            <input type="radio" id="daily" value="daily" name="type" class="form-check-input" {{isset($_GET['type']) && $_GET['type']=='daily' ?'checked':''}}>
-                                            <label class="form-check-label" for="daily">{{__('Daily')}}</label>
+                                            <input type="radio" id="yearly" value="yearly" name="type" class="form-check-input" {{isset($_GET['type']) && $_GET['type']=='yearly' ?'checked':''}}>
+                                            <label class="form-check-label" for="yearly">{{__('Yearly')}}</label>
                                         </div>
                                     </div>
                                     <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 month">
@@ -122,14 +122,20 @@
                                     </div>
                                     <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
                                         <div class="btn-box">
-                                            {{ Form::label('branch', __('Branch'),['class'=>'form-label']) }}
-                                            {{ Form::select('branch', $branch,isset($_GET['branch'])?$_GET['branch']:'', array('class' => 'form-control select')) }}
+                                            {{ Form::label('leave_type_id', __('Leave Type'),['class'=>'form-label']) }}
+                                            {{ Form::select('leave_type_id', $leave_type,isset($_GET['leave_type_id'])?$_GET['leave_type_id']:'', array('class' => 'form-control select')) }}
                                         </div>
                                     </div>
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
+                                    {{-- <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
                                         <div class="btn-box">
                                             {{ Form::label('department', __('Department'),['class'=>'form-label'])}}
                                             {{ Form::select('department', $department,isset($_GET['department'])?$_GET['department']:'', array('class' => 'form-control select')) }}
+                                        </div>
+                                    </div> --}}
+                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
+                                        <div class="btn-box">
+                                            {{ Form::label('branch', __('Branch'),['class'=>'form-label'])}}
+                                            {{ Form::select('branch', $branch,isset($_GET['branch'])?$_GET['branch']:'', array('class' => 'form-control select')) }}
                                         </div>
                                     </div>
                                 </div>
@@ -304,6 +310,7 @@
                                     <th>{{__('Approved Leaves')}}</th>
                                     <th>{{__('Rejected Leaves')}}</th>
                                     <th>{{__('Pending Leaves')}}</th>
+                                    <th>{{__('Remaining Leaves')}}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -326,6 +333,7 @@
                                                 <a href="#" class="text-white" data-url="{{ route('report.employee.leave',[$leave['id'],'Pending',isset($_GET['type']) ?$_GET['type']:'no',isset($_GET['month'])?$_GET['month']:date('Y-m'),isset($_GET['year'])?$_GET['year']:date('Y')]) }}" class="table-action table-action-delete" data-ajax-popup="true" data-title="{{__('Pending Leave Detail')}}" data-size="xl" data-bs-toggle="tooltip" title="{{__('View')}}" data-original-title="{{__('View')}}">{{__('View')}}</a>
                                             </div>
                                         </td>
+                                        <td>{{$leave['remaining']}}</td>
                                     </tr>
                                 @endforeach
                                 </tbody>

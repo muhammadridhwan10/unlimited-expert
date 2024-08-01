@@ -15,7 +15,7 @@
 <head>
 
 
-    <title>{{__('TGS AU-Partners Apps')}}</title>
+    <title>{{__('Unlimited Expert')}}</title>
     <!-- HTML5 Shim and Respond.js IE11 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 11]>
@@ -724,7 +724,7 @@
             </div>
             <div class="col-lg-6 col-sm-12 text-end">
 
-                <p class="text-body">Copyright © 2022 | Design By TGS AU-Partners</p>
+                <p class="text-body">Copyright © 2022 | Design By Unlimited Expert</p>
             </div>
         </div>
     </div>

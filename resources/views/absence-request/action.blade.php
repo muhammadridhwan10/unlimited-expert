@@ -1,4 +1,4 @@
-{{Form::open(array('url'=>'leave/changeaction','method'=>'post'))}}
+{{Form::open(array('url'=>'absence-request/changeaction','method'=>'post'))}}
 <div class="modal-body">
     <div class="row">
         <div class="col-12">

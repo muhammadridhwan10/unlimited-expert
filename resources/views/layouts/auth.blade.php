@@ -6,7 +6,6 @@
     $company_favicon=Utility::getValByName('company_favicon');
     $setting = \App\Models\Utility::colorset();
     $color = (!empty($setting['color'])) ? $setting['color'] : 'theme-4';
-    $company_logo = \App\Models\Utility::GetLogo();
     $SITE_RTL= isset($setting['SITE_RTL'])?$setting['SITE_RTL']:'off';
     $mode_setting = \App\Models\Utility::mode_layout();
 
@@ -17,7 +16,7 @@
 @endphp
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{isset($setting['SITE_RTL']) && $setting['SITE_RTL'] == 'on' ? 'rtl' : '' }}">
 <head>
-    <title>{{(Utility::getValByName('title_text')) ? Utility::getValByName('title_text') : config('app.name', 'TGS AU-Partners Apps')}} - @yield('page-title')</title>
+    <title>{{(Utility::getValByName('title_text')) ? Utility::getValByName('title_text') : config('app.name', 'Unlimited Expert')}} - @yield('page-title')</title>
 
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui"/>
@@ -89,7 +88,7 @@
             display: inline-block;
             bottom: -50vh;
             opacity: 0;
-            font-size: 40px;
+            font-size: 50px;
             color: white;
             transition: ease-in-out 0.5s;
         }
@@ -140,12 +139,12 @@
 
 <body class="{{ $color }}">
 <div class="intro">
-        <img src="{{ asset('assets/images/auth/favicon.png') }}" style="width: 120px; height: 120px;">
+        <img src="{{ asset('assets/images/auth/favicon-expert.png') }}" style="width: 120px; height: 120px;">
         <h1 class="logo-intro">
             <span class="logo-parts">Welcome</span>
              <span class="logo-parts">to</span>
-              <span class="logo-parts">AUP</span>
-               <span class="logo-parts">APPS</span>
+              <span class="logo-parts">Unlimited</span>
+               <span class="logo-parts">Expert</span>
         </h1>
         {{-- <p style="font-size: 20px; color: white;">Simplify and Streamline Your Work.</p> --}}
 </div> 
@@ -234,10 +233,10 @@
                             <a class="navbar-brand" href="{{ url('/') }}">
                             @if($mode_setting['cust_darklayout'] && $mode_setting['cust_darklayout'] == 'on' )
                                 <img src="{{ $logo . '/' . (isset($company_logos) && !empty($company_logos) ? $company_logos : 'logo-dark.png') }}"
-                                    alt="{{ config('app.name', 'TGS AU-Partners Apps') }}" class="logo w-50">
+                                    alt="{{ config('app.name', 'Unlimited Expert') }}" class="logo w-50">
                             @else
                                 <img src="{{ $logo . '/' . (isset($company_logo) && !empty($company_logo) ? $company_logo : 'logo-dark.png') }}"
-                                    alt="{{ config('app.name', 'TGS AU-Partners Apps') }}" class="logo w-50">
+                                    alt="{{ config('app.name', 'Unlimited Expert') }}" class="logo w-50">
                             @endif
                             </a>
                         </div>
