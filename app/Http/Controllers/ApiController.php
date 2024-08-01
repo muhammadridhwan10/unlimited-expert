@@ -574,11 +574,25 @@ class ApiController extends Controller
     public function getLeaveTypes(Request $request)
     {
         $user = \Auth::user();
-        $leaveTypes = [];
+		$employee = Employee::where('user_id', $user->id)->first();
+		$leaveTypes = LeaveType::all();
+		$leaveCounts = [];
 
-        $leaveTypes = LeaveType::all();
+		foreach ($leaveTypes as $type) {
+			$usedLeave = Leave::where('leave_type_id', $type->id)
+				->where('employee_id', $employee->id)
+				->whereYear('created_at', now()->year)
+				->sum('total_leave_days');
 
-        return response()->json($leaveTypes, 200);
+			$leaveCounts[] = [
+				'id' => $type->id,
+				'title' => $type->title,
+				'used' => $usedLeave,
+				'total' => $type->days,
+			];
+		}
+
+		return response()->json($leaveCounts, 200);
     }
 	
 	public function getBranch(Request $request)
