@@ -52,7 +52,7 @@ $settings = \App\Models\Utility::settings();
                                                             <img src="https://i.postimg.cc/9XbjrKPR/logo-light.png" style="border:none;max-width:100%" width="150px" class="CToWUd">
                                                         </div>
                                                         <br>
-                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Kepada {{ $invoice->client->name }}</p>
+                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Kepada {{ $invoice->client->clients->name_invoice ?? 'Client' }}</p>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Salam Hormat,</p>
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Kami berharap Bapak/Ibu dalam keadaan baik. Sehubungan dengan Jasa @foreach($productNames as $productName) {{ $productName }}, @endforeach yang telah kami sediakan, bersama ini kami lampirkan invoice terkait untuk pembayaran.</p>
