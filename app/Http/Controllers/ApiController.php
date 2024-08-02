@@ -26,6 +26,7 @@ use App\Models\UserOvertime;
 use App\Models\ReimbursmentType;
 use App\Models\Announcement;
 use App\Models\AnnouncementEmployee;
+use App\Models\ProductServiceCategory;
 use App\Models\DocumentRequest;
 use App\Mail\LeaveNotification;
 use App\Mail\MedicalAllowanceNotification;
@@ -978,6 +979,16 @@ class ApiController extends Controller
         }
 
         return response()->json(['message' => 'Document Request successfully created', 'data' => $document], 200);
+    }
+
+    public function getService(Request $request)
+    {
+        $user = \Auth::user();
+        $services = [];
+
+        $services = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 1)->get();
+
+        return response()->json($services, 200);
     }
 
 }
