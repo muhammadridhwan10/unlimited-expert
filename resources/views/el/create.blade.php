@@ -1,23 +1,33 @@
 {{Form::open(array('url'=>'el','method'=>'post','enctype' => 'multipart/form-data'))}}
 <div class="modal-body">
     <div class="form-group">
-        {{ Form::label('is_existing', 'The EL Data Already Exist?') }}
+        {{ Form::label('is_existing', 'The EL Data Already Exist?') }}<span class="text-danger">*</span>
         {{ Form::select('is_existing', ['' => 'Select...', 'true' => 'Already Exists', 'false' => 'Not Yet'], null, ['class' => 'form-control', 'id' => 'is_existing']) }}
     </div>
 
     <div class="form-group existing-el" style="display: none;">
-        {{ Form::label('existing_el', 'Select EL') }}
+        {{ Form::label('existing_el', 'Select EL') }}<span class="text-danger">*</span>
         {{ Form::select('existing_el', $el, null, ['class' => 'form-control']) }}
     </div>
 
     <div class="form-group new-el" style="display: none;">
-        {{ Form::label('el_number', 'EL Number') }}
+        {{ Form::label('el_number', 'EL Number') }}<span class="text-danger">*</span>
         {{ Form::text('el_number', null, ['class' => 'form-control']) }}
     </div>
 
     <div class="form-group new-el" style="display: none;">
-        {{ Form::label('file', 'File') }}
+        {{ Form::label('file', 'File') }}<span class="text-danger">*</span>
         <input type="file" accept=".pdf" class="form-control" name="file" id="file" data-filename="file_create">
+    </div>
+        
+    <div class="form-group">
+        {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+        <select name="status" id="status" class="form-control main-element" required>
+            <option value="0">{{__('Select Status EL')}}</option>
+            @foreach(\App\Models\El::$status as $k => $v)
+                <option value="{{$k}}">{{__($v)}}</option>
+            @endforeach
+        </select>
     </div>
 
     <div class="form-group">

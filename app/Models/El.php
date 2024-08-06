@@ -14,6 +14,13 @@ class El extends Model
         'client_id',
         'el_number',
         'file',
+        'status',
         'created_by',
+    ];
+
+    public static $status=[
+        'Draft' => 'Draft',
+        'Revision' => 'Revision',
+        'Latest' => 'Latest',
     ];
 }

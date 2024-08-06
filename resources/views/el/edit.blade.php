@@ -10,6 +10,16 @@
         <input type="file" accept=".pdf" class="form-control" name="file" id="file" data-filename="file_create">
     </div>
 
+    <div class="form-group">
+        {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+        <select name="status" id="status" class="form-control main-element" required>
+            <option value="0">{{__('Select Status EL')}}</option>
+            @foreach(\App\Models\El::$status as $k => $v)
+                <option value="{{$k}}">{{__($v)}}</option>
+            @endforeach
+        </select>
+    </div>
+
     {{ Form::hidden('project_id', $el->project_id) }}
     {{ Form::hidden('client_id', $el->client_id) }}
 </div>

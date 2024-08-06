@@ -54,6 +54,7 @@ class ElController extends Controller
         $el->project_id           = $request->project_id;
         $el->client_id            = $request->client_id;
         $el->el_number            = $request->el_number;
+        $el->status               = $request->status;
         $el->file                 = !empty('uploads/el/' . $client->name . '/'  . $request->file) ? 'uploads/el/'  . $client->name . '/'  .  $fileNameToStore : '';
         $el->created_by           = \Auth::user()->creatorId();
 
@@ -106,6 +107,7 @@ class ElController extends Controller
         $el->project_id = $request->project_id;
         $el->client_id = $request->client_id;
         $el->el_number = $request->el_number;
+        $el->status    = $request->status;
         $el->created_by = auth()->user()->id;
 
         $el->save();

@@ -161,21 +161,21 @@
         <div class="row">
             <div class="col-md-4">
                 <div class="form-group">
-                    {{ Form::label('termin1_proposal', __('Payment Termint 1 (%)'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{ Form::label('termin1_proposal', __('Payment Termin 1 (%)'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                     {{ Form::text('termin1_proposal', null, array('class'=>'form-control'))}}
                 </div>
             </div>
 
             <div class="col-md-4">
                 <div class="form-group">
-                    {{ Form::label('termin2_proposal', __('Payment Termint 2 (%)'),['class'=>'form-label']) }}
+                    {{ Form::label('termin2_proposal', __('Payment Termin 2 (%)'),['class'=>'form-label']) }}
                     {{ Form::text('termin2_proposal', null, array('class'=>'form-control'))}}
                 </div>
             </div>
 
             <div class="col-md-4">
                 <div class="form-group">
-                    {{ Form::label('termin3_proposal', __('Payment Termint 3 (%)'),['class'=>'form-label']) }}
+                    {{ Form::label('termin3_proposal', __('Payment Termin 3 (%)'),['class'=>'form-label']) }}
                     {{ Form::text('termin3_proposal', null, array('class'=>'form-control'))}}
                 </div>
             </div>

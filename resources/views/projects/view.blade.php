@@ -615,6 +615,7 @@
                     </div>
                 </div>
             @endif
+            @if(Auth::user()->type == "admin" || Auth::user()->type == "company" || Auth::user()->type == "senior accounting" || Auth::user()->type == "senior audit" || Auth::user()->type == "manager audit")
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
@@ -636,6 +637,7 @@
                                         <tr>
                                             <th>{{ __('El Number') }}</th>
                                             <th>{{ __('File Contract') }}</th>
+                                            <th>{{ __('Status') }}</th>
                                             <th>{{ __('Action') }}</th>
                                         </tr>
                                     </thead>
@@ -645,6 +647,18 @@
                                                 <td>{{ $els->el_number}}</td>
                                                 <td>
                                                     <img alt="Image placeholder" src="{{ asset('assets/images/gallery.png')}}" class="avatar view-images rounded-circle avatar-sm" data-bs-toggle="tooltip" title="{{__('View File')}}" data-original-title="{{__('View File')}}" style="height: 25px;width:24px;margin-right:10px;cursor: pointer;" data-id="{{$els->id}}" id="track-images-{{$els->id}}">
+                                                </td>
+                                                <td>
+                                                    @if ($els->status == 'Draft')
+                                                        <span
+                                                            class="status_badge badge bg-secondary p-2 px-3 rounded">{{ __(\App\Models\El::$status[$els->status]) }}</span>
+                                                    @elseif($els->status == 'Revision')
+                                                        <span
+                                                            class="status_badge badge bg-warning p-2 px-3 rounded">{{ __(\App\Models\El::$status[$els->status]) }}</span>
+                                                    @elseif($els->status == 'Latest')
+                                                        <span
+                                                            class="status_badge badge bg-success p-2 px-3 rounded">{{ __(\App\Models\El::$status[$els->status]) }}</span>
+                                                    @endif
                                                 </td>
                                                 <td>
                                                     <div class="action-btn bg-primary ms-2">
@@ -666,6 +680,7 @@
                         </div>
                     </div>
                 </div>
+            @endif
             {{-- <div class="col-lg-6 col-md-6">
                 <div class="card">
                     <div class="card-header">

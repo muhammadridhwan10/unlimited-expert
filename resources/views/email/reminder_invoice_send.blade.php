@@ -24,7 +24,7 @@ $invoice_url  = route('invoice.pdf', $invoiceId);
 
 ?>
 <div style="background-color:#f6f6f6;font-family:sans-serif;font-size:14px;line-height:1.4;margin:0;padding:0">
-    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Dear {{ $invoice->client->name }} Just wanted to send a friendly reminder about your monthly payment.</span>
+    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Dear {{ $invoice->client->name }} Just wanted to send a friendly reminder about your pending payment.</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse:separate;background-color:#f6f6f6;width:100%" width="100%" bgcolor="#f6f6f6">
         <tbody>
             <tr>
@@ -48,11 +48,11 @@ $invoice_url  = route('invoice.pdf', $invoiceId);
                                                         </div>
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Dear {{ $invoice->client->name }}</p>
-                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">We wanted to send a friendly reminder about your monthly payment. Please make sure to submit payment confirmation.</p>
+                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">We wanted to send a friendly reminder about your pending payment. Please make sure to submit payment confirmation.</p>
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">If you have already made the payment, please disregard this reminder and accept our gratitude. Feel free to submit a ticket at the link below if you have any questions.</p>
                                                         <br>
-                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">To view your monthly invoice : {{$invoice_url}}</p>
+                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">To view your pending invoice : {{$invoice_url}}</p>
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Much appreciated!</p>
                                                         <br>
