@@ -79,6 +79,10 @@
                     <td>{{ !empty($document->service->name)?$document->service->name:'-' }}</td>
                 </tr>
                 <tr>
+                    <th>{{__('Period')}}</th>
+                    <td>{{ !empty($document->period)?$document->period:'-' }}</td>
+                </tr>
+                <tr>
                     <th>{{__('Termin (%)')}}</th>
                     <td>
                         {{ !empty($document->termin1) ? $document->termin1 . '%' : '-' }},

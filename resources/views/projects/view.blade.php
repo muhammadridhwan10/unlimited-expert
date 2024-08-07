@@ -615,7 +615,7 @@
                     </div>
                 </div>
             @endif
-            @if(Auth::user()->type == "admin" || Auth::user()->type == "company" || Auth::user()->type == "senior accounting" || Auth::user()->type == "senior audit" || Auth::user()->type == "manager audit")
+            @if(Auth::user()->type == "admin" || Auth::user()->type == "company" || Auth::user()->type == "senior accounting" || Auth::user()->type == "senior audit" || Auth::user()->type == "manager audit" || Auth::user()->type == "partners")
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
