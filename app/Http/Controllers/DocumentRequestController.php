@@ -9,6 +9,7 @@ use App\Models\ProductServiceCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Mail\DocumentRequestNotification;
+use App\Mail\DocumentCompletedNotification;
 use Illuminate\Support\Facades\Mail;
 
 class DocumentRequestController extends Controller
@@ -337,6 +338,11 @@ class DocumentRequestController extends Controller
 
         $document->status = 'Completed';
         $document->save();
+
+        //Email Notification
+        $employee = Employee::where('id', $document->employee_id)->first();
+        $email = $employee->email;
+        Mail::to($email)->send(new DocumentCompletedNotification($document));
 
         return redirect()->route('document-request.index')->with('success', __('Document Request successfully updated.'));
     }

@@ -9,7 +9,49 @@
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('name', __('Client Name'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{ Form::text('name', null, array('class'=>'form-control','required'=>'required'))}}
+                    {{ Form::text('name', null, array('class'=>'form-control','placeholder' => 'Enter Client Name', 'required'=>'required',))}}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ Form::label('address', __('Address'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{Form::text('address',null,array('class'=>'form-control', 'placeholder' => 'Enter Client Address'))}}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ Form::label('country', __('Country'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{Form::text('country',null,array('class'=>'form-control', 'placeholder' => 'Enter Client Country'))}}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ Form::label('state', __('State'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{Form::text('state',null,array('class'=>'form-control', 'placeholder' => 'Enter Client State'))}}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ Form::label('city', __('City'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{Form::text('city',null,array('class'=>'form-control', 'placeholder' => 'Enter Client City'))}}
+                </div>
+            </div>
+             <div class="col-md-6">
+                <div class="form-group">
+                    {{ Form::label('name_pic', __('Name PIC'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{Form::text('name_pic',null,array('class'=>'form-control', 'placeholder' => 'Enter Name PIC'))}}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ Form::label('email_pic', __('Email PIC'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{Form::text('email_pic',null,array('class'=>'form-control', 'placeholder' => 'Enter Email PIC'))}}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ Form::label('telp_pic', __('Whatsapp Number PIC'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{Form::number('telp_pic',null,array('class'=>'form-control', 'placeholder' => 'Enter Whatsapp Number PIC'))}}
                 </div>
             </div>
             <div class="col-md-6">  
@@ -41,100 +83,72 @@
                     {{ Form::select('accounting_standars_id', $accountingstandards,null, array('class' => 'form-control select')) }}
                 </div>
             </div>
+            <h3>Invoice</h3>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('email', __('Client Email'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::text('email',null,array('class'=>'form-control'))}}
+                    {{Form::text('email',null,array('class'=>'form-control', 'placeholder' => 'Enter Client Email'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('name_invoice', __('Attention'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::text('name_invoice',null,array('class'=>'form-control'))}}
+                    {{Form::text('name_invoice',null,array('class'=>'form-control', 'placeholder' => 'Enter Name Attention For Invoice'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('position', __('Position'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::text('position',null,array('class'=>'form-control'))}}
+                    {{Form::text('position',null,array('class'=>'form-control', 'placeholder' => 'Enter Position Attention For Invoice'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('telp', __('Telp'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::number('telp',null,array('class'=>'form-control'))}}
+                    {{Form::number('telp',null,array('class'=>'form-control', 'placeholder' => 'Enter Telephone Number Attention For Invoice'))}}
+                </div>
+            </div>
+            <h3>Other Information</h3>
+            <div class="col-md-6" id="periode" style="display: none;">
+                <div class="form-group">
+                    {{ Form::label('periode', __('Periode Order'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                    <input type="text" name="periode" class="form-control" placeholder="2023 / 2023 - 2024" required/>
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    {{ Form::label('name_pic', __('Name PIC'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::text('name_pic',null,array('class'=>'form-control'))}}
+                    {{ Form::label('total_company_income_per_year', __('Total Company Revenue'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{Form::number('total_company_income_per_year',null,array('class'=>'form-control', 'placeholder' => 'Enter Total Company Revenue'))}}
+                </div>
+            </div>
+            <div class="col-md-6" id= "total_company_assets_value">
+                <div class="form-group">
+                    {{ Form::label('total_company_assets_value', __('Total Company Assets'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{Form::number('total_company_assets_value',null,array('class'=>'form-control', 'placeholder' => 'Enter Total Company Assets'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    {{ Form::label('email_pic', __('Email PIC'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::text('email_pic',null,array('class'=>'form-control'))}}
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    {{ Form::label('telp_pic', __('Telp PIC'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::number('telp_pic',null,array('class'=>'form-control'))}}
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    {{ Form::label('total_company_income_per_year', __('Total Company Income Per Year'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::number('total_company_income_per_year',null,array('class'=>'form-control'))}}
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    {{ Form::label('total_company_assets_value', __('Total Company Assets Value'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::number('total_company_assets_value',null,array('class'=>'form-control'))}}
+                    {{ Form::label('total_company_profit_or_loss', __('Total Company Profit Or Loss For The Year'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                    {{ Form::number('total_company_profit_or_loss', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Company Profit Or Loss For The Year', 'required')) }}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('total_employee', __('Total Employee'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::number('total_employee',null,array('class'=>'form-control'))}}
+                    {{Form::number('total_employee',null,array('class'=>'form-control', 'placeholder' => 'Enter Total Employee'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('total_branch_offices', __('Total Branch Offices'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::number('total_branch_offices',null,array('class'=>'form-control'))}}
+                    {{Form::number('total_branch_offices',null,array('class'=>'form-control', 'placeholder' => 'Enter Total Branch Office'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('npwp', __('Tax Number'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::text('npwp',null,array('class'=>'form-control'))}}
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    {{ Form::label('address', __('Address'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::text('address',null,array('class'=>'form-control'))}}
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    {{ Form::label('country', __('Country'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::text('country',null,array('class'=>'form-control'))}}
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    {{ Form::label('state', __('State'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::text('state',null,array('class'=>'form-control'))}}
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    {{ Form::label('city', __('City'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::text('city',null,array('class'=>'form-control'))}}
+                    {{Form::text('npwp',null,array('class'=>'form-control', 'placeholder' => 'Enter Tax Number'))}}
                 </div>
             </div>
         </div>
@@ -145,7 +159,7 @@
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('project_name', __('Project Name'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{ Form::text('project_name', null, array('class'=>'form-control','required'=>'required'))}}
+                    {{ Form::text('project_name', null, array('class'=>'form-control','required'=>'required', 'placeholder' => 'Enter Project Name'))}}
                 </div>
             </div>
             <div class="col-md-6">
@@ -160,7 +174,7 @@
                     {{ Form::date('end_date', null, ['class' => 'form-control']) }}
                 </div>
             </div>
-             <div class="col-md-6">
+            <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('public_accountant_id', __('Public Accountant'),['class'=>'form-label']) }}
                     {!! Form::select('public_accountant_id', $public_accountant, null,array('class' => 'form-control')) !!}
@@ -211,7 +225,7 @@
             <div class="col-md-12">
                 <div class="form-group">
                     {{ Form::label('description', __('Description'),['class'=>'form-label']) }}
-                    {{Form::textarea('description',null,array('class'=>'form-control'))}}
+                    {{Form::textarea('description',null,array('class'=>'form-control', 'placeholder' => 'Enter Description Project'))}}
                 </div>
             </div>
         </div>
@@ -222,66 +236,66 @@
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('ph_partners', __('Project Hour Partner'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{ Form::number('ph_partners', null, array('class'=>'form-control','required'=>'required'))}}
+                    {{ Form::number('ph_partners', null, array('class'=>'form-control','required'=>'required','placeholder' => 'Enter Project Hour Partner'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('rate_partners', __('Rate Partner'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{ Form::number('rate_partners', null, array('class'=>'form-control','required'=>'required'))}}
+                    {{ Form::number('rate_partners', null, array('class'=>'form-control','required'=>'required', 'placeholder' => 'Enter Rate Partner'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('ph_manager', __('Project Hour Manager'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{ Form::number('ph_manager', null, array('class'=>'form-control','required'=>'required'))}}
+                    {{ Form::number('ph_manager', null, array('class'=>'form-control','required'=>'required', 'placeholder' => 'Enter Project Hour Manager'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('rate_manager', __('Rate Manager'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{ Form::number('rate_manager', null, array('class'=>'form-control','required'=>'required'))}}
+                    {{ Form::number('rate_manager', null, array('class'=>'form-control','required'=>'required', 'placeholder' => 'Enter Rate Manager'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('ph_senior', __('Project Hour Senior Associate'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{ Form::number('ph_senior', null, array('class'=>'form-control','required'=>'required'))}}
+                    {{ Form::number('ph_senior', null, array('class'=>'form-control','required'=>'required', 'placeholder' => 'Enter Project Hour Senior Associate'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('rate_senior', __('Rate Senior Associate'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{ Form::number('rate_senior', null, array('class'=>'form-control','required'=>'required'))}}
+                    {{ Form::number('rate_senior', null, array('class'=>'form-control','required'=>'required', 'placeholder' => 'Enter Rate Senior Associate'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('ph_associate', __('Project Hour Associate'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{ Form::number('ph_associate', null, array('class'=>'form-control','required'=>'required'))}}
+                    {{ Form::number('ph_associate', null, array('class'=>'form-control','required'=>'required', 'placeholder' => 'Enter Project Hour Associate'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('rate_associate', __('Rate Associate'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{ Form::number('rate_associate', null, array('class'=>'form-control','required'=>'required'))}}
+                    {{ Form::number('rate_associate', null, array('class'=>'form-control','required'=>'required', 'placeholder' => 'Enter Rate Partner'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('ph_assistant', __('Project Hour Assistant'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{ Form::number('ph_assistant', null, array('class'=>'form-control','required'=>'required'))}}
+                    {{ Form::number('ph_assistant', null, array('class'=>'form-control','required'=>'required', 'placeholder' => 'Enter Project Hour Assistant'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
                     {{ Form::label('rate_assistant', __('Rate Assistant'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{ Form::number('rate_assistant', null, array('class'=>'form-control','required'=>'required'))}}
+                    {{ Form::number('rate_assistant', null, array('class'=>'form-control','required'=>'required', 'placeholder' => 'Enter Rate Assistant'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    {{ Form::label('estimated_hrs', __('Total Project Hours'),['class'=>'form-label']) }}
+                    {{ Form::label('estimated_hrs', __('Total Project Hours (Time Budget)'),['class'=>'form-label']) }}
                     {{Form::text('estimated_hrs',null,array('class'=>'form-control', 'readonly'))}}
                 </div>
             </div>
@@ -346,17 +360,30 @@ $(document).ready(function() {
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function(){
-        $('#category_services').change(function(){
-            var selectedCategory = $(this).val();
-            if(selectedCategory === 'Audit'){
-                $('#client_ownership_id').show();
-                $('#accounting_standars_id').show();
-            } else {
-                $('#client_ownership_id').hide();
-                $('#accounting_standars_id').hide();
-            }
+            $('#category_services').change(function(){
+                var selectedCategory = $(this).val();
+                
+                if(selectedCategory === 'Audit'){
+                    $('#client_ownership_id').show();
+                    $('#accounting_standars_id').show();
+                } else {
+                    $('#client_ownership_id').hide();
+                    $('#accounting_standars_id').hide();
+                }
+
+                if(selectedCategory === 'KPPK' || selectedCategory === 'Agreed Upon Procedures (AUP)' || selectedCategory === 'Other') {
+                    $('#periode').hide();
+                } else {
+                    $('#periode').show();
+                }
+
+                if(selectedCategory === 'KPPK') {
+                    $('#total_company_assets_value').hide();
+                } else {
+                    $('#total_company_assets_value').show();
+                }
+            });
         });
-    });
 </script>
 <script>
     $(document).ready(function(){

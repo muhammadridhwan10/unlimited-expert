@@ -25,7 +25,7 @@
     <meta name="robots" content="noindex, nofollow">
 
     <!-- Favicon icon -->
-    <link rel="icon" href="{{$logo.'/'.(isset($company_favicon) && !empty($company_favicon)?$company_favicon:'favicon.png')}}" type="image/x-icon"/>
+    <link rel="icon" href="{{$logo.'/'.(isset($company_favicon) && !empty($company_favicon)?$company_favicon:'favicon.png')}}" sizes="100x100" type="image/x-icon"/>
 
     <!-- font css -->
     <link rel="stylesheet" href="{{ asset('assets/fonts/tabler-icons.min.css') }}">
@@ -60,7 +60,7 @@
             top: 0;
             width: 100vw;
             height: 100vh;
-            background-image: url('{{ asset('assets/images/auth/tgs_cleanup.jpg') }}');
+            background-image: url('{{ asset('assets/images/auth/hiking.jpg') }}');
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center;
@@ -138,7 +138,7 @@
 </head>
 
 <body class="{{ $color }}">
-<div class="intro">
+{{-- <div class="intro">
         <img src="{{ asset('assets/images/auth/favicon-expert.png') }}" style="width: 120px; height: 120px;">
         <h1 class="logo-intro">
             <span class="logo-parts">Welcome</span>
@@ -146,8 +146,8 @@
               <span class="logo-parts">Unlimited</span>
                <span class="logo-parts">Expert</span>
         </h1>
-        {{-- <p style="font-size: 20px; color: white;">Simplify and Streamline Your Work.</p> --}}
-</div> 
+        <p style="font-size: 20px; color: white;">Simplify and Streamline Your Work.</p>
+</div>  --}}
 {{-- <div class="auth-wrapper auth-v3">
     <div class="bg-auth-side bg-primary">
         <img
@@ -219,11 +219,11 @@
         </div>
     </div>
 </div> --}}
-<div class="custom-login bg-primary">
-        <div class="login-bg-img">
+<div class="custom-login" style="background-image: url('{{ asset('assets/images/auth/working.jpg') }}'); background-size: cover; background-position: center;">
+        {{-- <div class="login-bg-img">
             <img src="{{ asset('assets/images/auth/'.$color.'.svg') }}" class="login-bg-1">
             <img src="{{ asset('assets/images/auth/common.svg') }}" class="login-bg-2">
-        </div>
+        </div> --}}
         {{-- <div class="bg-login bg-primary"></div> --}}
         <div class="custom-login-inner">
             <header class="dash-header">
@@ -273,7 +273,7 @@
                     <div class="container">
                         <div class="row">
                             <div class="col-12">
-                                <p class="mb-0"> &copy;
+                                <p style="color:white;" class="mb-0"> &copy;
                                     {{ date('Y') }} {{ Utility::getValByName('footer_text') ? Utility::getValByName('footer_text') : config('app.name', 'ERPGo') }}
                                 </p>
                             </div>

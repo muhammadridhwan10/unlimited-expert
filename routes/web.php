@@ -353,6 +353,18 @@ Route::resource('product-unit', 'ProductServiceUnitController')->middleware(
     ]
 );
 
+Route::get(
+    '/projects/{id}/invoice', [
+    'as' => 'projects.invoice',
+    'uses' => 'ProjectController@invoice',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
 
 Route::get('invoice/pdf/{id}', 'InvoiceController@invoice')->name('invoice.pdf')->middleware(
     [

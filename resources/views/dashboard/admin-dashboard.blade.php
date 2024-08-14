@@ -440,6 +440,83 @@
                 }
             });
         </script>
+        <script>
+            var ptx = document.getElementById('attendanceChartPusat').getContext('2d');
+            var btx = document.getElementById('attendanceChartBekasi').getContext('2d');
+            var mtx = document.getElementById('attendanceChartMalang').getContext('2d');
+            var attendanceChartPusat = new Chart(ptx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 31}, (v, k) => k + 1),
+                    datasets: [{
+                        label: 'Present',
+                        data: @json($absentDataPusat),
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: 'Late',
+                        data: @json($lateDataPusat),
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            var attendanceChartBekasi = new Chart(btx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 31}, (v, k) => k + 1),
+                    datasets: [{
+                        label: 'Present',
+                        data: @json($absentDataBekasi),
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: 'Late',
+                        data: @json($lateDataBekasi),
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+            var attendanceChartMalang = new Chart(mtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 31}, (v, k) => k + 1),
+                    datasets: [{
+                        label: 'Present',
+                        data: @json($absentDataMalang),
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2
+                    }, {
+                        label: 'Late',
+                        data: @json($lateDataMalang),
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        </script>
     @endforeach
 
 
@@ -512,7 +589,7 @@
                 <div class="col-lg-12">
                     <div class="tab-content" id="pills-tabContent">
                         <div class="tab-pane fade active show" id="company-hrm" role="tabpanel"
-                        aria-labelledby="pills-user-tab-1">
+                            aria-labelledby="pills-user-tab-1">
                             <div class="row">
                                 <div class="col-xxl-12">
                                     <div class="card">
@@ -557,7 +634,7 @@
                                 <div class="col-xxl-12">
                                     <div class="card">
                                         <div class="card-header">
-                                            <h5>{{__("Didn't Activate AUP Tracker today")}}</h5>
+                                            <h5>{{__("Didn't Activate Unlimited Tracker today")}}</h5>
                                         </div>
                                         <div class="card-body">
                                             <div class="row">
@@ -579,6 +656,85 @@
                                     </div>
                                 </div>
                             </div>
+                            {{ Form::open(array('route' => array('admin.dashboard'),'method'=>'get','id'=>'report_monthly_medical_allowance')) }}
+                            <div class="row">
+                                <div class="col-xxl-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <div class="row align-items-center justify-content-end">
+                                                <div class="col-auto">
+
+                                                    <div class="row">
+                                                        <div class="col-auto">
+                                                            <div class="btn-box">
+                                                                {{Form::label('month',__('Month'),['class'=>'form-label'])}}
+                                                                {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-auto">
+                                                    <div class="row">
+                                                        <div class="col-auto mt-4">
+                                                            <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_monthly_medical_allowance').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
+                                                                <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
+                                                            </a>
+                                                            <a href="{{route('admin.dashboard')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
+                                                                <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xxl-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>{{__("Attendance Statistics Pusat")}}</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <canvas id="attendanceChartPusat" width="400" height="200"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xxl-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>{{__("Attendance Statistics Bekasi")}}</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <canvas id="attendanceChartBekasi" width="400" height="200"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xxl-6">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5>{{__("Attendance Statistics Malang")}}</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <canvas id="attendanceChartMalang" width="400" height="200"></canvas>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {{ Form::close() }}
                             <div class="row">
                                 <div class="col-md-6">
                                    <div class="card">

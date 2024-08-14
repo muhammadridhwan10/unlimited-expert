@@ -29,6 +29,7 @@ use DateInterval;
 use App\Models\ProjectTask;
 use App\Models\ProjectUser;
 use App\Models\TaskStage;
+use App\Models\InvoiceProduct;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -1819,6 +1820,12 @@ class ProjectController extends Controller
     {
         $treckers=TimeTracker::with('user')->where('project_id',$id)->get();
         return view('time_trackers.index',compact('treckers'));
+    }
+
+    public function invoice($id)
+    {
+        $invoices = InvoiceProduct::with('invoice')->where('product_id',$id)->get();
+        return view('projects.invoice',compact('invoices'));
     }
 
     public function ClientInformation(Request $request, $project_id)

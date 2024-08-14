@@ -31,6 +31,7 @@
                                         <th>{{__('Employee')}}</th>
                                     @endif
                                     <th>{{__('Approval By')}}</th>
+                                    <th>{{__('Request Date')}}</th>
                                     <th>{{__('Document Type')}}</th>
                                     <th>{{__('File')}}</th>
                                     <th>{{__('Status')}}</th>
@@ -44,6 +45,7 @@
                                             <td>{{!empty($document->employee->name)?$document->employee->name:'-'}}</td>
                                         @endif
                                         <td>{{!empty($document->user->name)?$document->user->name:'-'}}</td>
+                                        <td>{{!empty($document->created_at)?$document->created_at:'-'}}</td>
                                         <td>{{ !empty($document->document_type)?$document->document_type:'-' }}</td>
                                         <td>
                                             @if($document->document_type == 'Contract Employee' || $document->document_type == 'Other Letters')

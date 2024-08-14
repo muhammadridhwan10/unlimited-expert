@@ -29,7 +29,7 @@ class ProjectOrdersController extends Controller
     {
         if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting')
         {
-            $orders = ProjectOrders::where('status_client', '=', 'Approved')->get();
+            $orders = ProjectOrders::all();
             return view('projectorder.index', compact('orders'));
         }
         else
@@ -82,6 +82,7 @@ class ProjectOrdersController extends Controller
             $projectOrder->telp_pic = $request->telp_pic;
             $projectOrder->total_company_income_per_year = $request->total_company_income_per_year;
             $projectOrder->total_company_assets_value = $request->total_company_assets_value;
+            $projectOrder->total_company_profit_or_loss = $request->total_company_profit_or_loss;
             $projectOrder->total_employee = $request->total_employee;
             $projectOrder->total_branch_offices = $request->total_branch_offices;
             $projectOrder->npwp = $request->npwp;
@@ -111,6 +112,8 @@ class ProjectOrdersController extends Controller
             $projectOrder->rate_assistant = $request->rate_assistant;
             $projectOrder->estimated_hrs = $request->estimated_hrs;
             $projectOrder->budget = $request->budget;
+            $projectOrder->periode = $request->periode;
+            $projectOrder->category_service = $request->category_services;
             $projectOrder->created_by = \Auth::user()->creatorId();
 
             
@@ -194,6 +197,7 @@ class ProjectOrdersController extends Controller
             $projectOrder->email_pic = $request->email_pic;
             $projectOrder->telp_pic = $request->telp_pic;
             $projectOrder->total_company_income_per_year = $request->total_company_income_per_year;
+            $projectOrder->total_company_profit_or_loss = $request->total_company_profit_or_loss;
             $projectOrder->total_company_assets_value = $request->total_company_assets_value;
             $projectOrder->total_employee = $request->total_employee;
             $projectOrder->total_branch_offices = $request->total_branch_offices;
@@ -224,6 +228,8 @@ class ProjectOrdersController extends Controller
             $projectOrder->rate_assistant = $request->rate_assistant;
             $projectOrder->estimated_hrs = $request->estimated_hrs;
             $projectOrder->budget = $request->budget;
+            $projectOrder->periode = $request->periode;
+            $projectOrder->category_service = $request->category_services;
             $projectOrder->save();
 
             return redirect()->route('project-orders.index')->with('success', 'Project Order updated successfully.');

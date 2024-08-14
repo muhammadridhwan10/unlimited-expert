@@ -40,4 +40,8 @@ class InvoiceProduct extends Model
         return $this->belongsTo(ProductService::class, 'product_id');
     }
 
+    public function invoice(){
+        return $this->belongsTo(Invoice::class, "invoice_id", "id");
+    }
+
 }

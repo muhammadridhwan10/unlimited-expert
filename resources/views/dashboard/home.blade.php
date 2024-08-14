@@ -4,6 +4,7 @@
 @endsection
 @push('script-page')
     <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
 
 
@@ -245,6 +246,35 @@
             incomeListCard.style.display = 'none';
         }
     });
+    </script>
+    <script>
+    @if(\Auth::user()->type == 'partners')
+        var ctx = document.getElementById('attendanceChart').getContext('2d');
+        var attendanceChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 31}, (v, k) => k + 1),
+                datasets: [{
+                    label: 'Present',
+                    data: @json($absentData),
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2
+                }, {
+                    label: 'Late',
+                    data: @json($lateData),
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    @endif
     </script>
 @endpush
 @push('css-page')
@@ -966,6 +996,22 @@
                             </div>
                         </div>
                         {{ Form::close() }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xxl-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{__("Attendance Statistics")}}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <canvas id="attendanceChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

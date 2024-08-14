@@ -1316,6 +1316,7 @@ class DashboardController extends Controller
                     elseif($user->type == 'partners')
                     {
 
+                        $absentData = [];
                         $branch = Employee::where('user_id', $user->id)->first();
 
                         $employees = Employee::select('id', 'name');
@@ -1340,6 +1341,45 @@ class DashboardController extends Controller
                             $month    = date('m');
                             $year     = date('Y');
                             $curMonth = date('M-Y', strtotime($year . '-' . $month));
+                        }
+
+                        if($branch->branch_id == 1)
+                        {
+                            $officeTime['startTime']    = Utility::getValByName('company_start_time');
+                            $officeTime['endTime']      = Utility::getValByName('company_end_time');
+                        }
+                        elseif($branch->branch_id == 2)
+                        {
+                            $officeTime['startTime']    = "08:30";
+                            $officeTime['endTime']      = "17:30";
+                        }
+                        elseif($branch->branch_id == 3)
+                        {
+                            $officeTime['startTime']    = "08:00";
+                            $officeTime['endTime']      = "17:00";
+                        }
+
+                        for ($day = 1; $day <= 31; $day++) {
+                            $months = $request->month ?? date('Y-m');
+                            $date = sprintf('%s-%02d', $months, $day);
+                            
+                            $absentCount = AttendanceEmployee::where('date', '=', $date)
+                                ->where('status', '=', 'Present')->whereHas('employee', function ($query) use ($branch) {
+                                    $query->where('branch_id', '=', $branch->branch_id);
+                                })
+                                ->count();
+                            
+                            $lateCount = 0;
+                            
+                            $lateCount = AttendanceEmployee::where('date', '=', $date)
+                                ->where('status', '=', 'Present')->whereHas('employee', function ($query) use ($branch, $officeTime) {
+                                    $query->where('branch_id', '=', $branch->branch_id)
+                                        ->whereTime('clock_in', '>', $officeTime['startTime']);
+                                })
+                                ->count();
+            
+                            $absentData[] = $absentCount;
+                            $lateData[] = $lateCount;
                         }
 
 
@@ -1435,6 +1475,8 @@ class DashboardController extends Controller
                         $data['list_expense'] = Payment::where('user_id', \Auth::user()->id)->where('status', 3)->get();
 
                         $data['incPartExpBarChartData']  = \Auth::user()->getincPartExpBarChartData();
+                        $data['absentData'] = $absentData;
+                        $data['lateData'] = $lateData;
                         $data['currentYear']  = date('Y');
                         $data['currentMonth'] = date('M');
 
@@ -1557,6 +1599,18 @@ class DashboardController extends Controller
 
                 //---------------------------HRM-----------------------------------------------
 
+                $absentData = [];
+                $absentDataPusat = [];
+                $absentDataBekasi = [];
+                $absentDataMalang = [];
+                $lateData = [];
+
+                if ($request->has('month')) {
+                    $selectedMonth = $request->input('month');
+                } else {
+                    $selectedMonth = date('Y-m'); // Default ke bulan sekarang dengan format 'YYYY-MM'
+                }
+
                 $employees           = User::where('type', '!=', 'client')->get();
                 $countEmployee = count($employees);
 
@@ -1581,6 +1635,84 @@ class DashboardController extends Controller
                     $officeTime['startTime']    = "08:00";
                     $officeTime['endTime']      = "17:00";
                 }
+
+                $branchTime = [
+                    1 => ['startTime' => Utility::getValByName('company_start_time'), 'endTime' => Utility::getValByName('company_end_time')],
+                    2 => ['startTime' => '08:30', 'endTime' => '17:30'],
+                    3 => ['startTime' => '08:00', 'endTime' => '17:00']
+                ];
+
+                for ($day = 1; $day <= 31; $day++) {
+                    $date = sprintf('%s-%02d', $selectedMonth, $day);
+                    
+                    // $absentCount = AttendanceEmployee::where('date', '=', $date)
+                    //     ->where('status', '=', 'Present')
+                    //     ->count();
+                    
+
+                    $absentCountPusat = AttendanceEmployee::where('date', '=', $date)
+                        ->where('status', '=', 'Present')->whereHas('employee', function ($query) {
+                            $query->where('branch_id', '=', 1);
+                        })
+                        ->count();
+                    
+                    $absentCountBekasi = AttendanceEmployee::where('date', '=', $date)
+                        ->where('status', '=', 'Present')->whereHas('employee', function ($query) {
+                            $query->where('branch_id', '=', 2);
+                        })
+                        ->count();
+
+                    $absentCountMalang = AttendanceEmployee::where('date', '=', $date)
+                        ->where('status', '=', 'Present')->whereHas('employee', function ($query) {
+                            $query->where('branch_id', '=', 3);
+                        })
+                        ->count();
+                    
+                    $lateCount = 0;
+                    $lateCountPusat = 0;
+                    $lateCountBekasi = 0;
+                    $lateCountMalang = 0;
+
+                    $lateCountPusat = AttendanceEmployee::where('date', '=', $date)
+                        ->where('status', '=', 'Present')->whereHas('employee', function ($query) {
+                            $query->where('branch_id', '=', 1)
+                                ->whereTime('clock_in', '>', '09:00:00');
+                        })
+                        ->count();
+                    
+                    $lateCountBekasi = AttendanceEmployee::where('date', '=', $date)
+                        ->where('status', '=', 'Present')->whereHas('employee', function ($query) {
+                            $query->where('branch_id', '=', 2)
+                                ->whereTime('clock_in', '>', '08:30:00');
+                        })
+                        ->count();
+                    
+                    $lateCountMalang = AttendanceEmployee::where('date', '=', $date)
+                        ->where('status', '=', 'Present')->whereHas('employee', function ($query) {
+                            $query->where('branch_id', '=', 3)
+                                ->whereTime('clock_in', '>', '08:00:00');
+                        })
+                        ->count();
+
+                    // foreach ($branchTime as $branchId => $officeTime) {
+                    //     $lateCount += AttendanceEmployee::where('date', '=', $date)
+                    //         ->whereHas('employee', function ($query) use ($branchId, $officeTime) {
+                    //             $query->where('branch_id', '=', $branchId)
+                    //                 ->whereTime('clock_in', '>', $officeTime['startTime']);
+                    //         })
+                    //         ->count();
+                    // }
+    
+                    // $absentData[] = $absentCount;
+                    $absentDataPusat[] = $absentCountPusat;
+                    $absentDataBekasi[] = $absentCountBekasi;
+                    $absentDataMalang[] = $absentCountMalang;
+                    // $lateData[] = $lateCount;
+                    $lateDataPusat[] = $lateCountPusat;
+                    $lateDataBekasi[] = $lateCountBekasi;
+                    $lateDataMalang[] = $lateCountMalang;
+                }
+                
 
 
                 $totalEmployees = [
@@ -1895,6 +2027,15 @@ class DashboardController extends Controller
                 $data['notEnableDesktops']       = $notEnableDesktops;
                 $data['employeeAttendance']       = $employeeAttendance;
                 $data['category']       = $category;
+                // $data['absentData'] = $absentData;
+                // $data['lateData'] = $lateData;
+                $data['absentDataPusat'] = $absentDataPusat;
+                $data['absentDataBekasi'] = $absentDataBekasi;
+                $data['absentDataMalang'] = $absentDataMalang;
+                $data['lateDataPusat'] = $absentDataMalang;
+                $data['lateDataBekasi'] = $lateDataBekasi;
+                $data['lateDataMalang'] = $lateDataMalang;
+                $data['selectedMonth'] = $selectedMonth;
                 $data['invoiceSummary'] = [
                     'paid' => [
                         'count' => $invoicePaidCount,

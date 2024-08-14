@@ -131,7 +131,11 @@
                 <div class="col-md-8 mt-4">
                     <ul class="nav nav-pills nav-fill cust-nav information-tab" id="pills-tab" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="client-details-tab" data-bs-toggle="pill"
+                            <button class="nav-link active" id="order-details-tab" data-bs-toggle="pill"
+                                data-bs-target="#order-details" type="button">{{ __('Orders Details') }}</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="client-details-tab" data-bs-toggle="pill"
                                 data-bs-target="#client-details" type="button">{{ __('Client Details') }}</button>
                         </li>
                         <li class="nav-item" role="presentation">
@@ -154,7 +158,54 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="tab-content" id="pills-tabContent">
-                        <div class="tab-pane fade active show" id="client-details" role="tabpanel" aria-labelledby="pills-user-tab-1">
+                        <div class="tab-pane fade active show" id="order-details" role="tabpanel" aria-labelledby="pills-user-tab-1">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="card pb-0">
+                                        <div class="card-body">
+                                            <h5 class="card-title">{{ __('Order Details') }}</h5>
+
+                                            <div class="row">
+                                                <div class="col-md-3 col-sm-6">
+                                                    <div class="p-4">
+                                                        <p class="card-text mb-0">{{ __('Order Number ') }}</p>
+                                                        <h6 class="report-text mb-3">
+                                                            {{ $projectOrder->order_number }}
+                                                        </h6>
+                                                        <p class="card-text mb-0">{{ __('Order Fee') }}</p>
+                                                        <h6 class="report-text mb-0">{{ $projectOrder->fee ? $ProjectOrders->fee : '-' }}</h6>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3 col-sm-6">
+                                                    <div class="p-4">
+                                                        <p class="card-text mb-0">{{ __('Order Period') }}</p>
+                                                        <h6 class="report-text mb-3">
+                                                            {{ $projectOrder->periode ? $projectOrder->periode : '-' }}
+                                                        </h6>
+                                                        <p class="card-text mb-0">{{ __('Category Services') }}</p>
+                                                        <h6 class="report-text mb-0">{{ $projectOrder->category_service ? $projectOrder->category_service : '-'  }}</h6>
+                                                    </div>
+                                                </div>
+                                                 <div class="col-md-3 col-sm-6">
+                                                    <div class="p-4">
+                                                        <p class="card-text mb-0">{{ __('Client Name') }}</p>
+                                                        <h6 class="report-text mb-3">
+                                                            {{ $projectOrder->name ? $projectOrder->name : '-' }}
+                                                        </h6>
+                                                        <p class="card-text mb-0">{{ __('Client Address') }}</p>
+                                                        <h6 class="report-text mb-3">
+                                                            {{ $projectOrder->address ? $projectOrder->address : '-' }}
+                                                        </h6>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="client-details" role="tabpanel" aria-labelledby="pills-user-tab-1">
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="card pb-0">
@@ -272,6 +323,8 @@
                                                         <h6 class="report-text mb-3">
                                                             {{ $projectOrder->name_invoice }}
                                                         </h6>
+                                                        <p class="card-text mb-0">{{ __('Client Email') }}</p>
+                                                        <h6 class="report-text mb-0">{{ $projectOrder->email }}</h6>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6 col-sm-6">

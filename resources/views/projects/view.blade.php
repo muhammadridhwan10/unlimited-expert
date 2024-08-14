@@ -231,19 +231,24 @@
 @endsection
 @section('action-btn')
     <div class="float-end">
-        @can('view grant chart')
+        {{-- @can('view grant chart')
             <a href="{{ route('projects.gantt',$project->id) }}" class="btn btn-sm btn-primary">
                 {{__('Gantt Chart')}}
             </a>
-        @endcan
+        @endcan --}}
         @if(\Auth::user()->type!='client' || (\Auth::user()->type=='client' ))
             <a href="{{ route('projecttime.tracker',$project->id) }}" class="btn btn-sm btn-primary">
                 {{__('Tracker')}}
             </a>
         @endif
-        @can('view expense')
+        {{-- @can('view expense')
             <a href="{{ route('projects.expenses.index',$project->id) }}" class="btn btn-sm btn-primary">
                 {{__('Expense')}}
+            </a>
+        @endcan --}}
+        @can('manage invoice')
+            <a href="{{ route('projects.invoice',$project->id) }}" class="btn btn-sm btn-primary">
+                {{__('Invoice')}}
             </a>
         @endcan
         @if(\Auth::user()->type != 'client')
