@@ -69,7 +69,7 @@ class ProjectController extends Controller
             {
                 $users   = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
-                $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
+                $tasktemplate = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
                 $public_accountant = PublicAccountant::get()->pluck('name', 'id');
                 $public_accountant->prepend('Select Public Accountant', '');
                 $clients->prepend('Select Client', '');
@@ -80,7 +80,7 @@ class ProjectController extends Controller
             {
                 $users   = User::where('type', '!=', 'client')->get()->pluck('name', 'id');
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
-                $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
+                $tasktemplate = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
                 $public_accountant = PublicAccountant::get()->pluck('name', 'id');
                 $public_accountant->prepend('Select Public Accountant', '');
                 $clients->prepend('Select Client', '');
@@ -92,7 +92,7 @@ class ProjectController extends Controller
             {
                 $users   = User::where('type', '!=', 'client')->get()->pluck('name', 'id');
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
-                $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
+                $tasktemplate = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
                 $public_accountant = PublicAccountant::get()->pluck('name', 'id');
                 $public_accountant->prepend('Select Public Accountant', '');
                 $clients->prepend('Select Client', '');
@@ -104,7 +104,7 @@ class ProjectController extends Controller
             {
                 $users   = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
                 $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
-                $tasktemplate = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('category_id', 'id');
+                $tasktemplate = ProductServiceCategory::where('type', 0)->where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('category_id', 'id');
                 $public_accountant = PublicAccountant::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $public_accountant->prepend('Select Public Accountant', '');
                 $clients->prepend('Select Client', '');
@@ -766,8 +766,10 @@ class ProjectController extends Controller
                 ]
             );
 
-            // Menghapus ProjectTask yang terkait dengan project
-            ProjectTask::where('project_id', $project->id)->delete();
+            if ($project->template_task_id !== $request->template_task) {
+                // Menghapus ProjectTask yang terkait dengan project
+                ProjectTask::where('project_id', $project->id)->delete();
+            }            
 
 
             $template = Project::with('details')->find($project->id);
@@ -776,7 +778,7 @@ class ProjectController extends Controller
             //     $details = $templates->details;
             // }
 
-            if ($project->template_task_id !== NULL){
+            if ($project->template_task_id !== $request->template_task){
                 $category = $request->items;
                 $category_id = $request->category_id;
 
@@ -1308,15 +1310,15 @@ class ProjectController extends Controller
             else{
                 $user_projects = $usr->projects()->pluck('project_id', 'project_id')->toArray();
             }
+            
             if($request->ajax() && $request->has('view') && $request->has('sort'))
             {
                 $sort     = explode('-', $request->sort);
                 $projects = Project::whereIn('id', array_keys($user_projects))->orderBy($sort[0], $sort[1]);
 
-                if(!empty($request->keyword))
-                {
-                    $projects->where('project_name', 'LIKE', $request->keyword . '%')->orWhereRaw('FIND_IN_SET("' . $request->keyword . '",tags)');
-                }
+                if (!empty($request->keyword)) {
+                    $projects->where('project_name', 'LIKE', '%' . $request->keyword . '%');
+                }                
                 if(!empty($request->status))
                 {
                     $projects->whereIn('status', $request->status);
