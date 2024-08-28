@@ -18,6 +18,31 @@
             };
             html2pdf().set(opt).from(element).save();
         }
+        $(document).ready(function () {
+            var filename = $('#filename').val();
+            $('#report-dataTable').DataTable({
+                dom: 'lBfrtip',
+                buttons: [
+                    {
+                        extend: 'pdf',
+                        title: filename
+                    },
+                    {
+                        extend: 'excel',
+                        title: filename
+                    }, {
+                        extend: 'csv',
+                        title: filename
+                    }
+                ]
+            });
+        });
+    </script>
+    <script>
+        function exportToExcel() {
+            $('#export_excel').val(1);
+            document.getElementById('attendanceemployee_filter').submit();
+        }
     </script>
     <script>
         $('input[name="type"]:radio').on('change', function (e) {
@@ -51,6 +76,9 @@
            data-original-title="{{ __('Download') }}">
             <span class="btn-inner--icon"><i class="ti ti-download"></i></span>
         </a>
+        <a href="#" class="btn btn-sm btn-success" onclick="exportToExcel()" data-bs-toggle="tooltip" title="{{__('Export to Excel')}}" data-original-title="{{__('Export to Excel')}}">
+            <span class="btn-inner--icon"><i class="ti ti-file"></i></span>
+        </a>
 
        {{-- <a href="{{route('report.attendance',[isset($_GET['month'])?$_GET['month']:date('Y-m'),isset($_GET['branch'])?$_GET['branch']:0,isset($_GET['department'])?$_GET['department']:0])}}" class="btn btn-sm btn-primary" onclick="saveAsPDF()"data-bs-toggle="tooltip" title="{{__('Download Filter')}}" data-original-title="{{__('Download Filter')}}">
            <span class="btn-inner--icon"><i class="ti ti-download"></i></span>
@@ -66,6 +94,7 @@
                 <div class="card">
                     <div class="card-body">
                         {{ Form::open(array('route' => array('attendanceemployee.index'),'method'=>'get','id'=>'attendanceemployee_filter')) }}
+                        {{ Form::hidden('export_excel', 0, ['id' => 'export_excel']) }}
                         <div class="row align-items-center justify-content-end">
                             <div class="col-xl-10">
                                 <div class="row">
@@ -84,19 +113,31 @@
 
                                     </div>
 
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 month">
+                                    <div class="col-auto month">
                                         <div class="btn-box">
                                             {{Form::label('month',__('Month'),['class'=>'form-label'])}}
                                             {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control month-btn'))}}
                                         </div>
                                     </div>
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 date">
+                                    {{-- <div class="col-auto date">
                                         <div class="btn-box">
                                             {{ Form::label('date', __('Date'),['class'=>'form-label'])}}
                                             {{ Form::date('date',isset($_GET['date'])?$_GET['date']:'', array('class' => 'form-control month-btn')) }}
                                         </div>
+                                    </div> --}}
+                                    <div class="col-auto date">
+                                        <div class="btn-box">
+                                            {{Form::label('start_date',__('Start Date'),['class'=>'form-label'])}}
+                                            {{Form::date('start_date', isset($_GET['start_date']) ? $_GET['start_date'] : null, ['class'=>'form-control'])}}
+                                        </div>
                                     </div>
-                                    <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
+                                    <div class="col-auto date">
+                                        <div class="btn-box">
+                                            {{Form::label('end_date',__('End Date'),['class'=>'form-label'])}}
+                                            {{Form::date('end_date', isset($_GET['end_date']) ? $_GET['end_date'] : null, ['class'=>'form-control'])}}
+                                        </div>
+                                    </div>
+                                    {{-- <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
                                         <div class="btn-box">
                                             {{ Form::label('branch_id', __('Branch'),['class'=>'form-label']) }}
                                             {{ Form::select('branch_id',$branch,null, array('class' => 'form-control select')) }}
@@ -106,6 +147,12 @@
                                         <div class="btn-box">
                                             {{ Form::label('department', __('Department'),['class'=>'form-label'])}}
                                             {{ Form::select('department', $department,isset($_GET['department'])?$_GET['department']:'', array('class' => 'form-control select')) }}
+                                        </div>
+                                    </div> --}}
+                                    <div class="col-12">
+                                        <div class="btn-box">
+                                            {{ Form::label('employee_id', __('Employee'),['class'=>'form-label'])}}
+                                            {{ Form::select('employee_id', $employees, isset($_GET['employee_id']) ? $_GET['employee_id'] : '', ['class' => 'form-control select2']) }}
                                         </div>
                                     </div>
 
@@ -143,7 +190,7 @@
                     <div class="card-body table-border-style">
 
                         <div class="table-responsive">
-                            <table class="table datatable">
+                            <table class="table datatable" id="report-dataTable">
                                 <thead>
                                 <tr>
                                     @if(\Auth::user()->type!='employee')

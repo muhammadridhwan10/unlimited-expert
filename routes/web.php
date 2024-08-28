@@ -3365,12 +3365,12 @@ Route::get('timesheet-view', 'TimesheetController@filterTimesheetView')->name('f
         'XSS',
     ]
 );
-Route::get('timesheet-list', 'TimesheetController@timesheetList')->name('timesheet.list')->middleware(
-    [
-        'auth',
-        'XSS',
-    ]
-);
+// Route::get('timesheet-list', 'TimesheetController@timesheetList')->name('timesheet.list')->middleware(
+//     [
+//         'auth',
+//         'XSS',
+//     ]
+// );
 Route::get('timesheet-list-get', 'TimesheetController@timesheetListGet')->name('timesheet.list.get')->middleware(
     [
         'auth',
@@ -4494,3 +4494,21 @@ Route::get(
     ]
 );
 Route::post('el/file', ['as' => 'el.image.view','uses' => 'ElController@getFileRequest']);
+Route::get('reports-attendance-staff', 'ReportController@attendance_user')->name('report.attendance_user')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('reports-overtime-staff', 'ReportController@overtime_user')->name('report.overtime_user')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('reports-absence-staff', 'ReportController@absence_user')->name('report.absence_user')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);

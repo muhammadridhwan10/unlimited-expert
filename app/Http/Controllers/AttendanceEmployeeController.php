@@ -11,6 +11,12 @@ use App\Models\User;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\AttendanceExport;
+use Illuminate\Support\Collection;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
+
 
 class AttendanceEmployeeController extends Controller
 {
@@ -19,12 +25,17 @@ class AttendanceEmployeeController extends Controller
 
         if(\Auth::user()->can('manage attendance'))
         {
-            if(\Auth::user()->type = 'admin'){
+            if(\Auth::user()->type = 'admin')
+            {
                 $branch = Branch::all()->pluck('name', 'id');
                 $branch->prepend('Select Branch', '');
     
                 $department = Department::all()->pluck('name', 'id');
                 $department->prepend('Select Department', '');
+
+                $employees = Employee::get()
+                 ->pluck('name', 'id');
+                $employees->prepend('Select Employee', '');
     
                 if(\Auth::user()->type != 'client' && \Auth::user()->type != 'admin' && \Auth::user()->type != 'company')
                 {
@@ -100,31 +111,56 @@ class AttendanceEmployeeController extends Controller
                                   ]
                         );
                     }
-                    elseif($request->type == 'daily' && !empty($request->date))
+                    elseif($request->type == 'daily' && !empty($request->start_date) && !empty($request->end_date))
                     {
-                        $attendanceEmployee->where('date', $request->date);
-                    }
-                    else
-                    {
-                        $month      = date('m');
-                        $year       = date('Y');
-                        $start_date = date($year . '-' . $month . '-01');
-                        $end_date   = date($year . '-' . $month . '-t');
-    
+                        $startDate = $request->start_date;
+                        $endDate = $request->end_date;
                         $attendanceEmployee->whereBetween(
                             'date', [
-                                      $start_date,
-                                      $end_date,
+                                      $startDate,
+                                      $endDate,
                                   ]
                         );
+                    }
+                    else {
+                        // Default to current month's dates
+                        $startDate = date('Y-m-01');
+                        $endDate = date('Y-m-t');
+
+                        $attendanceEmployee->whereBetween(
+                            'date', [
+                                      $startDate,
+                                      $endDate,
+                                  ]
+                        );
+                    }
+
+                    if(!empty($request->employee_id))
+                    {
+                        $attendanceEmployee->where('employee_id', '=', $request->employee_id);
                     }
     
     
                     $attendanceEmployee = $attendanceEmployee->get();
+                    
+
+                    if (!empty($request->export_excel)) {
+                        $exportData = $this->prepareExportData($attendanceEmployee, $startDate, $endDate);
+
+                        // Passing the $dates array to the AttendanceExport
+                        $dates = CarbonPeriod::create($startDate, $endDate)->toArray();
+                        $dateHeadings = array_map(function($date) {
+                            return $date->format('Y-m-d');
+                        }, $dates);
+
+                        return Excel::download(new AttendanceExport($exportData->toArray(), $dateHeadings), 'attendance_report.xlsx');
+
+
+                    }
     
                 }
     
-                return view('attendance.index', compact('attendanceEmployee', 'branch', 'department'));
+                return view('attendance.index', compact('attendanceEmployee', 'branch', 'department','employees'));
             }
             elseif(\Auth::user()->type = 'company')
             {
@@ -1007,5 +1043,42 @@ class AttendanceEmployeeController extends Controller
             return redirect()->back()->with('error', __('Permission denied.'));
         }
     }
+
+    public function prepareExportData($attendanceEmployee, $start_date, $end_date)
+    {
+        $exportData = new Collection();
+        
+        // Generate date range array
+        $period = CarbonPeriod::create($start_date, $end_date);
+        $dates = [];
+        foreach ($period as $date) {
+            $dates[] = $date->format('Y-m-d');
+        }
+
+        $groupedByEmployee = $attendanceEmployee->groupBy('employee_id');
+
+        foreach ($groupedByEmployee as $employee_id => $attendances) {
+            $employeeName = $attendances->first()->employee->name ?? '-';
+            $data = ['Employee' => $employeeName];
+
+            // Initialize all dates with '-'
+            foreach ($dates as $date) {
+                $data[$date] = '-';
+            }
+
+            // Populate the clock_in - clock_out time for each date
+            foreach ($attendances as $attendance) {
+                $clockIn = !empty($attendance->clock_in) ? $attendance->clock_in : '-';
+                $clockOut = !empty($attendance->clock_out) ? $attendance->clock_out : '-';
+                $data[$attendance->date] = $clockIn . ' - ' . $clockOut;
+            }
+
+            $exportData->push($data);
+        }
+
+        return $exportData;
+    }
+
+
 
 }

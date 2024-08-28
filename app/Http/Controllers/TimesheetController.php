@@ -532,8 +532,9 @@ class TimesheetController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        if($user->type == 'admin' || $user->type == 'company')
+        if($user->type == 'admin' || $user->type == 'company' || $user->type == 'partners')
         {
+            $currentYear = now()->year;
             $employeeTimesheet = Timesheet::query();
 
             $employee = User::where('type', '!=', 'client' )->get()->pluck('name', 'id');
@@ -541,8 +542,6 @@ class TimesheetController extends Controller
 
             $filter_project = $request->project_id;
             $filter_status = $request->status;
-
-            $assign_pro_ids = ProjectUser::where('user_id',\Auth::user()->id)->pluck('project_id');
 
             $project      = Project::get()->pluck('project_name', 'id');
             $project->prepend('All Project', '0');
@@ -580,6 +579,8 @@ class TimesheetController extends Controller
 
                 $employeeTimesheet->whereBetween('date', [$start_date, $end_date]);
             } 
+
+            $employeeTimesheet->whereYear('date', $currentYear);
 
             $employeeTimesheet = $employeeTimesheet->get();
 
@@ -592,68 +593,6 @@ class TimesheetController extends Controller
                 return Excel::download(new TimesheetExport($exportDataArray), 'timesheet_report.xlsx');
             }
             
-
-        }
-        elseif($user->type == 'partners')
-        {
-
-            $employeeTimesheet = Timesheet::query();
-
-            $employee = User::where('type', '!=', 'client' )->get()->pluck('name', 'id');
-            $employee->prepend('Select Employee', '0');
-
-            $filter_project = $request->project_id;
-            $filter_status = $request->status;
-
-            $assign_pro_ids = ProjectUser::where('user_id',\Auth::user()->id)->pluck('project_id');
-
-            $project      = Project::get()->pluck('project_name', 'id');
-            $project->prepend('All Project', '0');
-
-            if (!empty($request->status)) {
-                $employeeTimesheet
-                ->whereHas('project', function ($query) use ($filter_status) {
-                    $query->where('status', $filter_status);
-                });
-            }
-
-            if (!empty($request->user_id)) {
-                $selectedEmployees = $request->user_id;
-                $employeeTimesheet->where('created_by', $selectedEmployees);
-            }
-
-            if (!empty($request->project_id)) {
-                $employeeTimesheet
-                ->whereHas('project', function ($query) use ($filter_project) {
-                    $query->where('id', $filter_project);
-                });
-            }
-
-            if (!empty($request->date)) {
-                $selectedDate = $request->date;
-                $employeeTimesheet->whereDate('date', $selectedDate);
-            }
-
-            if (!empty($request->month)) {
-                $month = date('m', strtotime($request->month));
-                $year  = date('Y', strtotime($request->month));
-
-                $start_date = date($year . '-' . $month . '-01');
-                $end_date   = date($year . '-' . $month . '-t');
-
-                $employeeTimesheet->whereBetween('date', [$start_date, $end_date]);
-            } 
-
-            $employeeTimesheet = $employeeTimesheet->get();
-
-            if (!empty($request->export_excel)) {
-
-                $exportData = $this->prepareExportData($employeeTimesheet);
-        
-                $exportDataArray = $exportData->toArray();
-
-                return Excel::download(new TimesheetExport($exportDataArray), 'timesheet_report.xlsx');
-            }
 
         }
         else
