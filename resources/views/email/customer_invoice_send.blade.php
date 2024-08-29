@@ -85,6 +85,8 @@ $settings = \App\Models\Utility::settings();
                                                                 <strong>Total Amount:</strong> 
                                                                 @if ($invoice->currency == '$')
                                                                     {{\App\Models\Utility::priceFormat2($settings,$totalAmount)}}
+                                                                @elseif($invoice->currencies == '€')
+                                                                    {{\App\Models\Utility::priceFormat3($settings,$totalAmount)}}
                                                                 @else
                                                                     {{\App\Models\Utility::priceFormat($settings,$totalAmount)}}
                                                                 @endif 
