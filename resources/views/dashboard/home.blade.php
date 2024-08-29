@@ -2,6 +2,10 @@
 @section('page-title')
     {{__('Home')}}
 @endsection
+@php
+$shortenedTasksPriorityLabels = array_map(fn($name) => substr($name, 0,10) . '...', array_keys($tasksPriorityPerProject));
+$shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...', array_keys($overdueTasksPerProject));
+@endphp
 @push('script-page')
     <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -426,58 +430,65 @@
             },
         });
 
-        var ctx3 = document.getElementById('tasksPriorityChart').getContext('2d');
-        var tasksPriorityChart = new Chart(ctx3, {
-            type: 'bar',
-            data: {
-                labels: @json(array_keys($tasksPriorityPerProject)),
-                datasets: [{
-                    label: 'Tasks by Priority',
-                    data:  @json(array_values($tasksPriorityPerProject)),
-                    backgroundColor: ['#ff6384', '#36a2eb', '#4bc0c0'],
-                    borderColor: '#fff',
-                    borderWidth: 1
-                }]
-            },
-        });
+    var ctx3 = document.getElementById('tasksPriorityChart').getContext('2d');
+    var tasksPriorityChart = new Chart(ctx3, {
+        type: 'bar',
+        data: {
+            labels: @json($shortenedTasksPriorityLabels),
+            datasets: [{
+                label: 'Tasks by Priority',
+                data: @json(array_values($tasksPriorityPerProject)),
+                backgroundColor: ['#ff6384', '#36a2eb', '#4bc0c0'],
+                borderColor: '#fff',
+                borderWidth: 1
+            }]
+        }
+    });
 
-
-        var ctx4 = document.getElementById('overdueTasksChart').getContext('2d');
-        var overdueTasksChart = new Chart(ctx4, {
-            type: 'pie',
-            data: {
-                labels: @json(array_keys($overdueTasksPerProject)),
-                datasets: [{
-                    label: 'Overdue Tasks',
-                    data: @json(array_values($overdueTasksPerProject)),
-                    backgroundColor: [
+    var ctx4 = document.getElementById('overdueTasksChart').getContext('2d');
+    var overdueTasksChart = new Chart(ctx4, {
+        type: 'bar',
+        data: {
+            labels: @json($shortenedOverdueTasksLabels),
+            datasets: [{
+                label: 'Overdue Tasks',
+                data: @json(array_values($overdueTasksPerProject)),
+                backgroundColor: [
                     '#ff6384', '#36a2eb', '#4bc0c0', '#ffce56', '#9966ff', 
                     '#ff9f40', '#c9cbcf', '#2b908f', '#f45b5b', '#91e8e1', 
                     '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'
-                    ],
-                    borderColor: '#fff',
-                    fill: false,
-                    tension: 0.1,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: 'Project Name'
+                ],
+                borderColor: '#fff',
+                fill: false,
+                tension: 0.1,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Project Name'
+                    },
+                    ticks: {
+                        maxRotation: 0,
+                        minRotation: 0,
+                        callback: function(value) {
+                            return this.getLabelForValue(value).substring(0, 10) + '...';
                         }
                     }
-                },
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'top',
-                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
                 }
             }
-        });
+        }
+    });
+
     @endif
     </script>
 @endpush
@@ -766,7 +777,7 @@
             </div>
 
             <!-- Chart for Tasks by Priority -->
-            <div class="col-lg-12">
+            <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
                         <h5>{{ __("Tasks by Priority") }}</h5>
@@ -778,7 +789,7 @@
             </div>
 
             <!-- Chart for Overdue Tasks -->
-            <div class="col-lg-12">
+            <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
                         <h5>{{ __("Overdue Tasks") }}</h5>
