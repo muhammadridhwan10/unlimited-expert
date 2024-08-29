@@ -5763,6 +5763,644 @@ class ReportController extends Controller
         return view('report.sickShow',compact('images','absence_sick'));
     }
 
+    public function attendance_user(Request $request)
+    {
+        if(Auth::check())
+        {
+            if(\Auth::user()->can('show hrm dashboard'))
+            {
+                $user = Auth::user();
+                if($user->type != 'client' && $user->type != 'staff_client' && $user->type != 'company' && $user->type != 'admin' && $user->type != 'partners')
+                {
+                    $emp = Employee::where('user_id', '=', $user->id)->first();
+                    $employees = Employee::where('user_id', '=', $user->id)->get()->pluck('name', 'id');
+
+                    if(!empty($request->month))
+                    {
+                        $currentdate = strtotime($request->month);
+                        $month       = date('m', $currentdate);
+                        $year        = date('Y', $currentdate);
+                        $curMonth    = date('M-Y', strtotime($request->month));
+
+                    }
+                    else
+                    {
+                        $month    = date('m');
+                        $year     = date('Y');
+                        $curMonth = date('M-Y', strtotime($year . '-' . $month));
+                    }
+
+                    $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
+                    for($i = 1; $i <= $num_of_days; $i++)
+                    {
+                        $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
+                    }
+
+                    $employeesAttendances = [];
+                    $totalPresent        = $totalLeave = $totalEarlyLeave = 0;
+
+                    foreach ($employees as $id => $employee) {
+                        $attendances['name'] = $employee;
+                    
+                        foreach ($dates as $date) {
+                            $dateFormat = $year . '-' . $month . '-' . $date;
+                    
+                            if ($dateFormat <= date('Y-m-d')) {
+                                            if ($this->isWeekend($dateFormat)) {
+                                                $employeeAttendance = AttendanceEmployee::where('employee_id', $id)
+                                                                                        ->where('date', $dateFormat)
+                                                                                        ->where('status', 'Present')
+                                                                                        ->first();
+                                                
+                                                if (!empty($employeeAttendance)) {
+                                                    $attendanceStatus[$date] = 'P'; // Jika ada kehadiran pada hari Sabtu atau Minggu, status kehadiran diatur sebagai 'P'
+                                                    $attendanceLong[$date] = $employeeAttendance->longitude;
+                                                    $attendanceLat[$date] = $employeeAttendance->latitude;
+                                                    $totalPresent += 1;
+                                                } else {
+                                                    $attendanceStatus[$date] = 'W'; // Jika tidak ada kehadiran pada hari Sabtu atau Minggu, status kehadiran diatur sebagai 'W'
+                                                }
+                                            } 
+                                            else {
+                                                $employeeAttendance = AttendanceEmployee::where('employee_id', $id)
+                                                                                        ->where('date', $dateFormat)
+                                                                                        ->first();
+                                        
+                                                if (!empty($employeeAttendance) && $employeeAttendance->status == 'Present') {
+                                                    $attendanceStatus[$date] = 'P';
+                                                    $attendanceLong[$date] = $employeeAttendance->longitude;
+                                                    $attendanceLat[$date] = $employeeAttendance->latitude;
+                                                    $totalPresent += 1;
+                                                } else {
+                                                    $attendanceStatus[$date] = '';
+                                                    $attendanceLong[$date] = '';
+                                                    $attendanceLat[$date] = '';
+                                                }
+                                            }
+                            } else {
+                                $attendanceStatus[$date] = '';
+                                $attendanceLong[$date] = '';
+                                $attendanceLat[$date] = '';
+                            }  
+                        }     
+                        $attendances['status'] = $attendanceStatus;
+                        $attendances['longitude'] = $attendanceLong;
+                        $attendances['latitude'] = $attendanceLat;
+                        $employeesAttendances[] = $attendances;
+                    }
+
+                    if($emp->branch_id == 1)
+                    {
+                        $officeTime['startTime']    = Utility::getValByName('company_start_time');
+                        $officeTime['endTime']      = Utility::getValByName('company_end_time');
+                    }
+                    elseif($emp->branch_id == 2)
+                    {
+                        $officeTime['startTime']    = "08:30";
+                        $officeTime['endTime']      = "17:30";
+                    }
+                    elseif($emp->branch_id == 3)
+                    {
+                        $officeTime['startTime']    = "08:00";
+                        $officeTime['endTime']      = "17:00";
+                    }
+
+                    $absentData = [];
+                    for ($day = 1; $day <= 31; $day++) {
+                        $months = $request->month ?? date('Y-m');
+                        $date = sprintf('%s-%02d', $months, $day);
+                        
+                        $absentCount = AttendanceEmployee::where('date', '=', $date)
+                            ->where('status', '=', 'Present')->whereHas('employee', function ($query) use ($emp) {
+                                $query->where('employee_id', '=', $emp->id);
+                            })
+                            ->count();
+                        
+                        $lateCount = 0;
+                        
+                        $lateCount = AttendanceEmployee::where('date', '=', $date)
+                            ->where('status', '=', 'Present')->whereHas('employee', function ($query) use ($emp, $officeTime) {
+                                $query->where('employee_id', '=', $emp->id)
+                                    ->whereTime('clock_in', '>', $officeTime['startTime']);
+                            })
+                            ->count();
+        
+                        $absentData[] = $absentCount;
+                        $lateData[] = $lateCount;
+                    }
+
+                    $data_absen = $absentData;
+                    $data_late = $lateData;
+
+                    return view('report.attendance_staff', compact('employeesAttendances', 'dates','data_absen','data_late'));
+                }
+                elseif($user->type == 'partners')
+                {
+                    $emp = Employee::where('user_id', '=', $user->id)->first();
+
+                    $employees = Employee::where('branch_id', Employee::where('user_id', $user->id)->value('branch_id'))
+                     ->pluck('name', 'id');
+
+
+                    if(!empty($request->month))
+                    {
+                        $currentdate = strtotime($request->month);
+                        $month       = date('m', $currentdate);
+                        $year        = date('Y', $currentdate);
+                        $curMonth    = date('M-Y', strtotime($request->month));
+
+                    }
+                    else
+                    {
+                        $month    = date('m');
+                        $year     = date('Y');
+                        $curMonth = date('M-Y', strtotime($year . '-' . $month));
+                    }
+
+                    $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
+                    for($i = 1; $i <= $num_of_days; $i++)
+                    {
+                        $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
+                    }
+
+                    $employeesAttendances = [];
+                    $totalPresent        = $totalLeave = $totalEarlyLeave = 0;
+
+                    foreach ($employees as $id => $employee) {
+                        $attendances['name'] = $employee;
+                    
+                        foreach ($dates as $date) {
+                            $dateFormat = $year . '-' . $month . '-' . $date;
+                    
+                            if ($dateFormat <= date('Y-m-d')) {
+                                            if ($this->isWeekend($dateFormat)) {
+                                                $employeeAttendance = AttendanceEmployee::where('employee_id', $id)
+                                                                                        ->where('date', $dateFormat)
+                                                                                        ->where('status', 'Present')
+                                                                                        ->first();
+                                                
+                                                if (!empty($employeeAttendance)) {
+                                                    $attendanceStatus[$date] = 'P'; // Jika ada kehadiran pada hari Sabtu atau Minggu, status kehadiran diatur sebagai 'P'
+                                                    $attendanceLong[$date] = $employeeAttendance->longitude;
+                                                    $attendanceLat[$date] = $employeeAttendance->latitude;
+                                                    $totalPresent += 1;
+                                                } else {
+                                                    $attendanceStatus[$date] = 'W'; // Jika tidak ada kehadiran pada hari Sabtu atau Minggu, status kehadiran diatur sebagai 'W'
+                                                }
+                                            } 
+                                            else {
+                                                $employeeAttendance = AttendanceEmployee::where('employee_id', $id)
+                                                                                        ->where('date', $dateFormat)
+                                                                                        ->first();
+                                        
+                                                if (!empty($employeeAttendance) && $employeeAttendance->status == 'Present') {
+                                                    $attendanceStatus[$date] = 'P';
+                                                    $attendanceLong[$date] = $employeeAttendance->longitude;
+                                                    $attendanceLat[$date] = $employeeAttendance->latitude;
+                                                    $totalPresent += 1;
+                                                } else {
+                                                    $attendanceStatus[$date] = '';
+                                                    $attendanceLong[$date] = '';
+                                                    $attendanceLat[$date] = '';
+                                                }
+                                            }
+                            } else {
+                                $attendanceStatus[$date] = '';
+                                $attendanceLong[$date] = '';
+                                $attendanceLat[$date] = '';
+                            }  
+                        }     
+                        $attendances['status'] = $attendanceStatus;
+                        $attendances['longitude'] = $attendanceLong;
+                        $attendances['latitude'] = $attendanceLat;
+                        $employeesAttendances[] = $attendances;
+                    }
+
+                    if($emp->branch_id == 1)
+                    {
+                        $officeTime['startTime']    = Utility::getValByName('company_start_time');
+                        $officeTime['endTime']      = Utility::getValByName('company_end_time');
+                    }
+                    elseif($emp->branch_id == 2)
+                    {
+                        $officeTime['startTime']    = "08:30";
+                        $officeTime['endTime']      = "17:30";
+                    }
+                    elseif($emp->branch_id == 3)
+                    {
+                        $officeTime['startTime']    = "08:00";
+                        $officeTime['endTime']      = "17:00";
+                    }
+
+                    $absentData = [];
+                    for ($day = 1; $day <= 31; $day++) {
+                        $months = $request->month ?? date('Y-m');
+                        $date = sprintf('%s-%02d', $months, $day);
+
+                        $absentCount = AttendanceEmployee::where('date', '=', $date)
+                                ->where('status', '=', 'Present')->whereHas('employee', function ($query) use ($emp) {
+                                    $query->where('branch_id', '=', $emp->branch_id);
+                                })
+                                ->count();
+                            
+                            $lateCount = 0;
+                            
+                            $lateCount = AttendanceEmployee::where('date', '=', $date)
+                                ->where('status', '=', 'Present')->whereHas('employee', function ($query) use ($emp, $officeTime) {
+                                    $query->where('branch_id', '=', $emp->branch_id)
+                                        ->whereTime('clock_in', '>', $officeTime['startTime']);
+                                })
+                                ->count();
+            
+                        $absentData[] = $absentCount;
+                        $lateData[] = $lateCount;
+                    }
+
+                    $data_absen = $absentData;
+                    $data_late = $lateData;
+
+                    return view('report.attendance_staff', compact('employeesAttendances', 'dates','data_absen','data_late'));
+                }
+            }
+            else
+            {
+                return redirect()->back()->with('error', __('Permission denied.'));
+            }
+        }
+    }
+
+    function isWeekend($date)
+    {
+        $dayOfWeek = date('N', strtotime($date)); // Mengambil hari dalam format angka (1-7, dimulai dari Senin)
+        return ($dayOfWeek == 6 || $dayOfWeek == 7); // Jika hari adalah Sabtu (6) atau Minggu (7), kembalikan true
+    }
+
+    public function overtime_user(Request $request)
+    {
+        if(Auth::check())
+        {
+            if(\Auth::user()->can('show hrm dashboard'))
+            {
+                $user = Auth::user();
+                if($user->type != 'client' && $user->type != 'staff_client' && $user->type != 'company' && $user->type != 'admin' && $user->type != 'partners')
+                {
+                    $emp = Employee::where('user_id', '=', $user->id)->first();
+                    
+                    // Filter berdasarkan bulan yang dipilih
+                    if(!empty($request->month))
+                    {
+                        $currentdate = strtotime($request->month);
+                        $month = date('m', $currentdate);
+                        $year  = date('Y', $currentdate);
+                    }
+                    else
+                    {
+                        $month = date('m');
+                        $year  = date('Y');
+                    }
+                    
+                    // Ambil data UserOvertime berdasarkan bulan dan tahun
+                    $overtimeData = UserOvertime::where('user_id', $emp->id)
+                        ->whereMonth('start_date', $month)
+                        ->whereYear('start_date', $year)
+                        ->get();
+
+                    // Inisialisasi variabel untuk statistik
+                    $totalOvertimeHours = 0;
+                    $overtimePerDay = [];
+                    $approvedOvertimeCount = 0;
+                    $totalOvertimeCount = $overtimeData->count();
+
+                    foreach ($overtimeData as $overtime) {
+                        // Hitung total jam lembur
+                        $startTime = strtotime($overtime->start_time);
+                        $endTime = strtotime($overtime->end_time);
+
+                        if($overtime->end_time == '00:00:00' && $overtime->total_time !== null) {
+                            $endTime = strtotime('24:00:00');
+                        }
+
+                        $hoursWorked = ($endTime - $startTime) / 3600; // Konversi detik ke jam
+                        $totalOvertimeHours += $hoursWorked;
+
+                        // Hitung lembur per hari
+                        $date = date('Y-m-d', strtotime($overtime->start_date));
+                        if(!isset($overtimePerDay[$date])) {
+                            $overtimePerDay[$date] = 0;
+                        }
+                        $overtimePerDay[$date] += $hoursWorked;
+
+                        // Hitung jumlah lembur yang disetujui
+                        if($overtime->status == 'Approved') {
+                            $approvedOvertimeCount++;
+                        }
+                    }
+
+                    // Hitung persentase lembur yang disetujui
+                    $approvalRate = $totalOvertimeCount > 0 ? ($approvedOvertimeCount / $totalOvertimeCount) * 100 : 0;
+
+                    // Return data ke view
+                    return view('report.overtime_staff', compact('totalOvertimeHours', 'overtimePerDay', 'approvalRate', 'month', 'year'));
+                }
+                elseif($user->type == 'partners')
+                {
+                    $emp = Employee::where('user_id', '=', $user->id)->first();
+                    
+                    // Filter berdasarkan bulan yang dipilih
+                    if(!empty($request->month))
+                    {
+                        $currentdate = strtotime($request->month);
+                        $month = date('m', $currentdate);
+                        $year  = date('Y', $currentdate);
+                    }
+                    else
+                    {
+                        $month = date('m');
+                        $year  = date('Y');
+                    }
+
+                    if(\Auth::user()->employee->branch_id == 2)
+                    {
+                        $employee = Employee::where('branch_id', 2)->get();
+                    }
+                    elseif(\Auth::user()->employee->branch_id == 3)
+                    {
+                        $employee = Employee::where('branch_id', 3)->get();
+                    }
+                    else
+                    {
+                        $employee = Employee::all();
+                    }
+                    $employee = $employee->pluck('id');
+                    
+                    // Ambil data UserOvertime berdasarkan bulan dan tahun
+                    $overtimeData = UserOvertime::whereIn('user_id', $employee)
+                        ->whereMonth('start_date', $month)
+                        ->whereYear('start_date', $year)
+                        ->get();
+
+                    // Inisialisasi variabel untuk statistik
+                    $totalOvertimeHours = 0;
+                    $overtimePerDay = [];
+                    $approvedOvertimeCount = 0;
+                    $totalOvertimeCount = $overtimeData->count();
+
+                    foreach ($overtimeData as $overtime) {
+                        // Hitung total jam lembur
+                        $startTime = strtotime($overtime->start_time);
+                        $endTime = strtotime($overtime->end_time);
+
+                        if($overtime->end_time == '00:00:00' && $overtime->total_time !== null) {
+                            $endTime = strtotime('24:00:00');
+                        }
+
+                        $hoursWorked = ($endTime - $startTime) / 3600; // Konversi detik ke jam
+                        $totalOvertimeHours += $hoursWorked;
+
+                        // Hitung lembur per hari
+                        $date = date('Y-m-d', strtotime($overtime->start_date));
+                        if(!isset($overtimePerDay[$date])) {
+                            $overtimePerDay[$date] = 0;
+                        }
+                        $overtimePerDay[$date] += $hoursWorked;
+
+                        // Hitung jumlah lembur yang disetujui
+                        if($overtime->status == 'Approved') {
+                            $approvedOvertimeCount++;
+                        }
+                    }
+
+                    // Hitung persentase lembur yang disetujui
+                    $approvalRate = $totalOvertimeCount > 0 ? ($approvedOvertimeCount / $totalOvertimeCount) * 100 : 0;
+
+                    // Return data ke view
+                    return view('report.overtime_staff', compact('totalOvertimeHours', 'overtimePerDay', 'approvalRate', 'month', 'year'));
+                }
+                else
+                {
+                    return redirect()->back()->with('error', __('Permission denied.'));
+                }
+            }
+            else
+            {
+                return redirect()->back()->with('error', __('Permission denied.'));
+            }
+        }
+    }
+
+    public function absence_user(Request $request)
+    {
+        if (Auth::check()) {
+            if (\Auth::user()->can('show hrm dashboard')) 
+            {
+                $user = Auth::user();
+                if($user->type != 'client' && $user->type != 'staff_client' && $user->type != 'company' && $user->type != 'admin' && $user->type != 'partners')
+                {
+
+                    // Ambil karyawan berdasarkan user_id
+                    $employee = Employee::where('user_id', $user->id)->first();
+
+                    // Ambil data cuti dan izin sakit berdasarkan bulan yang dipilih
+                    if (!empty($request->month)) {
+                        $currentDate = strtotime($request->month);
+                        $month = date('m', $currentDate);
+                        $year = date('Y', $currentDate);
+                    } else {
+                        $month = date('m');
+                        $year = date('Y');
+                    }
+
+                    // Ambil jumlah hari dalam bulan yang dipilih
+                    $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
+                    $dates = [];
+                    for ($i = 1; $i <= $num_of_days; $i++) {
+                        $date = str_pad($i, 2, '0', STR_PAD_LEFT);
+                        $dateFormat = $year . '-' . $month . '-' . $date;
+                        $dayOfWeek = date('N', strtotime($dateFormat));
+
+                        // Menyimpan hanya tanggal yang jatuh pada hari Senin hingga Jumat (1-5)
+                        if ($dayOfWeek <= 5) {
+                            $dates[] = $date;
+                        }
+                    }
+
+                    // Ambil data izin sakit dan cuti lainnya
+                    $totalLeaves = [];
+                    $totalSickLeaves = [];
+
+                    foreach ($dates as $date) {
+                        $dateFormat = $year . '-' . $month . '-' . $date;
+
+                        // Hitung total cuti pada tanggal tertentu
+                        $leaveCount = Leave::where('employee_id', $employee->id)
+                            ->whereDate('start_date', '<=', $dateFormat)
+                            ->whereDate('end_date', '>=', $dateFormat)
+                            ->where('absence_type', 'leave')
+                            ->where('status', 'Approved')
+                            ->get()
+                            ->reduce(function ($carry, $leave) use ($dateFormat) {
+                                $startDate = new \DateTime($leave->start_date);
+                                $endDate = new \DateTime($leave->end_date);
+                                $total_leave_days = 0;
+
+                                while ($startDate <= $endDate) {
+                                    if ($startDate->format('N') <= 5) { // Memeriksa apakah hari adalah Senin hingga Jumat
+                                        $total_leave_days++;
+                                    }
+                                    $startDate->add(new \DateInterval('P1D')); // Menambahkan 1 hari ke tanggal start_date
+                                }
+
+                                return $carry + $total_leave_days;
+                            }, 0);
+
+                        $totalLeavePerMonth = Leave::where('employee_id', $employee->id)
+                            ->whereDate('applied_on', '=', $dateFormat)
+                            ->where('absence_type', 'leave')
+                            ->where('status', 'Approved')
+                            ->get()
+                            ->reduce(function ($carry, $leave) use ($dateFormat) {
+                                $startDate = new \DateTime($leave->start_date);
+                                $endDate = new \DateTime($leave->end_date);
+                                $total_leave_days = 0;
+
+                                while ($startDate <= $endDate) {
+                                    if ($startDate->format('N') <= 5) { // Memeriksa apakah hari adalah Senin hingga Jumat
+                                        $total_leave_days++;
+                                    }
+                                    $startDate->add(new \DateInterval('P1D')); // Menambahkan 1 hari ke tanggal start_date
+                                }
+
+                                return $carry + $total_leave_days;
+                            }, 0);
+
+                        // Hitung total izin sakit pada tanggal tertentu
+                        $sickLeaveCount = Leave::where('employee_id', $employee->id)
+                            ->whereDate('applied_on', '=', $dateFormat)
+                            ->where('absence_type', 'sick')
+                            ->count();
+
+                        $totalLeaves[] = $leaveCount;
+                        $totalLeavePerMonths[] = $totalLeavePerMonth;
+                        $totalSickLeaves[] = $sickLeaveCount;
+                    }
+
+                    $totalLeavePerMonth = array_sum($totalLeavePerMonths);
+                    $totalSickPerMonth = array_sum($totalSickLeaves);
+                }
+                elseif($user->type == 'partners')
+                {
+                    // Ambil karyawan berdasarkan user_id
+                    if (\Auth::user()->employee->branch_id == 2) {
+                        $employees = Employee::where('branch_id', 2)->get();
+                    } elseif (\Auth::user()->employee->branch_id == 3) {
+                        $employees = Employee::where('branch_id', 3)->get();
+                    } else {
+                        $employees = Employee::all();
+                    }
+
+                    // Dapatkan array dari id karyawan
+                    $employeeIds = $employees->pluck('id')->toArray();
+
+                    // Ambil data cuti dan izin sakit berdasarkan bulan yang dipilih
+                    if (!empty($request->month)) {
+                        $currentDate = strtotime($request->month);
+                        $month = date('m', $currentDate);
+                        $year = date('Y', $currentDate);
+                    } else {
+                        $month = date('m');
+                        $year = date('Y');
+                    }
+
+                    // Ambil jumlah hari dalam bulan yang dipilih
+                    $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
+                    $dates = [];
+                    for ($i = 1; $i <= $num_of_days; $i++) {
+                        $date = str_pad($i, 2, '0', STR_PAD_LEFT);
+                        $dateFormat = $year . '-' . $month . '-' . $date;
+                        $dayOfWeek = date('N', strtotime($dateFormat));
+
+                        // Menyimpan hanya tanggal yang jatuh pada hari Senin hingga Jumat (1-5)
+                        if ($dayOfWeek <= 5) {
+                            $dates[] = $date;
+                        }
+                    }
+
+                    // Ambil data izin sakit dan cuti lainnya
+                    $totalLeaves = [];
+                    $totalSickLeaves = [];
+                    $totalLeavePerMonths = [];
+
+                    foreach ($dates as $date) {
+                        $dateFormat = $year . '-' . $month . '-' . $date;
+
+                        // Hitung total cuti pada tanggal tertentu
+                        $leaveCount = Leave::whereIn('employee_id', $employeeIds)
+                            ->whereDate('start_date', '<=', $dateFormat)
+                            ->whereDate('end_date', '>=', $dateFormat)
+                            ->where('absence_type', 'leave')
+                            ->where('status', 'Approved')
+                            ->get()
+                            ->reduce(function ($carry, $leave) use ($dateFormat) {
+                                $startDate = new \DateTime($leave->start_date);
+                                $endDate = new \DateTime($leave->end_date);
+                                $total_leave_days = 0;
+
+                                while ($startDate <= $endDate) {
+                                    if ($startDate->format('N') <= 5) { // Memeriksa apakah hari adalah Senin hingga Jumat
+                                        $total_leave_days++;
+                                    }
+                                    $startDate->add(new \DateInterval('P1D')); // Menambahkan 1 hari ke tanggal start_date
+                                }
+
+                                return $carry + $total_leave_days;
+                            }, 0);
+
+                        // Hitung total cuti per bulan pada tanggal tertentu
+                        $totalLeavePerMonth = Leave::whereIn('employee_id', $employeeIds)
+                            ->whereDate('applied_on', '=', $dateFormat)
+                            ->where('absence_type', 'leave')
+                            ->where('status', 'Approved')
+                            ->get()
+                            ->reduce(function ($carry, $leave) use ($dateFormat) {
+                                $startDate = new \DateTime($leave->start_date);
+                                $endDate = new \DateTime($leave->end_date);
+                                $total_leave_days = 0;
+
+                                while ($startDate <= $endDate) {
+                                    if ($startDate->format('N') <= 5) { // Memeriksa apakah hari adalah Senin hingga Jumat
+                                        $total_leave_days++;
+                                    }
+                                    $startDate->add(new \DateInterval('P1D')); // Menambahkan 1 hari ke tanggal start_date
+                                }
+
+                                return $carry + $total_leave_days;
+                            }, 0);
+
+                        // Hitung total izin sakit pada tanggal tertentu
+                        $sickLeaveCount = Leave::whereIn('employee_id', $employeeIds)
+                            ->whereDate('applied_on', '=', $dateFormat)
+                            ->where('absence_type', 'sick')
+                            ->count();
+
+                        $totalLeaves[] = $leaveCount;
+                        $totalLeavePerMonths[] = $totalLeavePerMonth;
+                        $totalSickLeaves[] = $sickLeaveCount;
+                    }
+
+                    $totalLeavePerMonth = array_sum($totalLeavePerMonths);
+                    $totalSickPerMonth = array_sum($totalSickLeaves);
+
+                }
+
+                return view('report.absence_staff', compact('totalLeaves', 'totalSickLeaves','month','year','dates','totalLeavePerMonth','totalSickPerMonth'));
+            } else {
+                return redirect()->back()->with('error', __('Permission denied.'));
+            }
+        }
+    }
+
+
+
 
 
 }

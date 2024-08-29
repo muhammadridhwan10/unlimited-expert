@@ -45,14 +45,14 @@ class MedicalAllowanceController extends Controller
                 $employeeReimbursment->where('employee_id', $request->employee_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->get();
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->get();
 
             $employees = Employee::all()->pluck('name','id');
 
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
+            $approval     = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
         }
         elseif(\Auth::user()->type == 'company')
         {
@@ -76,13 +76,13 @@ class MedicalAllowanceController extends Controller
                 $employeeReimbursment->where('employee_id', $request->employee_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->get();
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->get();
 
             $employees = Employee::all()->pluck('name','id');
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
+            $approval     = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
         }
         elseif(\Auth::user()->type == 'senior accounting')
         {
@@ -106,14 +106,14 @@ class MedicalAllowanceController extends Controller
                 $employeeReimbursment->where('employee_id', $request->employee_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->get();
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->get();
 
             $employees = Employee::all()->pluck('name','id');
 
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->where('approval', '=', $users->id)->where('status','=', 'Pending')->get();
+            $approval     = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
         }
         elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff IT' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'intern')
         {
@@ -135,7 +135,7 @@ class MedicalAllowanceController extends Controller
                 $employeeReimbursment->where('employee_id', $request->employee_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->get();
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->get();
 
             $employees = Employee::where('user_id', '=', \Auth::user()->id)->first()->pluck('name','id');
 
@@ -143,7 +143,7 @@ class MedicalAllowanceController extends Controller
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
             $reimbursment   = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->where('employee_id', '=', $employee->id)->get();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->where('approval', '=', $users->id)->where('status','=', 'Pending')->get();
+            $approval     = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
         }
         else
         {
@@ -166,14 +166,14 @@ class MedicalAllowanceController extends Controller
                 $employeeReimbursment->where('employee_id', $request->employee_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->get();
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->get();
 
             $employees = Employee::where('user_id', '=', \Auth::user()->id)->first()->pluck('name','id');
 
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->where('approval', '=', \Auth::user()->id)->where('status','=', 'Pending')->get();
+            $approval     = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->where('approval', '=', \Auth::user()->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
         }
 
         return view('medical-allowance.index', compact('reimbursment','approval','employeeReimbursment','employees'));

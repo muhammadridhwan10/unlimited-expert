@@ -497,6 +497,8 @@
                                                     <td>
                                                         @if ($invoice->currency == '$')
                                                             {{ \Auth::user()->priceFormat2($iteam->price) }}
+                                                        @elseif($invoice->currency == '€')
+                                                            {{ \Auth::user()->priceFormat3($iteam->price) }}
                                                         @else
                                                             {{ \Auth::user()->priceFormat($iteam->price) }}
                                                         @endif
@@ -516,6 +518,8 @@
                                                                         <td>
                                                                             @if ($invoice->currency == '$')
                                                                                 {{ \Auth::user()->priceFormat2($taxPrice) }}
+                                                                            @elseif($invoice->currency == '€')
+                                                                                {{ \Auth::user()->priceFormat3($taxPrice) }}
                                                                             @else
                                                                                 {{ \Auth::user()->priceFormat($taxPrice) }}
                                                                             @endif
@@ -532,6 +536,8 @@
                                                     <td class="text-end">
                                                         @if ($invoice->currency == '$')
                                                             {{ \Auth::user()->priceFormat2($iteam->price) }}
+                                                        @elseif($invoice->currency == '€')
+                                                            {{ \Auth::user()->priceFormat3($iteam->price) }}
                                                         @else
                                                             {{ \Auth::user()->priceFormat($iteam->price) }}
                                                         @endif
@@ -544,6 +550,8 @@
                                                 <td><b>
                                                     @if ($invoice->currency == '$')
                                                         {{ \Auth::user()->priceFormat2($totalRate) }}
+                                                    @elseif($invoice->currency == '€')
+                                                         {{ \Auth::user()->priceFormat3($totalRate) }}
                                                     @else
                                                         {{ \Auth::user()->priceFormat($totalRate) }}
                                                     @endif    
@@ -551,6 +559,8 @@
                                                 <td><b>
                                                     @if ($invoice->currency == '$')
                                                         {{ \Auth::user()->priceFormat2($totalTaxPrice) }}
+                                                    @elseif($invoice->currency == '€')
+                                                         {{ \Auth::user()->priceFormat3($totalTaxPrice) }}
                                                     @else
                                                         {{ \Auth::user()->priceFormat($totalTaxPrice) }}
                                                     @endif   
@@ -567,6 +577,8 @@
                                                 <td class="text-end">
                                                 @if ($invoice->currency == '$')
                                                         {{ \Auth::user()->priceFormat2($invoice->getSubTotal()) }}
+                                                @elseif($invoice->currency == '€')
+                                                         {{ \Auth::user()->priceFormat3($invoice->getSubTotal()) }}
                                                 @else
                                                     {{ \Auth::user()->priceFormat($invoice->getSubTotal()) }}
                                                 @endif  
@@ -584,6 +596,8 @@
                                                 <td class="text-end">
                                                     @if ($invoice->currency == '$')
                                                         {{ \Auth::user()->priceFormat2($invoice->getTotalTax()) }}
+                                                    @elseif($invoice->currency == '€')
+                                                        {{ \Auth::user()->priceFormat3($invoice->getTotalTax()) }}
                                                     @else
                                                         {{ \Auth::user()->priceFormat($invoice->getTotalTax()) }}
                                                     @endif  
@@ -595,6 +609,8 @@
                                                 <td class="blue-text text-end">
                                                     @if ($invoice->currency == '$')
                                                         {{ \Auth::user()->priceFormat2($invoice->getTotal()) }}
+                                                    @elseif($invoice->currency == '€')
+                                                        {{ \Auth::user()->priceFormat3($invoice->getTotal()) }}
                                                     @else
                                                         {{ \Auth::user()->priceFormat($invoice->getTotal()) }}
                                                     @endif  

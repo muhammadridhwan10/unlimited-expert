@@ -620,18 +620,25 @@
                                         <div class="bill_to">
                                             <strong data-v-f2a183a6="">{{__('Bill To')}}:</strong>
                                             <p>
-                                            <strong data-v-f2a183a6="">{{!empty($client->name)?$client->name:''}}</strong><br>
-                                            @php
-                                                $address = $clients->address;
-                                                $commaPosition = strpos($address, ',');
-                                                $firstLine = ($commaPosition !== false) ? substr($address, 0, $commaPosition) : $address;
-                                                $remainingAddress = ($commaPosition !== false) ? substr($address, $commaPosition + 1) : '';
-                                            @endphp
-                                                <!-- {{!empty($clients->telp)?$clients->telp:''}}<br> -->
+                                                <strong data-v-f2a183a6="">{{ !empty($client->name) ? $client->name : '' }}</strong><br>
+                                                @php
+                                                    // Pastikan $clients adalah objek dan properti address tersedia
+                                                    if (!empty($clients) && is_object($clients) && !empty($clients->address)) {
+                                                        $address = $clients->address;
+                                                        $commaPosition = strpos($address, ',');
+                                                        $firstLine = ($commaPosition !== false) ? substr($address, 0, $commaPosition) : $address;
+                                                        $remainingAddress = ($commaPosition !== false) ? substr($address, $commaPosition + 1) : '';
+                                                    } else {
+                                                        $firstLine = '';
+                                                        $remainingAddress = '';
+                                                    }
+                                                @endphp
+                                                <!-- Tampilkan alamat hanya jika tersedia -->
                                                 {{ $firstLine }}<br>
                                                 {{ $remainingAddress }}<br>
-                                                <!-- {{!empty($customer->billing_zip)?$customer->billing_zip:''}}<br>
-                                                {{!empty($clients->city)?$clients->city:'' .', '}} {{!empty($clients->state)?$clients->state:'',', '}} {{!empty($clients->country)?$clients->country:''}} -->
+                                                <!-- {{ !empty($clients->telp) ? $clients->telp : '' }}<br> -->
+                                                <!-- {{ !empty($customer->billing_zip) ? $customer->billing_zip : '' }}<br>
+                                                {{ !empty($clients->city) ? $clients->city : '' . ', ' }} {{ !empty($clients->state) ? $clients->state : '', ', ' }} {{ !empty($clients->country) ? $clients->country : '' }} -->
                                             </p>
                                         </div>
                                         @if($settings['shipping_display']=='on')
@@ -695,6 +702,8 @@
                                                             <div class="d-table-value"><span>
                                                                 @if ($invoice->currency == '$')
                                                                     {{Utility::priceFormat2($settings,$item->price)}}
+                                                                @elseif($invoice->currency == '€')
+                                                                    {{Utility::priceFormat3($settings,$item->price)}}
                                                                 @else
                                                                     {{Utility::priceFormat($settings,$item->price)}}
                                                                 @endif 
@@ -752,7 +761,9 @@
                                                         <div data-v-f2a183a6="" class="d-table-label">{{__('Subtotal')}} : </div>
                                                         <div data-v-f2a183a6="" class="d-table-value">
                                                             @if ($invoice->currency == '$')
-                                                                 {{Utility::priceFormat2($settings,$invoice->getSubTotal())}}
+                                                                {{Utility::priceFormat2($settings,$invoice->getSubTotal())}}
+                                                            @elseif($invoice->currency == '€')
+                                                                {{Utility::priceFormat3($settings,$invoice->getSubTotal())}}
                                                             @else
                                                                 {{Utility::priceFormat($settings,$invoice->getSubTotal())}}
                                                             @endif 
@@ -776,6 +787,8 @@
                                                                 <div data-v-f2a183a6="" class="d-table-value"> 
                                                                 @if ($invoice->currency == '$')
                                                                     {{Utility::priceFormat2($settings,$invoice->getTotalTax())}}
+                                                                @elseif($invoice->currency == '€')
+                                                                    {{Utility::priceFormat3($settings,$invoice->getTotalTax())}}
                                                                 @else
                                                                     {{Utility::priceFormat($settings,$invoice->getTotalTax())}}
                                                                 @endif 
@@ -785,8 +798,10 @@
                                                     <div data-v-f2a183a6="" class="d-table-summary-item">
                                                         <div data-v-f2a183a6="" class="d-table-label"><strong>{{__('Total')}} :</strong></div>
                                                         <div data-v-f2a183a6="" class="d-table-value"><strong>
-                                                        @if ($invoice->currency == '$')
+                                                                @if ($invoice->currency == '$')
                                                                     {{Utility::priceFormat2($settings,$invoice->getSubTotal() - $invoice->getTotalTax())}}
+                                                                @elseif($invoice->currency == '€')
+                                                                    {{Utility::priceFormat3($settings, $invoice->getSubTotal() - $invoice->getTotalTax())}}
                                                                 @else
                                                                     {{Utility::priceFormat($settings,$invoice->getSubTotal() - $invoice->getTotalTax())}}
                                                                 @endif

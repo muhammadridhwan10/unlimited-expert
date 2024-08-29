@@ -698,12 +698,12 @@
                                                 </div>
                                             </td>
                                             <td>
-                                            <select class="form-control select" name="stage_id" id="stage_id" style = "width: 100px;" onchange="updateStage(this.value, {{ $task->id }})">
-                                                <option value="0" hidden>{{$task->stage->name}}</option>
-                                                @foreach($taskstage as $stage)
-                                                    <option value="{{ $stage->id }}">{{ $stage->name }}</option>
-                                                @endforeach
-                                            </select>
+                                                <select class="form-control select" name="stage_id" id="stage_id" style="width: 100px;" onchange="updateStage(this.value, {{ $task->id }})">
+                                                    <option value="0" hidden>{{ $task->stage ? $task->stage->name : 'N/A' }}</option>
+                                                    @foreach($taskstage as $stage)
+                                                        <option value="{{ $stage->id }}">{{ $stage->name }}</option>
+                                                    @endforeach
+                                                </select>
                                             </td>
                                             <td class="text-end w-15">
                                                 <div class="actions">

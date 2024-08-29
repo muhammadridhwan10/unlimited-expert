@@ -276,6 +276,210 @@
         });
     @endif
     </script>
+    <script>
+    @if(\Auth::user()->type !== 'partners')
+        var ctx = document.getElementById('attendanceChart').getContext('2d');
+        var attendanceChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 31}, (v, k) => k + 1),
+                datasets: [{
+                    label: 'Present',
+                    data: @json($data_absen),
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2
+                }, {
+                    label: 'Late',
+                    data: @json($data_late),
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        var ctx = document.getElementById('overtimeChart').getContext('2d');
+        var overtimeChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(@json($overtimePerDay)),
+                datasets: [{
+                    label: 'Overtime Hours',
+                    data: Object.values(@json($overtimePerDay)),
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        var ctx = document.getElementById('timesheetChart').getContext('2d');
+        var timesheetChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: {!! json_encode($dates) !!},
+                datasets: [{
+                    label: 'Hours Worked',
+                    data: {!! json_encode($timesheetData) !!},
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Hours'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    }
+                }
+            }
+        });
+
+        var ctx = document.getElementById('projectStatusChart').getContext('2d');
+        var projectStatusChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: {!! json_encode(array_keys($projectStatusCounts)) !!},
+                datasets: [{
+                    data: {!! json_encode(array_values($projectStatusCounts)) !!},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                var label = context.label || '';
+                                var value = context.raw || 0;
+                                return label + ': ' + value + ' projects';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        var ctx2 = document.getElementById('tasksStatusChart').getContext('2d');
+        var tasksStatusChart = new Chart(ctx2, {
+            type: 'doughnut',
+            data: {
+                labels: ['Complete', 'Incomplete'],
+                datasets: [{
+                    label: 'Tasks Status',
+                    data: [
+                        {{ $completedTasks }},
+                        {{ $incompleteTasks }}
+                    ],
+                    backgroundColor: ['#36a2eb', '#ff6384'],
+                    borderColor: '#fff',
+                    borderWidth: 1
+                }]
+            },
+        });
+
+        var ctx3 = document.getElementById('tasksPriorityChart').getContext('2d');
+        var tasksPriorityChart = new Chart(ctx3, {
+            type: 'bar',
+            data: {
+                labels: @json(array_keys($tasksPriorityPerProject)),
+                datasets: [{
+                    label: 'Tasks by Priority',
+                    data:  @json(array_values($tasksPriorityPerProject)),
+                    backgroundColor: ['#ff6384', '#36a2eb', '#4bc0c0'],
+                    borderColor: '#fff',
+                    borderWidth: 1
+                }]
+            },
+        });
+
+
+        var ctx4 = document.getElementById('overdueTasksChart').getContext('2d');
+        var overdueTasksChart = new Chart(ctx4, {
+            type: 'pie',
+            data: {
+                labels: @json(array_keys($overdueTasksPerProject)),
+                datasets: [{
+                    label: 'Overdue Tasks',
+                    data: @json(array_values($overdueTasksPerProject)),
+                    backgroundColor: [
+                    '#ff6384', '#36a2eb', '#4bc0c0', '#ffce56', '#9966ff', 
+                    '#ff9f40', '#c9cbcf', '#2b908f', '#f45b5b', '#91e8e1', 
+                    '#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd'
+                    ],
+                    borderColor: '#fff',
+                    fill: false,
+                    tension: 0.1,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Project Name'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    }
+                }
+            }
+        });
+    @endif
+    </script>
 @endpush
 @push('css-page')
     <style>
@@ -314,113 +518,169 @@
 @section('content')
     @if(\Auth::user()->type != 'client' && \Auth::user()->type != 'company' && \Auth::user()->type != 'admin' && \Auth::user()->type != 'partners' && \Auth::user()->type != 'support')
         <div class="row">
-            <div class="col-sm-12">
-                <div class="row">
-                    <div class="col-xxl-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h4>{{__('Mark Attendance')}}</h4>
+            <div class="col-sm-6">
+                <div class="card">
+                    {{-- <div class="card-header">
+                        <h4>{{__('Mark Attendance')}}</h4>
+                    </div> --}}
+                    <div class="card-body dash-card-body">
+                        <p class="text-muted pb-0-5">{{__('My Office Time: '.$officeTime['startTime'].' to '.$officeTime['endTime'])}}</p>
+                        <center>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    {{Form::open(array('url'=>'attendanceemployee/attendance','method'=>'post'))}}
+                                    @if(empty($employeeAttendance) || $employeeAttendance->clock_out != '00:00:00')
+                                        <button type="submit" value="0" name="in" id="clock_in" class="btn btn-success ">{{__('CLOCK IN')}}</button>
+                                    @else
+                                        <button type="submit" value="0" name="in" id="clock_in" class="btn btn-success disabled" disabled>{{__('CLOCK IN')}}</button>
+                                    @endif
+                                    {{Form::close()}}
+                                </div>
+                                <div class="col-md-6">
+                                    @if(!empty($employeeAttendance) && $employeeAttendance->clock_out == '00:00:00')
+                                        {{Form::model($employeeAttendance,array('route'=>array('attendanceemployee.update',$employeeAttendance->id),'method' => 'PUT')) }}
+                                        <button type="submit" value="1" name="out" id="clock_out" class="btn btn-danger">{{__('CLOCK OUT')}}</button>
+                                    @else
+                                        <button type="submit" value="1" name="out" id="clock_out" class="btn btn-danger disabled" disabled>{{__('CLOCK OUT')}}</button>
+                                    @endif
+                                    {{Form::close()}}
+                                </div>
                             </div>
-                            <div class="card-body dash-card-body">
-                                <p class="text-muted pb-0-5">{{__('My Office Time: '.$officeTime['startTime'].' to '.$officeTime['endTime'])}}</p>
-                                <center>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            {{Form::open(array('url'=>'attendanceemployee/attendance','method'=>'post'))}}
-                                            @if(empty($employeeAttendance) || $employeeAttendance->clock_out != '00:00:00')
-                                                <button type="submit" value="0" name="in" id="clock_in" class="btn btn-success ">{{__('CLOCK IN')}}</button>
-                                            @else
-                                                <button type="submit" value="0" name="in" id="clock_in" class="btn btn-success disabled" disabled>{{__('CLOCK IN')}}</button>
-                                            @endif
-                                            {{Form::close()}}
-                                        </div>
-                                        <div class="col-md-6 ">
-                                            @if(!empty($employeeAttendance) && $employeeAttendance->clock_out == '00:00:00')
-                                                {{Form::model($employeeAttendance,array('route'=>array('attendanceemployee.update',$employeeAttendance->id),'method' => 'PUT')) }}
-                                                <button type="submit" value="1" name="out" id="clock_out" class="btn btn-danger">{{__('CLOCK OUT')}}</button>
-                                            @else
-                                                <button type="submit" value="1" name="out" id="clock_out" class="btn btn-danger disabled" disabled>{{__('CLOCK OUT')}}</button>
-                                            @endif
-                                            {{Form::close()}}
+                        </center>
+                        {{-- <br>
+                        <div class="container">
+                            <div id="message"></div>
+                            <br>
+                            <div id="timer"></div> 
+                        </div> --}}
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h6>{{ __("Total Attendance in $curMonth") }}</h6>
+                        <br>
+                        <h3 class="small-font">{{ $data['totalPresent']}} Days</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        {{ Form::open(array('route' => array('home'),'method'=>'get','id'=>'report_monthly_attendance_user')) }}
+                        <div class="row align-items-center justify-content-end">
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <div class="btn-box">
+                                            {{Form::label('month',__('Month'),['class'=>'form-label'])}}
+                                            {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
                                         </div>
                                     </div>
-                                </center>
-                                <br>
-                                <div class="container">
-                                    <div id="message"></div>
-                                    <br>
-                                    <div id="timer"></div> 
                                 </div>
-
+                            </div>
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col-auto mt-4">
+                                        <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_monthly_attendance_user').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
+                                            <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
+                                        </a>
+                                        <a href="{{route('home')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
+                                            <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
+                                        </a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                    {{ Form::close() }}
+                </div>
+            </div>
 
-                         <div class="card">
-                            <div class="card-body">
-                                {{ Form::open(array('route' => array('home'),'method'=>'get','id'=>'report_monthly_attendance_user')) }}
-                                <div class="row align-items-center justify-content-end">
-                                    <div class="col-auto">
-                                        <div class="row">
-                                            <div class="col-auto">
-                                                <div class="btn-box">
-                                                    {{Form::label('month',__('Month'),['class'=>'form-label'])}}
-                                                    {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <div class="row">
-                                            <div class="col-auto mt-4">
-                                                <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_monthly_attendance_user').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
-                                                    <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
-                                                </a>
-                                                <a href="{{route('home')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
-                                                    <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h6>{{ __("Total Overtime Hours") }}</h6>
+                        <h3 class="small-font">{{ $totalOvertimeHours }} hours</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h6>{{ __("Total Annual Leave Taken") }}</h6>
+                        <h3 class="small-font">{{ $totalLeaveDays . ' / ' . $totalAllocatedLeaveDays }} days</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h6>{{ __("Remaining Annual Leave Days") }}</h6>
+                        <h3 class="small-font">{{ $totalRemainingLeaveDays }} days</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6 col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h6>{{ __("Total Sick") }}</h6>
+                        <h3 class="small-font">{{ $totalSickDays }} Days</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h6>{{ __("Total Reimbursement") }}</h6>
+                        <h3 class="small-font">{{ 'Rp ' . number_format($totalReimbursement, 0, ',', '.') . ' / ' . number_format($totalReimbursementAmount, 0, ',', '.') }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{ __("Timesheet Hours Per Day in $curMonth") }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="timesheetChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{__("Attendance Statistics")}}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <canvas id="attendanceChart" width="400" height="200"></canvas>
                             </div>
-                            {{ Form::close() }}
                         </div>
+                    </div>
+                </div>
+            </div>
 
-                        <div class="card">
-                            <div class="card-body table-border-style">
-                                <div class="table-responsive py-4 attendance-table-responsive">
-                                    <table class="table">
-                                        <thead>
-                                        <tr>
-                                            <th class="active">{{__('Name')}}</th>
-                                            @foreach($dates as $date)
-                                                <th>{{$date}}</th>
-                                            @endforeach
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-
-                                        @foreach($employeesAttendances as $attendance)
-                                            <tr>
-                                                <td>{{$attendance['name']}}</td>
-                                                @foreach($dates as $date)
-                                                    <td>
-                                                        @if($attendance['status'][$date] == 'P')
-                                                            <a href="https://www.google.com/maps/search/?api=1&query={{ $attendance['latitude'][$date] }},{{ $attendance['longitude'][$date] }}" target="_blank" title="View on map">
-                                                                <i class="ti ti-map-pin" style="font-size: 24px;"></i>
-                                                            </a>
-                                                        @elseif($attendance['status'][$date]=='A')
-                                                            <i class="badge bg-danger p-2 rounded">{{__('A')}}</i>
-                                                        @elseif($attendance['status'][$date]=='W')
-                                                            <i class="badge bg-danger p-2 rounded">{{__('W')}}</i>
-                                                        @endif
-                                                    </td>
-                                                @endforeach
-                                            </tr>
-                                        @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{__("Overtime Statistics")}}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <canvas id="overtimeChart" width="400" height="200"></canvas>
                             </div>
                         </div>
                     </div>
@@ -478,6 +738,59 @@
         </div>
 
         <div class="row">
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{__("Project Status Distribution")}}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <canvas id="projectStatusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart for Tasks Status -->
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{ __("Tasks Status") }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="tasksStatusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart for Tasks by Priority -->
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{ __("Tasks by Priority") }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="tasksPriorityChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart for Overdue Tasks -->
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{ __("Overdue Tasks") }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="overdueTasksChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- <div class="row">
             <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
@@ -596,7 +909,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
             <div class="row">

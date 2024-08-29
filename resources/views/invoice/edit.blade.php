@@ -171,6 +171,7 @@
                                         <select class="form-control select2 currency" name="currency" id="currency">
                                             <option value="{{ $siteCurrencySymbol }}">{{ $siteCurrencySymbol }}</option>
                                             <option value="{{ $siteCurrencySymbol2 }}">{{ $siteCurrencySymbol2 }}</option>
+                                            <option value="{{ $siteCurrencySymbol3 }}">{{ $siteCurrencySymbol3 }}</option>
                                             <!-- Tambahkan opsi lain jika diperlukan -->
                                         </select>
                                     </div>

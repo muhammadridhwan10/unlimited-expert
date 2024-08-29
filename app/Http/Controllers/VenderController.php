@@ -36,19 +36,19 @@ class VenderController extends Controller
         {
                 if(\Auth::user()->type = 'admin')
             {
-                $venders = Vender::all();
+                $venders = Vender::orderByDesc('id')->get();
 
                 return view('vender.index', compact('venders'));
             }
             elseif(\Auth::user()->type = 'company')
             {
-                $venders = Vender::all();
+                $venders = Vender::orderByDesc('id')->get();
 
                 return view('vender.index', compact('venders'));
             }
             else
             {
-                $venders = Vender::where('created_by', \Auth::user()->creatorId())->get();
+                $venders = Vender::where('created_by', \Auth::user()->creatorId())->orderByDesc('id')->get();
 
                 return view('vender.index', compact('venders'));
             }

@@ -38,6 +38,11 @@ use App\Models\Trainer;
 use App\Models\Training;
 use App\Models\User;
 use App\Models\UserOvertime;
+use App\Models\Leave;
+use App\Models\LeaveType;
+use App\Models\Reimbursment;
+use App\Models\ReimbursmentType;
+use App\Models\Task;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -1270,9 +1275,168 @@ class DashboardController extends Controller
                             $officeTime['endTime']      = "17:00";
                         }
 
+                        // attendance statistics
+                        $absentData = [];
+                        for ($day = 1; $day <= 31; $day++) {
+                            $months = $request->month ?? date('Y-m');
+                            $date = sprintf('%s-%02d', $months, $day);
+                            
+                            $absentCount = AttendanceEmployee::where('date', '=', $date)
+                                ->where('status', '=', 'Present')->whereHas('employee', function ($query) use ($emp) {
+                                    $query->where('employee_id', '=', $emp->id);
+                                })
+                                ->count();
+                            
+                            $lateCount = 0;
+                            
+                            $lateCount = AttendanceEmployee::where('date', '=', $date)
+                                ->where('status', '=', 'Present')->whereHas('employee', function ($query) use ($emp, $officeTime) {
+                                    $query->where('employee_id', '=', $emp->id)
+                                        ->whereTime('clock_in', '>', $officeTime['startTime']);
+                                })
+                                ->count();
+            
+                            $absentData[] = $absentCount;
+                            $lateData[] = $lateCount;
+                        }
+
+                        //overtime statistics
+                        // Ambil data UserOvertime berdasarkan bulan dan tahun
+                        $overtimeData = UserOvertime::where('user_id', $emp->id)
+                            ->whereMonth('start_date', $month)
+                            ->whereYear('start_date', $year)
+                            ->get();
+
+                        // Inisialisasi variabel untuk statistik
+                        $overtimePerDay = [];
+                        $totalOvertimeHours = 0;
+                        $approvedOvertimeCount = 0;
+
+                        foreach ($overtimeData as $overtime) {
+                            // Hitung total jam lembur
+                            $startTime = strtotime($overtime->start_time);
+                            $endTime = strtotime($overtime->end_time);
+
+                            if($overtime->end_time == '00:00:00' && $overtime->total_time !== null) {
+                                $endTime = strtotime('24:00:00');
+                            }
+
+                            $hoursWorked = ($endTime - $startTime) / 3600; // Konversi detik ke jam
+                            $totalOvertimeHours += $hoursWorked;
+
+                            // Hitung lembur per hari
+                            $date = date('Y-m-d', strtotime($overtime->start_date));
+                            if(!isset($overtimePerDay[$date])) {
+                                $overtimePerDay[$date] = 0;
+                            }
+                            $overtimePerDay[$date] += $hoursWorked;
+
+                            // Hitung jumlah lembur yang disetujui
+                            if($overtime->status == 'Approved') {
+                                $approvedOvertimeCount++;
+                            }
+                        }
+
+                        $data_absen = $absentData;
+                        $data_late = $lateData;
+
+                        // total leave user
+                        // Calculate total leave days taken by the user
+                        $totalLeaveDays = Leave::where('leave_type_id', '1')->where('employee_id', $emp->id)->whereYear('applied_on', $year)->where('status','Approved')->sum('total_leave_days');
+
+                        // Calculate total allocated leave days from LeaveType model
+                        $totalAllocatedLeaveDays = LeaveType::where('id', '1')->sum('days');
+
+                        // Calculate remaining leave days
+                        $totalRemainingLeaveDays = $totalAllocatedLeaveDays - $totalLeaveDays;
+
+                        // total leave user
+                        // Calculate total sick days by the user
+                        $totalSickDays = Leave::where('absence_type', 'sick')->where('employee_id', $emp->id)->whereMonth('applied_on', $month)->whereYear('applied_on', $year)->sum('total_sick_days');
+
+                        // total medical allowance
+                        $reimbusment_counts = [];
+                        $currentYear = now()->year;
+                        $reimbursment_types = ReimbursmentType::where('created_by', \Auth::user()->creatorId())->get();
+
+                        foreach ($reimbursment_types as $type) {
+                            $counts = Reimbursment::select(\DB::raw('COALESCE(SUM(reimbursment.amount), 0) AS total_amount'))
+                                ->where('reimbursment_type', $type->title)
+                                ->whereYear('date', $currentYear)
+                                ->where('employee_id', $emp->id)
+                                ->where('status', '=', 'Paid')
+                                ->first();
+
+                            $reimbusment_count['total_amount'] = !empty($counts) ? $counts['total_amount'] : 0;
+                            $reimbusment_count['amount'] = $type->amount;
+                            $reimbusment_counts[] = $reimbusment_count;
+                        }
+
+                        // Pass the first reimbursement type data to the view (you can extend this to handle multiple types)
+                        $totalReimbursement = $reimbusment_counts[0]['total_amount'] ?? 0;
+                        $totalReimbursementAmount = $reimbusment_counts[0]['amount'] ?? 0;
+
+                        // chart timesheet
+                        $timesheetData = [];
+                        foreach ($dates as $date) {
+                            $dateFormat = $year . '-' . $month . '-' . $date;
+                            $totalTime = Timesheet::where('created_by', $user->id)
+                                                ->whereDate('date', $dateFormat)
+                                                ->sum('time') / 10000;
+                            $timesheetData[] = $totalTime;
+                        }
+
+                        // Hitung jumlah proyek berdasarkan status
+                        $projectStatusCounts = ProjectUser::join('projects', 'project_users.project_id', '=', 'projects.id')
+                        ->select('projects.status', \DB::raw('count(*) as total'))
+                        ->where('project_users.user_id', $user->id) // Sesuaikan dengan user_id yang ingin Anda filter
+                        ->groupBy('projects.status')
+                        ->pluck('total', 'projects.status')
+                        ->all();
+
+
+
                         $home_data = [];
 
                         $user_projects   = $user->projects()->pluck('project_id')->toArray();
+
+                        // Analitik Jumlah Tugas per Proyek
+                        $tasksPerProject = ProjectTask::whereIn('project_id', $user_projects)
+                        ->select('project_id', \DB::raw('count(*) as total_tasks'))
+                        ->groupBy('project_id')
+                        ->pluck('total_tasks', 'project_id')
+                        ->all();
+
+                        // Analitik Tugas Menurut Status
+                        $tasksStatusPerProject = ProjectTask::whereIn('project_id', $user_projects)
+                            ->select('is_complete', \DB::raw('count(*) as total_tasks'))
+                            ->groupBy('is_complete')
+                            ->pluck('total_tasks', 'is_complete')
+                            ->all();
+
+                        // Pastikan nilai default jika tidak ada data
+                        $completedTasks = $tasksStatusPerProject[1] ?? 0;
+                        $incompleteTasks = $tasksStatusPerProject[0] ?? 0;
+
+                        // Analitik Tugas per Prioritas
+                        $tasksPriorityPerProject = ProjectTask::whereIn('project_id', $user_projects)
+                            ->join('projects', 'projects.id', '=', 'project_tasks.project_id')
+                            ->select('projects.project_name', 'priority', \DB::raw('count(*) as total_tasks'))
+                            ->groupBy('projects.project_name', 'priority')
+                            ->pluck('total_tasks', 'projects.project_name', 'priority')
+                            ->all();
+
+
+                        // Analitik Tugas yang Tertunda
+                        $overdueTasksPerProject = ProjectTask::whereIn('project_tasks.project_id', $user_projects)
+                        ->whereDate('project_tasks.end_date', '<', now())
+                        ->where('project_tasks.is_complete', '=', 0)
+                        ->join('projects', 'projects.id', '=', 'project_tasks.project_id')
+                        ->select('projects.project_name', \DB::raw('count(project_tasks.id) as total_overdue_tasks'))
+                        ->groupBy('projects.project_name')
+                        ->pluck('total_overdue_tasks', 'projects.project_name')
+                        ->all();
+
                         $project_tasks   = ProjectTask::whereIn('project_id', $user_projects)->get();
                         $project_expense = Expense::whereIn('project_id', $user_projects)->get();
                         $seven_days      = Utility::getLastSevenDays();
@@ -1311,7 +1475,8 @@ class DashboardController extends Controller
                             $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->get();
                         }
 
-                        return view('dashboard.home', compact('employeesAttendances', 'dates', 'data', 'profile','employees', 'employeeAttendance', 'officeTime', 'home_data', 'approval'));
+                        return view('dashboard.home', compact('employeesAttendances', 'dates', 'data', 'profile', 'employees', 'employeeAttendance', 'officeTime', 'home_data', 'approval', 'data_absen', 'data_late', 'overtimePerDay', 'totalOvertimeHours', 'totalLeaveDays', 'totalRemainingLeaveDays', 'totalAllocatedLeaveDays','totalSickDays','totalReimbursement','totalReimbursementAmount','timesheetData','curMonth','projectStatusCounts','overdueTasksPerProject','tasksStatusPerProject','tasksPerProject','tasksPriorityPerProject','completedTasks','incompleteTasks'));
+
                     }
                     elseif($user->type == 'partners')
                     {
@@ -1324,7 +1489,7 @@ class DashboardController extends Controller
                         if(!empty($request->employee_id) && $request->employee_id[0]!=0){
                             $employees->whereIn('id', $request->employee_id);
                         }
-                        $employees = $employees->where('branch_id', $branch->branch_id);;
+                        $employees = $employees->where('branch_id', $branch->branch_id);
 
                         $employees = $employees->get()->pluck('name', 'id');
 

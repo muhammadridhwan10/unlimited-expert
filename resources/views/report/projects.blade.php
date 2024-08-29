@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 @section('page-title')
-    {{__('Projects Report')}}
+    {{__('Projects Time Report')}}
 @endsection
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('Projects Report')}}</li>
+    <li class="breadcrumb-item">{{__('Projects Time Report')}}</li>
 @endsection
 @push('script-page')
 

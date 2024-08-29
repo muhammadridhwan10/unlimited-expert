@@ -22,6 +22,7 @@
         const labelss = invoices.map(invoice => invoice.invoice_id);
         const amountRp = invoices.filter(invoice => invoice.currency === 'Rp').map(invoice => invoice.total_amount);
         const amountUsd = invoices.filter(invoice => invoice.currency === '$').map(invoice => invoice.total_amount);
+        const amountEur = invoices.filter(invoice => invoice.currency === '€').map(invoice => invoice.total_amount);
 
         var ctx = document.getElementById('lineChart').getContext('2d');
         var myChart = new Chart(ctx, {
@@ -39,6 +40,13 @@
                     {
                         label: 'Total Amount ($)',
                         data: amountUsd,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Total Amount (€)',
+                        data: amountEur,
                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
                         borderColor: 'rgba(255, 99, 132, 1)',
                         borderWidth: 1
@@ -268,6 +276,7 @@
                             @php
                                $totalAmountRp = 0;
                                $totalAmountDollar = 0;
+                               $totalAmountEuro = 0;
                             @endphp
                             @foreach ($invoices as $invoice)
                                 @php
@@ -275,6 +284,9 @@
                                         $totalAmountRp += $invoice->getDue();
                                     } elseif ($invoice->currency == '$') {
                                         $totalAmountDollar += $invoice->getDue();
+                                    }
+                                    elseif ($invoice->currency == '€') {
+                                        $totalAmountEuro += $invoice->getDue();
                                     }
                                 @endphp
                                 <tr>
@@ -301,6 +313,8 @@
                                     <td>
                                         @if ($invoice->currency == '$')
                                             {{ \Auth::user()->priceFormat2($invoice->getTotalTax()) }}
+                                        @elseif($invoice->currency == '€')
+                                            {{ \Auth::user()->priceFormat3($invoice->getTotalTax()) }}
                                         @else
                                             {{ \Auth::user()->priceFormat($invoice->getTotalTax()) }}
                                         @endif
@@ -308,6 +322,8 @@
                                     <td>
                                         @if ($invoice->currency == '$')
                                             {{ \Auth::user()->priceFormat2($invoice->getDue()) }}
+                                        @elseif($invoice->currency == '€')
+                                            {{ \Auth::user()->priceFormat3($invoice->getDue()) }}
                                         @else
                                             {{ \Auth::user()->priceFormat($invoice->getDue()) }}
                                         @endif
@@ -391,7 +407,7 @@
                                 </tr>
                             @endforeach
                             <tr>
-                                <td colspan="12" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;"><strong>Total Amount (Rp) : {{ \Auth::user()->priceFormat($totalAmountRp) }} </strong><strong>|</strong> <strong>Total Amount ($) : {{ \Auth::user()->priceFormat2($totalAmountDollar) }} </strong></td>
+                                <td colspan="12" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;"><strong>Total Amount (Rp) : {{ \Auth::user()->priceFormat($totalAmountRp) }} </strong><strong>|</strong> <strong>Total Amount ($) : {{ \Auth::user()->priceFormat2($totalAmountDollar) }} </strong> <strong>|</strong> <strong>Total Amount (€) : {{ \Auth::user()->priceFormat2($totalAmountEuro) }} </strong></td>
                             </tr>
                             </tbody>
                         </table>
@@ -427,6 +443,7 @@
                                @php
                                 $totalAmountRp = 0;
                                 $totalAmountDollar = 0;
+                                $totalAmountEuro = 0;
                                 @endphp
                                 @foreach ($invoices as $invoice)
                                     @php
@@ -434,6 +451,8 @@
                                             $totalAmountRp += $invoice->getDue();
                                         } elseif ($invoice->currency == '$') {
                                             $totalAmountDollar += $invoice->getDue();
+                                        } elseif ($invoice->currency == '€') {
+                                            $totalAmountEuro += $invoice->getDue();
                                         }
                                     @endphp
                                     <tr>
@@ -453,14 +472,14 @@
                                             @endif
                                         </td>
                                        <td>
-                                        @if ($invoice->currency == '$')
+                                        @if ($invoice->currency == '$' || $invoice->currency == '€')
                                             {{ \Auth::user()->priceFormat2($invoice->getTotalTax()) }}
                                         @else
                                             {{ \Auth::user()->priceFormat($invoice->getTotalTax()) }}
                                         @endif
                                         </td>
                                         <td>
-                                            @if ($invoice->currency == '$')
+                                            @if ($invoice->currency == '$' || $invoice->currency == '€')
                                                 {{ \Auth::user()->priceFormat2($invoice->getDue()) }}
                                             @else
                                                 {{ \Auth::user()->priceFormat($invoice->getDue()) }}
@@ -545,7 +564,7 @@
                                     </tr>
                                 @endforeach
                                 <tr>
-                                    <td colspan="11" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;"><strong>Total Amount (Rp) : {{ \Auth::user()->priceFormat($totalAmountRp) }} </strong><strong>|</strong> <strong>Total Amount ($) : {{ \Auth::user()->priceFormat2($totalAmountDollar) }} </strong></td>
+                                    <td colspan="11" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;"><strong>Total Amount (Rp) : {{ \Auth::user()->priceFormat($totalAmountRp) }} </strong><strong>|</strong> <strong>Total Amount ($) : {{ \Auth::user()->priceFormat2($totalAmountDollar) }} </strong><strong>|</strong> <strong>Total Amount (€) : {{ \Auth::user()->priceFormat2($totalAmountEuro) }} </strong></td> 
                                 </tr>
                             </tbody>
                         </table>

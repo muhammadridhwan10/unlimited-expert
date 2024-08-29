@@ -97,6 +97,10 @@ class Invoice extends Model
             {
                 $subTotal += ($product->price);
             }
+            elseif($invoice->currency == "€")
+            {
+                $subTotal += ($product->price);
+            }
         }
 
         return $subTotal;
@@ -117,6 +121,13 @@ class Invoice extends Model
                 $totalTax += ($taxes / 100) * ($product->price) ;
             }
             elseif($invoice->currency == "Rp")
+            {
+                $taxes = $product->tax;
+
+
+                $totalTax += ($taxes / 100) * ($product->price) ;
+            }
+            elseif($invoice->currency == "€")
             {
                 $taxes = $product->tax;
 

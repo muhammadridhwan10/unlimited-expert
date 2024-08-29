@@ -68,7 +68,7 @@ class PaymentController extends Controller
             }
 
 
-            $payments = $query->get();
+            $payments = $query->orderByDesc('id')->get();
 
 
             return view('payment.index', compact('payments', 'account', 'category', 'vender'));

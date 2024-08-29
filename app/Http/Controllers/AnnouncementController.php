@@ -30,17 +30,17 @@ class AnnouncementController extends Controller
             elseif(Auth::user()->type == 'admin')
             {
                 $current_employee = Employee::where('user_id', '=', \Auth::user()->id)->first();
-                $announcements    = Announcement::get();
+                $announcements    = Announcement::orderByDesc('id')->get();
             }
             elseif(Auth::user()->type == 'company')
             {
                 $current_employee = Employee::where('user_id', '=', \Auth::user()->id)->first();
-                $announcements    = Announcement::get();
+                $announcements    = Announcement::orderByDesc('id')->get();
             }
             else
             {
                 $current_employee = Employee::where('user_id', '=', \Auth::user()->id)->first();
-                $announcements    = Announcement::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $announcements    = Announcement::where('created_by', '=', \Auth::user()->creatorId())->orderByDesc('id')->get();
             }
 
             return view('announcement.index', compact('announcements', 'current_employee'));

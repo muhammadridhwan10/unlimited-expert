@@ -25,7 +25,7 @@ class RevenueController extends Controller
                 $user = User::where('type', '=', 'partners')->pluck('name', 'id');
                 $user->prepend('Select Partner', '');
 
-                $query = Revenue::all();
+                $query = Revenue::orderByDesc('id')->get();
 
                 if(!empty($request->date))
                 {
@@ -60,7 +60,7 @@ class RevenueController extends Controller
                     $query->where('user_id', '=', $request->user);
                 }
 
-                $revenues = $query->get();
+                $revenues = $query->orderByDesc('id')->get();
 
                 return view('revenue.index', compact('revenues', 'user'));
             }

@@ -48,7 +48,7 @@ class ReimbursmentClientController extends Controller
                 $employeeReimbursment->where('client_id', $request->client_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->get();
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->get();
 
             $employees = Employee::all()->pluck('name','id');
             $client =   User::where('type','=','client')->pluck('name','id');
@@ -56,7 +56,7 @@ class ReimbursmentClientController extends Controller
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('approval', '=', $users->id)->where('status','=', 'Pending')->get();
+            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
         }
         elseif(\Auth::user()->type == 'company')
         {
@@ -84,7 +84,7 @@ class ReimbursmentClientController extends Controller
                 $employeeReimbursment->where('client_id', $request->client_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->get();
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->get();
 
             $employees = Employee::all()->pluck('name','id');
             $client =   User::where('type','=','client')->pluck('name','id');
@@ -92,7 +92,7 @@ class ReimbursmentClientController extends Controller
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('approval', '=', $users->id)->where('status','=', 'Pending')->get();
+            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
         }
         elseif(\Auth::user()->type == 'senior accounting')
         {
@@ -120,7 +120,7 @@ class ReimbursmentClientController extends Controller
                 $employeeReimbursment->where('client_id', $request->client_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->get();
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->get();
 
             $employees = Employee::all()->pluck('name','id');
             $client =   User::where('type','=','client')->pluck('name','id');
@@ -128,7 +128,7 @@ class ReimbursmentClientController extends Controller
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('approval', '=', $users->id)->where('status','=', 'Pending')->get();
+            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
         }
         elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff IT' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'intern')
         {
@@ -155,7 +155,7 @@ class ReimbursmentClientController extends Controller
                 $employeeReimbursment->where('client_id', $request->client_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->get();
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->get();
 
             $employees = Employee::where('user_id', '=', \Auth::user()->id)->first()->pluck('name','id');
             $client =   User::where('type','=','client')->pluck('name','id');
@@ -164,7 +164,7 @@ class ReimbursmentClientController extends Controller
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
             $reimbursment   = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('employee_id', '=', $employee->id)->get();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('approval', '=', $users->id)->where('status','=', 'Pending')->get();
+            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
         }
         else
         {
@@ -191,7 +191,7 @@ class ReimbursmentClientController extends Controller
                 $employeeReimbursment->where('client_id', $request->client_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->get();
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->get();
 
             $employees = Employee::where('user_id', '=', \Auth::user()->id)->first()->pluck('name','id');
             $client =   User::where('type','=','client')->pluck('name','id');
@@ -199,7 +199,7 @@ class ReimbursmentClientController extends Controller
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('approval', '=', \Auth::user()->id)->where('status','=', 'Pending')->get();
+            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Client')->where('approval', '=', \Auth::user()->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
         }
 
         return view('reimbursment-client.index', compact('reimbursment','approval','employeeReimbursment','employees','client'));

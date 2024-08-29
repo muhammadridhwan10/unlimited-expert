@@ -99,7 +99,7 @@ class InvoiceController extends Controller
                     $query->where('category_invoice', '=', $request->category_invoice);
                 }
 
-                $invoices = $query->get();
+                $invoices = $query->orderByDesc('id')->get();
 
                 $monthlyData = [];
                 $yearlyData = [];
@@ -168,7 +168,7 @@ class InvoiceController extends Controller
                 {
                     $query->where('category_invoice', '=', $request->category_invoice);
                 }
-                $invoices = $query->get();
+                $invoices = $query->orderByDesc('id')->get();
 
                 $monthlyData = [];
                 $yearlyData = [];
@@ -220,8 +220,9 @@ class InvoiceController extends Controller
             $account->prepend('Select Account', '');
             $siteCurrencySymbol = Settings::where('name', 'site_currency_symbol')->value('value');
             $siteCurrencySymbol2 = Settings::where('name', 'site_currency_symbol_2')->value('value');
+            $siteCurrencySymbol3 = Settings::where('name', 'site_currency_symbol_3')->value('value');
 
-            return view('invoice.create', compact('customers','partners','account', 'projects', 'category', 'customFields', 'customerId','siteCurrencySymbol', 'siteCurrencySymbol2'));
+            return view('invoice.create', compact('customers','partners','account', 'projects', 'category', 'customFields', 'customerId','siteCurrencySymbol', 'siteCurrencySymbol2','siteCurrencySymbol3'));
         }
         else
         {
@@ -390,8 +391,9 @@ class InvoiceController extends Controller
             $account->prepend('Select Account', '');
             $siteCurrencySymbol = Settings::where('name', 'site_currency_symbol')->value('value');
             $siteCurrencySymbol2 = Settings::where('name', 'site_currency_symbol_2')->value('value');
+            $siteCurrencySymbol3 = Settings::where('name', 'site_currency_symbol_3')->value('value');
 
-            return view('invoice.edit', compact('customers','partners','account', 'projects', 'invoice', 'invoice_number', 'category', 'customFields','siteCurrencySymbol','siteCurrencySymbol2'));
+            return view('invoice.edit', compact('customers','partners','account', 'projects', 'invoice', 'invoice_number', 'category', 'customFields','siteCurrencySymbol','siteCurrencySymbol2','siteCurrencySymbol3'));
         }
         else
         {
@@ -1206,7 +1208,7 @@ class InvoiceController extends Controller
         $logo         = asset(Storage::url('uploads/logo/'));
         $invoice_logo = Utility::getValByName('invoice_logo');
         $company_logo = \App\Models\Utility::GetLogo();
-        $img          = asset($logo . '/1_logo-dark.png');
+        $img          = asset($logo . '/2_logo-dark.png');
         
         // if(isset($invoice_logo) && !empty($invoice_logo))
         // {
@@ -1300,7 +1302,7 @@ class InvoiceController extends Controller
         $logo         = asset(Storage::url('uploads/logo/'));
         $invoice_logo = Utility::getValByName('invoice_logo');
         $company_logo = \App\Models\Utility::GetLogo();
-        $img          = asset($logo . '/1_logo-dark.png');
+        $img          = asset($logo . '/2_logo-dark.png');
         // if(isset($invoice_logo) && !empty($invoice_logo))
         // {
         //     $img          = asset(\Storage::url('uploads/invoice_logo').'/'. $invoice_logo);

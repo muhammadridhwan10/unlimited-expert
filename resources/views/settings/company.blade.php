@@ -522,6 +522,55 @@
                                     </span>
                                     @enderror
                                 </div>
+                                <div class="form-group col-md-6">
+                                    {{Form::label('site_currency_3',__('Currency 3 *'),array('class' => 'form-label')) }}
+                                    {{ Form::text('site_currency_3', $settings['site_currency_3'], ['class' => 'form-control font-style', 'required', 'placeholder' => __('Enter Currency 3')]) }}
+                                    <small> {{ __('Note: Add currency code as per three-letter ISO code.') }}<br>
+                                        <a href="https://stripe.com/docs/currencies"
+                                           target="_blank">{{ __('You can find out how to do that here.') }}</a></small> <br>
+                                    @error('site_currency_3')
+                                    <span class="invalid-site_currency_3" role="alert">
+                                        <strong class="text-danger">{{ $message }}</strong>
+                                    </span>
+                                    @enderror
+                                </div>
+                                <div class="form-group col-md-6">
+                                    {{Form::label('site_currency_symbol_3',__('Currency Symbol 3 *'),array('class' => 'form-label')) }}
+                                    {{Form::text('site_currency_symbol_3',null,array('class'=>'form-control'))}}
+                                    @error('site_currency_symbol_3')
+                                    <span class="invalid-site_currency_symbol_3" role="alert">
+                                        <strong class="text-danger">{{ $message }}</strong>
+                                    </span>
+                                    @enderror
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label class="form-label" for="example3cols3Input">{{__('Currency Symbol Position')}}</label>
+                                    <div class="row ms-1">
+                                        <div class="form-check col-md-6">
+                                            <input class="form-check-input" type="radio" name="site_currency_symbol_position_3" value="pre" @if(@$settings['site_currency_symbol_position_3'] == 'pre') checked @endif
+                                            id="flexCheckDefault">
+                                            <label class="form-check-label" for="flexCheckDefault">
+                                                {{__('Pre')}}
+                                            </label>
+                                        </div>
+                                        <div class="form-check col-md-6">
+                                            <input class="form-check-input" type="radio" name="site_currency_symbol_position_3" value="post" @if(@$settings['site_currency_symbol_position_3'] == 'post') checked @endif
+                                            id="flexCheckChecked">
+                                            <label class="form-check-label" for="flexCheckChecked">
+                                                {{__('Post')}}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group col-md-6">
+                                    {{Form::label('decimal_number_3',__('Decimal Number Format 3'),array('class'=>'form-label')) }}
+                                    {{Form::number('decimal_number_3', null, ['class'=>'form-control'])}}
+                                    @error('decimal_number_3')
+                                    <span class="invalid-decimal_number_3" role="alert">
+                                        <strong class="text-danger">{{ $message }}</strong>
+                                    </span>
+                                    @enderror
+                                </div>
 
                                 <div class="form-group col-md-6">
                                     <label for="site_date_format" class="form-label">{{__('Date Format')}}</label>
