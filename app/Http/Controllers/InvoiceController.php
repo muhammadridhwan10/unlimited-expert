@@ -1208,7 +1208,7 @@ class InvoiceController extends Controller
         $logo         = asset(Storage::url('uploads/logo/'));
         $invoice_logo = Utility::getValByName('invoice_logo');
         $company_logo = \App\Models\Utility::GetLogo();
-        $img          = asset($logo . '/2_logo-dark.png');
+        $img          = asset($logo . '/1_logo-dark.png');
         
         // if(isset($invoice_logo) && !empty($invoice_logo))
         // {
@@ -1225,13 +1225,14 @@ class InvoiceController extends Controller
         $logo_xga = asset(\Storage::url('logo').'/XGA.png');
         $ttd      = asset(\Storage::url('ttd').'/ttd.png');
         $ttd_mj      = asset(\Storage::url('ttd').'/ttd-mj.png');
+        $ttd_mj_ara      = asset(\Storage::url('ttd').'/ttd-mj-ara.png');
         $ttd_ara      = asset(\Storage::url('ttd').'/ttd-ara.png');
         $ttd_xga      = asset(\Storage::url('ttd').'/ttd-xga.png');
 
 
 
 
-        return view('invoice.templates.' . $template, compact('invoice', 'invoices', 'kode_invoice', 'preview', 'color', 'img','logo_ara','logo_xga', 'logo_kap', 'ttd','ttd_ara','ttd_xga','ttd_mj', 'settings','client','clients', 'font_color', 'customFields'));
+        return view('invoice.templates.' . $template, compact('invoice', 'invoices', 'kode_invoice', 'preview', 'color', 'img','logo_ara','logo_xga', 'logo_kap', 'ttd','ttd_ara','ttd_xga','ttd_mj', 'settings','client','clients', 'font_color', 'customFields','ttd_mj_ara'));
     }
 
     public function invoice($invoice_id)
@@ -1302,7 +1303,7 @@ class InvoiceController extends Controller
         $logo         = asset(Storage::url('uploads/logo/'));
         $invoice_logo = Utility::getValByName('invoice_logo');
         $company_logo = \App\Models\Utility::GetLogo();
-        $img          = asset($logo . '/2_logo-dark.png');
+        $img          = asset($logo . '/1_logo-dark.png');
         // if(isset($invoice_logo) && !empty($invoice_logo))
         // {
         //     $img          = asset(\Storage::url('uploads/invoice_logo').'/'. $invoice_logo);
@@ -1322,6 +1323,7 @@ class InvoiceController extends Controller
         $logo_xga = asset(\Storage::url('logo').'/XGA.png');
         $ttd      = asset(\Storage::url('ttd').'/ttd.png');
         $ttd_mj      = asset(\Storage::url('ttd').'/ttd-mj.png');
+        $ttd_mj_ara      = asset(\Storage::url('ttd').'/ttd-mj-ara.png');
         $ttd_ara      = asset(\Storage::url('ttd').'/ttd-ara.png');
         $ttd_xga      = asset(\Storage::url('ttd').'/ttd-xga.png');
 
@@ -1379,8 +1381,12 @@ class InvoiceController extends Controller
             {
                 $settings['invoice_template'] = 'template14'; 
             }
+            elseif($invoice->invoice_template == "template15")
+            {
+                $settings['invoice_template'] = 'template15'; 
+            }
 
-            return view('invoice.templates.' . $settings['invoice_template'], compact('invoice', 'invoices', 'kode_invoice', 'color', 'settings', 'client','clients', 'img','logo_kap','logo_xga','logo_ara', 'ttd', 'ttd_ara','ttd_xga','ttd_mj', 'font_color', 'customFields'));
+            return view('invoice.templates.' . $settings['invoice_template'], compact('invoice', 'invoices', 'kode_invoice', 'color', 'settings', 'client','clients', 'img','logo_kap','logo_xga','logo_ara', 'ttd', 'ttd_ara','ttd_xga','ttd_mj','ttd_mj_ara', 'font_color', 'customFields'));
         }
         else
         {

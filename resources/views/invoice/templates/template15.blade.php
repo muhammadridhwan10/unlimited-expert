@@ -832,10 +832,9 @@
                                             </p>
                                             </div>
                                             <p style= "text-align:center">
-                                                <img src="{{$ttd_ara}}" style="max-width: 210px"/>
+                                                <img src="{{$ttd_mj_ara}}" style="width: 210px"/>
                                                 <br>
-                                                {{"Melya Lubis"}}<br>
-                                                {{"Finance & Accounting"}}<br>
+                                                {{"Mikail Jaman"}}<br>
                                             </p>
                                         </div>
                                     </div>

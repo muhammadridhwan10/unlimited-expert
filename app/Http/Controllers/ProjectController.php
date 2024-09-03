@@ -591,7 +591,7 @@ class ProjectController extends Controller
             {
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
                 $project = Project::findOrfail($project->id);
-                $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
+                $tasktemplate = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
                 $public_accountant = PublicAccountant::get()->pluck('name', 'id');
                 $public_accountant->prepend('Select Public Accountant', '');
                 $tasktemplate->prepend('Select Task Template', '');
@@ -603,7 +603,7 @@ class ProjectController extends Controller
             {
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
                 $project = Project::findOrfail($project->id);
-                $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
+                $tasktemplate = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
                 $public_accountant = PublicAccountant::get()->pluck('name', 'id');
                 $public_accountant->prepend('Select Public Accountant', '');
                 $tasktemplate->prepend('Select Task Template', '');
@@ -615,7 +615,7 @@ class ProjectController extends Controller
             {
                 $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
                 $project = Project::findOrfail($project->id);
-                $tasktemplate = ProductServiceCategory::get()->pluck('name', 'id');
+                $tasktemplate = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
                 $public_accountant = PublicAccountant::get()->pluck('name', 'id');
                 $public_accountant->prepend('Select Public Accountant', '');
                 $tasktemplate->prepend('Select Task Template', '');
@@ -627,7 +627,7 @@ class ProjectController extends Controller
                 
                 $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
                 $project = Project::findOrfail($project->id);
-                $tasktemplate = ProductServiceCategory::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('category_id', 'id');
+                $tasktemplate = ProductServiceCategory::where('type', 0)->where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('category_id', 'id');
                 $public_accountant = PublicAccountant::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $public_accountant->prepend('Select Public Accountant', '');
                 $tasktemplate->prepend('Select Task Template', '');
@@ -769,7 +769,7 @@ class ProjectController extends Controller
             if ($project->template_task_id !== $request->template_task) {
                 // Menghapus ProjectTask yang terkait dengan project
                 ProjectTask::where('project_id', $project->id)->delete();
-            }            
+            }          
 
 
             $template = Project::with('details')->find($project->id);
@@ -778,7 +778,7 @@ class ProjectController extends Controller
             //     $details = $templates->details;
             // }
 
-            if ($project->template_task_id !== $request->template_task){
+            if ($project->template_task_id){
                 $category = $request->items;
                 $category_id = $request->category_id;
 

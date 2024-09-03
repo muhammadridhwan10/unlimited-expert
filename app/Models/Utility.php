@@ -391,6 +391,7 @@ class Utility extends Model
             "template12" => "Template XGA Non Signature PAID",
             "template13" => "Template KAP MJ Non Signature",
             "template14" => "Template KAP DA Non Signature",
+            "template15" => "Template ARA MJ",
             
         ];
 
