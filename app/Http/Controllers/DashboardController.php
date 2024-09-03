@@ -2197,7 +2197,7 @@ class DashboardController extends Controller
                 $data['absentDataPusat'] = $absentDataPusat;
                 $data['absentDataBekasi'] = $absentDataBekasi;
                 $data['absentDataMalang'] = $absentDataMalang;
-                $data['lateDataPusat'] = $absentDataMalang;
+                $data['lateDataPusat'] = $lateDataPusat;
                 $data['lateDataBekasi'] = $lateDataBekasi;
                 $data['lateDataMalang'] = $lateDataMalang;
                 $data['selectedMonth'] = $selectedMonth;

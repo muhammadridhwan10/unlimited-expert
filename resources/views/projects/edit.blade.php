@@ -39,12 +39,14 @@
 
     </div>
     <div class="row">
+        @if($project->is_template == 0)
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
                 {{ Form::label('template_task', __('Task Template'),['class'=>'form-label']) }}<span class="text-danger"></span>
                 {!! Form::select('template_task', $tasktemplate, $project->template_task_id,array('class' => 'form-control')) !!}
             </div>
         </div>
+        @endif
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
                 {{ Form::label('budget', __('Budget'), ['class' => 'form-label']) }}
@@ -126,7 +128,7 @@
 
     </div>
 </div>
-<div class="modal-body">
+{{-- <div class="modal-body">
     <div class="col-sm-12 col-md-12">
             <div class="form-group">
                 {{ Form::label('', __('Project Offerings'), ['class' => 'form-label']) }}
@@ -203,7 +205,7 @@
         </div>
     </div>
     
-</div>
+</div> --}}
 <div class="modal-footer">
     <input type="button" value="{{__('Cancel')}}" class="btn  btn-light" data-bs-dismiss="modal">
     <input type="submit" value="{{__('Update')}}" class="btn  btn-primary">

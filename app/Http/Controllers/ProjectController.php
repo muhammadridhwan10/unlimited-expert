@@ -822,6 +822,11 @@ class ProjectController extends Controller
                     ProjectTask::where(['id' => $task[$i]['id']])->update([
                         'estimated_hrs' => $estimated_hrs,
                     ]);
+                    $project = Project::find($project->id);
+
+                    $project->update([
+                        'is_template' => 1,
+                    ]);
                 }
             } else {
                 $project = Project::find($project->id);
