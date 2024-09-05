@@ -3,8 +3,11 @@
     {{__('Home')}}
 @endsection
 @php
+if(\Auth::user()->type != 'partners')
+{
 $shortenedTasksPriorityLabels = array_map(fn($name) => substr($name, 0,10) . '...', array_keys($tasksPriorityPerProject));
 $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...', array_keys($overdueTasksPerProject));
+}
 @endphp
 @push('script-page')
     <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase.js"></script>

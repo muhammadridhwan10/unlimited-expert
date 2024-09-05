@@ -129,7 +129,7 @@ class AuthenticatedSessionController extends Controller
 
                     $whichbrowser = new \WhichBrowser\Parser($_SERVER['HTTP_USER_AGENT']);
                     if ($whichbrowser->device->type == 'bot') {
-                        return;
+                        return response()->json(['message' => 'Bots are not allowed'], 403);
                     }
                     $referrer = isset($_SERVER['HTTP_REFERER']) ? parse_url($_SERVER['HTTP_REFERER']) : null;
 
@@ -327,8 +327,9 @@ class AuthenticatedSessionController extends Controller
 
         $whichbrowser = new \WhichBrowser\Parser($_SERVER['HTTP_USER_AGENT']);
         if ($whichbrowser->device->type == 'bot') {
-            return;
+            return response()->json(['message' => 'Bots are not allowed'], 403);
         }
+
         $referrer = isset($_SERVER['HTTP_REFERER']) ? parse_url($_SERVER['HTTP_REFERER']) : null;
 
         /* Detect extra details about the user */
@@ -354,56 +355,56 @@ class AuthenticatedSessionController extends Controller
 
         $query = json_decode($json, true);
 
-        if(isset($query['country']) && $query['country'] !== 'Indonesia') {
+        if (isset($query['country']) && !in_array($query['country'], ['Indonesia', 'France'])) {
             return response()->view('errors.404');
         }
 
         return view('auth.login', compact('lang','settings'));
     }
 
-    public function download_win()
-    {
-        // $url = "https://drive.google.com/uc?export=download&id=1NIwA0wxIUiMk29orvrNkyZwAnHDWTu5l";
-        // return Redirect::to($url);
-        $zip = new ZipArchive();
-        $file_name = 'Aup-Desktop-win1.2.zip';
+    // public function download_win()
+    // {
+    //     // $url = "https://drive.google.com/uc?export=download&id=1NIwA0wxIUiMk29orvrNkyZwAnHDWTu5l";
+    //     // return Redirect::to($url);
+    //     $zip = new ZipArchive();
+    //     $file_name = 'Aup-Desktop-win1.2.zip';
 
-        if($zip->open(public_path($file_name), ZipArchive::CREATE) == TRUE)
-        {
-            $files = File::files(public_path('files/win'));
-            if(count($files) > 0)
-            {
-                foreach ($files as $key => $value) {
-                    $relativeName = basename($value);
-                    $zip->addFile($value, $relativeName);
-                }
-                $zip->close();
-                return response()->download(public_path($file_name));
-            }
-        }
-        dd('File Tidak Bisa di Download');
-    }
+    //     if($zip->open(public_path($file_name), ZipArchive::CREATE) == TRUE)
+    //     {
+    //         $files = File::files(public_path('files/win'));
+    //         if(count($files) > 0)
+    //         {
+    //             foreach ($files as $key => $value) {
+    //                 $relativeName = basename($value);
+    //                 $zip->addFile($value, $relativeName);
+    //             }
+    //             $zip->close();
+    //             return response()->download(public_path($file_name));
+    //         }
+    //     }
+    //     dd('File Tidak Bisa di Download');
+    // }
 
-    public function download_mac()
-    {
-        $zip = new ZipArchive();
-        $file_name = 'Aup-Desktop-mac1.2.zip';
+    // public function download_mac()
+    // {
+    //     $zip = new ZipArchive();
+    //     $file_name = 'Aup-Desktop-mac1.2.zip';
 
-        if($zip->open(public_path($file_name), ZipArchive::CREATE) == TRUE)
-        {
-            $files = File::files(public_path('files/mac'));
-            if(count($files) > 0)
-            {
-                foreach ($files as $key => $value) {
-                    $relativeName = basename($value);
-                    $zip->addFile($value, $relativeName);
-                }
-                $zip->close();
-                return response()->download(public_path($file_name));
-            }
-        }
-        dd('File Tidak Bisa di Download');
-    }
+    //     if($zip->open(public_path($file_name), ZipArchive::CREATE) == TRUE)
+    //     {
+    //         $files = File::files(public_path('files/mac'));
+    //         if(count($files) > 0)
+    //         {
+    //             foreach ($files as $key => $value) {
+    //                 $relativeName = basename($value);
+    //                 $zip->addFile($value, $relativeName);
+    //             }
+    //             $zip->close();
+    //             return response()->download(public_path($file_name));
+    //         }
+    //     }
+    //     dd('File Tidak Bisa di Download');
+    // }
 
     public function showLinkRequestForm($lang = '')
     {

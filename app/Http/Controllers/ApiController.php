@@ -244,33 +244,58 @@ class ApiController extends Controller
         }
 
     }
-    public function uploadImage(Request $request){
-        $user = auth()->user();
+    public function uploadImage(Request $request)
+    {
+        // Validasi untuk memastikan file yang diupload adalah gambar
+        $request->validate([
+            'img' => 'required|base64image', // Validasi custom base64 image
+            'imgName' => 'required|string',
+        ]);
+    
+        // Ekstensi gambar yang diizinkan
+        $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
+    
+        // Ambil nama file
+        $file = $request->imgName;
+    
+        // Cek apakah ekstensi file adalah salah satu dari yang diizinkan
+        $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+        if (!in_array($extension, $allowedExtensions)) {
+            return response()->json(['error' => 'Only images with the following extensions are allowed: jpg, jpeg, png, gif'], 400);
+        }
+    
+        // Dekode gambar base64
         $image_base64 = base64_decode($request->img);
-        $file =$request->imgName;
+    
+        // Tentukan path penyimpanan berdasarkan tracker_id
         if($request->has('tracker_id') && !empty($request->tracker_id)){
             $app_path = storage_path('uploads/traker_images/').$request->tracker_id.'/';
             if (!file_exists($app_path)) {
                 mkdir($app_path, 0777, true);
             }
-
-        }else{
+        } else {
             $app_path = storage_path('uploads/traker_images/');
-            if (is_dir($app_path)) {
+            if (!file_exists($app_path)) {
                 mkdir($app_path, 0777, true);
             }
         }
-        $file_name =  $app_path.$file;
-        file_put_contents( $file_name, $image_base64);
+    
+        // Simpan file
+        $file_name = $app_path . $file;
+        file_put_contents($file_name, $image_base64);
+    
+        // Simpan informasi ke database
         $new = new TrackPhoto();
         $new->track_id = $request->tracker_id;
-        $new->user_id  = $user->id;
+        $new->user_id  = auth()->user()->id;
         $new->img_path  = 'uploads/traker_images/'.$request->tracker_id.'/'.$file;
         $new->time  = $request->time;
         $new->status  = 1;
         $new->save();
-        return $this->success( [],'Uploaded successfully.');
+    
+        return response()->json(['success' => 'Uploaded successfully.']);
     }
+    
 	
 	public function clockIn(Request $request)
     {
@@ -680,6 +705,7 @@ class ApiController extends Controller
 	
 	public function createMedical(Request $request)
     {
+        // Validasi input termasuk validasi untuk file reimbursment_image
         $validator = Validator::make($request->all(), [
             'employee_id' => 'required|integer',
             'approval' => 'required|string',
@@ -687,46 +713,58 @@ class ApiController extends Controller
             'date' => 'required|date',
             'amount' => 'required|numeric',
             'description' => 'nullable|string',
+            'reimbursment_image' => 'nullable|file|mimes:jpg,jpeg,png|max:5120', // Validasi reimbursment_image
         ]);
 
+        // Jika validasi gagal
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
 
         $input = $request->all();
-		
-		if(!empty($request->reimbursment_image))
-        {
-            $filenameWithExt = $request->file('reimbursment_image')->getClientOriginalName();
-            $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
-            $extension       = $request->file('reimbursment_image')->getClientOriginalExtension();
-            $fileNameToStore = $filename . '_' . time() . '.' . $extension;
-            $dir             = storage_path('uploads/reimbursment/');
 
-            if(!file_exists($dir))
-            {
+        // Proses unggah reimbursment_image jika ada
+        if ($request->hasFile('reimbursment_image')) {
+            $filenameWithExt = $request->file('reimbursment_image')->getClientOriginalName();
+            $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+            $extension = $request->file('reimbursment_image')->getClientOriginalExtension();
+            $fileNameToStore = $filename . '_' . time() . '.' . $extension;
+            $dir = storage_path('uploads/reimbursment/');
+
+            if (!file_exists($dir)) {
                 mkdir($dir, 0777, true);
             }
-            // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
-            $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
-        }
-		
-		$input['status'] = 'Pending';
-		$input['reimbursment_image'] = !empty('uploads/reimbursment/' . $request->reimbursment_image) ? 'uploads/reimbursment/' . $fileNameToStore : '';
-		$input['created_by'] = \Auth::user()->creatorId();
-		$input['created_date'] = Carbon::now()->format('Y-m-d');
 
+            // Simpan file ke dalam direktori penyimpanan
+            $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
+            
+            // Simpan path file reimbursment_image ke dalam input
+            $input['reimbursment_image'] = 'uploads/reimbursment/' . $fileNameToStore;
+        } else {
+            // Jika tidak ada file yang diunggah
+            $input['reimbursment_image'] = '';
+        }
+
+        // Data tambahan untuk medical allowance
+        $input['status'] = 'Pending';
+        $input['created_by'] = \Auth::user()->creatorId();
+        $input['created_date'] = Carbon::now()->format('Y-m-d');
+
+        // Buat data medical allowance
         $medicalAllowance = Reimbursment::create($input);
 
+        // Kirim email notifikasi
         $user = User::where('id', $medicalAllowance->approval)->first();
         $email = $user->email;
         Mail::to($email)->send(new MedicalAllowanceNotification($medicalAllowance));
 
         return response()->json(['message' => 'Medical Allowance Request successfully created', 'data' => $medicalAllowance], 200);
     }
+
 	
 	public function createReimbursment(Request $request)
     {
+        // Validasi input termasuk validasi untuk file reimbursment_image
         $validator = Validator::make($request->all(), [
             'employee_id' => 'required|integer',
             'approval' => 'required|string',
@@ -734,52 +772,60 @@ class ApiController extends Controller
             'date' => 'required|date',
             'amount' => 'required|numeric',
             'description' => 'nullable|string',
+            'reimbursment_image' => 'nullable|file|mimes:jpg,jpeg,png|max:5120', // Validasi reimbursment_image
         ]);
 
+        // Jika validasi gagal
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
 
         $input = $request->all();
-		
-		if(!empty($request->reimbursment_image))
-        {
-            $filenameWithExt = $request->file('reimbursment_image')->getClientOriginalName();
-            $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
-            $extension       = $request->file('reimbursment_image')->getClientOriginalExtension();
-            $fileNameToStore = $filename . '_' . time() . '.' . $extension;
-            $dir             = storage_path('uploads/reimbursment/');
 
-            if(!file_exists($dir))
-            {
+        // Proses unggah reimbursment_image jika ada
+        if ($request->hasFile('reimbursment_image')) {
+            $filenameWithExt = $request->file('reimbursment_image')->getClientOriginalName();
+            $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+            $extension = $request->file('reimbursment_image')->getClientOriginalExtension();
+            $fileNameToStore = $filename . '_' . time() . '.' . $extension;
+            $dir = storage_path('uploads/reimbursment/');
+
+            if (!file_exists($dir)) {
                 mkdir($dir, 0777, true);
             }
-            // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
-            $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
-        }
-		
-		$input['status'] = 'Pending';
-		$input['reimbursment_image'] = !empty('uploads/reimbursment/' . $request->reimbursment_image) ? 'uploads/reimbursment/' . $fileNameToStore : '';
-		$input['created_by'] = \Auth::user()->creatorId();
-		$input['created_date'] = Carbon::now()->format('Y-m-d');
 
+            // Simpan file ke dalam direktori penyimpanan
+            $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
+            
+            // Simpan path file reimbursment_image ke dalam input
+            $input['reimbursment_image'] = 'uploads/reimbursment/' . $fileNameToStore;
+        } else {
+            // Jika tidak ada file yang diunggah
+            $input['reimbursment_image'] = '';
+        }
+
+        // Data tambahan untuk reimbursment
+        $input['status'] = 'Pending';
+        $input['created_by'] = \Auth::user()->creatorId();
+        $input['created_date'] = Carbon::now()->format('Y-m-d');
+
+        // Buat data reimbursment
         $reimbursment = Reimbursment::create($input);
 
-        if($reimbursment->reimbursment_type == "Reimbursment Client")
-        {
+        // Kirim email notifikasi
+        if ($reimbursment->reimbursment_type == "Reimbursment Client") {
             $user = User::where('id', $reimbursment->approval)->first();
             $email = $user->email;
             Mail::to($email)->send(new ReimbursmentClientNotification($reimbursment));
-        }
-        elseif($reimbursment->reimbursment_type == "Reimbursment Personal")
-        {
+        } elseif ($reimbursment->reimbursment_type == "Reimbursment Personal") {
             $user = User::where('id', $reimbursment->approval)->first();
             $email = $user->email;
             Mail::to($email)->send(new ReimbursmentPersonalNotification($reimbursment));
         }
 
-        return response()->json(['message' => 'Medical Allowance Request successfully created', 'data' => $reimbursment], 200);
+        return response()->json(['message' => 'Reimbursment Request successfully created', 'data' => $reimbursment], 200);
     }
+
 	
 	public function createOvertime(Request $request)
     {
@@ -854,43 +900,55 @@ class ApiController extends Controller
 	
 	public function createAbsence(Request $request)
     {
+        // Validasi input termasuk validasi untuk file sick_letter
         $validator = Validator::make($request->all(), [
             'employee_id' => 'required|integer',
             'total_sick_days' => 'required|string',
             'date_sick_letter' => 'required|string',
+            'sick_letter' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120', // Validasi sick_letter
         ]);
 
+        // Jika validasi gagal
         if ($validator->fails()) {
             return response()->json(['error' => $validator->errors()], 400);
         }
 
         $input = $request->all();
-		
-		if(!empty($request->sick_letter))
-            {
-                $filenameWithExt = $request->file('sick_letter')->getClientOriginalName();
-                $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
-                $extension       = $request->file('sick_letter')->getClientOriginalExtension();
-                $fileNameToStore = $filename . '_' . time() . '.' . $extension;
-                $dir             = storage_path('uploads/sick_letter/' . \Auth::user()->name . '/');
 
-                if(!file_exists($dir))
-                {
-                    mkdir($dir, 0777, true);
-                }
-                $path = $request->file('sick_letter')->storeAs('uploads/sick_letter/' . \Auth::user()->name . '/', $fileNameToStore, 's3');
+        // Proses unggah sick_letter jika ada
+        if ($request->hasFile('sick_letter')) {
+            $filenameWithExt = $request->file('sick_letter')->getClientOriginalName();
+            $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+            $extension = $request->file('sick_letter')->getClientOriginalExtension();
+            $fileNameToStore = $filename . '_' . time() . '.' . $extension;
+            $dir = storage_path('uploads/sick_letter/' . \Auth::user()->name . '/');
+
+            if (!file_exists($dir)) {
+                mkdir($dir, 0777, true);
             }
-		
-		$input['sick_letter'] = !empty('uploads/sick_letter/' .\Auth::user()->name . '/' . $request->sick_letter) ? 'uploads/sick_letter/' .\Auth::user()->name . '/' . $fileNameToStore : '';
-		$input['absence_type'] = 'sick';
-		$input['status'] = 'Approved';
-		$input['created_by'] = \Auth::user()->creatorId();
-		$input['applied_on'] = Carbon::now()->format('Y-m-d');
 
+            // Simpan file ke dalam direktori penyimpanan
+            $path = $request->file('sick_letter')->storeAs('uploads/sick_letter/' . \Auth::user()->name . '/', $fileNameToStore, 's3');
+            
+            // Simpan path file sick_letter ke dalam input
+            $input['sick_letter'] = 'uploads/sick_letter/' . \Auth::user()->name . '/' . $fileNameToStore;
+        } else {
+            // Jika tidak ada file yang diunggah
+            $input['sick_letter'] = '';
+        }
+
+        // Data tambahan untuk absence
+        $input['absence_type'] = 'sick';
+        $input['status'] = 'Approved';
+        $input['created_by'] = \Auth::user()->creatorId();
+        $input['applied_on'] = Carbon::now()->format('Y-m-d');
+
+        // Buat data absence
         $absence = Leave::create($input);
 
         return response()->json(['message' => 'Absence Request successfully created', 'data' => $absence], 200);
     }
+
     
     public function createDocumentRequest(Request $request)
     {

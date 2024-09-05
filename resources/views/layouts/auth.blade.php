@@ -236,7 +236,7 @@
                                     alt="{{ config('app.name', 'Unlimited Expert') }}" class="logo w-50">
                             @else
                                 <img src="{{ $logo . '/' . (isset($company_logo) && !empty($company_logo) ? $company_logo : 'logo-dark.png') }}"
-                                    alt="{{ config('app.name', 'Unlimited Expert') }}" class="logo w-50">
+                                    alt="{{ config('app.name', 'Unlimited Expert') }}" class="logo w-80" style="height: 50px;">
                             @endif
                             </a>
                         </div>

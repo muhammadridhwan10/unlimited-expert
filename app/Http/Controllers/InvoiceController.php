@@ -101,26 +101,6 @@ class InvoiceController extends Controller
 
                 $invoices = $query->orderByDesc('id')->get();
 
-                $monthlyData = [];
-                $yearlyData = [];
-
-                foreach ($invoices as $invoice) {
-                    $issueDate = Carbon::parse($invoice->issue_date);
-                    $monthKey = $issueDate->format('F Y');
-                    $yearKey = $issueDate->format('Y');
-
-                    $invoice->total_amount = $invoice->getDue();
-
-                    if (!isset($monthlyData[$monthKey])) {
-                        $monthlyData[$monthKey] = 0;
-                    }
-                    $monthlyData[$monthKey] += $invoice->total_amount;
-
-                    if (!isset($yearlyData[$yearKey])) {
-                        $yearlyData[$yearKey] = 0;
-                    }
-                    $yearlyData[$yearKey] += $invoice->total_amount;
-                }
             }
             else
             {
@@ -169,30 +149,10 @@ class InvoiceController extends Controller
                     $query->where('category_invoice', '=', $request->category_invoice);
                 }
                 $invoices = $query->orderByDesc('id')->get();
-
-                $monthlyData = [];
-                $yearlyData = [];
-
-                foreach ($invoices as $invoice) {
-                    $issueDate = Carbon::parse($invoice->issue_date);
-                    $monthKey = $issueDate->format('F Y');
-                    $yearKey = $issueDate->format('Y');
-
-                    $invoice->total_amount = $invoice->getDue();
-
-                    if (!isset($monthlyData[$monthKey])) {
-                        $monthlyData[$monthKey] = 0;
-                    }
-                    $monthlyData[$monthKey] += $invoice->total_amount;
-
-                    if (!isset($yearlyData[$yearKey])) {
-                        $yearlyData[$yearKey] = 0;
-                    }
-                    $yearlyData[$yearKey] += $invoice->total_amount;
-                }         
+       
 
             }
-            return view('invoice.index', compact('invoices', 'client','companies','partner', 'status','monthlyData', 'yearlyData','category_invoice'));
+            return view('invoice.index', compact('invoices', 'client','companies','partner', 'status','category_invoice'));
         }
         else
         {
