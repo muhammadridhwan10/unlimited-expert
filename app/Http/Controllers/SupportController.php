@@ -66,10 +66,12 @@ class SupportController extends Controller
         if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
             $users  = User::where('type', 'staff IT')->get()->pluck('name', 'id');
+            $users->prepend('Select Support', '');
         }
         else
         {
             $users  = User::where('type', 'staff IT')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $users->prepend('Select Support', '');
         }
         return view('support.create', compact('priority', 'users', 'status'));
     }
@@ -156,10 +158,12 @@ class SupportController extends Controller
         if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
             $users  = User::where('type', 'staff IT')->get()->pluck('name', 'id');
+            $users->prepend('Select Support', '');
         }
         else
         {
             $users = User::where('type', 'staff IT')->get()->pluck('name', 'id');
+            $users->prepend('Select Support', '');
         }
         
 
