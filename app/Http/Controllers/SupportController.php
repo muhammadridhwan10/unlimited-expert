@@ -116,6 +116,8 @@ class SupportController extends Controller
         $description = $support->description;
         $status = $support->status;
 
+        $employee = Employee::where('user_id', $support->user)->first();
+
         $message = "Hi,\n";
         $message .= "*New Support Ticket Created*\n";
         $message .= "--------------------------------\n";
@@ -127,7 +129,7 @@ class SupportController extends Controller
         $message .= "~~~~~~~~~~~~~~~~~~~~\n";
         $message .= "Please follow up on this ticket as soon as possible. Thank you.";
 
-        $whatsappNumber = '6281532833449';
+        $whatsappNumber = '62' . $employee->phone;
 
         $whatsappUrl = 'https://wa.me/' . $whatsappNumber . '?text=' . urlencode($message);
 
