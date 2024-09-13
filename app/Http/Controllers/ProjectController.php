@@ -27,6 +27,7 @@ use DateTime;
 use DatePeriod;
 use DateInterval;
 use App\Models\ProjectTask;
+use App\Models\Notification;
 use App\Models\ProjectUser;
 use App\Models\TaskStage;
 use App\Models\InvoiceProduct;
@@ -239,6 +240,19 @@ class ProjectController extends Controller
                         'user_id' => $value,
                     ]
                 );
+
+                $notificationData = [
+                    'user_id' => $value,
+                    'type' => 'create_project',
+                    'data' => json_encode([
+                        'updated_by' => Auth::user()->id,
+                        'project_id' => $project->id, // Update with the correct field from your data
+                        'name' => $project->project_name,
+                    ]),
+                    'is_read' => false,
+                ];
+    
+                Notification::create($notificationData);
 
                 $firebaseToken = User::where('id', $value)->whereNotNull('device_token')->pluck('device_token');
                 $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';

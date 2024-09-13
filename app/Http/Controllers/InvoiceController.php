@@ -456,7 +456,6 @@ class InvoiceController extends Controller
             } catch (\Throwable $th) {
                 return redirect()->back()->with('error', __('Invoice Not Found.'));
             }
-            $id      = Crypt::decrypt($ids);
             $invoice = Invoice::find($id);
 
             if(!empty($invoice->created_by) == \Auth::user()->creatorId())

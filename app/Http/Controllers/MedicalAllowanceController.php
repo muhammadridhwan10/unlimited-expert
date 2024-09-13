@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\Reimbursment;
 use App\Models\ReimbursmentType;
 use App\Models\User;
+use App\Models\Notification;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Crypt;
@@ -298,6 +299,18 @@ class MedicalAllowanceController extends Controller
         $reimbursment->created_date         = $date;
 
         $reimbursment->save();
+
+        $notificationData = [
+            'user_id' => $request->approval,
+            'type' => 'create_medical_allowance',
+            'data' => json_encode([
+                'updated_by' =>  Auth::user()->id,
+                'name' =>  Auth::user()->name,
+            ]),
+            'is_read' => false,
+        ];
+
+        Notification::create($notificationData);
 
         //Email Notification
         $user = User::where('id', $reimbursment->approval)->first();

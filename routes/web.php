@@ -4512,3 +4512,4 @@ Route::get('reports-absence-staff', 'ReportController@absence_user')->name('repo
         'XSS',
     ]
 );
+Route::post('/mark-notifications-read', 'NotificationController@markAsRead')->name('mark.notifications.read');

@@ -141,7 +141,7 @@
             <span class="btn-inner--icon" style="color:white;">{{__('Filter')}}</span>
         </a>
         <div class="dropdown-menu">
-                <a class="dropdown-item filter-option" data-chart-type="line" href="#">Revenue Detail</a>
+                <a class="dropdown-item filter-option" data-chart-type="line" href="#">{{__('Revenue Detail')}}</a>
             </div>
     </div>
 @endsection
@@ -243,7 +243,7 @@
                     <h5></h5>
                     @if (Auth::user()->type == 'company')
                     <div class="float-end">
-                        <button class="btn btn-primary" id="approve-selected">Convert to Balance Partners</button>
+                        <button class="btn btn-primary" id="approve-selected">{{__('Convert to Balance Partners')}}</button>
                     </div>
                     <div class="table-responsive">
                         <table class="table datatable">

@@ -7,6 +7,7 @@ use App\Models\Overtime;
 use App\Models\UserOvertime;
 use App\Models\ProjectUser;
 use App\Models\Project;
+use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Mail\OvertimeNotification;
@@ -246,6 +247,19 @@ class OvertimeController extends Controller
             $overtime->total_time       = 0;
             $overtime->note             = $request->note;
             $overtime->save();
+
+            $notificationData = [
+                'user_id' => $request->approval,
+                'type' => 'create_overtime',
+                'data' => json_encode([
+                    'updated_by' => $user->id,
+                    'project_id' => $overtime->project_id,
+                    'name' => $user->name,
+                ]),
+                'is_read' => false,
+            ];
+
+            Notification::create($notificationData);
 
             //Email Notification Client
             $user = Employee::where('id', $overtime->approval)->first();

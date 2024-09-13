@@ -5,6 +5,7 @@
     $lang = isset($users->lang)?$users->lang:'en';
     $setting = \App\Models\Utility::colorset();
     $mode_setting = \App\Models\Utility::mode_layout();
+    $notifications = \App\Models\Notification::where('user_id', auth()->user()->id)->orderBy('created_at', 'desc')->get();
 
 
     $unseenCounter=App\Models\ChMessage::where('to_id', Auth::user()->id)->where('seen', 0)->count();
@@ -103,6 +104,33 @@
                             </div>
                     </li>
                 @endif
+
+                <li class="dropdown dash-h-item drp-notifications">
+                    <a class="dash-head-link dropdown-toggle arrow-none me-0" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="false" aria-expanded="false">
+                        <i class="fa fa-bell"></i>
+                        @if ($notifications->where('is_read', false)->count() > 0)
+                            <span class="bg-danger dash-h-badge message-toggle-msg message-counter custom_messanger_counter beep">{{ $notifications->where('is_read', false)->count() }}</span>
+                        @endif
+                    </a>
+
+                    <div class="dropdown-menu dash-h-dropdown dropdown-menu-end" style="width: 400px;">
+                        @forelse ($notifications as $notification)
+                            {!! $notification->toHtml() !!}
+                        @empty
+                            <p class="dropdown-item">{{ __('No Notifications') }}</p>
+                        @endforelse
+
+                        @if ($notifications->count() > 0)
+                            <form action="{{ route('mark.notifications.read') }}" method="post">
+                                @csrf
+                                @foreach ($notifications as $notification)
+                                    <input type="hidden" name="notification_ids[]" value="{{ $notification->id }}">
+                                @endforeach
+                                <button type="submit" class="dropdown-item">{{ __('Mark as Read') }}</button>
+                            </form>
+                        @endif
+                    </div>
+                </li>
 
 
 

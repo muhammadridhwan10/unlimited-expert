@@ -355,7 +355,7 @@ class AuthenticatedSessionController extends Controller
 
         $query = json_decode($json, true);
 
-        if (isset($query['country']) && !in_array($query['country'], ['Indonesia', 'France'])) {
+        if (isset($query['country']) && !in_array($query['country'], ['Indonesia'])) {
             return response()->view('errors.404');
         }
 

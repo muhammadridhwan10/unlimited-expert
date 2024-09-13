@@ -917,3 +917,16 @@ a.b-brand {
 .table.modal-table th {
     white-space: normal;
 }
+
+.message-counter {
+    position: absolute !important;
+    top: fpx !important;
+    right: 4px !important;
+    border-radius: 50%;
+    font-size: 10px;
+    left: 22px !important;
+    width: 15px !important;
+    height: 15px;
+    text-align: center !important;
+    color: #fff !important;
+}

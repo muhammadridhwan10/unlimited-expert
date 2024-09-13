@@ -248,7 +248,7 @@ class ApiController extends Controller
     {
         // Validasi untuk memastikan file yang diupload adalah gambar
         $request->validate([
-            'img' => 'required|base64image', // Validasi custom base64 image
+            'img' => 'required', // Validasi custom base64 image
             'imgName' => 'required|string',
         ]);
     

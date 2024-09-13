@@ -11,12 +11,8 @@
         }
     </style>
 @endpush
-@push('script-page')
-    <script src="https://js.stripe.com/v3/"></script>
-    <script src="https://js.paystack.co/v1/inline.js"></script>
-    <script src="https://api.ravepay.co/flwv3-pug/getpaidx/api/flwpbf-inline.js"></script>
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script type="text/javascript">
+@push('script-page')s
+    {{-- <script type="text/javascript">
         @if($invoice->getDue() > 0  && !empty($company_payment_setting) &&  $company_payment_setting['is_stripe_enabled'] == 'on' && !empty($company_payment_setting['stripe_key']) && !empty($company_payment_setting['stripe_secret']))
 
         var stripe = Stripe('{{ $company_payment_setting['stripe_key'] }}');
@@ -199,7 +195,7 @@
             $temp.remove();
             show_toastr('Success', '{{__('Link Copy on Clipboard')}}', 'success')
         });
-    </script>
+    </script> --}}
     <script>
         $(document).on('click', '#shipping', function () {
             var url = $(this).data('url');

@@ -7,25 +7,18 @@ use App\Models\Employee;
 use App\Models\Mail\UserCreate;
 use App\Models\Support;
 use App\Models\SupportReply;
+use App\Models\Notification;
 use App\Models\Ticket;
 use App\Models\User;
 use App\Models\Utility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Auth;
 
 class SupportController extends Controller
 {
     public function index()
     {
-        // if(\Auth::user()->type == 'company')
-        // {
-        //     $supports = Support::where('created_by', \Auth::user()->creatorId())->get();
-        //     $countTicket      = Support::where('created_by', '=', \Auth::user()->creatorId())->count();
-        //     $countOpenTicket  = Support::where('status', '=', 'open')->where('created_by', '=', \Auth::user()->creatorId())->count();
-        //     $countonholdTicket  = Support::where('status', '=', 'on hold')->where('created_by', '=', \Auth::user()->creatorId())->count();
-        //     $countCloseTicket = Support::where('status', '=', 'close')->where('created_by', '=', \Auth::user()->creatorId())->count();
-        //     return view('support.index', compact('supports','countTicket','countOpenTicket','countonholdTicket','countCloseTicket'));
-        // }
         if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
             $supports = Support::all();
@@ -35,23 +28,26 @@ class SupportController extends Controller
             $countCloseTicket = Support::where('status', '=', 'close')->count();
             return view('support.index', compact('supports','countTicket','countOpenTicket','countonholdTicket','countCloseTicket'));
         }
-        elseif(\Auth::user()->type == 'client')
+        elseif(\Auth::user()->type == 'staff IT')
         {
-            $supports = Support::where('user', \Auth::user()->id)->orWhere('ticket_created', \Auth::user()->id)->get();
-            $countTicket      = Support::where('created_by', '=', \Auth::user()->creatorId())->count();
-            $countOpenTicket  = Support::where('status', '=', 'open')->where('created_by', '=', \Auth::user()->creatorId())->count();
-            $countonholdTicket  = Support::where('status', '=', 'on hold')->where('created_by', '=', \Auth::user()->creatorId())->count();
-            $countCloseTicket = Support::where('status', '=', 'close')->where('created_by', '=', \Auth::user()->creatorId())->count();
+            $model            = Support::where('user', \Auth::user()->id);
+
+            $supports         = $model->get();
+            $countTicket      = $model->count();
+            $countOpenTicket  = $model->where('status', '=', 'open')->count();
+            $countonholdTicket = $model->where('status', '=', 'on hold')->count();
+            $countCloseTicket = $model->where('status', '=', 'close')->count();
             return view('support.index', compact('supports','countTicket','countOpenTicket','countonholdTicket','countCloseTicket'));
         }
         else
         {
+            $model            = Support::where('ticket_created', \Auth::user()->id);
 
-            $supports = Support::where('user', \Auth::user()->id)->orWhere('ticket_created', \Auth::user()->id)->get();
-            $countTicket      = Support::where('created_by', '=', \Auth::user()->creatorId())->count();
-            $countOpenTicket  = Support::where('status', '=', 'open')->where('created_by', '=', \Auth::user()->creatorId())->count();
-            $countonholdTicket  = Support::where('status', '=', 'on hold')->where('created_by', '=', \Auth::user()->creatorId())->count();
-            $countCloseTicket = Support::where('status', '=', 'close')->where('created_by', '=', \Auth::user()->creatorId())->count();
+            $supports         = $model->get();
+            $countTicket      = $model->count();
+            $countOpenTicket  = $model->where('status', '=', 'open')->count();
+            $countonholdTicket = $model->where('status', '=', 'on hold')->count();
+            $countCloseTicket = $model->where('status', '=', 'close')->count();
             return view('support.index', compact('supports','countTicket','countOpenTicket','countonholdTicket','countCloseTicket'));
         }
 
@@ -69,11 +65,11 @@ class SupportController extends Controller
         $status = Support::$status;
         if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
-            $users  = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
+            $users  = User::where('type', 'staff IT')->get()->pluck('name', 'id');
         }
         else
         {
-            $users  = User::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $users  = User::where('type', 'staff IT')->where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
         }
         return view('support.create', compact('priority', 'users', 'status'));
     }
@@ -81,13 +77,12 @@ class SupportController extends Controller
 
     public function store(Request $request)
     {
-
         $validator = \Validator::make(
             $request->all(), [
-                               'subject' => 'required',
-                               'priority' => 'required',
-                               'attachment' => 'mimes:png,jpg,jpeg|max:20480'
-                           ]
+                            'subject' => 'required',
+                            'priority' => 'required',
+                            'attachment' => 'mimes:png,jpg,jpeg|max:20480'
+                        ]
         );
 
         if($validator->fails())
@@ -98,71 +93,47 @@ class SupportController extends Controller
 
         $support              = new Support();
         $support->subject     = $request->subject;
+        $support->user        = $request->user;
         $support->priority    = $request->priority;
-        $support->end_date    = $request->end_date;
         $support->ticket_code = date('hms');
         $support->status      = 'Open';
 
         if(!empty($request->attachment))
         {
             $fileName = time() . "_" . $request->attachment->getClientOriginalName();
-            $request->attachment->storeAs('uploads/supports', $fileName);
+            $request->attachment->storeAs('uploads/supports', $fileName, 's3');
             $support->attachment = $fileName;
         }
         $support->description    = $request->description;
         $support->created_by     = \Auth::user()->creatorId();
         $support->ticket_created = \Auth::user()->id;
-        if(\Auth::user()->type == 'client')
-        {
-            $support->user = \Auth::user()->id;;
-        }
-        else
-        {
-            $request->user= $request->user;
-        }
-
         $support->save();
 
+        $ticket_code = $support->ticket_code;
+        $subject = $support->subject;
+        $user = $support->user;
+        $priority = $support->priority;
+        $description = $support->description;
+        $status = $support->status;
 
+        $message = "Hi,\n";
+        $message .= "*New Support Ticket Created*\n";
+        $message .= "--------------------------------\n";
+        $message .= "Ticket No.: *{$ticket_code}*\n";
+        $message .= "Subject: *{$subject}*\n";
+        $message .= "Priority: *{$priority}*\n";
+        $message .= "Status: *{$status}*\n";
+        $message .= "Description: {$description}\n";
+        $message .= "~~~~~~~~~~~~~~~~~~~~\n";
+        $message .= "Please follow up on this ticket as soon as possible. Thank you.";
 
-        //Slack Notification
-        $setting  = Utility::settings(\Auth::user()->creatorId());
-        $support_priority = \App\Models\Support::$priority[$support->priority];
-        $user = User::find($request->user);
-        if(isset($setting['support_notification']) && $setting['support_notification'] ==1){
-            $msg = __("New Support ticket created of").' ' .$support_priority .' '.__(" priority for").' ' . $user->name.'.';
-            Utility::send_slack_msg($msg);
-        }
+        $whatsappNumber = '6281532833449';
 
-        //Telegram Notification
-        $setting  = Utility::settings(\Auth::user()->creatorId());
-        $support_priority = \App\Models\Support::$priority[$support->priority];
-        $user = User::find($request->user);
-        if(isset($setting['telegram_support_notification']) && $setting['telegram_support_notification'] ==1){
-            $msg = __("New Support ticket created of").' ' .$support_priority .' '.__(" priority for").' ' . $user->name.'.';
-            Utility::send_telegram_msg($msg);
-        }
+        $whatsappUrl = 'https://wa.me/' . $whatsappNumber . '?text=' . urlencode($message);
 
-        // send mail
-        $id =!empty($request->user )? $request->user: \Auth::user()->id;
-        $employee             = User::find($id);
-        $support_priority = \App\Models\Support::$priority[$support->priority];
-        $supportArr = [
-            'support_name'=> $employee->name,
-            'support_title' => $support->subject,
-            'support_priority' =>  $support_priority,
-            'support_end_date' => $support->end_date,
-            'support_description' => $support->description,
-
-        ];
-        $resp = Utility::sendEmailTemplate('create_support', [$employee->id => $employee->email], $supportArr);
-
-
-        return redirect()->route('support.index')->with('success', __('Support successfully added.').(($resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
-
-
-
+        return view('support.redirect_to_whatsapp', compact('whatsappUrl'));
     }
+
 
 
     public function show(Support $support)
@@ -182,11 +153,11 @@ class SupportController extends Controller
         $status = Support::$status;
         if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
         {
-            $users = User::get()->pluck('name', 'id');
+            $users  = User::where('type', 'staff IT')->get()->pluck('name', 'id');
         }
         else
         {
-            $users = User::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
+            $users = User::where('type', 'staff IT')->get()->pluck('name', 'id');
         }
         
 
@@ -216,7 +187,7 @@ class SupportController extends Controller
         $support->user     = $request->user;
         $support->priority = $request->priority;
         $support->status  = $request->status;
-        $support->end_date = $request->end_date;
+        // $support->end_date = $request->end_date;
         if(!empty($request->attachment))
         {
             $fileName = time() . "_" . $request->attachment->getClientOriginalName();
@@ -268,7 +239,27 @@ class SupportController extends Controller
         $supportReply->description = $request->description;
         $supportReply->created_by  = \Auth::user()->creatorId();
         $supportReply->save();
-
+    
+        $support = Support::find($id);
+    
+        $ticketCreated = $support->ticket_created;
+        $ticketUser = $support->user;
+    
+        $notificationUserId = (\Auth::user()->id == $ticketCreated) ? $ticketUser : $ticketCreated;
+    
+        $notificationData = [
+            'user_id' => $notificationUserId,
+            'type' => 'comment_ticketing',
+            'data' => json_encode([
+                'id' => $id,
+                'updated_by' => \Auth::user()->id,
+                'name' => $supportReply->users->name,
+            ]),
+            'is_read' => false,
+        ];
+    
+        Notification::create($notificationData);
+    
         return redirect()->back()->with('success', __('Support reply successfully send.'));
     }
 

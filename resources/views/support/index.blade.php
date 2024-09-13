@@ -2,31 +2,23 @@
 @push('script-page')
 @endpush
 @section('page-title')
-    {{__('Support')}}
+    {{__('Ticketing')}}
 @endsection
 @section('title')
     <div class="d-inline-block">
-        <h5 class="h4 d-inline-block font-weight-400 mb-0 ">{{__('Support')}}</h5>
+        <h5 class="h4 d-inline-block font-weight-400 mb-0 ">{{__('Ticketing')}}</h5>
     </div>
 @endsection
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('Support')}}</li>
+    <li class="breadcrumb-item">{{__('Ticketing')}}</li>
 @endsection
 
-@section('action-button')
-    <a href="{{ route('support.grid') }}" class="btn btn-xs btn-white btn-icon-only width-auto">
-        <i class="ti ti-th-large"></i> {{__('Grid View')}}</span>
-    </a>
-    <a href="#" data-size="lg" data-url="{{ route('support.create') }}" data-toggle="tooltip" data-ajax-popup="true"  class="btn btn-xs btn-white btn-icon-only width-auto">
-        <i class="ti ti-plus"></i> {{__('Create')}}
-    </a>
-@endsection
 @section('action-btn')
     <div class="float-end">
-        <a href="{{ route('support.grid') }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="{{__('Grid View')}}">
+        {{-- <a href="{{ route('support.grid') }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" title="{{__('Grid View')}}">
             <i class="ti ti-layout-grid text-white"></i>
-        </a>
+        </a> --}}
 
         <a href="#" data-size="lg" data-url="{{ route('support.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create')}}" data-title="{{__('Create Support')}}" class="btn btn-sm btn-primary">
             <i class="ti ti-plus"></i>
@@ -146,7 +138,7 @@
                             <thead>
                             <tr>
                                 <th scope="col">{{__('Created By')}}</th>
-                                <th scope="col">{{__('Ticket')}}</th>
+                                <th scope="col">{{__('Priority')}}</th>
                                 <th scope="col">{{__('Code')}}</th>
                                 <th scope="col">{{__('Attachment')}}</th>
                                 <th scope="col">{{__('Assign User')}}</th>
@@ -177,7 +169,6 @@
                                     <td scope="row">
                                         <div class="media align-items-center">
                                             <div class="media-body">
-                                                <a href="{{ route('support.reply',\Crypt::encrypt($support->id)) }}" class="name h6 mb-0 text-sm">{{$support->subject}}</a><br>
                                                 @if($support->priority == 0)
                                                     <span data-toggle="tooltip" data-title="{{__('Priority')}}" class="text-capitalize badge bg-primary p-2 px-3 rounded">   {{ __(\App\Models\Support::$priority[$support->priority]) }}</span>
                                                 @elseif($support->priority == 1)

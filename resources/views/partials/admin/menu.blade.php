@@ -1148,6 +1148,12 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                             </a>
                         </li>
 
+                        <li class="dash-item dash-hasmenu">
+                            <a href="{{route('support.index')}}" class="dash-link {{ (Request::segment(1) == 'support')?'active':''}}">
+                                <span class="dash-micon"><i class="ti ti-ticket"></i></span><span class="dash-mtext">{{__('Ticketing')}}</span>
+                            </a>
+                        </li>
+
                         {{-- <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'share-screen')?'active':''}}">
                             <a href="{{route('share-screen.index')}}" class="dash-link">
                                 <span class="dash-micon"><i class="ti ti-device-desktop"></i></span><span class="dash-mtext">{{__('Share Screen')}}</span><sup style="color: red;">New</sup>

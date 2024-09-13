@@ -612,16 +612,22 @@
                                             <td>
                                                 @if ($task->project->is_template !== 0)
                                                 <p>
-                                                    @if ($task->category_templates->name === "00. Client Data")
-                                                    <span class="badge-xs badge bg-info  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
-                                                    @elseif ($task->category_templates->name === "A. Pre engagement")
-                                                    <span class="badge-xs badge bg-warning  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
-                                                    @elseif ($task->category_templates->name === "B. Risk Assessment")
-                                                    <span class="badge-xs badge bg-danger  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
-                                                    @elseif ($task->category_templates->name === "C. Risk Response")
-                                                    <span class="badge-xs badge bg-success  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
-                                                    @elseif ($task->category_templates->name === "D. Conclusion and Completion")
-                                                    <span class="badge-xs badge bg-dark  p-2 px-3 rounded">{{ $task->category_templates->name }}</span>
+                                                    @php
+                                                        $categoryName = isset($task->category_templates->name) ? $task->category_templates->name : 'No Category';
+                                                    @endphp
+
+                                                    @if ($categoryName === "00. Client Data")
+                                                        <span class="badge-xs badge bg-info p-2 px-3 rounded">{{ $categoryName }}</span>
+                                                    @elseif ($categoryName === "A. Pre engagement")
+                                                        <span class="badge-xs badge bg-warning p-2 px-3 rounded">{{ $categoryName }}</span>
+                                                    @elseif ($categoryName === "B. Risk Assessment")
+                                                        <span class="badge-xs badge bg-danger p-2 px-3 rounded">{{ $categoryName }}</span>
+                                                    @elseif ($categoryName === "C. Risk Response")
+                                                        <span class="badge-xs badge bg-success p-2 px-3 rounded">{{ $categoryName }}</span>
+                                                    @elseif ($categoryName === "D. Conclusion and Completion")
+                                                        <span class="badge-xs badge bg-dark p-2 px-3 rounded">{{ $categoryName }}</span>
+                                                    @else
+                                                        <span class="badge-xs badge bg-secondary p-2 px-3 rounded">{{ $categoryName }}</span>
                                                     @endif
                                                 </p>
                                                 @endif 

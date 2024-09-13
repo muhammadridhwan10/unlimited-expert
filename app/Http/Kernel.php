@@ -64,6 +64,8 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'XSS' => \App\Http\Middleware\XSS::class,
+        'CSP' => \App\Http\Middleware\CSP::class,
+        'security_headers' => \App\Http\Middleware\SecurityHeaders::class,
         'revalidate' => \App\Http\Middleware\RevalidateBackHistory::class,
 
     ];
