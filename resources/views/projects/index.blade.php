@@ -2,8 +2,6 @@
 @section('page-title')
     {{__('Manage Projects')}}
 @endsection
-@push('script-page')
-@endpush
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
     <li class="breadcrumb-item">{{__('Projects')}}</li>
@@ -244,36 +242,19 @@
                     }
                 });
             });
+
+            $(document).on('click', '.pagination a', function (event) {
+                event.preventDefault();
+                var url = $(this).attr('href');
+                var page = url.split('page=')[1];
+                ajaxFilterProjectView(sort, $('#project_keyword').val(), status, tags, label, page);
+            });
         });
 
-        // $(document).on('click', '.invite_client', function () {
-        //         var project_id = $('#project_id').val();
-        //         var user_id = $(this).attr('data-id');
-
-        //         $.ajax({
-        //             url: '{{ route('invite.project.client.member') }}',
-        //             method: 'POST',
-        //             dataType: 'json',
-        //             data: {
-        //                 'project_id': project_id,
-        //                 'user_id': user_id,
-        //                 "_token": "{{ csrf_token() }}"
-        //             },
-        //             success: function (data) {
-        //                 if (data.code == '200') {
-        //                     show_toastr(data.status, data.success, 'success')
-        //                     setInterval('location.reload()', 5000);
-        //                 } else if (data.code == '404') {
-        //                     show_toastr(data.status, data.errors, 'error')
-        //                 }
-        //             }
-        //         });
-        //     });
-        // });
 
         var currentRequest = null;
 
-        function ajaxFilterProjectView(project_sort, keyword = '', status = '', tags = '',  label = '') {
+        function ajaxFilterProjectView(project_sort, keyword = '', status = '', tags = '', label = '', page = 1) {
             var mainEle = $('#project_view');
             var view = '{{$view}}';
             var data = {
@@ -283,6 +264,7 @@
                 status: status,
                 tags: tags,
                 label: label,
+                page: page
             }
 
             currentRequest = $.ajax({

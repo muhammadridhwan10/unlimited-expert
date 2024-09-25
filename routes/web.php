@@ -3380,7 +3380,7 @@ Route::get('timesheet-list-get', 'TimesheetController@timesheetListGet')->name('
 
 Route::get(
     '/project/{id}/timesheet', [
-    'as' => 'timesheet.index',
+    'as' => 'project.timesheet',
     'uses' => 'TimesheetController@timesheetView',
 ]
 )->middleware(
@@ -3451,7 +3451,7 @@ Route::resource('timesheet', 'TimesheetController')->middleware(
     ]
 );
 Route::get('timesheet/create', 'TimesheetController@create')->name('timesheet.create');
-Route::get('timesheet-list','TimesheetController@index')->name('timesheet.list')->middleware(['auth','XSS']);
+// Route::get('timesheet-list','TimesheetController@index')->name('timesheet.list')->middleware(['auth','XSS']);
 Route::get('timesheet/create', 'TimesheetController@create')->name('timesheet.create');
 Route::group(
     [
@@ -4513,3 +4513,25 @@ Route::get('reports-absence-staff', 'ReportController@absence_user')->name('repo
     ]
 );
 Route::post('/mark-notifications-read', 'NotificationController@markAsRead')->name('mark.notifications.read');
+Route::resource('form-response', 'FormResponseController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('/form-response/{user_id}/{year}', 'FormResponseController@show')->name('form-response.show');
+Route::post('/submit', 'FormResponseController@store')->name('submit.forms');
+Route::put('/update-form-response/{user_id}', 'FormResponseController@update')->name('update.forms');
+Route::post('/download-pdf/{id}', 'FormResponseController@downloadPdf')->name('download.pdf');
+Route::get('employee/training/{id}}', 'TrainingController@employeeTraining')->name('employee.training')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::post('tracker/project/{id}', 'TimeTrackerController@trackerJson')->name('project.time.tracker.json')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);

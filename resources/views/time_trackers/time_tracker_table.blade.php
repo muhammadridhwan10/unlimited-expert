@@ -1,164 +1,332 @@
+@extends('layouts.admin')
+@section('page-title')
+    {{__('Manage Project Tracker')}}
+@endsection
+@section('breadcrumb')
+    <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
+    <li class="breadcrumb-item"><a href="{{route('projects.index')}}">{{__('Project')}}</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('projects.show',$project->id) }}">{{ucwords($project->project_name)}}</a></li>
+    <li class="breadcrumb-item">{{__('Project Tracker')}}</li>
+@endsection
 
 
-        @php
-            $i = 0;
-        @endphp
-        @forelse ($trackers as $key =>$track)
-            @php
-                $tracker = $trackers->toArray();
-                $first_acc = 0;
-                $data = $track->toArray();
-                if(isset($data['0'])){
-                    $year=$data['0']['start_time'];
-                    $year = Date('Y',strtotime($year));
-                }else{
-                    $year = \Carbon\Carbon::now()->year;
-                }
-                $time = collect($track);
-                $total = $time->sum('total_time');
-                $day_group = $time->groupBy(function($date,$k) {
-                    return \Carbon\Carbon::parse($date->start_time)->format('d');
-               });
-              $time = Utility::second_to_time($total);
-              $year=date("Y");
 
-              $date = Utility::getStartAndEndDate($key-1,$year);
+@push('css-page')
+    <link rel="stylesheet" href="{{url('css/swiper.min.css')}}">
 
-              $currentWeek = date( 'W' );
-                $today = strtotime( date( 'Y-m-d' ) ) - 7*24*60*60; // last week this day
-                $lastWeek = date( 'W', $today );
-            @endphp
-            <div class="card">
-                <div class="card-body timetracker_options">
-                    <div class="clearfix">
-                        <div class="float-left">
-                            <h5  class="week-date">
-                                @if($currentWeek == $key)
-                                    {{__('This week')}}
-                                @elseif($lastWeek == $key)
-                                    {{__('Last week')}}
-                                @else
-                                    {{date('M d',strtotime($date['start_date']. ' +1 day'))}} - {{date('M d',strtotime($date['end_date']. ' +1 day'))}}
-                                @endif
-                            </h5>
-                        </div>
-                        <div class="float-right">
-                            <div> {{ __('Week total') }} : <b> {{$time}}</b> </div>
-                        </div>
-                        <span class="clearfix"></span>
-                    </div>
-                    <div class="time-schrdule bg-white p-2 small">
-                        <div class="row">
-                            <div class="col-3"> <b> {{ __('Title') }} </b> </div>
-                            <div class="col-1"> <b> {{ __('Project Name') }} </b> </div>
-                            <div class="col-1"> <b> {{ __('User') }} </b> </div>
-                            <div class="col-2"> <b> {{ __('Tags') }} </b> </div>
-                            <div class="col-1"> <b> {{ __('Date') }} </b> </div>
-                            <div class="col-1"> <b> {{ __('Start') }} </b> </div>
-                            <div class="col-1"> <b> {{ __('End') }} </b> </div>
-                            <div class="col-1"> <b> {{ __('Time') }} </b> </div>
-                            <div class="col-1"> <b> </b> </div>
-                        </div>
-                        <div class="bb1"></div>
-                        <div class="project-acc">
-                            @foreach ($day_group->reverse() as $key =>$day_tracks)
-                                @php
-                                    $time_day = collect($day_tracks);
-                                    $total_day = $time_day->sum('total_time');
-                                    $total_day = Utility::second_to_time($total_day);
-                                    $name_group = $time_day->groupBy('name');
-                                    $class = 'open-accordion';
-                                @endphp
-                                @foreach ($name_group->reverse() as $key =>$name)
-                                    @php
-                                        $name_array =$name->toArray();
-                                        $total_name = collect($name_array)->sum('total_time');
-                                        $total_name = Utility::second_to_time($total_name);
-                                        $sdates = collect($name_array)->pluck('start_time')->toArray();
-                                        $edates = collect($name_array)->pluck('end_time')->toArray();
-                                        $ttag = collect($name_array)->pluck('tag_id')->toArray();
-                                        $strat_time =  min($sdates);
-                                        $end_time = max($edates);
-                                      $date = '';
-                                      if(!empty($name)){
-                                        $date = date("M-d-Y",strtotime($name[0]->start_time));
-                                        $user_name = $name[0]->user_name;
-                                        $project_name = $name[0]->project_name;
-                                      }
-                                      if($first_acc == 0){
-                                        $class = 'open-accordion';
-                                        $first_acc = 1;
-                                        $aicon = 'fa-chevron-up';
-                                        $disply = '';
-                                        $arrow = 'close-acc';
-                                      }else{
-                                        $arrow = 'open-acc';
-                                        $disply = 'none';
-                                        $class= '';
-                                        $aicon = 'fa-chevron-down';
-                                      }
-                                    @endphp
-                                    <div class="row acc-mainmenu">
-                                        <div class="col-3"> <i class="ti ti-plus accodian-plus"></i> {{$key}}</div>
-                                        <div class="col-1">{{$project_name}}</div>
-                                        <div class="col-1">{{$user_name}}</div>
-                                        <div class="col-2">#</div>
-                                        <div class="col-1">{{$date}}</div>
-                                        <div class="col-1">{{date("H:i:s",strtotime($strat_time))}}</div>
-                                        <div class="col-1">{{date("H:i:s",strtotime($end_time))}}</div>
-                                        <div class="col-1">{{$total_name}}</div>
-                                        <div class="col-1"></div>
-                                    </div>
-                                    @if(!empty($name))
-                                    <div class="acc-sub-menu" style="display: none;">
-                                        @foreach ($name as $key =>$t)
-                                        <div class="row acc-sub-menu-div">
-                                            <div class="col-3"> {{$t->name}}</div>
-                                            <div class="col-1">{{$t->project_name}}</div>
-                                            <div class="col-1">{{$t->user_name}}</div>
-                                            <div class="col-2">
-                                                @if(empty($t->tags_name))
-                                                    <p>#</p>
-                                                @else
-                                                    <p>
-                                                        @foreach($t->tags_name as $tag)
-                                                            #{{$tag}},
-                                                        @endforeach
-                                                    </p>
-                                                @endif
-                                            </div>
-                                            <div class="col-1">{{date("M-d-Y",strtotime($t->start_time))}}</div>
-                                            <div class="col-1">{{date("H:i:s",strtotime($t->start_time))}}</div>
-                                            <div class="col-1">{{date("H:i:s",strtotime($t->end_time))}}</div>
-                                            <div class="col-1">{{$t->total}}</div>
-                                            <div class="col-1">
-                                                <img alt="Image placeholder" src="{{ asset('assets/images/gallery.png')}}" class="avatar view-images rounded-circle avatar-sm" data-toggle="tooltip" data-original-title="{{__('View Screenshot images')}}" style="height: 25px;width:24px;margin-right:10px;cursor: pointer;" data-id="{{$t['id']}}" id="track-images-{{$t['id']}}">
-                                                <i data-id="{{$t['id']}}" data-is_billable="{{$t['is_billable']}}" data-toggle="tooltip" data-original-title="{{$t['is_billable'] ==1? __('Click to Mark Non-Billable'):__('Click to Mark Billable')}}" class="change_billable ti ti-dollar-sign {{$t['is_billable'] ==1?'doller-billable':'doller-non-billable'}}"></i>
-                                                @if (Auth::user()->type == 'admin' || Auth::user()->type == 'company')
-                                                <i class="ti ti-times text-danger mx-2 pointer remove-track " data-toggle="tooltip" data-original-title="{{__('Delete')}}" data-id="{{$t['id']}}" data-url=""></i>
-                                                @endif
-                                            </div>
+    <link rel="stylesheet" href="{{url('css/swiper.min.css')}}">
+
+
+    <style>
+        .product-thumbs .swiper-slide img {
+        border:2px solid transparent;
+        object-fit: cover;
+        cursor: pointer;
+        }
+        .product-thumbs .swiper-slide-active img {
+        border-color: #bc4f38;
+        }
+
+        .product-slider .swiper-button-next:after,
+        .product-slider .swiper-button-prev:after {
+            font-size: 20px;
+            color: #000;
+            font-weight: bold;
+        }
+        .modal-dialog.modal-md {
+            background-color: #fff !important;
+        }
+
+        .no-image{
+            min-height: 300px;
+            align-items: center;
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+@endpush
+
+
+@section('content')
+
+    <div class="row">
+        <div class="col-sm-12">
+            <div class=" mt-2 " id="multiCollapseExample1">
+                <div class="card">
+                    <div class="card-body">
+                        {{ Form::open(array('route' => array('projecttime.tracker', $project->id),'method'=>'get','id'=>'report_monthly_tracker')) }}
+                        <div class="row align-items-center justify-content-end">
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <div class="btn-box">
+                                            {{Form::label('month',__('Month'),['class'=>'form-label'])}}
+                                            {{Form::month('month', isset($_GET['month']) ? $_GET['month'] : null, array('class' => 'month-btn form-control', 'id' => 'month'))}}
                                         </div>
-                                        @endforeach
                                     </div>
-                                    @endif
-                                @endforeach
-                            @endforeach
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col-auto mt-4">
+                                        <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_monthly_tracker').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
+                                            <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
+                                        </a>
+                                        <a href="{{route('projecttime.tracker', $project->id)}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
+                                            <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-
                     </div>
+                    {{ Form::close() }}
                 </div>
             </div>
-
-@empty
-    <div class="timetracker_options card p-5">
-        <div class="selected_date week_total text-center mx-auto">
-            <span class="week-date"> {{__('Records not found')}}</span>
         </div>
     </div>
-@endforelse
-<script type="text/javascript">
-    $('[data-type="times"]').timeEntry({
-        show24Hours: true,
-    });
-</script>
+
+
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex align-items-center justify-content-start">
+                    <h5>{{ __('Time Tracker Records') }}</h5>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table" id="time-tracker-table">
+                        <thead>
+                        <tr>
+                            <th>{{ __('Start Date') }}</th>
+                            <th>{{ __('Employee') }}</th>
+                            <th>{{ __('Project') }}</th>
+                            <th>{{ __('Start Time') }}</th>
+                            <th>{{ __('End Time') }}</th>
+                            <th>{{ __('Total Time') }}</th>
+                            <th>{{ __('Action') }}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($treckers as $trecker)
+                                @php
+                                    $total_name = Utility::second_to_time($trecker->total_time);
+                                @endphp
+                                <tr>
+                                    <!-- <td>{{$trecker->name}}</td> -->
+                                    <td>{{date("l, d-m-Y",strtotime($trecker->start_time))}}</td>
+                                    <td>{{!empty($trecker->user->name)?$trecker->user->name:'-'}}</td>
+                                    <td>{{!empty($trecker->project_name)?$trecker->project_name:'-'}}</td>
+                                    <td>{{date("H:i:s",strtotime($trecker->start_time))}}</td>
+                                    <td>{{date("H:i:s",strtotime($trecker->end_time))}}</td>
+                                    <td>{{$total_name}}</td>
+                                    <td>
+                                        <img alt="Image placeholder" src="{{ asset('assets/images/gallery.png')}}" class="avatar view-images rounded-circle avatar-sm" data-bs-toggle="tooltip" title="{{__('View Screenshot images')}}" data-original-title="{{__('View Screenshot images')}}" style="height: 25px;width:24px;margin-right:10px;cursor: pointer;" data-id="{{$trecker->id}}" id="track-images-{{$trecker->id}}">
+                                        @if (Auth::user()->type == 'admin' || Auth::user()->type == 'company')
+                                        <div class="action-btn bg-danger ms-2">
+                                            {!! Form::open(['method' => 'DELETE', 'route' => ['tracker.destroy', $trecker->id],'id'=>'delete-form-'.$trecker->id]) !!}
+                                            <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para" data-bs-toggle="tooltip" title="{{__('Delete')}}" data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').' | '.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$trecker->id}}').submit();">
+                                                <i class="ti ti-trash text-white"></i>
+                                            </a>
+                                            {!! Form::close() !!}
+                                        </div>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="d-flex justify-content-center mt-3">
+        {{ $treckers->links() }}
+    </div>
+
+    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg ss_modale " role="document">
+          <div class="modal-content image_sider_div">
+
+          </div>
+        </div>
+    </div>
+
+@endsection
+
+@push('script-page')
+    <script src="{{url('js/swiper.min.js')}}"></script>
+
+
+    <script type="text/javascript">
+
+        function init_slider(){
+                if($(".product-left").length){
+                        var productSlider = new Swiper('.product-slider', {
+                            spaceBetween: 0,
+                            centeredSlides: false,
+                            loop:false,
+                            direction: 'horizontal',
+                            loopedSlides: 5,
+                            navigation: {
+                                nextEl: ".swiper-button-next",
+                                prevEl: ".swiper-button-prev",
+                            },
+                            resizeObserver:true,
+                        });
+                    var productThumbs = new Swiper('.product-thumbs', {
+                        spaceBetween: 0,
+                        centeredSlides: true,
+                        loop: false,
+                        slideToClickedSlide: true,
+                        direction: 'horizontal',
+                        slidesPerView: 7,
+                        loopedSlides: 5,
+                    });
+                    productSlider.controller.control = productThumbs;
+                    productThumbs.controller.control = productSlider;
+                }
+            }
+
+
+        $(document).on('click', '.view-images', function () {
+
+                var p_url = "{{route('tracker.image.view')}}";
+                var data = {
+                    'id': $(this).attr('data-id')
+                };
+                postAjax(p_url, data, function (res) {
+                    $('.image_sider_div').html(res);
+                    $('#exampleModalCenter').modal('show');
+                    setTimeout(function(){
+                        var total = $('.product-left').find('.product-slider').length
+                        if(total > 0){
+                            init_slider();
+                        }
+
+                    },200);
+
+                });
+                });
+
+
+                // ============================ Remove Track Image ===============================//
+                $(document).on("click", '.track-image-remove', function () {
+                var rid = $(this).attr('data-pid');
+                $('.confirm_yes').addClass('image_remove');
+                $('.confirm_yes').attr('image_id', rid);
+                $('#cModal').modal('show');
+                var total = $('.product-left').find('.swiper-slide').length
+                });
+
+                function removeImage(id){
+                    var p_url = "{{route('tracker.image.remove')}}";
+                    var data = {id: id};
+                    deleteAjax(p_url, data, function (res) {
+
+                        if(res.flag){
+                            $('#slide-thum-'+id).remove();
+                            $('#slide-'+id).remove();
+                            setTimeout(function(){
+                                var total = $('.product-left').find('.swiper-slide').length
+                                if(total > 0){
+                                    init_slider();
+                                }else{
+                                    $('.product-left').html('<div class="no-image"><h5 class="text-muted">Images Not Available .</h5></div>');
+                                }
+                            },200);
+                        }
+
+                        $('#cModal').modal('hide');
+                        show_toastr('error',res.msg,'error');
+                    });
+                }
+
+                // $(document).on("click", '.remove-track', function () {
+                // var rid = $(this).attr('data-id');
+                // $('.confirm_yes').addClass('t_remove');
+                // $('.confirm_yes').attr('uid', rid);
+                // $('#cModal').modal('show');
+            // });
+
+
+    </script>
+    {{-- <script>
+        $(document).ready(function () {
+            loadTimeTracker();
+
+            function loadTimeTracker() {
+                var month = $("#month").val();
+
+                $.ajax({
+                    url: '{{ route('project.time.tracker.json', $project->id) }}',
+                    type: 'POST',
+                    data: {
+                        month: month,
+                        "_token": "{{ csrf_token() }}",
+                    },
+                    success: function (data) {
+                        var tr = '';
+
+                        if (data.length > 0) {
+                            $.each(data, function (index, item) {
+                            var startDate = new Date(item.start_time);
+                            var formattedStartDate = startDate.toLocaleString('en-US', {
+                                weekday: 'long',
+                                day: '2-digit',
+                                month: 'long',
+                                year: 'numeric',
+                            });
+                            var totalSeconds = item.total_time;
+                            var hours = Math.floor(totalSeconds / 3600);
+                            var minutes = Math.floor((totalSeconds % 3600) / 60);
+                            var seconds = totalSeconds % 60;
+
+                            var totalTimeFormatted = hours + ':' + (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+
+                                tr += '<tr>' +
+                        '<td>' + formattedStartDate + '</td>' +
+                        '<td>' + (item.user ? item.user.name : '-') + '</td>' +
+                        '<td>' + item.project_name + '</td>' +
+                        '<td>' + item.start_time + '</td>' +
+                        '<td>' + item.end_time + '</td>' +
+                        '<td>' + totalTimeFormatted + '</td>' +
+                        '<td>' +
+                            '<img alt="Image placeholder" src="{{ asset('assets/images/gallery.png')}}" class="avatar view-images rounded-circle avatar-sm" data-bs-toggle="tooltip" title="{{__('View Screenshot images')}}" data-original-title="{{__('View Screenshot images')}}" style="height: 25px;width:24px;margin-right:10px;cursor: pointer;" data-id="' + item.id + '" id="track-images-' + item.id + '">' +
+                            '@if (Auth::user()->type == "admin" || Auth::user()->type == "company")' +
+                                '<div class="action-btn bg-danger ms-2">' +
+                                    '<form method="POST" action="{{ route('tracker.destroy', ':id') }}" id="delete-form-' + item.id + '">' +
+                                        '@csrf' +
+                                        '@method("DELETE")' +
+                                        '<a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para" data-bs-toggle="tooltip" title="{{__("Delete")}}" data-original-title="{{__("Delete")}}" data-confirm="{{__("Are You Sure?")." | ".__("This action can not be undone. Do you want to continue?")}}" data-confirm-yes="document.getElementById(\'delete-form-' + item.id + '\').submit();">' +
+                                            '<i class="ti ti-trash text-white"></i>' +
+                                        '</a>' +
+                                    '</form>' +
+                                '</div>' +
+                            '@endif' +
+                        '</td>' +
+                        '</tr>';
+                            });
+                        } else {
+                            tr = '<tr><td colspan="7">{{ __('No records found') }}</td></tr>';
+                        }
+
+                        $('#time-tracker-table tbody').html(tr);
+                        var table = document.querySelector("#time-tracker-table");
+                        var datatable = new simpleDatatables.DataTable(table, {
+                            perPage: 25,
+                            searchable: true, 
+                        });
+                    },
+                    error: function (data) {
+                        console.log('Error:', data);
+                    }
+                });
+            }
+
+            
+        });
+    </script> --}}
+@endpush
+

@@ -34,7 +34,7 @@
 
 
 
-<script src="{{ asset('js/jscolor.js') }}"></script>
+{{-- <script src="{{ asset('js/jscolor.js') }}"></script> --}}
 <script src="{{ asset('js/custom.js') }}"></script>
 
 @if($message = Session::get('success'))

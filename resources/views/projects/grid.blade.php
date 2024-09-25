@@ -49,9 +49,33 @@
                             @elseif ($project->tags === "MALANG")
                                 <span class="badge rounded-pill bg-success">{{ $project->tags }}</span>
                             @endif
+
+                            @if ($project->label === "Audit")
+                            <span class="badge rounded-pill bg-dark">{{ $project->label }}</span>
+                            @elseif ($project->label === "Accounting")
+                                <span class="badge rounded-pill bg-warning">{{ $project->label }}</span>
+                            @elseif ($project->label === "Tax")
+                                <span class="badge rounded-pill bg-success">{{ $project->label }}</span>
+                            @elseif ($project->label === "IT")
+                                <span class="badge rounded-pill bg-primary">{{ $project->label }}</span>
+                            @elseif ($project->label === "Management")
+                                <span class="badge rounded-pill bg-secondary">{{ $project->label }}</span>
+                            @elseif ($project->label === "Sales")
+                                <span class="badge rounded-pill bg-danger">{{ $project->label }}</span>
+                            @elseif ($project->label === "Marketing")
+                                <span class="badge rounded-pill bg-light">{{ $project->label }}</span>
+                            @elseif ($project->label === "HR")
+                                <span class="badge rounded-pill bg-info">{{ $project->label }}</span>
+                            @elseif ($project->label === "Quality")
+                                <span class="badge rounded-pill bg-danger">{{ $project->label }}</span>
+                            @elseif ($project->label === "KPPK")
+                                <span class="badge rounded-pill bg-warning">{{ $project->label }}</span>
+                            @elseif ($project->label === "TP Documentation")
+                                <span class="badge rounded-pill bg-success">{{ $project->label }}</span>
+                            @endif
                             </div>
                         </div>
-                        <!-- <span class="badge rounded-pill bg-info">{{ $project->tags }}</span> -->
+                        {{-- <span class="badge rounded-pill bg-info">{{ $project->label }}</span> --}}
                         <p class="text-muted text-sm mt-3">{{ $project->description }}</p>
                         <small>{{__('MEMBERS')}}</small>
                         <div class="user-group">
@@ -96,6 +120,9 @@
                 </div>
             </div>
         @endforeach
+    </div>
+    <div class="d-flex justify-content-center">
+    {!! $projects->links() !!}
     </div>
 @else
     <div class="col-xl-12 col-lg-12 col-sm-12">

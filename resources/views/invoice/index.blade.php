@@ -224,6 +224,66 @@
         </div>
     </div>
 
+    <div class="row">
+        <div class="col-lg-4 col-md-6">
+            <div class="card" id="income-card">
+                <div class="card-body">
+                    <div class="row align-items-center justify-content-between">
+                        <div class="col-auto mb-3 mb-sm-0">
+                            <div class="d-flex align-items-center">
+                                <div class="theme-avtar bg-success">
+                                    <i class="ti ti-report-money"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <small class="text-muted h6">{{__('Total Amount (Rp)')}}</small>
+                                    <h6 class="m-0">{{ \Auth::user()->priceFormat($totalAmountRp) }} </h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="card" id="expense-card">
+                <div class="card-body">
+                    <div class="row align-items-center justify-content-between">
+                        <div class="col-auto mb-3 mb-sm-0">
+                            <div class="d-flex align-items-center">
+                                <div class="theme-avtar bg-danger">
+                                    <i class="ti ti-report-money"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <small class="text-muted h6">{{__('Total Amount ($)')}}</small>
+                                    <h6 class="m-0">{{ \Auth::user()->priceFormat2($totalAmountDollar) }} </h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center justify-content-between">
+                        <div class="col-auto mb-3 mb-sm-0">
+                            <div class="d-flex align-items-center">
+                                <div class="theme-avtar bg-info">
+                                    <i class="ti ti-report-money"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <small class="text-muted h6">{{__('Total Amount (€)')}}</small>
+                                    <h6 class="m-0">{{ \Auth::user()->priceFormat2($totalAmountEuro) }} </h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <div class="row" id="lineChartContainer" style="display: none;">
         <div class="col-md-12 mt-4">
@@ -242,11 +302,11 @@
                 <div class="card-body table-border-style">
                     <h5></h5>
                     @if (Auth::user()->type == 'company')
-                    <div class="float-end">
+                    <div class="float-end mb-3">
                         <button class="btn btn-primary" id="approve-selected">{{__('Convert to Balance Partners')}}</button>
                     </div>
                     <div class="table-responsive">
-                        <table class="table datatable">
+                        <table class="table">
                             <thead>
                             <tr>
                                 <th> {{ __('Item') }}</th>
@@ -273,22 +333,7 @@
                             </thead>
 
                             <tbody>
-                            @php
-                               $totalAmountRp = 0;
-                               $totalAmountDollar = 0;
-                               $totalAmountEuro = 0;
-                            @endphp
                             @foreach ($invoices as $invoice)
-                                @php
-                                    if ($invoice->currency == 'Rp') {
-                                        $totalAmountRp += $invoice->getDue();
-                                    } elseif ($invoice->currency == '$') {
-                                        $totalAmountDollar += $invoice->getDue();
-                                    }
-                                    elseif ($invoice->currency == '€') {
-                                        $totalAmountEuro += $invoice->getDue();
-                                    }
-                                @endphp
                                 <tr>
                                     @if ($invoice->status == 3)
                                         <td><input type="checkbox" class="approval-checkbox" data-id="{{ $invoice->id }}"></td>
@@ -406,11 +451,11 @@
                                     @endif
                                 </tr>
                             @endforeach
-                            <tr>
-                                <td colspan="12" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;"><strong>Total Amount (Rp) : {{ \Auth::user()->priceFormat($totalAmountRp) }} </strong><strong>|</strong> <strong>Total Amount ($) : {{ \Auth::user()->priceFormat2($totalAmountDollar) }} </strong> <strong>|</strong> <strong>Total Amount (€) : {{ \Auth::user()->priceFormat2($totalAmountEuro) }} </strong></td>
-                            </tr>
                             </tbody>
                         </table>
+                        <div class="d-flex justify-content-center mt-3">
+                            {{ $invoices->links() }}
+                        </div>
                     </div>
                     @elseif (Auth::user()->type == 'partners')
                     <div class="table-responsive">
@@ -440,21 +485,7 @@
                             </thead>
 
                             <tbody>
-                               @php
-                                $totalAmountRp = 0;
-                                $totalAmountDollar = 0;
-                                $totalAmountEuro = 0;
-                                @endphp
                                 @foreach ($invoices as $invoice)
-                                    @php
-                                        if ($invoice->currency == 'Rp') {
-                                            $totalAmountRp += $invoice->getDue();
-                                        } elseif ($invoice->currency == '$') {
-                                            $totalAmountDollar += $invoice->getDue();
-                                        } elseif ($invoice->currency == '€') {
-                                            $totalAmountEuro += $invoice->getDue();
-                                        }
-                                    @endphp
                                     <tr>
                                         <td class="Id">
                                             <a href="{{ route('invoice.show', \Crypt::encrypt($invoice->id)) }}" class="btn btn-outline-primary">{{ $invoice->invoice_id }}</a>
@@ -563,9 +594,6 @@
                                         @endif
                                     </tr>
                                 @endforeach
-                                <tr>
-                                    <td colspan="11" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;"><strong>Total Amount (Rp) : {{ \Auth::user()->priceFormat($totalAmountRp) }} </strong><strong>|</strong> <strong>Total Amount ($) : {{ \Auth::user()->priceFormat2($totalAmountDollar) }} </strong><strong>|</strong> <strong>Total Amount (€) : {{ \Auth::user()->priceFormat2($totalAmountEuro) }} </strong></td> 
-                                </tr>
                             </tbody>
                         </table>
                     </div>

@@ -107,11 +107,41 @@
                         </tr>
                         </thead>
                         <tbody>
+                            @foreach ($employeeTimeTracker as $trecker)
+                                @php
+                                    $total_name = Utility::second_to_time($trecker->total_time);
+                                @endphp
+                                <tr>
+                                    <!-- <td>{{$trecker->name}}</td> -->
+                                    <td>{{date("l, d-m-Y",strtotime($trecker->start_time))}}</td>
+                                    <td>{{!empty($trecker->user->name)?$trecker->user->name:'-'}}</td>
+                                    <td>{{!empty($trecker->tasks->name)?$trecker->tasks->name:'-'}}</td>
+                                    <td>{{!empty($trecker->project_name)?$trecker->project_name:'-'}}</td>
+                                    <td>{{date("H:i:s",strtotime($trecker->start_time))}}</td>
+                                    <td>{{date("H:i:s",strtotime($trecker->end_time))}}</td>
+                                    <td>{{$total_name}}</td>
+                                    <td>
+                                        <img alt="Image placeholder" src="{{ asset('assets/images/gallery.png')}}" class="avatar view-images rounded-circle avatar-sm" data-bs-toggle="tooltip" title="{{__('View Screenshot images')}}" data-original-title="{{__('View Screenshot images')}}" style="height: 25px;width:24px;margin-right:10px;cursor: pointer;" data-id="{{$trecker->id}}" id="track-images-{{$trecker->id}}">
+                                        @if (Auth::user()->type == 'admin' || Auth::user()->type == 'company')
+                                        <div class="action-btn bg-danger ms-2">
+                                            {!! Form::open(['method' => 'DELETE', 'route' => ['tracker.destroy', $trecker->id],'id'=>'delete-form-'.$trecker->id]) !!}
+                                            <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para" data-bs-toggle="tooltip" title="{{__('Delete')}}" data-original-title="{{__('Delete')}}" data-confirm="{{__('Are You Sure?').' | '.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$trecker->id}}').submit();">
+                                                <i class="ti ti-trash text-white"></i>
+                                            </a>
+                                            {!! Form::close() !!}
+                                        </div>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+    </div>
+    <div class="d-flex justify-content-center mt-3">
+        {{ $employeeTimeTracker->links() }}
     </div>
 
     <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
@@ -221,7 +251,7 @@
 
 
     </script>
-    <script>
+    {{-- <script>
         $(document).ready(function () {
             loadTimeTracker();
 
@@ -296,5 +326,5 @@
 
             
         });
-    </script>
+    </script> --}}
 @endpush

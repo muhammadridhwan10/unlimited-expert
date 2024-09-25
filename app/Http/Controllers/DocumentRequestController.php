@@ -21,20 +21,20 @@ class DocumentRequestController extends Controller
         {
             if(Auth::user()->type == 'admin')
             {
-                $documents = DocumentRequest::orderByDesc('id')->get();
+                $documents = DocumentRequest::orderByDesc('id')->paginate(10);
 
                 return view('document-request.index', compact('documents'));
             }
             elseif(\Auth::user()->type == 'company')
             {
-                $documents = DocumentRequest::orderByDesc('id')->get();
+                $documents = DocumentRequest::orderByDesc('id')->paginate(10);
 
                 return view('document-request.index', compact('documents'));
             }
             else
             {
                 $employee = Employee::where('user_id', \Auth::user()->id)->first();
-                $documents = DocumentRequest::where('employee_id', '=', $employee->id)->orderByDesc('id')->get();
+                $documents = DocumentRequest::where('employee_id', '=', $employee->id)->orderByDesc('id')->paginate(10);
 
                 return view('document-request.index', compact('documents'));
             }

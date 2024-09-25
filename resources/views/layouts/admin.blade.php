@@ -43,7 +43,7 @@
 
     <!-- font css -->
     <link rel="stylesheet" href="{{ asset('assets/fonts/tabler-icons.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/fonts/feather.css') }}">
+    {{-- <link rel="stylesheet" href="{{ asset('assets/fonts/feather.css') }}"> --}}
     <link rel="stylesheet" href="{{ asset('assets/fonts/fontawesome.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/fonts/material.css') }}">
 

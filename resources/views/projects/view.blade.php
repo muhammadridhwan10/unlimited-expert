@@ -253,7 +253,7 @@
         @endcan
         @if(\Auth::user()->type != 'client')
             @can('view timesheet')
-                <a href="{{ route('timesheet.index',$project->id) }}" class="btn btn-sm btn-primary">
+                <a href="{{ route('project.timesheet',$project->id) }}" class="btn btn-sm btn-primary">
                     {{__('Timesheet')}}
                 </a>
             @endcan

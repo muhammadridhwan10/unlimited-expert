@@ -1350,7 +1350,7 @@ class ProjectController extends Controller
                 {
                     $projects->whereIn('label', $request->label);
                 }
-                $projects   = $projects->get();
+                $projects = $projects->orderByDesc('id')->paginate(10);
                 $returnHTML = view('projects.' . $request->view, compact('projects', 'user_projects'))->render();
 
                 return response()->json(
@@ -1837,10 +1837,27 @@ class ProjectController extends Controller
         return "true";
     }
 
-    public function tracker($id)
+    public function tracker($id, Request $request)
     {
-        $treckers=TimeTracker::with('user')->where('project_id',$id)->get();
-        return view('time_trackers.index',compact('treckers'));
+        $treckers = TimeTracker::with('user')->where('project_id',$id);
+
+        if (!empty($request->month)) {
+            $month = date('m', strtotime($request->month));
+            $year  = date('Y', strtotime($request->month));
+
+            $start_date = date($year . '-' . $month . '-01');
+            $end_date   = date($year . '-' . $month . '-t');
+
+            $treckers->whereBetween('start_time', [$start_date, $end_date]);
+        } 
+
+        $treckers = $treckers->orderByDesc('id')->paginate(10)->appends([
+            'month' => $request->month,
+        ]);  
+
+        $project = Project::find($id);
+
+        return view('time_trackers.time_tracker_table',compact('treckers', 'project'));
     }
 
     public function invoice($id)

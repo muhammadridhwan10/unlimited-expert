@@ -93,6 +93,9 @@
                 </div>
             @endif
         </div>
+        <div class="d-flex justify-content-center">
+            {!! $tasks->links() !!}
+        </div>
     </div>
   </div>
 </div>

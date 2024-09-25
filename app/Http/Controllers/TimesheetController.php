@@ -24,22 +24,53 @@ class TimesheetController extends Controller
     public function timesheetView(Request $request, $project_id)
     {
         $authuser = Auth::user();
-        if(\Auth::user()->can('manage timesheet'))
+        
+        if($authuser->can('manage timesheet'))
         {
-            $project_ids = $authuser->projects()->pluck('project_id')->toArray();
+            $project = Project::find($project_id);
+            
+            $assigned_user_ids = ProjectUser::where('project_id', $project_id)->pluck('user_id');
 
-            if(in_array($project_id, $project_ids))
-            {
-                $project = Project::where('id', $project_id)->first();
+            $employee = User::whereIn('id', $assigned_user_ids)->get()->pluck('name', 'id');
+            $employee->prepend('Select Employee', '0');
+            
+            $employeeTimesheet = Timesheet::where('project_id', $project_id);
 
-                return view('projects.timesheets.index', compact('project'));
+            if (!empty($request->user_id)) {
+                $employeeTimesheet->where('created_by', $request->user_id);
             }
+
+            if (!empty($request->date)) {
+                $employeeTimesheet->whereDate('date', $request->date);
+            }
+
+            if (!empty($request->month)) {
+                $month = date('m', strtotime($request->month));
+                $year  = date('Y', strtotime($request->month));
+
+                $start_date = $year . '-' . $month . '-01';
+                $end_date   = $year . '-' . $month . '-t';
+
+                $employeeTimesheet->whereBetween('date', [$start_date, $end_date]);
+            }
+
+            $employeeTimesheet = $employeeTimesheet->orderByDesc('id')->paginate(10);
+
+            if (!empty($request->export_excel)) {
+                $exportData = $this->prepareExportData($employeeTimesheet);
+                $exportDataArray = $exportData->toArray();
+
+                return Excel::download(new TimesheetExport($exportDataArray), 'timesheet_report.xlsx');
+            }
+
+            return view('projects.timesheets.index', compact('employeeTimesheet', 'project', 'employee'));
         }
         else
         {
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
     }
+
 
     public function appendTimesheetTaskHTML(Request $request)
     {
@@ -582,18 +613,40 @@ class TimesheetController extends Controller
 
             $employeeTimesheet->whereYear('date', $currentYear);
 
-            $employeeTimesheet = $employeeTimesheet->get();
+            $totalTimesheet = $employeeTimesheet->get();
+            $logged_hours = 0;
+
+            foreach($totalTimesheet as $timesheet)
+            {
+                $hours = date('H', strtotime($timesheet->time));
+                $minutes = date('i', strtotime($timesheet->time));
+                $total_hours = $hours + ($minutes / 60);
+                $logged_hours += $total_hours;
+    
+    
+                $totalSeconds = $logged_hours * 3600;
+                $hours = floor($logged_hours);
+                $minutes = floor(($logged_hours - $hours) * 60);
+                $seconds = floor((($logged_hours - $hours) * 60 - $minutes) * 60);
+            }
+
+            $employeeTimesheet = $employeeTimesheet->orderByDesc('id')->paginate(10)->appends([
+                'project_id' => $request->project_id,
+                'client' => $request->client,
+                'user_id' => $request->user_id,
+                'status' => $request->status,
+                'date' => $request->date,
+                'month' => $request->month,
+            ]);  
 
             if (!empty($request->export_excel)) {
 
-                $exportData = $this->prepareExportData($employeeTimesheet);
+                $exportData = $this->prepareExportData($totalTimesheet);
         
                 $exportDataArray = $exportData->toArray();
 
                 return Excel::download(new TimesheetExport($exportDataArray), 'timesheet_report.xlsx');
             }
-            
-
         }
         else
         {
@@ -648,18 +701,42 @@ class TimesheetController extends Controller
                 $employeeTimesheet->whereBetween('date', [$start_date, $end_date]);
             } 
 
-            $employeeTimesheet = $employeeTimesheet->get();
+            $totalTimesheet = $employeeTimesheet->get();
+            $logged_hours = 0;
+
+            foreach($totalTimesheet as $timesheet)
+            {
+                $hours = date('H', strtotime($timesheet->time));
+                $minutes = date('i', strtotime($timesheet->time));
+                $total_hours = $hours + ($minutes / 60);
+                $logged_hours += $total_hours;
+    
+    
+                $totalSeconds = $logged_hours * 3600;
+                $hours = floor($logged_hours);
+                $minutes = floor(($logged_hours - $hours) * 60);
+                $seconds = floor((($logged_hours - $hours) * 60 - $minutes) * 60);
+            }
+
+            $employeeTimesheet = $employeeTimesheet->orderByDesc('id')->paginate(10)->appends([
+                'project_id' => $request->project_id,
+                'client' => $request->client,
+                'user_id' => $request->user_id,
+                'status' => $request->status,
+                'date' => $request->date,
+                'month' => $request->month,
+            ]);  
 
             if (!empty($request->export_excel)) {
 
-                $exportData = $this->prepareExportData($employeeTimesheet);
+                $exportData = $this->prepareExportData($totalTimesheet);
         
                 $exportDataArray = $exportData->toArray();
 
                 return Excel::download(new TimesheetExport($exportDataArray), 'timesheet_report.xlsx');
             }
         }
-        return view('projects.timesheet_list',compact('employeeTimesheet','project','employee'));
+        return view('projects.timesheet_list',compact('employeeTimesheet','project','employee','hours', 'minutes', 'seconds'));
 
     }
 
@@ -727,7 +804,7 @@ class TimesheetController extends Controller
             }
 
 
-            return redirect()->route('timesheet.list')->with('success', __('Timesheet successfully created.'));
+            return redirect()->route('timesheet.index')->with('success', __('Timesheet successfully created.'));
         }
         else
         {

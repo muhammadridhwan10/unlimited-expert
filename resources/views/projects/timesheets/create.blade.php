@@ -5,7 +5,7 @@
 
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item"><a href="{{route('timesheet.list')}}">{{__('Timesheet')}}</a></li>
+    <li class="breadcrumb-item"><a href="{{route('timesheet.index')}}">{{__('Timesheet')}}</a></li>
     <li class="breadcrumb-item">{{__('Project Timesheet Create')}}</li>
 @endsection
 @push('script-page')
@@ -389,7 +389,7 @@
             </div>
         </div>
         <div class="modal-footer">
-            <input type="button" value="{{__('Cancel')}}" onclick="location.href = '{{route("timesheet.list")}}';" class="btn btn-light">
+            <input type="button" value="{{__('Cancel')}}" onclick="location.href = '{{route("timesheet.index")}}';" class="btn btn-light">
             <input type="submit" value="{{__('Create')}}" class="btn  btn-primary">
         </div>
         {{ Form::close() }}

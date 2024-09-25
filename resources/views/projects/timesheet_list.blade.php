@@ -45,7 +45,7 @@
             <div class=" mt-2 " id="multiCollapseExample1">
                 <div class="card">
                     <div class="card-body">
-                        {{ Form::open(array('route' => array('timesheet.list'),'method'=>'get','id'=>'report_monthly_tracker')) }}
+                        {{ Form::open(array('route' => array('timesheet.index'),'method'=>'get','id'=>'report_monthly_tracker')) }}
                         {{ Form::hidden('export_excel', 0, ['id' => 'export_excel']) }}
                         <div class="row align-items-center justify-content-end">
                             <div class="col-auto">
@@ -96,7 +96,7 @@
                                         <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_monthly_tracker').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
                                             <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
                                         </a>
-                                        <a href="{{route('timesheet.list')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
+                                        <a href="{{route('timesheet.index')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
                                             <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
                                         </a>
                                     </div>
@@ -105,6 +105,28 @@
                         </div>
                     </div>
                     {{ Form::close() }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12 col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center justify-content-between">
+                        <div class="col-auto mb-3 mb-sm-0">
+                            <div class="d-flex align-items-center">
+                                <div class="theme-avtar bg-info">
+                                    <i class="ti ti-clock"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <small class="text-muted h6">{{__('Total Time')}}</small>
+                                    <h6 class="m-0">{{ sprintf("%02d:%02d:%02d", $hours, $minutes, $seconds) }} </h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -129,16 +151,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            @php
-                                $logged_hours = 0;
-                            @endphp
                             @foreach ($employeeTimesheet as $timesheet)
-                            @php
-                                $hours = date('H', strtotime($timesheet->time));
-                                $minutes = date('i', strtotime($timesheet->time));
-                                $total_hours = $hours + ($minutes / 60);
-                                $logged_hours += $total_hours;
-                            @endphp
                                 <tr>
                                     <td>{{!empty($timesheet->user->name)?$timesheet->user->name:'-'}}</td>
                                     <td>{{!empty($timesheet->project->project_name)?$timesheet->project->project_name:'-'}}</td>
@@ -175,22 +188,14 @@
                             @endforeach
                             
                             </tbody>
-                            @php
-                                $totalSeconds = $logged_hours * 3600;
-                                $hours = floor($logged_hours);
-                                $minutes = floor(($logged_hours - $hours) * 60);
-                                $seconds = floor((($logged_hours - $hours) * 60 - $minutes) * 60);
-                            @endphp
-                            <tr>
-                                <td colspan="6" style="border: 1px solid black; text-align: center; background-color:#008b8b; color:white; font-weight: bold;">
-                                    <strong>Total Time: {{ sprintf("%02d:%02d:%02d", $hours, $minutes, $seconds) }}</strong>
-                                </td>
-                            </tr>
                         </table>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+    <div class="d-flex justify-content-center">
+        {!! $employeeTimesheet->links() !!}
     </div>
 
 @endsection

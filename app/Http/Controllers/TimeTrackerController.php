@@ -48,7 +48,9 @@ class TimeTrackerController extends Controller
                 $employeeTimeTracker->whereBetween('start_time', [$start_date, $end_date]);
             } 
 
-            $employeeTimeTracker = $employeeTimeTracker->get();
+            $employeeTimeTracker = $employeeTimeTracker->orderByDesc('id')->paginate(10)->appends([
+                'month' => $request->month,
+            ]);     
 
         }
         elseif($user->type == 'partners')
@@ -74,7 +76,9 @@ class TimeTrackerController extends Controller
                 $employeeTimeTracker->whereBetween('start_time', [$start_date, $end_date]);
             } 
 
-            $employeeTimeTracker = $employeeTimeTracker->get();
+            $employeeTimeTracker = $employeeTimeTracker->orderByDesc('id')->paginate(10)->appends([
+                'month' => $request->month,
+            ]);  
 
         }
         else
@@ -96,7 +100,9 @@ class TimeTrackerController extends Controller
                 $employeeTimeTracker->whereBetween('start_time', [$start_date, $end_date]);
             } 
 
-            $employeeTimeTracker = $employeeTimeTracker->get();
+            $employeeTimeTracker = $employeeTimeTracker->orderByDesc('id')->paginate(10)->appends([
+                'month' => $request->month,
+            ]);  
         }
         return view('time_trackers.index',compact('employeeTimeTracker','branch', 'department'));
 
@@ -247,6 +253,28 @@ class TimeTrackerController extends Controller
         {
             $timeTrackers = TimeTracker::with('user')->where('created_by',\Auth::user()->id);
         }
+
+        if (!empty($request->month)) {
+            $month = date('m', strtotime($request->month));
+            $year  = date('Y', strtotime($request->month));
+
+            $start_date = date($year . '-' . $month . '-01');
+            $end_date   = date($year . '-' . $month . '-t');
+
+            $timeTrackers->whereBetween('start_time', [$start_date, $end_date]);
+        } 
+        
+        $timeTrackers = $timeTrackers->get();
+
+        return response()->json($timeTrackers);
+    }
+
+    public function trackerJson(Request $request, $project_id)
+    {
+        $month = $request->input('month');
+        $user = Auth::user();
+
+        $timeTrackers = TimeTracker::with('user')->where('project_id', $project_id);
 
         if (!empty($request->month)) {
             $month = date('m', strtotime($request->month));

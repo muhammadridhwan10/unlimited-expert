@@ -429,7 +429,7 @@ class ProjectTaskController extends Controller
         if($view == 'list'){
             return view('project_task.taskboard', compact('view'));
           }else{
-            if($user->type = 'admin'){
+            if($user->type = 'admin' || $user->type = 'company'){
                 $tasks = ProjectTask::all();
                 return view('project_task.grid', compact('tasks','view'));
             }else{
@@ -437,7 +437,7 @@ class ProjectTaskController extends Controller
                 return view('project_task.grid', compact('tasks','view'));
             }
               
-          }
+        }
           return redirect()->back()->with('error', __('Permission Denied.'));
 
     }
@@ -488,25 +488,16 @@ class ProjectTaskController extends Controller
             $sort  = explode('-', $request->sort);
             $task = ProjectTask::whereIn('project_id', $user_projects)->get();
             $tasks = ProjectTask::whereIn('project_id', $user_projects)->orderBy($sort[0], $sort[1]);
-            if(\Auth::user()->type != 'super admin')
-            {
-                if(\Auth::user()->type == 'client')
-                {
-                    $tasks->where('created_by',\Auth::user()->creatorId());
-                }
-                elseif(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
-                {
-                    $tasks->get();
-                }
-                else
-                {
-                    $tasks->whereRaw("find_in_set('" . $usr->id . "',assign_to)");
-                }
-            }
-            else
+            
+            if(\Auth::user()->type == 'company' || \Auth::user()->type == 'admin')
             {
                 $tasks->where('created_by',\Auth::user()->creatorId());
             }
+            else
+            {
+                $tasks->whereRaw("find_in_set('" . $usr->id . "',assign_to)");
+            }
+
             if(!empty($request->keyword))
             {
                 $tasks->where('name', 'LIKE', $request->keyword . '%');
@@ -553,7 +544,7 @@ class ProjectTaskController extends Controller
                 }
             }
 
-            $tasks = $tasks->get();
+            $tasks = $tasks->orderByDesc('id')->paginate(10);
 
             $returnHTML = view('project_task.' . $request->view, compact('tasks'))->render();
 

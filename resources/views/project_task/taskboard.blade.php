@@ -37,9 +37,9 @@
             <span class="btn-inner--icon">{{__('Status')}}</span>
         </a>
         <div class="dropdown-menu dropdown-menu-right task-filter-actions dropdown-steady" id="task_status">
-            <a class="dropdown-item filter-action filter-show-all pl-4" href="#">{{__('Show All')}}</a>
+            <a class="dropdown-item filter-action filter-show-all pl-4 active" href="#">{{__('Show All')}}</a>
             <hr class="my-0">
-            <a class="dropdown-item filter-action pl-4 active" href="#" data-val="see_my_tasks">{{ __('See My Tasks') }}</a>
+            <a class="dropdown-item filter-action pl-4" href="#" data-val="see_my_tasks">{{ __('See My Tasks') }}</a>
             <hr class="my-0">
             @foreach(\App\Models\ProjectTask::$priority as $key => $val)
                 <a class="dropdown-item filter-action pl-4" href="#" data-val="{{ $key }}">{{__($val)}}</a>
@@ -74,7 +74,7 @@
         $(function () {
             var sort = 'created_at-desc';
             var status = '';
-            ajaxFilterTaskView('created_at-desc', '', ['see_my_tasks']);
+            ajaxFilterTaskView('created_at-desc', '', '');
 
             // when change status
             $(".task-filter-actions").on('click', '.filter-action', function (e) {
@@ -116,10 +116,17 @@
             $(document).on('keyup', '#task_keyword', function () {
                 ajaxFilterTaskView(sort, $(this).val(), status);
             });
+
+            $(document).on('click', '.pagination a', function (event) {
+                event.preventDefault();
+                var url = $(this).attr('href');
+                var page = url.split('page=')[1];
+                ajaxFilterTaskView(sort, $('#task_keyword').val(), status, page);
+            });
         });
 
         // For Filter
-        function ajaxFilterTaskView(task_sort, keyword = '', status = '') {
+        function ajaxFilterTaskView(task_sort, keyword = '', status = '', page = 1) {
             var mainEle = $('#taskboard_view');
             var view = '{{$view}}';
             var data = {
@@ -127,6 +134,7 @@
                 sort: task_sort,
                 keyword: keyword,
                 status: status,
+                page: page
             }
 
             $.ajax({

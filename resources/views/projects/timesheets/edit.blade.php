@@ -50,7 +50,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <input type="button" value="{{__('Cancel')}}" onclick="location.href = '{{route("timesheet.list")}}';" class="btn btn-light">
+        <input type="button" value="{{__('Cancel')}}" onclick="location.href = '{{route("timesheet.index")}}';" class="btn btn-light">
         <input type="submit" value="{{__('Update')}}" class="btn  btn-primary">
     </div>
 {{Form::close()}}

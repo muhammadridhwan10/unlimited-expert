@@ -99,7 +99,32 @@ class InvoiceController extends Controller
                     $query->where('category_invoice', '=', $request->category_invoice);
                 }
 
-                $invoices = $query->orderByDesc('id')->get();
+                $totalInvoices = $query->get();
+
+                $totalAmountRp = 0;
+                $totalAmountDollar = 0;
+                $totalAmountEuro = 0;
+
+                foreach($totalInvoices as $invoice)
+                {
+                    if ($invoice->currency == 'Rp') {
+                        $totalAmountRp += $invoice->getDue();
+                    } elseif ($invoice->currency == '$') {
+                        $totalAmountDollar += $invoice->getDue();
+                    } elseif ($invoice->currency == '€') {
+                        $totalAmountEuro += $invoice->getDue();
+                    }
+
+                }
+
+                $invoices = $query->orderByDesc('id')->paginate(10)->appends([
+                    'issue_date' => $request->issue_date,
+                    'client' => $request->client,
+                    'user_id' => $request->user_id,
+                    'status' => $request->status,
+                    'category_invoice' => $request->category_invoice,
+                    'company' => $request->company,
+                ]);         
 
             }
             else
@@ -148,11 +173,39 @@ class InvoiceController extends Controller
                 {
                     $query->where('category_invoice', '=', $request->category_invoice);
                 }
-                $invoices = $query->orderByDesc('id')->get();
+
+                $totalInvoices = $query->get();
+
+                $totalAmountRp = 0;
+                $totalAmountDollar = 0;
+                $totalAmountEuro = 0;
+
+                foreach($totalInvoices as $invoice)
+                {
+                    if ($invoice->currency == 'Rp') {
+                        $totalAmountRp += $invoice->getDue();
+                    } elseif ($invoice->currency == '$') {
+                        $totalAmountDollar += $invoice->getDue();
+                    } elseif ($invoice->currency == '€') {
+                        $totalAmountEuro += $invoice->getDue();
+                    }
+
+                }
+
+                $invoices = $query->orderByDesc('id')->paginate(10)->appends([
+                    'issue_date' => $request->issue_date,
+                    'client' => $request->client,
+                    'user_id' => $request->user_id,
+                    'status' => $request->status,
+                    'category_invoice' => $request->category_invoice,
+                    'company' => $request->company,
+                ]);         
+                
+
        
 
             }
-            return view('invoice.index', compact('invoices', 'client','companies','partner', 'status','category_invoice'));
+            return view('invoice.index', compact('invoices', 'client','companies','partner', 'status','category_invoice','totalAmountRp','totalAmountDollar','totalAmountEuro'));
         }
         else
         {
