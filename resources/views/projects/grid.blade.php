@@ -56,10 +56,20 @@
                                 <span class="badge rounded-pill bg-warning">{{ $project->label }}</span>
                             @elseif ($project->label === "Tax")
                                 <span class="badge rounded-pill bg-success">{{ $project->label }}</span>
+                            @elseif ($project->label === "Accounting&Tax")
+                                <span class="badge rounded-pill bg-success">{{ $project->label }}</span>
                             @elseif ($project->label === "IT")
                                 <span class="badge rounded-pill bg-primary">{{ $project->label }}</span>
+                            @elseif ($project->label === "General AUP")
+                                <span class="badge rounded-pill bg-primary">{{ $project->label }}</span>
+                            @elseif ($project->label === "Special AUP")
+                                <span class="badge rounded-pill bg-warning">{{ $project->label }}</span>
                             @elseif ($project->label === "Management")
                                 <span class="badge rounded-pill bg-secondary">{{ $project->label }}</span>
+                            @elseif ($project->label === "Finance")
+                                <span class="badge rounded-pill bg-light">{{ $project->label }}</span>
+                            @elseif ($project->label === "Legal Compliance")
+                                <span class="badge rounded-pill bg-success">{{ $project->label }}</span>
                             @elseif ($project->label === "Sales")
                                 <span class="badge rounded-pill bg-danger">{{ $project->label }}</span>
                             @elseif ($project->label === "Marketing")
@@ -68,10 +78,10 @@
                                 <span class="badge rounded-pill bg-info">{{ $project->label }}</span>
                             @elseif ($project->label === "Quality")
                                 <span class="badge rounded-pill bg-danger">{{ $project->label }}</span>
-                            @elseif ($project->label === "KPPK")
-                                <span class="badge rounded-pill bg-warning">{{ $project->label }}</span>
                             @elseif ($project->label === "TP Documentation")
                                 <span class="badge rounded-pill bg-success">{{ $project->label }}</span>
+                            @elseif ($project->label === "Learning")
+                                <span class="badge rounded-pill bg-info">{{ $project->label }}</span>
                             @endif
                             </div>
                         </div>

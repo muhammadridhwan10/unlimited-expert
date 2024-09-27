@@ -45,7 +45,7 @@ class ProjectController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($view = 'grid')
+    public function index($view = 'list')
     {
         if(\Auth::user()->can('manage project'))
         {

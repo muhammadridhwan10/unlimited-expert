@@ -21,13 +21,49 @@
                                         <div class="d-flex align-items-center">
                                             {{-- <img {{ $project->img_image }} class="wid-40 rounded me-3" alt="avatar image"> --}}
                                             <p class="mb-0"><a href="{{ route('projects.show',$project) }}" class="name mb-0 h6 text-sm">{{ $project->project_name }}</a></p>{{"|"}}
-                                            @if ($project->tags === "PUSAT")
+                                            <div class="col-auto">
+                                                @if ($project->tags === "PUSAT")
                                                 <span class="badge rounded-pill bg-info">{{ $project->tags }}</span>
-                                            @elseif ($project->tags === "BEKASI")
-                                                <span class="badge rounded-pill bg-warning">{{ $project->tags }}</span>
-                                            @elseif ($project->tags === "MALANG")
-                                                <span class="badge rounded-pill bg-success">{{ $project->tags }}</span>
-                                            @endif
+                                                @elseif ($project->tags === "BEKASI")
+                                                    <span class="badge rounded-pill bg-warning">{{ $project->tags }}</span>
+                                                @elseif ($project->tags === "MALANG")
+                                                    <span class="badge rounded-pill bg-success">{{ $project->tags }}</span>
+                                                @endif
+
+                                                @if ($project->label === "Audit")
+                                                <span class="badge rounded-pill bg-dark">{{ $project->label }}</span>
+                                                @elseif ($project->label === "Accounting")
+                                                    <span class="badge rounded-pill bg-warning">{{ $project->label }}</span>
+                                                @elseif ($project->label === "Tax")
+                                                    <span class="badge rounded-pill bg-success">{{ $project->label }}</span>
+                                                @elseif ($project->label === "Accounting&Tax")
+                                                    <span class="badge rounded-pill bg-success">{{ $project->label }}</span>
+                                                @elseif ($project->label === "IT")
+                                                    <span class="badge rounded-pill bg-primary">{{ $project->label }}</span>
+                                                @elseif ($project->label === "General AUP")
+                                                    <span class="badge rounded-pill bg-primary">{{ $project->label }}</span>
+                                                @elseif ($project->label === "Special AUP")
+                                                    <span class="badge rounded-pill bg-warning">{{ $project->label }}</span>
+                                                @elseif ($project->label === "Management")
+                                                    <span class="badge rounded-pill bg-secondary">{{ $project->label }}</span>
+                                                @elseif ($project->label === "Finance")
+                                                    <span class="badge rounded-pill bg-light">{{ $project->label }}</span>
+                                                @elseif ($project->label === "Legal Compliance")
+                                                    <span class="badge rounded-pill bg-success">{{ $project->label }}</span>
+                                                @elseif ($project->label === "Sales")
+                                                    <span class="badge rounded-pill bg-danger">{{ $project->label }}</span>
+                                                @elseif ($project->label === "Marketing")
+                                                    <span class="badge rounded-pill bg-light">{{ $project->label }}</span>
+                                                @elseif ($project->label === "HR")
+                                                    <span class="badge rounded-pill bg-info">{{ $project->label }}</span>
+                                                @elseif ($project->label === "Quality")
+                                                    <span class="badge rounded-pill bg-danger">{{ $project->label }}</span>
+                                                @elseif ($project->label === "TP Documentation")
+                                                    <span class="badge rounded-pill bg-success">{{ $project->label }}</span>
+                                                @elseif ($project->label === "Learning")
+                                                    <span class="badge rounded-pill bg-info">{{ $project->label }}</span>
+                                                @endif
+                                            </div>
                                         </div>
                                     </td>
                                     <td class="">

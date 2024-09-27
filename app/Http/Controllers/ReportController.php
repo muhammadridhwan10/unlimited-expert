@@ -3732,7 +3732,9 @@ class ReportController extends Controller
             $filterYear['department']    = __('All');
             $filterYear['type']          = __('Monthly');
             $filterYear['dateYearRange'] = date('M-Y');
-            $employees                   = Employee::where('created_by', \Auth::user()->creatorId());
+            $employees                   = Employee::whereHas('user', function($query) {
+                $query->where('is_active', 1);
+            })->where('created_by', \Auth::user()->creatorId());
             if(!empty($request->branch))
             {
                 $employees->where('branch_id', $request->branch);
@@ -5234,7 +5236,16 @@ class ReportController extends Controller
                 });
             }
 
-            $employeeProject = $employeeProjects->get();
+            // $employeeProject = $employeeProjects->get();
+
+            $employeeProject = $employeeProjects->orderByDesc('id')->paginate(10)->appends([
+                    'user_ids' => $request->user_ids,
+                    'start_month' => $request->start_month,
+                    'end_month' => $request->end_month,
+                    'month' => $request->month,
+                    'client_id' => $request->client_id,
+                    'label' => $request->label,
+                ]);   
 
             if (!empty($request->export_excel)) {
                 // Persiapkan data untuk diekspor
@@ -5652,7 +5663,10 @@ class ReportController extends Controller
             $branch = Branch::get()->pluck('name', 'id');
             $branch->prepend('Select Branch', '');
 
-            $employees = Employee::select('id', 'name');
+            $employees = Employee::select('id', 'name')
+            ->whereHas('user', function($query) {
+                $query->where('is_active', 1);
+            });
             if(!empty($request->employee_id) && $request->employee_id[0]!=0){
                 $employees->whereIn('id', $request->employee_id);
             }

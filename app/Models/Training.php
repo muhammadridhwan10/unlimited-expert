@@ -8,13 +8,12 @@ class Training extends Model
 {
     protected $fillable = [
         'branch',
+        'training_title',
         'trainer_option',
         'training_type',
-        'trainer',
-        'training_cost',
+        'year',
+        'location',
         'employee',
-        'start_date',
-        'end_date',
         'description',
         'created_by',
     ];

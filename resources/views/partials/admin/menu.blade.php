@@ -194,9 +194,14 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             </span><span class="dash-mtext">{{__('Overtime')}}</span>
                                         </a>
                                     </li>
-                                     <li class="dash-item {{ request()->is('absence-request') ? 'active' : '' }}">
+                                    <li class="dash-item {{ request()->is('absence-request') ? 'active' : '' }}">
                                         <a href="{{route('absence-request.index')}}" class="dash-link">
                                            <span class="dash-mtext">{{__('Absence Request')}}</span>
+                                        </a>
+                                    </li>
+                                    <li class="dash-item {{ request()->is('form-response') ? 'active' : '' }}">
+                                        <a href="{{route('form-response.index')}}" class="dash-link">
+                                           <span class="dash-mtext">{{__('Personel Assessment')}}</span><sup style="color: red;">Beta</sup>
                                         </a>
                                     </li>
                                     <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'report-hrm') ? 'active dash-trigger' : ''}}" href="#hr-report" data-toggle="collapse" role="button" aria-expanded="{{(Request::segment(1) == 'report-hrm') ? 'true' : 'false'}}">
@@ -271,6 +276,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             {{ __('Employee Identity') }}
                                         </a>
                                         @endif
+                                    </li>
+                                    <li class="dash-item {{ request()->is('form-response') ? 'active' : '' }}">
+                                        <a href="{{route('form-response.index')}}" class="dash-link">
+                                           <span class="dash-mtext">{{__('Personel Assessment')}}</span><sup style="color: red;">Beta</sup>
+                                        </a>
                                     </li>
                                     <li class="dash-item {{ request()->is('absence-request') ? 'active' : '' }}">
                                         <a class="dash-link" href="{{route('absence-request.index')}}">{{__('Absence Request')}}</a>
@@ -942,7 +952,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                     @can('manage timesheet')
                                         @if(\Auth::user()->type !== 'admin' && \Auth::user()->type !== 'company' && \Auth::user()->type !== 'partners')
                                             <li class="dash-item {{ (request()->is('timesheet-list*') ? 'active' : '')}}">
-                                                <a class="dash-link" href="{{route('timesheet.list')}}">{{__('Timesheet')}}</a>
+                                                <a class="dash-link" href="{{route('timesheet.index')}}">{{__('Timesheet')}}</a>
                                             </li>
                                         @endif
                                     @endcan
@@ -1144,13 +1154,13 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
 
                         <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'document-request')?'active':''}}">
                             <a href="{{route('document-request.index')}}" class="dash-link">
-                                <span class="dash-micon"><i class="ti ti-file"></i></span><span class="dash-mtext">{{__('Document Request')}}</span><sup style="color: red;">New</sup>
+                                <span class="dash-micon"><i class="ti ti-file"></i></span><span class="dash-mtext">{{__('Document Request')}}</span>
                             </a>
                         </li>
 
                         <li class="dash-item dash-hasmenu">
                             <a href="{{route('support.index')}}" class="dash-link {{ (Request::segment(1) == 'support')?'active':''}}">
-                                <span class="dash-micon"><i class="ti ti-ticket"></i></span><span class="dash-mtext">{{__('Ticketing')}}</span>
+                                <span class="dash-micon"><i class="ti ti-ticket"></i></span><span class="dash-mtext">{{__('Support Ticket')}}</span><sup style="color: red;">Beta</sup>
                             </a>
                         </li>
 

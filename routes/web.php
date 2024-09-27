@@ -2695,7 +2695,7 @@ Route::delete(
 
 Route::get(
     'project/{view?}', [
-    'as' => 'projects.list',
+    'as' => 'projects.grid',
     'uses' => 'ProjectController@index',
 ]
 )->middleware(
@@ -4535,3 +4535,4 @@ Route::post('tracker/project/{id}', 'TimeTrackerController@trackerJson')->name('
         'XSS',
     ]
 );
+Route::get('/assessment/{user_id}/{year}', 'FormResponseController@assessment')->name('form-response.assessment');

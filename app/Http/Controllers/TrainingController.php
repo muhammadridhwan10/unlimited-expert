@@ -53,31 +53,28 @@ class TrainingController extends Controller
             {
                 $branches      = Branch::all()->pluck('name', 'id');
                 $trainingTypes = TrainingType::all()->pluck('name', 'id');
-                $trainers      = Trainer::all()->pluck('firstname', 'id');
-                $employees     = Employee::all()->pluck('name', 'id');
                 $options       = Training::$options;
+                $trainingTypes->prepend('Select Type', '');
     
-                return view('training.create', compact('branches', 'trainingTypes', 'trainers', 'employees', 'options'));
+                return view('training.create', compact('branches', 'trainingTypes', 'options'));
             }
             elseif(\Auth::user()->type = 'company')
             {
                 $branches      = Branch::all()->pluck('name', 'id');
                 $trainingTypes = TrainingType::all()->pluck('name', 'id');
-                $trainers      = Trainer::all()->pluck('firstname', 'id');
-                $employees     = Employee::all()->pluck('name', 'id');
                 $options       = Training::$options;
+                $trainingTypes->prepend('Select Type', '');
     
-                return view('training.create', compact('branches', 'trainingTypes', 'trainers', 'employees', 'options'));
+                return view('training.create', compact('branches', 'trainingTypes', 'options'));
             }
             else
             {
                 $branches      = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $trainingTypes = TrainingType::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                $trainers      = Trainer::where('created_by', \Auth::user()->creatorId())->get()->pluck('firstname', 'id');
-                $employees     = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $options       = Training::$options;
+                $trainingTypes->prepend('Select Type', '');
     
-                return view('training.create', compact('branches', 'trainingTypes', 'trainers', 'employees', 'options'));
+                return view('training.create', compact('branches', 'trainingTypes', 'options'));
             }
         }
         else
@@ -91,21 +88,17 @@ class TrainingController extends Controller
     {
         if(\Auth::user()->can('create training'))
         {
-
             $validator = \Validator::make(
                 $request->all(), [
-                                   'branch' => 'required',
-                                   'training_type' => 'required',
-                                   'training_cost' => 'required',
-                                   'employee' => 'required',
-                                   'start_date' => 'required',
-                                   'end_date' => 'required',
-                               ]
+                                'branch' => 'required',
+                                'training_type' => 'required',
+                                'training_title' => 'required',
+                                'year' => 'required|integer',
+                            ]
             );
             if($validator->fails())
             {
                 $messages = $validator->getMessageBag();
-
                 return redirect()->back()->with('error', $messages->first());
             }
 
@@ -113,16 +106,15 @@ class TrainingController extends Controller
             $training->branch         = $request->branch;
             $training->trainer_option = $request->trainer_option;
             $training->training_type  = $request->training_type;
-            $training->trainer        = $request->trainer;
-            $training->training_cost  = $request->training_cost;
-            $training->employee       = !empty($request->employee) ? implode(',', $request->employee) : '';
-            $training->start_date     = $request->start_date;
-            $training->end_date       = $request->end_date;
+            $training->training_title = $request->training_title;
+            $training->year           = $request->year;
+            $training->location       = $request->location;
+            $training->employee       = auth()->user()->employee->id;
             $training->description    = $request->description;
             $training->created_by     = \Auth::user()->creatorId();
             $training->save();
 
-            return redirect()->route('training.index')->with('success', __('Training successfully created.'));
+            return redirect()->route('form-response.create')->with('success', __('Training successfully created.'));
         }
         else
         {
@@ -150,28 +142,25 @@ class TrainingController extends Controller
             {
                 $branches      = Branch::get()->pluck('name', 'id');
                 $trainingTypes = TrainingType::get()->pluck('name', 'id');
-                $trainers      = Trainer::get()->pluck('firstname', 'id');
-                $employees     = Employee::get()->pluck('name', 'id');
                 $options       = Training::$options;
+                $trainingTypes->prepend('Select Type', '');
             }
             elseif(\Auth::user()->type = 'company')
             {
                 $branches      = Branch::get()->pluck('name', 'id');
                 $trainingTypes = TrainingType::get()->pluck('name', 'id');
-                $trainers      = Trainer::get()->pluck('firstname', 'id');
-                $employees     = Employee::get()->pluck('name', 'id');
                 $options       = Training::$options;
+                $trainingTypes->prepend('Select Type', '');
             }
             else
             {
                 $branches      = Branch::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $trainingTypes = TrainingType::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                $trainers      = Trainer::where('created_by', \Auth::user()->creatorId())->get()->pluck('firstname', 'id');
-                $employees     = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
                 $options       = Training::$options;
+                $trainingTypes->prepend('Select Type', '');
             }
 
-            return view('training.edit', compact('branches', 'trainingTypes', 'trainers', 'employees', 'options', 'training'));
+            return view('training.edit', compact('branches', 'trainingTypes', 'options', 'training'));
         }
         else
         {
@@ -184,32 +173,27 @@ class TrainingController extends Controller
     {
         if(\Auth::user()->can('edit training'))
         {
-
             $validator = \Validator::make(
                 $request->all(), [
-                                   'branch' => 'required',
-                                   'training_type' => 'required',
-                                   'training_cost' => 'required',
-                                   'employee' => 'required',
-                                   'start_date' => 'required',
-                                   'end_date' => 'required',
-                               ]
+                                'branch' => 'required',
+                                'training_type' => 'required',
+                                'training_title' => 'required',
+                                'year' => 'required|integer',
+                            ]
             );
             if($validator->fails())
             {
                 $messages = $validator->getMessageBag();
-
                 return redirect()->back()->with('error', $messages->first());
             }
 
             $training->branch         = $request->branch;
             $training->trainer_option = $request->trainer_option;
             $training->training_type  = $request->training_type;
-            $training->trainer        = $request->trainer;
-            $training->training_cost  = $request->training_cost;
-            $training->employee       = !empty($request->employee) ? implode(',', $request->employee) : '';
-            $training->start_date     = $request->start_date;
-            $training->end_date       = $request->end_date;
+            $training->training_title = $request->training_title;
+            $training->year           = $request->year;
+            $training->location       = $request->location;
+            $training->employee       = auth()->user()->employee->id;
             $training->description    = $request->description;
             $training->save();
 
@@ -264,5 +248,14 @@ class TrainingController extends Controller
         $training->save();
 
         return redirect()->route('training.index')->with('success', __('Training status successfully updated.'));
+    }
+
+    public function employeeTraining(Request $request, $id)
+    {
+        $employee = Employee::where('user_id', $id)->first();
+        $training  = Training::where('employee', $employee->id)->get();
+
+        return view('training.trainingShow', compact('training'));
+
     }
 }

@@ -16,14 +16,14 @@
     </div>
 
     <div class="float-end">
-        @if($view == 'grid')
-            <a href="{{ route('projects.list','list') }}"  data-bs-toggle="tooltip" title="{{__('List View')}}" class="btn btn-sm btn-primary">
-                <i class="ti ti-list"></i>
+        @if($view == 'list')
+            <a href="{{ route('projects.grid','grid') }}"  data-bs-toggle="tooltip" title="{{__('Grid View')}}" class="btn btn-sm btn-primary">
+                <i class="ti ti-layout-grid"></i>
             </a>
 
         @else
-            <a href="{{ route('projects.index') }}"  data-bs-toggle="tooltip" title="{{__('Grid View')}}" class="btn btn-sm btn-primary">
-                <i class="ti ti-layout-grid"></i>
+            <a href="{{ route('projects.index') }}"  data-bs-toggle="tooltip" title="{{__('List View')}}" class="btn btn-sm btn-primary">
+                <i class="ti ti-list"></i>
             </a>
         @endif
 
@@ -55,9 +55,9 @@
                     <span class="btn-inner--icon">{{__('Status')}}</span>
                 </a>
                 <div class="dropdown-menu  project-filter-actions dropdown-steady" id="project_status">
-                    <a class="dropdown-item filter-action filter-show-all pl-4 active" href="#">{{__('Show All')}}</a>
+                    <a class="dropdown-item filter-action filter-show-all pl-4" href="#">{{__('Show All')}}</a>
                     @foreach(\App\Models\Project::$project_status as $key => $val)
-                        <a class="dropdown-item filter-action pl-4" href="#" data-val="{{ $key }}">{{__($val)}}</a>
+                        <a class="dropdown-item filter-action pl-4 {{ $key == 'in_progress' ? 'active' : '' }}" href="#" data-val="{{ $key }}">{{__($val)}}</a>
                     @endforeach
                 </div>
             {{------------ End Status Filter ----------------}}
@@ -105,7 +105,7 @@
             var status = '';
             var tags = '';
             var label = '';
-            ajaxFilterProjectView('created_at-desc');
+            ajaxFilterProjectView('created_at-desc', '',['in_progress']);
             $(".project-filter-actions").on('click', '.filter-action', function (e) {
                 if ($(this).hasClass('filter-show-all')) {
                     $('.filter-action').removeClass('active');

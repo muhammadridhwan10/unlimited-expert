@@ -50,14 +50,19 @@ class Project extends Model
     public static $label=[
         'Audit' => 'Audit',
         'Accounting' => 'Accounting',
+        'Accounting&Tax' => 'Accounting&Tax',
         'Tax' => 'Tax',
         'IT' => 'IT',
+        'General AUP' => 'General AUP',
+        'Special AUP' => 'Special AUP',
+        'Finance' => 'Finance',
+        'Legal Compliance' => 'Legal Compliance',
         'Management' => 'Management',
         'Sales' => 'Sales',
         'Marketing' => 'Marketing',
         'HR' => 'HR',
         'Quality' => 'Quality',
-        'KPPK' => 'KPPK',
+        'Learning' => 'Learning',
         'TP Documentation' => 'TP Documentation',
     ];
 
@@ -79,6 +84,11 @@ class Project extends Model
         'complete' => 'success',
         'canceled' => 'danger',
     ];
+
+    public function projectUsers()
+    {
+        return $this->hasMany(ProjectUser::class, 'project_id');
+    }
 
     public function project_offerings()
     {

@@ -45,11 +45,11 @@ class ProjectReportController extends Controller
             if(isset($request->all_users)&& !empty($request->all_users)){
                 $projects = Project::select('projects.*')
                     ->leftjoin('project_users', 'project_users.project_id', 'projects.id')
-                    ->where('project_users.user_id', '=', $request->all_users)->orderby('id','desc')->get();
+                    ->where('project_users.user_id', '=', $request->all_users)->orderby('id','desc');
 
 
             }else{
-                $projects = Project::orderby('id','desc')->get();
+                $projects = Project::orderby('id','desc');
             }
 
             if(isset($request->status)&& !empty($request->status)){
@@ -74,7 +74,7 @@ class ProjectReportController extends Controller
             if(isset($request->all_users)&& !empty($request->all_users)){
                 $projects = Project::select('projects.*')
                     ->leftjoin('project_users', 'project_users.project_id', 'projects.id')
-                    ->where('project_users.user_id', '=', $request->all_users)->orderby('id','desc')->get();
+                    ->where('project_users.user_id', '=', $request->all_users)->orderby('id','desc');
 
 
             }else{
@@ -102,11 +102,16 @@ class ProjectReportController extends Controller
             $usr           = Auth::user();
             $users         = User::where('id', '=', $user->id)->get();
             $status = Project::$project_status;
-            $projects = Project::select('projects.*')->leftjoin('project_users', 'project_users.project_id', 'projects.id')->where('project_users.user_id', '=', $user->id)->orderby('id','desc')->get();
+            $projects = Project::select('projects.*')->leftjoin('project_users', 'project_users.project_id', 'projects.id')->where('project_users.user_id', '=', $user->id)->orderby('id','desc');
 
         }
 
-        $projects = $projects;
+        $projects = $projects->paginate(10)->appends([
+            'all_users' => $request->all_users,
+            'status' => $request->status,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+        ]);    
 
             return view('project_report.index', compact('projects','users','status'));
         }
