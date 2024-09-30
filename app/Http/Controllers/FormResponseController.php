@@ -275,33 +275,81 @@ class FormResponseController extends Controller
 
         // Cek apakah ada entri dengan form_type 'E'
         $formResponse = Assessment::where('user_id', $id)->where('form_type', 'E')->where('year', \Carbon\Carbon::now()->year)->first();
+        
+        $responses = Assessment::where('user_id', $id)->get();
+        $loggedInUserId = auth()->user()->employee->id;
+
+        foreach($responses as $response)
+        {
+            $isAppraisal = $loggedInUserId == $response->appraisal_id;
+        }
 
         if ($formResponse) {
-            // Jika ada, perbarui data yang ada
-            $formResponse->update([
-                'performance_progress' => $request->input('formE_kemajuan_kinerja', $formResponse->performance_progress),
-                'barriers' => $request->input('formE_hambatan', $formResponse->barriers),
-                'follow_up' => $request->input('formE_tindak_lanjut', $formResponse->follow_up),
-                'comment' => $request->input('formE_comment', $formResponse->comment),
-                'advantages' => $request->input('formE_kelebihan', $formResponse->advantages),
-                'tiers' => $request->input('formE_tingkatan', $formResponse->tiers),
-                'training_plan' => $request->input('formE_pelatihan', $formResponse->training_plan),
-                'appraisal_id' => auth()->user()->employee->id,
-            ]);
+
+            if($isAppraisal)
+            {
+                // Jika ada, perbarui data yang ada
+                $formResponse->update([
+                    'performance_progress' => $request->input('formE_kemajuan_kinerja', $formResponse->performance_progress),
+                    'barriers' => $request->input('formE_hambatan', $formResponse->barriers),
+                    'follow_up' => $request->input('formE_tindak_lanjut', $formResponse->follow_up),
+                    'comment' => $request->input('formE_comment', $formResponse->comment),
+                    'advantages' => $request->input('formE_kelebihan', $formResponse->advantages),
+                    'tiers' => $request->input('formE_tingkatan', $formResponse->tiers),
+                    'training_plan' => $request->input('formE_pelatihan', $formResponse->training_plan),
+                    'appraisal_id' => auth()->user()->employee->id,
+                ]);
+            }
+            else
+            {
+                // Jika ada, perbarui data yang ada
+                $formResponse->update([
+                    'performance_progress' => $request->input('formE_kemajuan_kinerja', $formResponse->performance_progress),
+                    'barriers' => $request->input('formE_hambatan', $formResponse->barriers),
+                    'follow_up' => $request->input('formE_tindak_lanjut', $formResponse->follow_up),
+                    'comment' => $request->input('formE_comment', $formResponse->comment),
+                    'advantages' => $request->input('formE_kelebihan', $formResponse->advantages),
+                    'tiers' => $request->input('formE_tingkatan', $formResponse->tiers),
+                    'training_plan' => $request->input('formE_pelatihan', $formResponse->training_plan),
+                    'supervisor_id' => auth()->user()->employee->id,
+                ]);
+            }
         } else {
-            // Jika tidak ada, buat data baru
-            Assessment::create([
-                'form_type' => 'E',
-                'user_id' => $id,
-                'performance_progress' => $request->input('formE_kemajuan_kinerja'),
-                'barriers' => $request->input('formE_hambatan'),
-                'follow_up' => $request->input('formE_tindak_lanjut'),
-                'comment' => $request->input('formE_comment'),
-                'advantages' => $request->input('formE_kelebihan'),
-                'tiers' => $request->input('formE_tingkatan'),
-                'training_plan' => $request->input('formE_pelatihan'),
-                'year' => \Carbon\Carbon::now()->year,
-            ]);
+
+            if($isAppraisal)
+            {
+                // Jika tidak ada, buat data baru
+                Assessment::create([
+                    'form_type' => 'E',
+                    'user_id' => $id,
+                    'performance_progress' => $request->input('formE_kemajuan_kinerja'),
+                    'barriers' => $request->input('formE_hambatan'),
+                    'follow_up' => $request->input('formE_tindak_lanjut'),
+                    'comment' => $request->input('formE_comment'),
+                    'advantages' => $request->input('formE_kelebihan'),
+                    'tiers' => $request->input('formE_tingkatan'),
+                    'training_plan' => $request->input('formE_pelatihan'),
+                    'year' => \Carbon\Carbon::now()->year,
+                    'appraisal_id' => auth()->user()->employee->id,
+                ]);   
+            }
+            else
+            {
+                // Jika tidak ada, buat data baru
+                Assessment::create([
+                    'form_type' => 'E',
+                    'user_id' => $id,
+                    'performance_progress' => $request->input('formE_kemajuan_kinerja'),
+                    'barriers' => $request->input('formE_hambatan'),
+                    'follow_up' => $request->input('formE_tindak_lanjut'),
+                    'comment' => $request->input('formE_comment'),
+                    'advantages' => $request->input('formE_kelebihan'),
+                    'tiers' => $request->input('formE_tingkatan'),
+                    'training_plan' => $request->input('formE_pelatihan'),
+                    'year' => \Carbon\Carbon::now()->year,
+                    'supervisor_id' => auth()->user()->employee->id,
+                ]);   
+            }
         }
 
 
@@ -314,10 +362,10 @@ class FormResponseController extends Controller
         // Ambil data form dari database
         $formResponses = Assessment::where('user_id', $id)->get();
         // Ambil rata-rata nilai dari Form A1, A2, C, dan D
-        $averageA1 = $formResponses->where('form_type', 'A1')->avg('supervisor_assessment');
-        $averageA2 = $formResponses->where('form_type', 'A2')->avg('supervisor_assessment');
-        $averageC = $formResponses->where('form_type', 'C')->avg('supervisor_assessment');
-        $averageD = $formResponses->where('form_type', 'D')->avg('supervisor_assessment');
+        $averageA1 = $formResponses->where('form_type', 'A1')->avg('final_assessment');
+        $averageA2 = $formResponses->where('form_type', 'A2')->avg('final_assessment');
+        $averageC = $formResponses->where('form_type', 'C')->avg('final_assessment');
+        $averageD = $formResponses->where('form_type', 'D')->avg('final_assessment');
 
         // Hitung rata-rata gabungan dari Form A1 dan A2
         $combinedAverageA = ($averageA1 + $averageA2) / 2;
@@ -384,18 +432,8 @@ class FormResponseController extends Controller
         // Total nilai akhir
         $totalFinal = $finalA + $finalC + $finalD;
 
-        // get comment form E
-        $commentE = Assessment::where('user_id', $id)->where('form_type', 'E')->first();
-
-        $totalProject = Project::whereHas('projectUsers', function ($query) use ($id) {
-            $query->where('user_id', $id);
-        })->count();
-
-        $totalTraining = Training::where('employee',$employee->id)->where('training_type', 2)->count();
-        $totalSertifikasi = Training::where('employee', $employee->id)->where('training_type', 1)->count();
-
         // Kirim data ke view
-        return view('formResponses.assessment', compact('formResponses', 'id', 'averageA1', 'averageA2', 'averageC', 'averageD', 'combinedAverageA', 'finalA', 'finalC', 'finalD', 'totalFinal','commentE','totalProject','totalTraining','totalSertifikasi'));
+        return view('formResponses.assessment', compact('formResponses', 'id', 'averageA1', 'averageA2', 'averageC', 'averageD', 'combinedAverageA', 'finalA', 'finalC', 'finalD', 'totalFinal'));
     }
 
 

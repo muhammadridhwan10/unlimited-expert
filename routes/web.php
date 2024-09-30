@@ -4522,7 +4522,7 @@ Route::resource('form-response', 'FormResponseController')->middleware(
 Route::get('/form-response/{user_id}/{year}', 'FormResponseController@show')->name('form-response.show');
 Route::post('/submit', 'FormResponseController@store')->name('submit.forms');
 Route::put('/update-form-response/{user_id}', 'FormResponseController@update')->name('update.forms');
-Route::post('/download-pdf/{id}', 'FormResponseController@downloadPdf')->name('download.pdf');
+Route::get('/download-pdf/{id}', 'FormResponseController@downloadPdf')->name('download.pdf');
 Route::get('employee/training/{id}}', 'TrainingController@employeeTraining')->name('employee.training')->middleware(
     [
         'auth',

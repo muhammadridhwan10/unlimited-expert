@@ -55,6 +55,18 @@
                                     {{ Form::select('status', ['' => 'Select Status'] + $status, isset($_GET['status']) ? $_GET['status'] : '', ['class' => 'form-control select']) }}
                                 </div>
                             </div>
+                            <div class="col-xl-2 col-lg-2 col-md-6 col-sm-12 col-12">
+                                <div class="btn-box">
+                                    {{ Form::label('label', __('Label'),['class'=>'form-label'])}}
+                                    {{ Form::select('label', ['' => 'Select Label'] + $label, isset($_GET['label']) ? $_GET['label'] : '', ['class' => 'form-control select']) }}
+                                </div>
+                            </div>
+                            <div class="col-xl-2 col-lg-2 col-md-6 col-sm-12 col-12">
+                                <div class="btn-box">
+                                    {{ Form::label('tags', __('Branch'),['class'=>'form-label'])}}
+                                    {{ Form::select('tags', ['' => 'Select Branch'] + $tags, isset($_GET['tags']) ? $_GET['tags'] : '', ['class' => 'form-control select']) }}
+                                </div>
+                            </div>
                             <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
                                 <div class="btn-box">
                                     {{ Form::label('start_date', __('Start Date'),['class'=>'form-label'])}}
@@ -101,6 +113,7 @@
                                 <th>{{__('Start Date')}}</th>
                                 <th>{{__('Due Date')}}</th>
                                 <th>{{__('Projects Members')}}</th>
+                                <th>{{__('Total Hours')}}</th>
                                 <th>{{__('Completion')}}</th>
                                 <th>{{__('Status')}}</th>
                                 <th>{{__('Action')}}</th>
@@ -140,6 +153,7 @@
                                             @endif
                                         </div>
                                     </td>
+                                    <td>{{ $project->totalHours($request->start_date, $request->end_date, $request->all_users) }} {{__('H')}}</td>
                                     <td class="">
                                         <h6 class="mb-0 text-success">{{ $project->project_progress()['percentage'] }}</h6>
                                         <div class="progress mb-0"><div class="progress-bar bg-{{ $project->project_progress()['color'] }}" style="width: {{ $project->project_progress()['percentage'] }};"></div>

@@ -38,12 +38,12 @@ class OvertimeController extends Controller
                 $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
             } 
 
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->get();
+            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate(10);
 
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
+            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
         }
         elseif(\Auth::user()->type == 'company')
         {
@@ -63,11 +63,13 @@ class OvertimeController extends Controller
                 $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
             } 
 
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->get();
+            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate(10)->appends([
+                'month' => $request->month,
+            ]);     
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
+            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
         }
         elseif(\Auth::user()->type == 'senior accounting')
         {
@@ -87,11 +89,13 @@ class OvertimeController extends Controller
                 $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
             } 
 
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->get();
+            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate(10)->appends([
+                'month' => $request->month,
+            ]);  
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
+            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
         }
         elseif(\Auth::user()->type == 'partners')
         {
@@ -122,11 +126,13 @@ class OvertimeController extends Controller
                 $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
             } 
 
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->get();
+            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate(10)->appends([
+                'month' => $request->month,
+            ]);  
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
+            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
         }
         elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff')
         {
@@ -146,12 +152,14 @@ class OvertimeController extends Controller
                 $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
             } 
 
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->get();
+            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate(10)->appends([
+                'month' => $request->month,
+            ]);  
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
             $overtimes    = UserOvertime::where('user_id', '=', $users->id)->get();
-            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
+            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
         }
         else
         {
@@ -170,11 +178,13 @@ class OvertimeController extends Controller
                 $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
             } 
 
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->get();
+            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate(10)->appends([
+                'month' => $request->month,
+            ]);  
 
             $employee     = Employee::where('user_id', '=', \Auth::user()->id)->first();
             $overtimes    = UserOvertime::where('user_id', '=', $employee->id)->get();
-            $approval     = UserOvertime::where('approval', '=', \Auth::user()->id)->orderByDesc('id')->get();
+            $approval     = UserOvertime::where('approval', '=', \Auth::user()->id)->orderByDesc('id')->paginate(10);
         }
 
         return view('overtime.index', compact('overtimes','approval','employeeOvertimes'));

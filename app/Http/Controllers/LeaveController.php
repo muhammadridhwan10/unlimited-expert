@@ -26,26 +26,26 @@ class LeaveController extends Controller
             {
                 $user     = \Auth::user();
                 $employee = Employee::where('user_id', '=', $user->id)->first();
-                $absence_sick   = Leave::where('employee_id', '=', $employee->id)->where('absence_type', '=', 'sick')->orderByDesc('id')->get();
-                $absence_leave  = Leave::where('employee_id', '=', $employee->id)->where('absence_type', '=', 'leave')->orderByDesc('id')->get();
-                $approval      = Leave::where('approval', '=', $user->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
+                $absence_sick   = Leave::where('employee_id', '=', $employee->id)->where('absence_type', '=', 'sick')->orderByDesc('id')->paginate(10);
+                $absence_leave  = Leave::where('employee_id', '=', $employee->id)->where('absence_type', '=', 'leave')->orderByDesc('id')->paginate(10);
+                $approval      = Leave::where('approval', '=', $user->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
             }
             elseif(\Auth::user()->type == 'admin')
             {
                 $employee      = Employee::all();
-                $absence_sick  = Leave::where('absence_type', '=', 'sick')->orderByDesc('id')->get();
-                $absence_leave = Leave::where('absence_type', '=', 'leave')->orderByDesc('id')->get();
+                $absence_sick  = Leave::where('absence_type', '=', 'sick')->orderByDesc('id')->paginate(10);
+                $absence_leave = Leave::where('absence_type', '=', 'leave')->orderByDesc('id')->paginate(10);
                 $users         = \Auth::user();
-                $approval      = Leave::where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
+                $approval      = Leave::where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
                 
             }
             elseif(\Auth::user()->type == 'company')
             {
                 $employee      = Employee::all();
-                $absence_sick  = Leave::where('absence_type', '=', 'sick')->orderByDesc('id')->get();
-                $absence_leave = Leave::where('absence_type', '=', 'leave')->orderByDesc('id')->get();
+                $absence_sick  = Leave::where('absence_type', '=', 'sick')->orderByDesc('id')->paginate(10);
+                $absence_leave = Leave::where('absence_type', '=', 'leave')->orderByDesc('id')->paginate(10);
                 $users         = \Auth::user();  
-                $approval      = Leave::where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
+                $approval      = Leave::where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
             }
             elseif(\Auth::user()->type == 'partners')
             {
@@ -64,17 +64,17 @@ class LeaveController extends Controller
                 }
                 $employee = $employee->pluck('id');
 
-                $absence_sick   = Leave::whereIn('employee_id', $employee)->where('absence_type', '=', 'sick')->orderByDesc('id')->get();
-                $absence_leave  = Leave::whereIn('employee_id', $employee)->where('absence_type', '=', 'leave')->orderByDesc('id')->get();
+                $absence_sick   = Leave::whereIn('employee_id', $employee)->where('absence_type', '=', 'sick')->orderByDesc('id')->paginate(10);
+                $absence_leave  = Leave::whereIn('employee_id', $employee)->where('absence_type', '=', 'leave')->orderByDesc('id')->paginate(10);
                 $users         = \Auth::user();  
-                $approval      = Leave::where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
+                $approval      = Leave::where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
             }
             else
             {
                 $employee      = Employee::where('created_by', '=', \Auth::user()->creatorId())->get();
-                $absence_sick  = Leave::where('absence_type', '=', 'sick')->where('created_by', '=', \Auth::user()->creatorId())->orderByDesc('id')->get();
-                $absence_leave = Leave::where('absence_type', '=', 'leave')->where('created_by', '=', \Auth::user()->creatorId())->orderByDesc('id')->get();
-                $approval      = Leave::where('approval', '=', \Auth::user()->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
+                $absence_sick  = Leave::where('absence_type', '=', 'sick')->where('created_by', '=', \Auth::user()->creatorId())->orderByDesc('id')->paginate(10);
+                $absence_leave = Leave::where('absence_type', '=', 'leave')->where('created_by', '=', \Auth::user()->creatorId())->orderByDesc('id')->paginate(10);
+                $approval      = Leave::where('approval', '=', \Auth::user()->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
 
             }
 

@@ -59,7 +59,7 @@
             <div class="card">
             <div class="card-body table-border-style">
                     <div class="table-responsive">
-                    <table class="table datatable">
+                        <table class="table datatable">
                             <thead>
                             <tr>
                                 @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'company' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'client' || \Auth::user()->type == 'staff_client')
@@ -112,6 +112,9 @@
                             @endforeach
                             </tbody>
                         </table>
+                        <div class="d-flex justify-content-center mt-3">
+                            {{ $employeeOvertimes->links() }}
+                        </div>
                     </div>
                 </div>
             </div>

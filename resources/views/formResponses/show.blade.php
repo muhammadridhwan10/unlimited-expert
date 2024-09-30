@@ -30,7 +30,7 @@ foreach($formResponses->where('form_type', 'A2') as $responses)
             const today = new Date();
             const month = today.getMonth() + 1; // getMonth() returns 0-based month, so +1 to make it 1-based
 
-            if (month === 12) {
+            if (month === 9) {
                 document.getElementById('full-season').disabled = false;
                 document.getElementById('full-season-label').classList.remove('btn-locked');
             }
@@ -162,7 +162,7 @@ foreach($formResponses->where('form_type', 'A2') as $responses)
                         <button class="nav-link" id="formD-tab" data-bs-toggle="tab" data-bs-target="#formD" type="button" role="tab" aria-controls="formD" aria-selected="false">Form D</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="formE-tab" data-bs-toggle="tab" data-bs-target="#formE" type="button" role="tab" aria-controls="formE" aria-selected="false">Form E</button>
+                        <button class="nav-link" id="formE-tab" data-bs-toggle="tab" data-bs-target="#formE" type="button" role="tab" aria-controls="formE" aria-selected="false">Form E and Form B</button>
                     </li>
                 @elseif ($isSupervisor)
                     <li class="nav-item" role="presentation">
@@ -287,9 +287,11 @@ foreach($formResponses->where('form_type', 'A2') as $responses)
                                     $criteria = \App\Models\Criteria::find($criteriaId);
                                 @endphp
                                 @if($criteria)
-                                    <tr>
-                                        <td class="section-header" colspan="14">{{ $criteria->section }}</td>
-                                    </tr>
+                                    @if($loop->first || $criteria->section !== \App\Models\Criteria::find($formResponses->where('form_type', 'C')->pluck('criteria_id')[$loop->index - 1])->section)
+                                        <tr>
+                                            <td class="section-header" colspan="14">{{ $criteria->section }}</td>
+                                        </tr>
+                                    @endif
                                     @foreach($responses as $response)
                                     <tr>
                                         <td>{{ $criteria->criteria }}</td>
@@ -348,9 +350,11 @@ foreach($formResponses->where('form_type', 'A2') as $responses)
                                     $criteria = \App\Models\Criteria::find($criteriaId);
                                 @endphp
                                 @if($criteria)
-                                    <tr>
-                                        <td class="section-header" colspan="14">{{ $criteria->section }}</td>
-                                    </tr>
+                                    @if($loop->first || $criteria->section !== \App\Models\Criteria::find($formResponses->where('form_type', 'D')->pluck('criteria_id')[$loop->index - 1])->section)
+                                        <tr>
+                                            <td class="section-header" colspan="14">{{ $criteria->section }}</td>
+                                        </tr>
+                                    @endif
                                     @foreach($responses as $response)
                                     <tr>
                                         <td>{{ $criteria->criteria }}</td>

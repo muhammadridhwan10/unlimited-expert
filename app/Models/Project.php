@@ -413,6 +413,7 @@ class Project extends Model
         return $this->hasMany('App\Models\Timesheet', 'project_id', 'id')->orderBy('id', 'desc');
     }
 
+
     // For Delete project and it's based sub record
     public static function deleteProject($project_id)
     {
@@ -547,5 +548,43 @@ class Project extends Model
     {
         return ProjectTask::where('project_id', '=', $project_id)->where('stage_id', '=', $last_stage_id)->count();
     }
+
+    public function totalHours($startDate = null, $endDate = null, $user = null)
+    {
+
+        // Ambil semua waktu dari timesheet berdasarkan project_id dan filter tanggal jika ada
+        $query = Timesheet::where('project_id', $this->id);
+
+        if ($user) {
+            $query->where('created_by', '>=', $user);
+        }
+
+        if ($startDate) {
+            $query->where('date', '>=', $startDate);
+        }
+
+        if ($endDate) {
+            $query->where('date', '<=', $endDate);
+        }
+
+        $times = $query->pluck('time');
+
+        $totalSeconds = 0;
+
+        // Loop setiap waktu dan konversi ke detik untuk menjumlahkannya
+        foreach ($times as $time) {
+            list($hours, $minutes, $seconds) = explode(':', $time);
+            $totalSeconds += $hours * 3600 + $minutes * 60 + $seconds;
+        }
+
+        // Konversi kembali total detik ke format HH:MM:SS
+        $hours = floor($totalSeconds / 3600);
+        $minutes = floor(($totalSeconds % 3600) / 60);
+        $seconds = $totalSeconds % 60;
+
+        return sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+
+    }
+
 
 }

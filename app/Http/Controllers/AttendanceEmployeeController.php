@@ -75,7 +75,12 @@ class AttendanceEmployeeController extends Controller
                                   ]
                         );
                     }
-                    $attendanceEmployee = $attendanceEmployee->get();
+                    $attendanceEmployee = $attendanceEmployee->orderByDesc('id')->paginate(10)->appends([
+                        'month' => $request->month,
+                        'start_date' => $request->start_date,
+                        'end_date' => $request->end_date,
+                        'employee_id' => $request->employee_id,
+                    ]);  
     
                 }
                 else
@@ -141,7 +146,12 @@ class AttendanceEmployeeController extends Controller
                     }
     
     
-                    $attendanceEmployee = $attendanceEmployee->get();
+                    $attendanceEmployee = $attendanceEmployee->orderByDesc('id')->paginate(10)->appends([
+                        'month' => $request->month,
+                        'start_date' => $request->start_date,
+                        'end_date' => $request->end_date,
+                        'employee_id' => $request->employee_id,
+                    ]);  
                     
 
                     if (!empty($request->export_excel)) {
@@ -208,7 +218,12 @@ class AttendanceEmployeeController extends Controller
                                   ]
                         );
                     }
-                    $attendanceEmployee = $attendanceEmployee->get();
+                    $attendanceEmployee = $attendanceEmployee->orderByDesc('id')->paginate(10)->appends([
+                        'month' => $request->month,
+                        'start_date' => $request->start_date,
+                        'end_date' => $request->end_date,
+                        'employee_id' => $request->employee_id,
+                    ]);  
     
                 }
                 else
@@ -264,7 +279,12 @@ class AttendanceEmployeeController extends Controller
                     }
     
     
-                    $attendanceEmployee = $attendanceEmployee->get();
+                    $attendanceEmployee = $attendanceEmployee->orderByDesc('id')->paginate(10)->appends([
+                        'month' => $request->month,
+                        'start_date' => $request->start_date,
+                        'end_date' => $request->end_date,
+                        'employee_id' => $request->employee_id,
+                    ]);  
     
                 }
     

@@ -5015,7 +5015,11 @@ class ReportController extends Controller
             $branch = Branch::get()->pluck('name', 'id');
             $branch->prepend('Select Branch', '');
 
-            $employees = Employee::select('id', 'name');
+            $employees = Employee::select('id', 'name')
+            ->whereHas('user', function($query) {
+                $query->where('is_active', 1);
+            });
+            
             if(!empty($request->employee_id) && $request->employee_id[0]!=0){
                 $employees->whereIn('id', $request->employee_id);
             }
