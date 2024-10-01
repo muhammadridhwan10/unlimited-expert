@@ -556,7 +556,7 @@ class Project extends Model
         $query = Timesheet::where('project_id', $this->id);
 
         if ($user) {
-            $query->where('created_by', '>=', $user);
+            $query->where('created_by', '=', $user);
         }
 
         if ($startDate) {

@@ -615,6 +615,9 @@ class TimesheetController extends Controller
 
             $totalTimesheet = $employeeTimesheet->get();
             $logged_hours = 0;
+            $hours = 0;
+            $minutes = 0;
+            $seconds = 0;
 
             foreach($totalTimesheet as $timesheet)
             {
@@ -703,6 +706,9 @@ class TimesheetController extends Controller
 
             $totalTimesheet = $employeeTimesheet->get();
             $logged_hours = 0;
+            $hours = 0;
+            $minutes = 0;
+            $seconds = 0;
 
             foreach($totalTimesheet as $timesheet)
             {
