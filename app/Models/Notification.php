@@ -167,6 +167,11 @@ class Notification extends Model
                 $text = $usr->name . " " . __('comment ticket');
             }
 
+            if ($this->type == 'new_announcement') {
+                $link = route('home');
+                $text = $data->name;
+            }
+
             $date = $this->created_at->diffForHumans();
             $html = '<a href="' . $link . '" class="list-group-item list-group-item-action">
                                 <div class="d-flex align-items-center">

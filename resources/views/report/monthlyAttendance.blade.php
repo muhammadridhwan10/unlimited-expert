@@ -139,12 +139,12 @@
                                             {{Form::date('end_date', isset($_GET['end_date']) ? $_GET['end_date'] : null, ['class'=>'form-control'])}}
                                         </div>
                                     </div>
-                                    <div class="col-auto">
+                                    {{-- <div class="col-auto">
                                         <div class="btn-box">
                                             {{Form::label('month',__('Month'),['class'=>'form-label'])}}
                                             {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
                                         </div>
-                                    </div>
+                                    </div> --}}
                                     <div class="col-auto" style = "width:200px;">
                                         <div class="btn-box">
                                             {{ Form::label('branch', __('Branch'),['class'=>'form-label']) }}

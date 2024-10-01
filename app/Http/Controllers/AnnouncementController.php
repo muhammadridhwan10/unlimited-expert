@@ -8,6 +8,7 @@ use App\Models\Branch;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\Utility;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -111,17 +112,34 @@ class AnnouncementController extends Controller
             $employee_id = is_array($request->employee_id) ? $request->employee_id : [$request->employee_id];
 
             if (in_array('0', $employee_id)) {
-                $branchEmployee = Employee::whereIn('branch_id', $branch_id)->get()->pluck('id')->toArray();
+                $branchEmployee = Employee::get()->pluck('id')->toArray();
             } else {
                 $branchEmployee = $employee_id;
             }
 
-            foreach ($branchEmployee as $employee) {
+            foreach ($branchEmployee as $employeeId) {
+
+                $employee = Employee::find($employeeId);
+
+                $userId = $employee->user_id;
+
                 $announcementEmployee                  = new AnnouncementEmployee();
                 $announcementEmployee->announcement_id = $announcement->id;
-                $announcementEmployee->employee_id     = $employee;
+                $announcementEmployee->employee_id     = $employeeId;
                 $announcementEmployee->created_by      = \Auth::user()->creatorId();
                 $announcementEmployee->save();
+
+                $notificationData = [
+                    'user_id' => $userId,
+                    'type' => 'new_announcement',
+                    'data' => json_encode([
+                        'updated_by' => Auth::user()->id,
+                        'name' => $request->description,
+                    ]),
+                    'is_read' => false,
+                ];
+            
+                Notification::create($notificationData);
             }
 
             return redirect()->route('announcement.index')->with('success', __('Announcement successfully created.'));

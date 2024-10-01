@@ -650,8 +650,7 @@ class ApiController extends Controller
 
         $announcement_ids = AnnouncementEmployee::where('employee_id', $current_employee)->pluck('announcement_id');
 
-        $announcements = Announcement::whereIn('id', $announcement_ids)
-            ->where('status', 'sending')
+        $announcements = Announcement::where('status', 'sending')
             ->orderBy('id', 'desc')
             ->get();
 
