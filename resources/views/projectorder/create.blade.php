@@ -36,24 +36,51 @@
                     {{Form::text('city',null,array('class'=>'form-control', 'placeholder' => 'Enter Client City'))}}
                 </div>
             </div>
-             <div class="col-md-6">
+            <h3>Contact Person</h3>
+            <div class="col-md-6">
                 <div class="form-group">
-                    {{ Form::label('name_pic', __('Name PIC'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{ Form::label('name_pic', __('Name'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                     {{Form::text('name_pic',null,array('class'=>'form-control', 'placeholder' => 'Enter Name PIC'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    {{ Form::label('email_pic', __('Email PIC'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{ Form::label('email_pic', __('Email'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                     {{Form::text('email_pic',null,array('class'=>'form-control', 'placeholder' => 'Enter Email PIC'))}}
                 </div>
             </div>
             <div class="col-md-6">
                 <div class="form-group">
-                    {{ Form::label('telp_pic', __('Whatsapp Number PIC'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{ Form::label('telp_pic', __('Phone'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                     {{Form::number('telp_pic',null,array('class'=>'form-control', 'placeholder' => 'Enter Whatsapp Number PIC'))}}
                 </div>
             </div>
+            <h3>Invoice</h3>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ Form::label('email', __('Client Email'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{Form::text('email',null,array('class'=>'form-control', 'placeholder' => 'Enter Client Email'))}}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ Form::label('name_invoice', __('Attention'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{Form::text('name_invoice',null,array('class'=>'form-control', 'placeholder' => 'Enter Name Attention For Invoice'))}}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ Form::label('position', __('Position'),['class'=>'form-label']) }}
+                    {{Form::text('position',null,array('class'=>'form-control', 'placeholder' => 'Enter Position Attention For Invoice'))}}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group">
+                    {{ Form::label('telp', __('Telp'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                    {{Form::number('telp',null,array('class'=>'form-control', 'placeholder' => 'Enter Telephone Number Attention For Invoice'))}}
+                </div>
+            </div>
+            <h3>Other Information</h3>
             <div class="col-md-6">  
                 <div class="form-group">
                     {{ Form::label('client_business_sector_id', __('Client Business Sector'),['class'=>'form-label']) }}
@@ -83,32 +110,6 @@
                     {{ Form::select('accounting_standars_id', $accountingstandards,null, array('class' => 'form-control select')) }}
                 </div>
             </div>
-            <h3>Invoice</h3>
-            <div class="col-md-6">
-                <div class="form-group">
-                    {{ Form::label('email', __('Client Email'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::text('email',null,array('class'=>'form-control', 'placeholder' => 'Enter Client Email'))}}
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    {{ Form::label('name_invoice', __('Attention'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::text('name_invoice',null,array('class'=>'form-control', 'placeholder' => 'Enter Name Attention For Invoice'))}}
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    {{ Form::label('position', __('Position'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::text('position',null,array('class'=>'form-control', 'placeholder' => 'Enter Position Attention For Invoice'))}}
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="form-group">
-                    {{ Form::label('telp', __('Telp'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                    {{Form::number('telp',null,array('class'=>'form-control', 'placeholder' => 'Enter Telephone Number Attention For Invoice'))}}
-                </div>
-            </div>
-            <h3>Other Information</h3>
             <div class="col-md-6" id="periode" style="display: none;">
                 <div class="form-group">
                     {{ Form::label('periode', __('Periode Order'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
@@ -196,6 +197,7 @@
                 <div class="form-group">
                     {{ Form::label('tags', __('Tag Project'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                     <select name="tags" id="tags" class="form-control main-element">
+                        <option value="0">{{__('Select Tag')}}</option>                        
                         @foreach(\App\Models\Project::$tags as $k => $v)
                             <option value="{{$k}}">{{__($v)}}</option>
                         @endforeach
@@ -206,6 +208,7 @@
                 <div class="form-group">
                     {{ Form::label('label', __('Label'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                     <select name="label" id="label" class="form-control main-element" required>
+                        <option value="0">{{__('Select Label')}}</option>
                         @foreach(\App\Models\Project::$label as $k => $v)
                             <option value="{{$k}}">{{__($v)}}</option>
                         @endforeach
@@ -216,6 +219,7 @@
                 <div class="form-group">
                     {{ Form::label('status', __('Status'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                     <select name="status" id="status" class="form-control main-element">
+                        <option value="0">{{__('Select Status')}}</option>
                         @foreach(\App\Models\Project::$project_status as $k => $v)
                             <option value="{{$k}}">{{__($v)}}</option>
                         @endforeach

@@ -173,7 +173,7 @@
                                                             {{ $projectOrder->order_number }}
                                                         </h6>
                                                         <p class="card-text mb-0">{{ __('Order Fee') }}</p>
-                                                        <h6 class="report-text mb-0">{{ $projectOrder->fee ? $ProjectOrders->fee : '-' }}</h6>
+                                                        <h6 class="report-text mb-0">{{ \Auth::user()->priceFormat($projectOrder->budget  ? $projectOrder->budget : '-') }}</h6>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-3 col-sm-6">

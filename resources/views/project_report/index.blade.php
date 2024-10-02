@@ -31,7 +31,7 @@
 
 @section('content')
     @if(Auth::user()->type == 'company')
-        <div class="row">
+    <div class="row">
         <div class="col-sm-12">
             <div class="mt-2 " >
                 <div class="card">
@@ -101,6 +101,28 @@
         </div>
     </div>
     @endif
+
+    <div class="row">
+        <div class="col-lg-12 col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center justify-content-between">
+                        <div class="col-auto mb-3 mb-sm-0">
+                            <div class="d-flex align-items-center">
+                                <div class="theme-avtar bg-info">
+                                    <i class="ti ti-clock"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <small class="text-muted h6">{{__('Total All Project Hours')}}</small>
+                                    <h6 class="m-0">{{ $totalFormattedTime }} </h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="col-xl-12 mt-3">
         <div class="card table-card">

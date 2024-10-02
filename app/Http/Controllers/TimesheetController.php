@@ -614,24 +614,19 @@ class TimesheetController extends Controller
             $employeeTimesheet->whereYear('date', $currentYear);
 
             $totalTimesheet = $employeeTimesheet->get();
-            $logged_hours = 0;
-            $hours = 0;
-            $minutes = 0;
-            $seconds = 0;
+            $totalSeconds = 0;
 
-            foreach($totalTimesheet as $timesheet)
-            {
-                $hours = date('H', strtotime($timesheet->time));
-                $minutes = date('i', strtotime($timesheet->time));
-                $total_hours = $hours + ($minutes / 60);
-                $logged_hours += $total_hours;
-    
-    
-                $totalSeconds = $logged_hours * 3600;
-                $hours = floor($logged_hours);
-                $minutes = floor(($logged_hours - $hours) * 60);
-                $seconds = floor((($logged_hours - $hours) * 60 - $minutes) * 60);
+            foreach ($totalTimesheet as $timesheet) {
+                list($hours, $minutes, $seconds) = explode(':', $timesheet->time);
+
+                $totalSeconds += $hours * 3600 + $minutes * 60 + $seconds;
             }
+
+            $hours = floor($totalSeconds / 3600);
+            $minutes = floor(($totalSeconds % 3600) / 60);
+            $seconds = $totalSeconds % 60;
+
+            $logged_hours = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
 
             $employeeTimesheet = $employeeTimesheet->orderByDesc('id')->paginate(10)->appends([
                 'project_id' => $request->project_id,
@@ -705,24 +700,19 @@ class TimesheetController extends Controller
             } 
 
             $totalTimesheet = $employeeTimesheet->get();
-            $logged_hours = 0;
-            $hours = 0;
-            $minutes = 0;
-            $seconds = 0;
+            $totalSeconds = 0;
 
-            foreach($totalTimesheet as $timesheet)
-            {
-                $hours = date('H', strtotime($timesheet->time));
-                $minutes = date('i', strtotime($timesheet->time));
-                $total_hours = $hours + ($minutes / 60);
-                $logged_hours += $total_hours;
-    
-    
-                $totalSeconds = $logged_hours * 3600;
-                $hours = floor($logged_hours);
-                $minutes = floor(($logged_hours - $hours) * 60);
-                $seconds = floor((($logged_hours - $hours) * 60 - $minutes) * 60);
+            foreach ($totalTimesheet as $timesheet) {
+                list($hours, $minutes, $seconds) = explode(':', $timesheet->time);
+
+                $totalSeconds += $hours * 3600 + $minutes * 60 + $seconds;
             }
+
+            $hours = floor($totalSeconds / 3600);
+            $minutes = floor(($totalSeconds % 3600) / 60);
+            $seconds = $totalSeconds % 60;
+
+            $logged_hours = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
 
             $employeeTimesheet = $employeeTimesheet->orderByDesc('id')->paginate(10)->appends([
                 'project_id' => $request->project_id,
@@ -742,7 +732,7 @@ class TimesheetController extends Controller
                 return Excel::download(new TimesheetExport($exportDataArray), 'timesheet_report.xlsx');
             }
         }
-        return view('projects.timesheet_list',compact('employeeTimesheet','project','employee','hours', 'minutes', 'seconds'));
+        return view('projects.timesheet_list',compact('employeeTimesheet','project','employee','logged_hours'));
 
     }
 

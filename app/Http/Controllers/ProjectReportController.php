@@ -131,6 +131,21 @@ class ProjectReportController extends Controller
 
             }
 
+            $totalAllProjectHours = $projects->get();
+
+            $totalSeconds = 0;
+
+            foreach ($totalAllProjectHours as $project) {
+                $totalTime = $project->totalHours($request->start_date, $request->end_date, $request->all_users);
+                list($hours, $minutes, $seconds) = explode(':', $totalTime);
+                $totalSeconds += $hours * 3600 + $minutes * 60 + $seconds;
+            }
+
+            $totalHours = floor($totalSeconds / 3600);
+            $totalMinutes = floor(($totalSeconds % 3600) / 60);
+            $totalSeconds = $totalSeconds % 60;
+            $totalFormattedTime = sprintf('%02d:%02d:%02d', $totalHours, $totalMinutes, $totalSeconds);
+
             $projects = $projects->paginate(10)->appends([
                 'all_users' => $request->all_users,
                 'status' => $request->status,
@@ -140,7 +155,7 @@ class ProjectReportController extends Controller
                 'label' => $request->label,
             ]);    
 
-            return view('project_report.index', compact('projects','users','status','label','tags','request'));
+            return view('project_report.index', compact('projects','users','status','label','tags','request','totalFormattedTime'));
         }
 
 

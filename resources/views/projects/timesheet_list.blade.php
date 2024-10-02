@@ -122,7 +122,7 @@
                                 </div>
                                 <div class="ms-3">
                                     <small class="text-muted h6">{{__('Total Time')}}</small>
-                                    <h6 class="m-0">{{ sprintf("%02d:%02d:%02d", $hours, $minutes, $seconds) }} </h6>
+                                    <h6 class="m-0">{{ $logged_hours }} </h6>
                                 </div>
                             </div>
                         </div>
