@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Mail\LeaveNotification;
 use App\Mail\LeaveApprovalNotification;
+use App\Mail\LeaveRejectNotification;
 use Illuminate\Support\Facades\Mail;
 
 class LeaveController extends Controller
@@ -226,12 +227,12 @@ class LeaveController extends Controller
             $leave->save();
 
             //Email Notification
-            // if($leave->absence_type == 'leave')
-            // {
-            //     $user = User::where('id', $leave->approval)->first();
-            //     $email = $user->email;
-            //     Mail::to($email)->send(new LeaveNotification($leave));
-            // }
+            if($leave->absence_type == 'leave')
+            {
+                $user = User::where('id', $leave->approval)->first();
+                $email = $user->email;
+                Mail::to($email)->send(new LeaveNotification($leave));
+            }
 
             return redirect()->route('absence-request.index')->with('success', __('Absence Request successfully created.'));
         }
@@ -454,13 +455,27 @@ class LeaveController extends Controller
             $leave->total_leave_days = $total_leave_days;
             $leave->status           = 'Approved';
         }
+        else
+        {
+            $leave->status           = 'Reject';
+        }
 
         $leave->save();
 
-        //Email Notification
-        $employee = Employee::where('id', $leave->employee_id)->first();
-        $email = $employee->email;
-        Mail::to($email)->send(new LeaveApprovalNotification($leave));
+        if($leave->status == 'Approval')
+        {
+            //Email Notification
+            $employee = Employee::where('id', $leave->employee_id)->first();
+            $email = $employee->email;
+            Mail::to($email)->send(new LeaveApprovalNotification($leave));
+        }
+        else
+        {
+            //Email Notification
+            $employee = Employee::where('id', $leave->employee_id)->first();
+            $email = $employee->email;
+            Mail::to($email)->send(new LeaveRejectNotification($leave));
+        }
 
         //Send Email
 //         $setings = Utility::settings();
