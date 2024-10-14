@@ -67,6 +67,12 @@
                                     {{ Form::select('tags', ['' => 'Select Branch'] + $tags, isset($_GET['tags']) ? $_GET['tags'] : '', ['class' => 'form-control select']) }}
                                 </div>
                             </div>
+                            <div class="col-auto" style= "width:300px;">
+                                <div class="btn-box">
+                                    {{ Form::label('client_id', __('Client'), ['class' => 'form-label']) }}
+                                    {{ Form::select('client_id', $client, isset($_GET['client_id']) ? $_GET['client_id'] : null, ['class' => 'form-control select2','id'=>'choices-multiple1']) }}
+                                </div>
+                            </div>
                             <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
                                 <div class="btn-box">
                                     {{ Form::label('start_date', __('Start Date'),['class'=>'form-label'])}}
@@ -175,7 +181,7 @@
                                             @endif
                                         </div>
                                     </td>
-                                    <td>{{ $project->totalHours($request->start_date, $request->end_date, $request->all_users) }} {{__('H')}}</td>
+                                    <td>{{ $project->totalHours($request->start_date, $request->end_date, $request->all_users, $request->client_id) }} {{__('H')}}</td>
                                     <td class="">
                                         <h6 class="mb-0 text-success">{{ $project->project_progress()['percentage'] }}</h6>
                                         <div class="progress mb-0"><div class="progress-bar bg-{{ $project->project_progress()['color'] }}" style="width: {{ $project->project_progress()['percentage'] }};"></div>

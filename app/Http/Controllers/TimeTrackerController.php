@@ -9,7 +9,7 @@ use App\Models\Branch;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\User;
-use App\Models\Projects;
+use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -36,20 +36,59 @@ class TimeTrackerController extends Controller
 
             $employee = User::all();
             $employee = $employee->pluck('id');
+
+            $client =   User::where('type','=','client')->pluck('name','id');
+            $filter_clients = $request->client_id;
+
+            $employess =   User::where('type','!=','client')->where('is_active', 1)->pluck('name','id');
+
+            $status = Project::$project_status;
+            $label = Project::$label;
+
+            $projectStatus = $request->status;
+            $projectLabel = $request->label;
+
+            
             $employeeTimeTracker = TimeTracker::whereIn('created_by', $employee);
 
-            if (!empty($request->month)) {
-                $month = date('m', strtotime($request->month));
-                $year  = date('Y', strtotime($request->month));
+            if (isset($request->start_date) && !empty($request->start_date)) {
+                $employeeTimeTracker->where('start_time', '>=', $request->start_date);
+            }
 
-                $start_date = date($year . '-' . $month . '-01');
-                $end_date   = date($year . '-' . $month . '-t');
+            if (isset($request->end_date) && !empty($request->end_date)) {
+                $employeeTimeTracker->where('start_time', '>=', $request->end_date);
+            }
 
-                $employeeTimeTracker->whereBetween('start_time', [$start_date, $end_date]);
-            } 
+            if (!empty($request->user_ids)) {
+                $selectedEmployees = $request->user_ids;
+                $employeeTimeTracker->where('created_by', $selectedEmployees);
+            }
+
+            if (!empty($request->client_id)) {
+                $employeeTimeTracker->whereHas('project', function ($query) use ($filter_clients) {
+                    $query->whereIn('client_id', (array) $filter_clients);
+                });
+            }
+            
+            if (!empty($request->status)) {
+                $employeeTimeTracker->whereHas('project', function ($query) use ($projectStatus) {
+                    $query->where('status', $projectStatus);
+                });
+            }
+
+            if (!empty($request->label)) {
+                $employeeTimeTracker->whereHas('project', function ($query) use ($projectLabel) {
+                    $query->where('label', $projectLabel);
+                });
+            }
 
             $employeeTimeTracker = $employeeTimeTracker->orderByDesc('id')->paginate(10)->appends([
-                'month' => $request->month,
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+                'user_ids' => $request->user_ids,
+                'client_id' => $request->client_id,
+                'status' => $request->status,
+                'label' => $request->label,
             ]);     
 
         }
@@ -62,49 +101,69 @@ class TimeTrackerController extends Controller
             $data['department'] = __('All');
 
             $employee = Employee::where('user_id', \Auth::user()->id)->first();
+
             $employeebranch = Employee::where('branch_id', $employee->branch_id);
             $employees = $employeebranch->pluck('user_id');
+
             $employeeTimeTracker = TimeTracker::whereIn('created_by', $employees);
 
-            if (!empty($request->month)) {
-                $month = date('m', strtotime($request->month));
-                $year  = date('Y', strtotime($request->month));
+            $client =   User::where('type','=','client')->pluck('name','id');
+            $filter_clients = $request->client_id;
 
-                $start_date = date($year . '-' . $month . '-01');
-                $end_date   = date($year . '-' . $month . '-t');
+            $employess = User::whereIn('id', $employees)
+            ->where('type', '!=', 'client')
+            ->where('is_active', 1)
+            ->pluck('name', 'id');
 
-                $employeeTimeTracker->whereBetween('start_time', [$start_date, $end_date]);
-            } 
+
+            $status = Project::$project_status;
+            $label = Project::$label;
+
+            $projectStatus = $request->status;
+            $projectLabel = $request->label;
+
+            if (isset($request->start_date) && !empty($request->start_date)) {
+                $employeeTimeTracker->where('start_time', '>=', $request->start_date);
+            }
+
+            if (isset($request->end_date) && !empty($request->end_date)) {
+                $employeeTimeTracker->where('start_time', '>=', $request->end_date);
+            }
+
+            if (!empty($request->user_ids)) {
+                $selectedEmployees = $request->user_ids;
+                $employeeTimeTracker->where('created_by', $selectedEmployees);
+            }
+
+            if (!empty($request->client_id)) {
+                $employeeTimeTracker->whereHas('project', function ($query) use ($filter_clients) {
+                    $query->whereIn('client_id', (array) $filter_clients);
+                });
+            }
+            
+            if (!empty($request->status)) {
+                $employeeTimeTracker->whereHas('project', function ($query) use ($projectStatus) {
+                    $query->where('status', $projectStatus);
+                });
+            }
+
+            if (!empty($request->label)) {
+                $employeeTimeTracker->whereHas('project', function ($query) use ($projectLabel) {
+                    $query->where('label', $projectLabel);
+                });
+            }
 
             $employeeTimeTracker = $employeeTimeTracker->orderByDesc('id')->paginate(10)->appends([
-                'month' => $request->month,
-            ]);  
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+                'user_ids' => $request->user_ids,
+                'client_id' => $request->client_id,
+                'status' => $request->status,
+                'label' => $request->label,
+            ]);    
 
         }
-        else
-        {
-            $branch      = Branch::get();
-            $department = Department::get();
-
-            $data['branch']     = __('All');
-            $data['department'] = __('All');
-            $employeeTimeTracker = TimeTracker::where('created_by',\Auth::user()->id);
-
-            if (!empty($request->month)) {
-                $month = date('m', strtotime($request->month));
-                $year  = date('Y', strtotime($request->month));
-
-                $start_date = date($year . '-' . $month . '-01');
-                $end_date   = date($year . '-' . $month . '-t');
-
-                $employeeTimeTracker->whereBetween('start_time', [$start_date, $end_date]);
-            } 
-
-            $employeeTimeTracker = $employeeTimeTracker->orderByDesc('id')->paginate(10)->appends([
-                'month' => $request->month,
-            ]);  
-        }
-        return view('time_trackers.index',compact('employeeTimeTracker','branch', 'department'));
+        return view('time_trackers.index',compact('employeeTimeTracker','branch','employess','client', 'department','status','label'));
 
     }
 

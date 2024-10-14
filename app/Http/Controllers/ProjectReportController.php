@@ -41,6 +41,8 @@ class ProjectReportController extends Controller
             }
             elseif(\Auth::user()->type == 'company')
             {
+                $client =   User::where('type','=','client')->pluck('name','id');
+                $client->prepend('Select Client', '');
 
                 if(isset($request->all_users)&& !empty($request->all_users)){
                     $projects = Project::select('projects.*')
@@ -73,6 +75,10 @@ class ProjectReportController extends Controller
                     });
                 }
 
+                if (!empty($request->client_id)) {
+                    $projects->where('client_id', '=', $request->client_id);
+                }
+
                 $users = User::where('type', '!=', 'client')->get();
                 $status = Project::$project_status;
                 $label = Project::$label;
@@ -81,6 +87,9 @@ class ProjectReportController extends Controller
             }
             elseif(\Auth::user()->type == 'admin')
             {
+
+                $client =   User::where('type','=','client')->pluck('name','id');
+                $client->prepend('Select Client', '');
 
                 if(isset($request->all_users)&& !empty($request->all_users)){
                     $projects = Project::select('projects.*')
@@ -114,6 +123,10 @@ class ProjectReportController extends Controller
                     });
                 }
 
+                if (!empty($request->client_id)) {
+                    $projects->where('client_id', '=', $request->client_id);
+                }
+
                 $users = User::where('created_by', '=', $user->creatorId())->where('type', '!=', 'client')->get();
                 $status = Project::$project_status;
                 $label = Project::$label;
@@ -136,7 +149,7 @@ class ProjectReportController extends Controller
             $totalSeconds = 0;
 
             foreach ($totalAllProjectHours as $project) {
-                $totalTime = $project->totalHours($request->start_date, $request->end_date, $request->all_users);
+                $totalTime = $project->totalHours($request->start_date, $request->end_date, $request->all_users, $request->client_id);
                 list($hours, $minutes, $seconds) = explode(':', $totalTime);
                 $totalSeconds += $hours * 3600 + $minutes * 60 + $seconds;
             }
@@ -153,9 +166,10 @@ class ProjectReportController extends Controller
                 'end_date' => $request->end_date,
                 'tags' => $request->tags,
                 'label' => $request->label,
+                'client_id' => $request->client_id,
             ]);    
 
-            return view('project_report.index', compact('projects','users','status','label','tags','request','totalFormattedTime'));
+            return view('project_report.index', compact('projects','users','status','label','tags','request','totalFormattedTime','client'));
         }
 
 
@@ -311,24 +325,38 @@ class ProjectReportController extends Controller
                         $counttasklink = TaskChecklist::where('project_id', $task->project_id)->where('link','!=', NULL)->pluck('link')->count(). '/' .  $targetlink;
                         $counttaskcomment = TaskComment::where('project_id', $task->project_id)->count();
                         $countchecked = TaskChecklist::where('project_id', $task->project_id)->where('status', '=', 1)->count();
-                        $timesheets_task = Timesheet::where('task_id',$task->id)->where('project_id',$id)->get();
+                        $timesheets_task = Timesheet::where('project_id',$id)->get();
                         $totalchecked = $countchecked . '/' .  $countsubtask;
 
-                        foreach($timesheets_task as $timesheet)
-                        {
+                        // foreach($timesheets_task as $timesheet)
+                        // {
 
-                            $hours =  date('H', strtotime($timesheet->time));
-                            $minutes =  date('i', strtotime($timesheet->time));
-                            $total_hour = $hours + ($minutes/60) ;
-                            $logged_hour += $total_hour ;
-                            $logged_hour_chart = number_format($logged_hour, 2, '.', '');
+                        //     $hours =  date('H', strtotime($timesheet->time));
+                        //     $minutes =  date('i', strtotime($timesheet->time));
+                        //     $total_hour = $hours + ($minutes/60) ;
+                        //     $logged_hour += $total_hour ;
+                        //     $logged_hour_chart = number_format($logged_hour, 2, '.', '');
 
-                        }
+                        // }
+                        
                     }
 
+                $totalSeconds = 0;
+                $totalAllProjectHours = Project::where('id', $id)->first();
+
+                $totalTime = $totalAllProjectHours->totalHours($request->start_date, $request->end_date, $request->all_users, $request->client_id);
+                list($hours, $minutes, $seconds) = explode(':', $totalTime);
+                $totalSeconds += $hours * 3600 + $minutes * 60 + $seconds;
+    
+                $totalHours = floor($totalSeconds / 3600);
+                $totalMinutes = floor(($totalSeconds % 3600) / 60);
+                $totalSeconds = $totalSeconds % 60;
+                $totalFormattedTime = sprintf('%02d:%02d:%02d', $totalHours, $totalMinutes, $totalSeconds);
+                
+                $logged_hour_chart = $totalHours;
 
                 //Estimated Hours
-                $esti_logged_hour_chart = ProjectTask::where('project_id',$id)->sum('estimated_hrs');
+                $esti_logged_hour_chart = $totalAllProjectHours->estimated_hrs;
 
 
 

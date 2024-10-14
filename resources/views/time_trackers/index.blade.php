@@ -57,9 +57,40 @@
                             <div class="col-auto">
                                 <div class="row">
                                     <div class="col-auto">
+                                        <div class="btn-box"  style= "width:300px;">
+                                            {{ Form::label('start_date', __('Start Date'),['class'=>'form-label'])}}
+                                            {{ Form::date('start_date', isset($_GET['start_date'])?$_GET['start_date']:'', array('class' => 'form-control month-btn')) }}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto"  style= "width:300px;">
                                         <div class="btn-box">
-                                            {{Form::label('month',__('Month'),['class'=>'form-label'])}}
-                                            {{Form::month('month', isset($_GET['month']) ? $_GET['month'] : null, array('class' => 'month-btn form-control', 'id' => 'month'))}}
+                                            {{ Form::label('end_date', __('End Date'),['class'=>'form-label'])}}
+                                            {{ Form::date('end_date', isset($_GET['end_date'])?$_GET['end_date']:'', array('class' => 'form-control month-btn')) }}
+
+                                        </div>
+                                    </div>
+                                    <div class="col-auto"  style= "width:300px;">
+                                        <div class="btn-box">
+                                            {{ Form::label('status', __('Status'),['class'=>'form-label'])}}
+                                            {{ Form::select('status', ['' => 'Select Status'] + $status, isset($_GET['status']) ? $_GET['status'] : '', ['class' => 'form-control select']) }}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto"  style= "width:300px;">
+                                        <div class="btn-box">
+                                            {{ Form::label('label', __('Label'),['class'=>'form-label'])}}
+                                            {{ Form::select('label', ['' => 'Select Label'] + $label, isset($_GET['label']) ? $_GET['label'] : '', ['class' => 'form-control select']) }}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto" style= "width:300px;">
+                                        <div class="btn-box">
+                                            {{ Form::label('client_id', __('Client'), ['class' => 'form-label']) }}
+                                            {{ Form::select('client_id[]', $client, isset($_GET['client_id']) ? $_GET['client_id'] : null, ['class' => 'form-control select2','id'=>'choices-multiple1','multiple']) }}
+                                        </div>
+                                    </div>
+                                    <div class="col-auto" style= "width:300px;">
+                                        <div class="btn-box">
+                                            {{ Form::label('user_ids', __('Employee'), ['class' => 'form-label']) }}
+                                            {{ Form::select('user_ids[]', $employess, isset($_GET['user_ids']) ? $_GET['user_ids'] : null, ['class' => 'form-control select2','id'=>'choices-multiple2','multiple']) }}
                                         </div>
                                     </div>
                                 </div>

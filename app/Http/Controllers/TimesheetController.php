@@ -571,8 +571,12 @@ class TimesheetController extends Controller
             $employee = User::where('type', '!=', 'client' )->get()->pluck('name', 'id');
             $employee->prepend('Select Employee', '0');
 
+            $client =   User::where('type','=','client')->pluck('name','id');
+            $client->prepend('Select Client', '');
+
             $filter_project = $request->project_id;
             $filter_status = $request->status;
+            $filter_client = $request->client_id;
 
             $project      = Project::get()->pluck('project_name', 'id');
             $project->prepend('All Project', '0');
@@ -598,6 +602,13 @@ class TimesheetController extends Controller
                 $employeeTimesheet
                 ->whereHas('project', function ($query) use ($filter_project) {
                     $query->where('id', $filter_project);
+                });
+            }
+
+            if (!empty($request->client_id)) {
+                $employeeTimesheet
+                ->whereHas('project', function ($query) use ($filter_client) {
+                    $query->where('client_id', $filter_client);
                 });
             }
 
@@ -630,7 +641,7 @@ class TimesheetController extends Controller
 
             $employeeTimesheet = $employeeTimesheet->orderByDesc('id')->paginate(10)->appends([
                 'project_id' => $request->project_id,
-                'client' => $request->client,
+                'client_id' => $request->client_id,
                 'user_id' => $request->user_id,
                 'status' => $request->status,
                 'date' => $request->date,
@@ -650,9 +661,12 @@ class TimesheetController extends Controller
         {
             $employee = Employee::where('user_id', \Auth::user()->id)->first();
             $employeeTimesheet = Timesheet::where('created_by',\Auth::user()->id);
+            $client =   User::where('type','=','client')->pluck('name','id');
+            $client->prepend('Select Client', '');
 
             $filter_project = $request->project_id;
             $filter_status = $request->status;
+            $filter_client = $request->client_id;
             $employess =   User::where('type','!=','client')->pluck('name','id');
 
             $assign_pro_ids = ProjectUser::where('user_id',\Auth::user()->id)->pluck('project_id');
@@ -681,6 +695,13 @@ class TimesheetController extends Controller
                 $employeeTimesheet
                 ->whereHas('project', function ($query) use ($filter_project) {
                     $query->where('id', $filter_project);
+                });
+            }
+
+            if (!empty($request->client_id)) {
+                $employeeTimesheet
+                ->whereHas('project', function ($query) use ($filter_client) {
+                    $query->where('client_id', $filter_client);
                 });
             }
 
@@ -716,7 +737,7 @@ class TimesheetController extends Controller
 
             $employeeTimesheet = $employeeTimesheet->orderByDesc('id')->paginate(10)->appends([
                 'project_id' => $request->project_id,
-                'client' => $request->client,
+                'client_id' => $request->client_id,
                 'user_id' => $request->user_id,
                 'status' => $request->status,
                 'date' => $request->date,
@@ -732,7 +753,7 @@ class TimesheetController extends Controller
                 return Excel::download(new TimesheetExport($exportDataArray), 'timesheet_report.xlsx');
             }
         }
-        return view('projects.timesheet_list',compact('employeeTimesheet','project','employee','logged_hours'));
+        return view('projects.timesheet_list',compact('employeeTimesheet','project','employee','logged_hours','client'));
 
     }
 

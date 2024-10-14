@@ -85,6 +85,12 @@ class Project extends Model
         'canceled' => 'danger',
     ];
 
+    public function client()
+    {
+        return $this->belongsTo(User::class, 'client_id');
+    }
+
+
     public function projectUsers()
     {
         return $this->hasMany(ProjectUser::class, 'project_id');
@@ -549,7 +555,7 @@ class Project extends Model
         return ProjectTask::where('project_id', '=', $project_id)->where('stage_id', '=', $last_stage_id)->count();
     }
 
-    public function totalHours($startDate = null, $endDate = null, $user = null)
+    public function totalHours($startDate = null, $endDate = null, $user = null, $clientId = null)
     {
 
         // Ambil semua waktu dari timesheet berdasarkan project_id dan filter tanggal jika ada
@@ -565,6 +571,12 @@ class Project extends Model
 
         if ($endDate) {
             $query->where('date', '<=', $endDate);
+        }
+
+        if ($clientId) {
+            $query->whereHas('project', function($q) use ($clientId) {
+                $q->where('client_id', $clientId);
+            });
         }
 
         $times = $query->pluck('time');

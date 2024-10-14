@@ -127,7 +127,11 @@
                                             </tr>
                                             <tr>
                                                 <th class="border-0">{{ __('Total Members')}}:</th>
-                                                <td class="border-0">{{(int) $project->users->count()  }}</td>
+                                                <td class="border-0">
+                                                    {{ (int) $project->users->filter(function($user) {
+                                                        return $user->type !== 'admin' && $user->type !== 'company';
+                                                    })->count() }}
+                                                </td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -246,7 +250,49 @@
                     </div>
                 </div>
 
-                @if($project->label == 'Audit')
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>{{ __(' Task Quality Control')}}</h5>
+                        </div>
+                        <div class="card-body" style="min-height: 280px;">
+                            <div class="row align-items-center">
+                                <div class="col-7">
+                                    <table class="table" >
+                                        <tbody>
+                                            <tr class="border-0" >
+                                                <th class="border-0" >{{ __('Total Sub Task')}}:</th>
+                                                <td class="border-0"> {{$countsubtask}}</td>
+                                            </tr>
+                                            <tr role="row">
+                                                <th class="border-0">{{ __('Total Link') }}:</th>
+                                                <td class="border-0">{{$counttasklink}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Total Comment') }}:</th>
+                                                <td class="border-0">{{$counttaskcomment}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Subtask Checked / Total Sub Task')}}:</th>
+                                                <td class="border-0">{{$totalchecked}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Minimum Link Per Tasks')}}:</th>
+                                                <td class="border-0">{{$rataratalink}} {{'Link'}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Minimum Comment Per Tasks')}}:</th>
+                                                <td class="border-0">{{$rataratacomment}} {{'Comment'}}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- @if($project->label == 'Audit')
                     <div class="col-md-6">
                         <div class="card">
                             <div class="card-header">
@@ -367,7 +413,7 @@
                             </div>
                         </div>
                     </div>
-                @endif
+                @endif --}}
                 @php
                 $lastStage=\App\Models\TaskStage::where('created_by',\Auth::user()->creatorId())->orderby('id','desc')->first();
 
@@ -390,42 +436,50 @@
                                     </thead>
                                     <tbody>
                                         @foreach($project->users as $user)
-                                            @php
-                                                $hours_format_number = 0;
-                                                $total_hours = 0;
-                                                $hourdiff_late = 0;
-                                                $esti_late_hour =0;
-                                                $esti_late_hour_chart=0;
-
-                                                $total_user_task = App\Models\ProjectTask::where('project_id',$project->id)->whereRaw("FIND_IN_SET(?,  assign_to) > 0", [$user->id])->get()->count();
-
-
-
-                                                $all_task = App\Models\ProjectTask::where('project_id',$project->id)->whereRaw("FIND_IN_SET(?,  assign_to) > 0", [$user->id])->get();
-
-                                                $total_complete_task = App\Models\ProjectTask::where('project_id','=',$project->id)->where('stage_id',$lastStage->id)
-                                                ->whereRaw("find_in_set('" . $user->id . "',assign_to)")->count();
-
-                                                $logged_hours = 0;
-                                                $timesheets = App\Models\Timesheet::where('project_id',$project->id)->where('created_by' ,$user->id)->get();
-                                            @endphp
-
-                                            @foreach($timesheets as $timesheet)
+                                            @if($user->type !== 'admin' && $user->type !== 'company')
                                                 @php
+                                                    $hours_format_number = 0;
+                                                    $total_hours = 0;
+                                                    $hourdiff_late = 0;
+                                                    $esti_late_hour = 0;
+                                                    $esti_late_hour_chart = 0;
 
-                                                    $hours =  date('H', strtotime($timesheet->time));
-                                                    $minutes =  date('i', strtotime($timesheet->time));
-                                                    $total_hours = $hours + ($minutes/60) ;
-                                                    $logged_hours += $total_hours ;
-                                                    $hours_format_number = number_format($logged_hours, 2, '.', '');
+                                                    $total_user_task = App\Models\ProjectTask::where('project_id', $project->id)
+                                                        ->whereRaw("FIND_IN_SET(?, assign_to) > 0", [$user->id])
+                                                        ->get()
+                                                        ->count();
+
+                                                    $all_task = App\Models\ProjectTask::where('project_id', $project->id)
+                                                        ->whereRaw("FIND_IN_SET(?, assign_to) > 0", [$user->id])
+                                                        ->get();
+
+                                                    $total_complete_task = App\Models\ProjectTask::where('project_id', '=', $project->id)
+                                                        ->where('stage_id', $lastStage->id)
+                                                        ->whereRaw("find_in_set('" . $user->id . "', assign_to)")
+                                                        ->count();
+
+                                                    $logged_hours = 0;
+                                                    $timesheets = App\Models\Timesheet::where('project_id', $project->id)
+                                                        ->where('created_by', $user->id)
+                                                        ->get();
                                                 @endphp
-                                            @endforeach
-                                            <tr>
-                                                <td>{{$user->name}}</td>
-                                                <td>{{$total_user_task}}</td>
-                                                <td>{{$total_complete_task}}</td>
-                                                <td>{{$hours_format_number}}</td>
-                                            </tr>
+
+                                                @foreach($timesheets as $timesheet)
+                                                    @php
+                                                        $hours = date('H', strtotime($timesheet->time));
+                                                        $minutes = date('i', strtotime($timesheet->time));
+                                                        $total_hours = $hours + ($minutes / 60);
+                                                        $logged_hours += $total_hours;
+                                                        $hours_format_number = number_format($logged_hours, 2, '.', '');
+                                                    @endphp
+                                                @endforeach
+                                                <tr>
+                                                    <td>{{$user->name}}</td>
+                                                    <td>{{$total_user_task}}</td>
+                                                    <td>{{$total_complete_task}}</td>
+                                                    <td>{{$hours_format_number}}</td>
+                                                </tr>
+                                            @endif
                                         @endforeach
                                     </tbody>
                                 </table>

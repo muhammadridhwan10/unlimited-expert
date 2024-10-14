@@ -95,6 +95,18 @@
                                                             {{ $clients && $clients->sector ? $clients->sector->name : '-' }}
                                                     </div>
                                                 </div>
+                                                <div class="col-md-3 col-sm-6">
+                                                    <div class="p-4">
+                                                        <p class="card-text mb-0">{{ __('PIC Name ') }}</p>
+                                                        <h6 class="report-text mb-3">
+                                                            {{ $clients ? $clients->name_invoice : '-' }}
+                                                        </h6>
+                                                        <p class="card-text mb-0">{{ __('Position') }}</p>
+                                                        <h6 class="report-text mb-0">
+                                                            {{ $clients ? $clients->position : '-' }}
+                                                        </h6>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -146,7 +158,7 @@
                                                                         {{ $invoice->due_date }}
                                                                     @endif
                                                                 </td>
-                                                                <td>{{ $invoice->getDue() }}</td>
+                                                                <td>{{ number_format($invoice->getDue()) }}</td>
                                                                 <td>
                                                                     @if ($invoice->status == 0)
                                                                         <span
@@ -263,6 +275,7 @@
                                                         <tr>
                                                             <th>{{ __('Name') }}</th>
                                                             <th>{{ __('Status') }}</th>
+                                                            <th>{{ __('Fee') }}</th>
                                                             <th>{{ __('Start Date') }}</th>
                                                             <th>{{ __('End Date') }}</th>
                                                             <th>{{ __('Description') }}</th>
@@ -276,6 +289,7 @@
                                                         <tr class="font-style">
                                                             <td>{{ !empty($project) ? $project->project_name : '-' }}</td>
                                                             <td>{{ !empty($project) ? $project->status : '-' }}</td>
+                                                             <td>{{ !empty($project) ? \Auth::user()->priceFormat($project->budget) : '-' }}</td>
                                                             <td>{{ !empty($project) ? $project->start_date : '-'}}</td>
                                                             <td>{{ !empty($project) ? $project->end_date : '-' }}</td>
                                                             <td>

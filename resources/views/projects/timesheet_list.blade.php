@@ -71,6 +71,12 @@
                                     {{ Form::select('project_id', $project, isset($_GET['project_id']) ? $_GET['project_id'] : 0, ['class' => 'form-control select2']) }}
                                 </div>
                             </div>
+                            <div class="col-auto" style= "width:300px;">
+                                <div class="btn-box">
+                                    {{ Form::label('client_id', __('Client'), ['class' => 'form-label']) }}
+                                    {{ Form::select('client_id', $client, isset($_GET['client_id']) ? $_GET['client_id'] : null, ['class' => 'form-control select2','id'=>'choices-multiple1']) }}
+                                </div>
+                            </div>
                             <div class="col-auto">
                                 <div class="btn-box">
                                     {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
