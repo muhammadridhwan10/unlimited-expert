@@ -55,6 +55,17 @@ $settings = \App\Models\Utility::settings();
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">I am writing to inform you that the invoice for the recent services/products provided by {{ $invoice->client->name }} is now ready for your review and payment.</p>
                                                         <br>
+                                                        @if($invoice->company == 'ARA' && $invoice->category_id == 9)
+                                                        <p style='color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px'>
+                                                        Setting up accounting system</p>
+                                                        <ul style='list-style-type: disc; padding-left: 20px;'>
+                                                            <li>Prepare a chart of accounts according to the client's business.</li>
+                                                            <li>Determine accounting policies (e.g., revenue recognition, depreciation).</li>
+                                                            <li>Determine tax arrangements according to applicable regulations.</li>
+                                                            <li>Enter opening balances for key accounts (if necessary).</li>
+                                                        </ul>
+                                                        <br>
+                                                        @endif
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Please find the details of the invoice below : </p>
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Invoice Details : </p>
