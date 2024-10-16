@@ -133,14 +133,14 @@
                                     <div class="row">
                                         <div class="col-md-12">
                                             <div class="form-group">
-                                                {{ Form::label('category_services', __('Request For The Services You Need'), ['class' => 'form-label']) }}
-                                                <select name="category_services" id="category_services" class="form-control main-element">
+                                                {{ Form::label('category_service', __('Request For The Services You Need'), ['class' => 'form-label']) }}
+                                                <select name="category_service" id="category_service" class="form-control main-element">
                                                     <option value="0">{{ __('Select Services') }}</option>
                                                     @foreach (\App\Models\ProjectOrders::$label as $k => $v)
                                                         <option value="{{ $k }}">{{ __($v) }}</option>
                                                     @endforeach
                                                 </select>
-                                                <div class="error-message" id="category_services_error"></div>
+                                                <div class="error-message" id="category_service_error"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -196,9 +196,9 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                {{ Form::label('phone_pic', __('Phone'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                                                {{ Form::text('phone_pic', null, array('class' => 'form-control', 'placeholder' => 'Enter Phone', 'required')) }}
-                                                <div class="error-message" id="phone_pic_error"></div>
+                                                {{ Form::label('telp_pic', __('Phone'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                                                {{ Form::text('telp_pic', null, array('class' => 'form-control', 'placeholder' => 'Enter Phone', 'required')) }}
+                                                <div class="error-message" id="telp_pic_error"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -217,13 +217,13 @@
                                         <div class="col-md-6" id="client_ownership_id" style="display: none;">
                                             <div class="form-group">
                                                 {{ Form::label('client_ownership_id', __('Company Ownership'), ['class' => 'form-label']) }}
-                                                {{ Form::select('client_ownership_id', $ownership, null, array('class' => 'form-control select', 'required')) }}
+                                                {{ Form::select('client_ownership_id', $ownership, null, array('class' => 'form-control select')) }}
                                             </div>
                                         </div>
                                         <div class="col-md-6" id="accounting_standars_id" style="display: none;">
                                             <div class="form-group">
                                                 {{ Form::label('accounting_standars_id', __('Accounting Standards'), ['class' => 'form-label']) }}
-                                                {{ Form::select('accounting_standars_id', $accountingstandards, null, array('class' => 'form-control select', 'required')) }}
+                                                {{ Form::select('accounting_standars_id', $accountingstandards, null, array('class' => 'form-control select')) }}
                                             </div>
                                         </div>
                                         <div class="col-md-6" id= "total_company_assets_value">
@@ -317,7 +317,7 @@
 
     <script>
         $(document).ready(function(){
-            $('#category_services').change(function(){
+            $('#category_service').change(function(){
                 var selectedCategory = $(this).val();
                 
                 if(selectedCategory === 'Audit'){
@@ -394,5 +394,16 @@
             document.getElementById('progressBar').style.width = progress + '%';
         }
     </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var successMessage = "{{ session('success') }}";
+            if (successMessage) {
+                setTimeout(function () {
+                    window.location.href = "http://au-partners.com";
+                }, 3000);
+            }
+        });
+    </script>
+
 </body>
 </html>

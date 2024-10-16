@@ -100,16 +100,16 @@ class FormClientController extends Controller
             'budget' => 'required|numeric',
         ];
     
-        if ($request->category_services === 'Audit') {
+        if ($request->category_service === 'Audit') {
             $rules['client_ownership_id'] = 'required';
             $rules['accounting_standars_id'] = 'required';
         }
     
-        if (in_array($request->category_services, ['KPPK', 'Agreed Upon Procedures (AUP)', 'Other'])) {
+        if (in_array($request->category_service, ['KPPK', 'Agreed Upon Procedures (AUP)', 'Other'])) {
             unset($rules['periode']);
         }
     
-        if ($request->category_services === 'KPPK') {
+        if ($request->category_service === 'KPPK') {
             unset($rules['total_company_assets_value']);
         }
 
@@ -148,7 +148,7 @@ class FormClientController extends Controller
         $projectOrder->city = $request->city;
         $projectOrder->periode = $request->periode;
         $projectOrder->where_did_you_find_out_about_us = $request->where_did_you_find_out_about_us;
-        $projectOrder->category_service = $request->category_services;
+        $projectOrder->category_service = $request->category_service;
         $projectOrder->note = $request->note;
         $projectOrder->ph_partners = $request->ph_partners;
         $projectOrder->rate_partners = $request->rate_partners;
@@ -206,16 +206,16 @@ class FormClientController extends Controller
             'where_did_you_find_out_about_us' => 'required|string',
         ];
     
-        if ($request->category_services === 'Audit') {
+        if ($request->category_service === 'Audit') {
             $rules['client_ownership_id'] = 'required';
             $rules['accounting_standars_id'] = 'required';
         }
     
-        if (in_array($request->category_services, ['KPPK', 'Agreed Upon Procedures (AUP)', 'Other'])) {
+        if (in_array($request->category_service, ['KPPK', 'Agreed Upon Procedures (AUP)', 'Other'])) {
             unset($rules['periode']);
         }
     
-        if ($request->category_services === 'KPPK') {
+        if ($request->category_service === 'KPPK') {
             unset($rules['total_company_assets_value']);
         }
     
@@ -251,7 +251,7 @@ class FormClientController extends Controller
         $projectOrder->city = $request->city;
         $projectOrder->periode = $request->periode;
         $projectOrder->where_did_you_find_out_about_us = $request->where_did_you_find_out_about_us;
-        $projectOrder->category_service = $request->category_services;
+        $projectOrder->category_service = $request->category_service;
         $projectOrder->note = $request->note;
         $projectOrder->created_by = \Auth::user()->creatorId();
 

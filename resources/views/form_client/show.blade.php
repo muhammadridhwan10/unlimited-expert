@@ -70,6 +70,17 @@
             max-width: 900px;
             margin: auto;
         }
+        .step-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .step-desc {
+            font-size: 1em;
+            margin-top: 20px;
+            color: #6c757d;
+            text-align: center;
+        }
     </style>
     <style>
         .btn-success {
@@ -101,220 +112,210 @@
                                     <br>
                                     <div class="step active">
                                         <div class="row">
-                                            <div class="col-md-6">
+                                            <div class="col-md-12">
                                                 <div class="form-group">
-                                                    {{ Form::label('name', __('Company Name'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{ Form::text('name', $projectOrder->name, array('class'=>'form-control','readonly'=>'readonly'))}}
-                                                </div>
-                                            </div>
-                                             <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('email', __('Company Email'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('email',$projectOrder->email,array('class'=>'form-control', 'readonly'=>'readonly'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('address', __('Address'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('address',$projectOrder->address,array('class'=>'form-control', 'readonly'=>'readonly'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('country', __('Country'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('country',$projectOrder->country,array('class'=>'form-control', 'readonly'=>'readonly'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('state', __('State'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('state',$projectOrder->state,array('class'=>'form-control', 'readonly'=>'readonly'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('city', __('City'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('city',$projectOrder->city,array('class'=>'form-control','readonly'=>'readonly'))}}
+                                                    {{ Form::label('category_service', __('Category Service'),['class'=>'form-label']) }}
+                                                    {{ Form::text('category_service', $projectOrder->category_service, array('class'=>'form-control','readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="step">
+                                        <div class="step-title text-center">Company Information</div>
+                                        <br>
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('name_pic', __('Name PIC'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('name_pic',$projectOrder->name_pic,array('class'=>'form-control', 'readonly'=>'readonly'))}}
+                                                    {{ Form::label('name', __('Company Name'), ['class' => 'form-label']) }}
+                                                    {{Form::text('name',$projectOrder->name ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('email_pic', __('Email PIC'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('email_pic',$projectOrder->email_pic,array('class'=>'form-control', 'readonly'=>'readonly'))}}
+                                                    {{ Form::label('email', __('Company Email'), ['class' => 'form-label']) }}
+                                                    {{Form::text('email',$projectOrder->email ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('telp_pic', __('Phone Number / WA number PIC'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::number('telp_pic',$projectOrder->telp_pic,array('class'=>'form-control', 'readonly'=>'readonly'))}}
+                                                    {{ Form::label('country', __('Country'), ['class' => 'form-label']) }}
+                                                    {{Form::text('country',$projectOrder->country ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('name_invoice', __('Invoice Recipient Name'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('name_invoice',$projectOrder->name_invoice,array('class'=>'form-control', 'readonly'=>'readonly'))}}
+                                                    {{ Form::label('city', __('City'), ['class' => 'form-label']) }}
+                                                    {{Form::text('city',$projectOrder->city ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
+                                                </div>
+                                            </div>
+                                            <div class="step-title text-center">Contact Person</div>
+                                            <br>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    {{ Form::label('name_pic', __('Name'), ['class' => 'form-label']) }}
+                                                    {{Form::text('name_pic',$projectOrder->name_pic ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('position', __('Position On Invoice'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('position',$projectOrder->position,array('class'=>'form-control', 'readonly'=>'readonly'))}}
+                                                    {{ Form::label('email_pic', __('Email'), ['class' => 'form-label']) }}
+                                                    {{Form::text('email_pic',$projectOrder->email_pic ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('telp', __('Phone Number / WA number on Invoice'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::number('telp',$projectOrder->telp,array('class'=>'form-control', 'readonly'=>'readonly'))}}
+                                                    {{ Form::label('telp_pic', __('Phone'), ['class' => 'form-label']) }}
+                                                    {{Form::text('telp_pic',$projectOrder->telp_pic ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="step">
+                                        <div class="step-title text-center">Other Information</div>
+                                        <br>
                                         <div class="row">
-                                            <div class="col-md-6">  
+                                            <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('client_business_sector_id', __('Company Business Sector'),['class'=>'form-label']) }}
-                                                    {{ Form::text('client_business_sector_id', $projectOrder->sector->name, array('class' => 'form-control', 'readonly'=>'readonly')) }}
+                                                    {{ Form::label('client_business_sector_id', __('Company Business Sector'), ['class' => 'form-label']) }}
+                                                    {{Form::text('client_business_sector_id',$projectOrder->sector->name ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">  
+                                            <div class="col-md-6" id="client_ownership_id" style="display: none;">
                                                 <div class="form-group">
-                                                    {{ Form::label('client_ownership_id', __('Company Ownership'), ['class'=>'form-label']) }}
-                                                    {{ Form::text('client_ownership_id', isset($projectOrder->ownership) ? $projectOrder->ownership->name : '-', ['class' => 'form-control', 'readonly' => 'readonly']) }}
+                                                    {{ Form::label('client_ownership_id', __('Company Ownership'), ['class' => 'form-label']) }}
+                                                    {{ Form::text('client_ownership_id', $projectOrder->ownership->name ?? '-', array('class' => 'form-control')) }}
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">  
+                                            <div class="col-md-6" id="accounting_standars_id" style="display: none;">
                                                 <div class="form-group">
-                                                    {{ Form::label('accounting_standars_id', __('Accounting Standars'), ['class'=>'form-label']) }}
-                                                    {{ Form::text('accounting_standars_id', isset($projectOrder->accountingstandard) ? $projectOrder->accountingstandard->name : '-', ['class' => 'form-control', 'readonly' => 'readonly']) }}
+                                                    {{ Form::label('accounting_standars_id', __('Accounting Standards'), ['class' => 'form-label']) }}
+                                                    {{ Form::text('accounting_standars_id', $projectOrder->accountingstandard->name ?? '-', array('class' => 'form-control')) }}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6" id= "total_company_assets_value">
+                                                <div class="form-group">
+                                                    {{ Form::label('total_company_assets_value', __('Total Company Assets'), ['class' => 'form-label']) }}
+                                                    {{Form::text('total_company_assets_value',$projectOrder->total_company_assets_value ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6" id="periode" style="display: none;">
+                                                <div class="form-group">
+                                                    {{ Form::label('periode', __('Periode Order'), ['class' => 'form-label']) }}
+                                                    {{Form::text('periode',$projectOrder->periode ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('total_company_assets_value', __('Total Company Assets Value'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::number('total_company_assets_value',$projectOrder->total_company_assets_value,array('class'=>'form-control', 'readonly' => 'readonly'))}}
+                                                    {{ Form::label('total_company_income_per_year', __('Total Company Revenue'), ['class' => 'form-label']) }}
+                                                    {{Form::text('total_company_income_per_year',$projectOrder->total_company_income_per_year ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('total_company_income_per_year', __('Total Company Income Per Year'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('total_company_income_per_year',$projectOrder->total_company_income_per_year,array('class'=>'form-control','readonly'=>'readonly'))}}
+                                                    {{ Form::label('total_company_profit_or_loss', __('Total Company Profit Or Loss For The Year'), ['class' => 'form-label']) }}
+                                                    {{Form::text('total_company_profit_or_loss',$projectOrder->total_company_profit_or_loss ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('total_company_profit_or_loss', __('Total Company Profit Or Loss For The Year'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('total_company_profit_or_loss',$projectOrder->total_company_income_per_year,array('class'=>'form-control','readonly'=>'readonly'))}}
+                                                    {{ Form::label('total_employee', __('Total Employee'), ['class' => 'form-label']) }}
+                                                    {{Form::text('total_employee',$projectOrder->total_employee ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('periode', __('Periode Order'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('periode',$projectOrder->periode,array('class'=>'form-control','readonly'=>'readonly'))}}
+                                                    {{ Form::label('total_branch_offices', __('Total Branch Offices'), ['class' => 'form-label']) }}
+                                                    {{Form::text('total_branch_offices',$projectOrder->total_branch_offices ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('total_employee', __('Total Employee'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('total_employee',$projectOrder->total_employee,array('class'=>'form-control','readonly'=>'readonly'))}}
+                                                    {{ Form::label('npwp', __('Tax Number'), ['class' => 'form-label']) }}
+                                                    {{Form::text('npwp',$projectOrder->npwp ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('total_branch_offices', __('Total Branch Offices'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('total_branch_offices',$projectOrder->total_branch_offices,array('class'=>'form-control','readonly'=>'readonly'))}}
+                                                    {{ Form::label('where_did_you_find_out_about_us', __('Where Did You Find Out About Us?'), ['class' => 'form-label']) }}
+                                                    {{Form::text('where_did_you_find_out_about_us',$projectOrder->where_did_you_find_out_about_us ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
-                                            <div class="col-md-6">
+                                            <div class="col-md-12">
                                                 <div class="form-group">
-                                                    {{ Form::label('npwp', __('Tax Number'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('npwp',$projectOrder->npwp,array('class'=>'form-control','readonly'=>'readonly'))}}
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    {{ Form::label('where_did_you_find_out_about_us', __('Where Did You Find Out About Us?'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{Form::text('where_did_you_find_out_about_us',$projectOrder->where_did_you_find_out_about_us,array('class'=>'form-control', 'readonly'=>'readonly'))}}
+                                                    {{ Form::label('note', __('Notes'), ['class' => 'form-label']) }}
+                                                    {{Form::text('note',$projectOrder->note ?? '-',array('class'=>'form-control', 'readonly'=>'readonly'))}}
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+
                                     <div class="step">
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('ph_partners', __('Project Hour Partner'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{ Form::number('ph_partners', $projectOrder->ph_partners, array('class'=>'form-control','readonly', 'id'=>'ph_partners'))}}
+                                                    {{ Form::label('ph_partners', __('Project Hour Partner'),['class'=>'form-label']) }}
+                                                    {{ Form::number('ph_partners', $projectOrder->ph_partners ?? '-', array('class'=>'form-control','readonly', 'id'=>'ph_partners'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('rate_partners', __('Rate Partner'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{ Form::text('rate_partners', \Auth::user()->priceFormat($projectOrder->rate_partners), array('class'=>'form-control','readonly', 'id'=>'rate_partners'))}}
+                                                    {{ Form::label('rate_partners', __('Rate Partner'),['class'=>'form-label']) }}
+                                                    {{ Form::text('rate_partners', \Auth::user()->priceFormat($projectOrder->rate_partners) , array('class'=>'form-control','readonly', 'id'=>'rate_partners'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('ph_manager', __('Project Hour Manager'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{ Form::number('ph_manager', $projectOrder->ph_manager, array('class'=>'form-control','readonly', 'id'=>'ph_manager'))}}
+                                                    {{ Form::label('ph_manager', __('Project Hour Manager'),['class'=>'form-label']) }}
+                                                    {{ Form::number('ph_manager', $projectOrder->ph_manager ?? '-', array('class'=>'form-control','readonly', 'id'=>'ph_manager'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('rate_manager', __('Rate Manager'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                                                    {{ Form::label('rate_manager', __('Rate Manager'),['class'=>'form-label']) }}
                                                     {{ Form::text('rate_manager', \Auth::user()->priceFormat($projectOrder->rate_manager), array('class'=>'form-control','readonly', 'id'=>'rate_manager'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('ph_senior', __('Project Hour Senior Associate'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{ Form::number('ph_senior', $projectOrder->ph_senior, array('class'=>'form-control','readonly', 'id'=>'ph_senior'))}}
+                                                    {{ Form::label('ph_senior', __('Project Hour Senior Associate'),['class'=>'form-label']) }}
+                                                    {{ Form::number('ph_senior', $projectOrder->ph_senior ?? '-', array('class'=>'form-control','readonly', 'id'=>'ph_senior'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('rate_senior', __('Rate Senior Associate'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                                                    {{ Form::label('rate_senior', __('Rate Senior Associate'),['class'=>'form-label']) }}
                                                     {{ Form::text('rate_senior', \Auth::user()->priceFormat($projectOrder->rate_senior), array('class'=>'form-control','readonly', 'id'=>'rate_senior'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('ph_associate', __('Project Hour Associate'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{ Form::number('ph_associate', $projectOrder->ph_associate, array('class'=>'form-control','readonly', 'id'=>'ph_associate'))}}
+                                                    {{ Form::label('ph_associate', __('Project Hour Associate'),['class'=>'form-label']) }}
+                                                    {{ Form::number('ph_associate', $projectOrder->ph_associate ?? '-', array('class'=>'form-control','readonly', 'id'=>'ph_associate'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('rate_associate', __('Rate Associate'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                                                    {{ Form::label('rate_associate', __('Rate Associate'),['class'=>'form-label']) }}
                                                     {{ Form::text('rate_associate', \Auth::user()->priceFormat($projectOrder->rate_associate), array('class'=>'form-control','readonly', 'id'=>'rate_associate'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('ph_assistant', __('Project Hour Assistant'),['class'=>'form-label']) }}<span class="text-danger">*</span>
-                                                    {{ Form::number('ph_assistant', $projectOrder->ph_assistant, array('class'=>'form-control','readonly', 'id'=>'ph_assistant'))}}
+                                                    {{ Form::label('ph_assistant', __('Project Hour Assistant'),['class'=>'form-label']) }}
+                                                    {{ Form::number('ph_assistant', $projectOrder->ph_assistant ?? '-', array('class'=>'form-control','readonly', 'id'=>'ph_assistant'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    {{ Form::label('rate_assistant', __('Rate Assistant'),['class'=>'form-label']) }}<span class="text-danger">*</span>
+                                                    {{ Form::label('rate_assistant', __('Rate Assistant'),['class'=>'form-label']) }}
                                                     {{ Form::text('rate_assistant', \Auth::user()->priceFormat($projectOrder->rate_assistant), array('class'=>'form-control','readonly', 'id'=>'rate_assistant'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     {{ Form::label('estimated_hrs', __('Total Project Hours (Time Budget)'),['class'=>'form-label']) }}
-                                                    {{Form::text('estimated_hrs',$projectOrder->estimated_hrs,array('class'=>'form-control', 'readonly', 'id'=>'estimated_hrs'))}}
+                                                    {{Form::text('estimated_hrs',$projectOrder->estimated_hrs ?? '-',array('class'=>'form-control', 'readonly', 'id'=>'estimated_hrs'))}}
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
