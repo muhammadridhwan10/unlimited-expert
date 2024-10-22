@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Models\Milestone;
 use App\Models\Projectstages;
+use App\Models\ProjectOfferings;
 use App\Models\TaskStage;
 use App\Models\TaskChecklist;
 use App\Models\TaskFile;
@@ -135,13 +136,48 @@ class ProjectReportController extends Controller
             }
             else
             {
-                $usr           = Auth::user();
-                $users         = User::where('id', '=', $user->id)->get();
-                $status        = Project::$project_status;
-                $label         = Project::$label;
-                $tags = Project::$tags;
-                $projects = Project::select('projects.*')->leftjoin('project_users', 'project_users.project_id', 'projects.id')->where('project_users.user_id', '=', $user->id)->orderby('id','desc');
+                $client =   User::where('type','=','client')->pluck('name','id');
+                $client->prepend('Select Client', '');
 
+                if(isset($request->all_users)&& !empty($request->all_users)){
+                    $projects = Project::select('projects.*')
+                        ->leftjoin('project_users', 'project_users.project_id', 'projects.id')
+                        ->where('project_users.user_id', '=', $request->all_users)->orderby('id','desc');
+
+
+                }else{
+                    $projects = Project::orderby('id','desc');
+                }
+
+                if(isset($request->status)&& !empty($request->status)){
+                    $projects->where('status', '=', $request->status);
+                }
+                if(isset($request->label)&& !empty($request->label)){
+                    $projects->where('label', '=', $request->label);
+                }
+                if(isset($request->tags)&& !empty($request->tags)){
+                    $projects->where('tags', '=', $request->tags);
+                }
+                if (isset($request->start_date) && !empty($request->start_date)) {
+                    $projects->whereHas('timesheets', function ($query) use ($request) {
+                        $query->where('date', '>=', $request->start_date);
+                    });
+                }
+                
+                if (isset($request->end_date) && !empty($request->end_date)) {
+                    $projects->whereHas('timesheets', function ($query) use ($request) {
+                        $query->where('date', '<=', $request->end_date);
+                    });
+                }
+
+                if (!empty($request->client_id)) {
+                    $projects->where('client_id', '=', $request->client_id);
+                }
+
+                $users = User::where('type', '!=', 'client')->get();
+                $status = Project::$project_status;
+                $label = Project::$label;
+                $tags = Project::$tags;
             }
 
             $totalAllProjectHours = $projects->get();
@@ -210,15 +246,58 @@ class ProjectReportController extends Controller
 
             $count = $project->estimated_hrs;
             $category = Project::category_progress($count, $project->id);
+            $project_offerings = ProjectOfferings::where('project_id', $project->id)->first();
 
-            $Preengagement = $category['Preengagement'];
-            $Riskassessment = $category['Riskassessment'];
-            $Riskresponse = $category['Riskresponse'];
-            $Conclutioncompletion = $category['Conclutioncompletion'];
-            $totalhoursestimate = $Preengagement + $Riskassessment + $Riskresponse + $Conclutioncompletion;
+            $user_types = [
+                'partners' => 'partners',
+                'manager' => 'manager',       // Deteksi semua yang memiliki kata 'manager' di awal
+                'senior_associate' => 'senior',
+                'associate' => 'junior', // Deteksi semua yang memiliki kata 'junior' di awal
+                'intern' => 'intern',         // Deteksi spesifik untuk Intern
+            ];
+        
+            $real_hours = [];
+        
+            foreach ($user_types as $key => $type) {
+                // Query berdasarkan bagian awal dari tipe user
+                $query = Timesheet::where('project_id', $id)
+                                  ->whereHas('user', function($q) use ($type) {
+                                      $q->where('type', 'LIKE', $type . '%');
+                                  });
+        
+                // Ambil semua waktu dari timesheet
+                $times = $query->pluck('time');
+                $totalSeconds = 0;
+        
+                // Loop setiap waktu dan konversi ke detik untuk menjumlahkannya
+                foreach ($times as $time) {
+                    list($hours, $minutes, $seconds) = explode(':', $time);
+                    $totalSeconds += $hours * 3600 + $minutes * 60 + $seconds;
+                }
+        
+                // Konversi kembali total detik ke format HH:MM:SS
+                $hours = (int) floor($totalSeconds / 3600);
+                $minutes = floor(($totalSeconds % 3600) / 60);
+                $seconds = $totalSeconds % 60;
+        
+                // Simpan hasilnya dalam array logged_hours
+                $real_hours[$key] = $hours;
+            }
+            
 
-            if ($user) {
-                $chartData = $this->getProjectChart(
+            $estimated_hours = [
+                'partners' => $project_offerings->als_partners,
+                'manager' => $project_offerings->als_manager,
+                'senior_associate' => $project_offerings->als_senior_associate,
+                'associate' => $project_offerings->als_associate,
+                'intern' => $project_offerings->als_intern
+            ];
+
+            // dd($real_hours, $estimated_hours);
+            
+            if ($user) 
+            {
+                    $chartData = $this->getProjectChart(
                     [
                         'project_id' => $id,
                         'duration' => 'week',
@@ -229,7 +308,6 @@ class ProjectReportController extends Controller
                     $project_status_task = TaskStage::join("project_tasks", "project_tasks.stage_id", "=", "task_stages.id")
                         ->where('project_tasks.project_id', '=', $id)->groupBy('task_stages.name')
                         ->selectRaw('count(project_tasks.stage_id) as count, task_stages.name as task_stages_name')->pluck('count', 'task_stages_name');
-    //                dd($project_status_task);
 
                     $totaltask = ProjectTask::where('project_id',$id)->count();
 
@@ -271,8 +349,6 @@ class ProjectReportController extends Controller
                     ]);
 
                     $stages = TaskStage::all();
-                    // $stages = ProjectStage::where('created_by', '=', $user->id)->orderBy('order')->get();
-                    // dd($stages);
                     $milestones = Milestone::where('project_id' ,$id)->get();
                     $logged_hour_chart = 0;
                     $total_hour = 0;
@@ -288,6 +364,7 @@ class ProjectReportController extends Controller
                     $counttasklink = 0;
                     $counttaskcomment = 0;
                     $totalchecked = 0;
+
                     foreach ($tasks as $task)
                     {
                         $projects = $task->project;
@@ -327,45 +404,33 @@ class ProjectReportController extends Controller
                         $countchecked = TaskChecklist::where('project_id', $task->project_id)->where('status', '=', 1)->count();
                         $timesheets_task = Timesheet::where('project_id',$id)->get();
                         $totalchecked = $countchecked . '/' .  $countsubtask;
-
-                        // foreach($timesheets_task as $timesheet)
-                        // {
-
-                        //     $hours =  date('H', strtotime($timesheet->time));
-                        //     $minutes =  date('i', strtotime($timesheet->time));
-                        //     $total_hour = $hours + ($minutes/60) ;
-                        //     $logged_hour += $total_hour ;
-                        //     $logged_hour_chart = number_format($logged_hour, 2, '.', '');
-
-                        // }
                         
                     }
 
-                $totalSeconds = 0;
-                $totalAllProjectHours = Project::where('id', $id)->first();
+                    $totalSeconds = 0;
+                    $totalAllProjectHours = Project::where('id', $id)->first();
 
-                $totalTime = $totalAllProjectHours->totalHours($request->start_date, $request->end_date, $request->all_users, $request->client_id);
-                list($hours, $minutes, $seconds) = explode(':', $totalTime);
-                $totalSeconds += $hours * 3600 + $minutes * 60 + $seconds;
-    
-                $totalHours = floor($totalSeconds / 3600);
-                $totalMinutes = floor(($totalSeconds % 3600) / 60);
-                $totalSeconds = $totalSeconds % 60;
-                $totalFormattedTime = sprintf('%02d:%02d:%02d', $totalHours, $totalMinutes, $totalSeconds);
-                
-                $logged_hour_chart = $totalHours;
+                    $totalTime = $totalAllProjectHours->totalHours($request->start_date, $request->end_date, $request->all_users, $request->client_id);
+                    list($hours, $minutes, $seconds) = explode(':', $totalTime);
+                    $totalSeconds += $hours * 3600 + $minutes * 60 + $seconds;
+        
+                    $totalHours = floor($totalSeconds / 3600);
+                    $totalMinutes = floor(($totalSeconds % 3600) / 60);
+                    $totalSeconds = $totalSeconds % 60;
+                    $totalFormattedTime = sprintf('%02d:%02d:%02d', $totalHours, $totalMinutes, $totalSeconds);
+                    
+                    $logged_hour_chart = $totalHours;
 
-                //Estimated Hours
-                $esti_logged_hour_chart = $totalAllProjectHours->estimated_hrs;
+                    //Estimated Hours
+                    $esti_logged_hour_chart = $totalAllProjectHours->estimated_hrs;
 
 
 
                 $tasks = ProjectTask::where('project_id','=',$id)->get();
 
 
-                return view('project_report.show', compact('user','users', 'rataratalink','rataratacomment', 'jumlahhari', 'countsubtask', 'counttasklink', 'counttaskcomment', 'totalchecked', 'arrProcessPer_status_task','arrProcess_Label_priority','esti_logged_hour_chart','logged_hour_chart','arrProcessPer_priority','arrProcess_Label_status_tasks','project','milestones', 'daysleft','chartData','arrProcessClass','stages','tasks','Preengagement', 'Riskassessment', 'Riskresponse', 'Conclutioncompletion', 'totalhoursestimate'));
-
-         }
+                return view('project_report.show', compact('user','users', 'rataratalink','rataratacomment', 'jumlahhari', 'countsubtask', 'counttasklink', 'counttaskcomment', 'totalchecked', 'arrProcessPer_status_task','arrProcess_Label_priority','esti_logged_hour_chart','logged_hour_chart','arrProcessPer_priority','arrProcess_Label_status_tasks','project','milestones', 'daysleft','chartData','arrProcessClass','stages','tasks','project_offerings','estimated_hours', 'real_hours'));
+            }
         }
 
 

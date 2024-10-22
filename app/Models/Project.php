@@ -30,6 +30,7 @@ class Project extends Model
         'book_year',
         'tags',
         'label',
+        'total_days',
         'created_by',
         'is_template'
     ];
@@ -597,6 +598,56 @@ class Project extends Model
         return sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
 
     }
+
+    public function totalHoursUser($user = null)
+    {
+
+        // Ambil semua waktu dari timesheet berdasarkan project_id dan filter tanggal jika ada
+        $query = Timesheet::where('project_id', $this->id)->where('created_by', '=', $user);
+
+        $times = $query->pluck('time');
+
+        $totalSeconds = 0;
+
+        // Loop setiap waktu dan konversi ke detik untuk menjumlahkannya
+        foreach ($times as $time) {
+            list($hours, $minutes, $seconds) = explode(':', $time);
+            $totalSeconds += $hours * 3600 + $minutes * 60 + $seconds;
+        }
+
+        // Konversi kembali total detik ke format HH:MM:SS
+        $hours = floor($totalSeconds / 3600);
+        $minutes = floor(($totalSeconds % 3600) / 60);
+        $seconds = $totalSeconds % 60;
+
+        return sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+
+    }
+
+    public function totalEstimatedHrs($user = null)
+    {
+        $query = ProjectOfferings::where('project_id', $this->id);
+
+        $type = User::find($user);
+
+        if ($type) {
+            if ($type->type == 'partners') {
+                $als = $query->pluck('als_partners');
+            } elseif ($type->type == 'manager audit') {
+                $als = $query->pluck('als_manager');
+            } elseif ($type->type == 'senior audit' || $type->type == 'senior accounting') {
+                $als = $query->pluck('als_senior_associate');
+            } elseif ($type->type == 'junior audit' || $type->type == 'junior accounting') {
+                $als = $query->pluck('als_associate');
+            } elseif ($type->type == 'intern') {
+                $als = $query->pluck('als_intern');
+            }
+        }
+
+        // Return 0 if $als is null or empty
+        return $als ? $als->sum() : 0;
+    }
+
 
 
 }

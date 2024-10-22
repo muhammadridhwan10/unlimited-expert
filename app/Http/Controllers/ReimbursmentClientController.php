@@ -48,7 +48,11 @@ class ReimbursmentClientController extends Controller
                 $employeeReimbursment->where('client_id', $request->client_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->get();
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate(10)->appends([
+                'month' => $request->month,
+                'employee_id' => $request->employee_id,
+                'client_id' => $request->client_id,
+            ]); 
 
             $employees = Employee::all()->pluck('name','id');
             $client =   User::where('type','=','client')->pluck('name','id');
@@ -84,7 +88,11 @@ class ReimbursmentClientController extends Controller
                 $employeeReimbursment->where('client_id', $request->client_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->get();
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate(10)->appends([
+                'month' => $request->month,
+                'employee_id' => $request->employee_id,
+                'client_id' => $request->client_id,
+            ]); 
 
             $employees = Employee::all()->pluck('name','id');
             $client =   User::where('type','=','client')->pluck('name','id');
@@ -120,7 +128,11 @@ class ReimbursmentClientController extends Controller
                 $employeeReimbursment->where('client_id', $request->client_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->get();
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate(10)->appends([
+                'month' => $request->month,
+                'employee_id' => $request->employee_id,
+                'client_id' => $request->client_id,
+            ]); 
 
             $employees = Employee::all()->pluck('name','id');
             $client =   User::where('type','=','client')->pluck('name','id');
@@ -155,7 +167,11 @@ class ReimbursmentClientController extends Controller
                 $employeeReimbursment->where('client_id', $request->client_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->get();
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate(10)->appends([
+                'month' => $request->month,
+                'employee_id' => $request->employee_id,
+                'client_id' => $request->client_id,
+            ]); 
 
             $employees = Employee::where('user_id', '=', \Auth::user()->id)->first()->pluck('name','id');
             $client =   User::where('type','=','client')->pluck('name','id');
@@ -191,7 +207,11 @@ class ReimbursmentClientController extends Controller
                 $employeeReimbursment->where('client_id', $request->client_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->get();
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate(10)->appends([
+                'month' => $request->month,
+                'employee_id' => $request->employee_id,
+                'client_id' => $request->client_id,
+            ]); 
 
             $employees = Employee::where('user_id', '=', \Auth::user()->id)->first()->pluck('name','id');
             $client =   User::where('type','=','client')->pluck('name','id');

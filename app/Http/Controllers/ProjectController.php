@@ -134,7 +134,6 @@ class ProjectController extends Controller
             $validator = \Validator::make(
                 $request->all(), [
                                 'project_name' => 'required',
-                                'project_image' => 'mimes:png,jpeg,jpg|max:20480',
                             ]
             );
             if($validator->fails())
@@ -192,26 +191,14 @@ class ProjectController extends Controller
             $project->budget = !empty($request->budget) ? $request->budget : 0;
             $project->description = $request->description;
             $project->status = $request->status;
-            $project->estimated_hrs = $count;
+            // $project->estimated_hrs = $count;
+            $project->total_days = $request->total_days;
             $project->book_year = $request->book_year;
             $project->tags = $request->tag;
             $project->label = $request->label;
             $project->created_by = \Auth::user()->creatorId();
             $project->save();
 
-            $project_offerings = new ProjectOfferings();
-            $project_offerings->project_id = $project->id;
-            $project_offerings->als_partners = $request->als_partners;
-            $project_offerings->rate_partners = $request->rate_partners;
-            $project_offerings->als_manager = $request->als_manager;
-            $project_offerings->rate_manager = $request->rate_manager;
-            $project_offerings->als_senior_associate = $request->als_senior_associate;
-            $project_offerings->rate_senior_associate = $request->rate_senior_associate;
-            $project_offerings->als_associate = $request->als_associate;
-            $project_offerings->rate_associate = $request->rate_associate;
-            $project_offerings->als_intern = $request->als_intern;
-            $project_offerings->rate_intern = $request->rate_intern;
-            $project_offerings->save();
 
             ActivityLog::create(
                 [
@@ -254,44 +241,41 @@ class ProjectController extends Controller
     
                 Notification::create($notificationData);
 
-                $firebaseToken = User::where('id', $value)->whereNotNull('device_token')->pluck('device_token');
-                $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
+                // $firebaseToken = User::where('id', $value)->whereNotNull('device_token')->pluck('device_token');
+                // $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
 
-                $data = [
-                    "registration_ids" => $firebaseToken,
-                    "notification" => [
-                        "title" => 'AUP-APPS',
-                        "body" => $authuser->name . ' inviting you into the project ' . $project->project_name,  
-                        "icon" => 'https://i.postimg.cc/8z1vzXPV/logo-tgs-fix.png',
-                        "content_available" => true,
-                        "priority" => "high",
-                    ]
-                ];
-                $dataString = json_encode($data);
+                // $data = [
+                //     "registration_ids" => $firebaseToken,
+                //     "notification" => [
+                //         "title" => 'AUP-APPS',
+                //         "body" => $authuser->name . ' inviting you into the project ' . $project->project_name,  
+                //         "icon" => 'https://i.postimg.cc/8z1vzXPV/logo-tgs-fix.png',
+                //         "content_available" => true,
+                //         "priority" => "high",
+                //     ]
+                // ];
+                // $dataString = json_encode($data);
             
-                $headers = [
-                    'Authorization: key=' . $SERVER_API_KEY,
-                    'Content-Type: application/json',
-                ];
+                // $headers = [
+                //     'Authorization: key=' . $SERVER_API_KEY,
+                //     'Content-Type: application/json',
+                // ];
             
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
-                curl_setopt($ch, CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
+                // $ch = curl_init();
+                // curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
+                // curl_setopt($ch, CURLOPT_POST, true);
+                // curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                // curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
 
                 
-                $response = curl_exec($ch);
+                // $response = curl_exec($ch);
                 $datas = User::where('id', $value)->pluck('email');
-                Mail::to($datas)->send(new ProjectNotification($project));
+                // Mail::to($datas)->send(new ProjectNotification($project));
               }
             }
 
-            // $projectUser = ProjectUser::with('user')->orderBy('id', 'DESC'); 
-            // $id = $zoommeeting->user_id;
-            // $data = User::whereIn('id', $id)->pluck('email');
             
             $template = Project::with('details')->get();
             foreach ($template as $templates) 
@@ -676,7 +660,6 @@ class ProjectController extends Controller
             $validator = \Validator::make(
                 $request->all(), [
                                 'project_name' => 'required',
-                                'project_image' => 'mimes:png,jpeg,jpg|max:20480',
                             ]
             );
             if($validator->fails())
@@ -723,12 +706,13 @@ class ProjectController extends Controller
             }
             $project->template_task_id = $request->template_task;
             // dd($project->template_task_id);
+            $project->total_days = $request->total_days;
             $project->budget = $request->budget;
             $project->client_id = $request->client;
             $project->public_accountant_id = $request->public_accountant_id;
             $project->description = $request->description;
             $project->status = $request->status;
-            $project->estimated_hrs = $count;
+            $project->estimated_hrs = $request->estimated_hrs;
             $project->book_year = $request->book_year;
             $project->tags = $request->tag;
             $project->label = $request->label;
@@ -752,21 +736,6 @@ class ProjectController extends Controller
                         'rate_intern' => $request->rate_intern,
                     ]
                 );
-            }else
-            {
-                $project_offerings = new ProjectOfferings();
-                $project_offerings->project_id = $project->id;
-                $project_offerings->als_partners = $request->als_partners;
-                $project_offerings->rate_partners = $request->rate_partners;
-                $project_offerings->als_manager = $request->als_manager;
-                $project_offerings->rate_manager = $request->rate_manager;
-                $project_offerings->als_senior_associate = $request->als_senior_associate;
-                $project_offerings->rate_senior_associate = $request->rate_senior_associate;
-                $project_offerings->als_associate = $request->als_associate;
-                $project_offerings->rate_associate = $request->rate_associate;
-                $project_offerings->als_intern = $request->als_intern;
-                $project_offerings->rate_intern = $request->rate_intern;
-                $project_offerings->save();
             }
             
 
@@ -916,6 +885,79 @@ class ProjectController extends Controller
         $users        = User::whereIn('id', $arrUser)->get();
 
         return view('projects.invite', compact('project_id', 'users'));
+    }
+
+    public function timeBudgetView(Request $request, $project_id)
+    {
+        $usr          = Auth::user();
+        $project      = Project::find($project_id);
+
+        $user_project = $project->users->pluck('id')->toArray();
+
+        if(\Auth::user()->type = 'admin')
+        {
+            $user_contact = User::where('type','!=','client')->whereNOTIn('id', $user_project)->pluck('id')->toArray();
+        }
+        elseif(\Auth::user()->type = 'company')
+        {
+            $user_contact = User::where('type','!=','client')->whereNOTIn('id', $user_project)->pluck('id')->toArray();
+        }
+        else
+        {
+            $user_contact = User::where('created_by', \Auth::user()->creatorId())->where('type','!=','client')->whereNOTIn('id', $user_project)->pluck('id')->toArray();
+        }
+        $arrUser      = array_unique($user_contact);
+        $users        = User::whereIn('id', $arrUser)->get();
+
+        return view('projects.timebudget', compact('project_id', 'users','project'));
+    }
+
+    public function addTimeBudget($id, Request $request)
+    {
+        $validator = \Validator::make(
+            $request->all(), [
+                'als_partners' => 'required|numeric',
+                'rate_partners' => 'required|numeric',
+                'als_manager' => 'required|numeric',
+                'rate_manager' => 'required|numeric',
+                'als_senior_associate' => 'required|numeric',
+                'rate_senior_associate' => 'required|numeric',
+                'als_associate' => 'required|numeric',
+                'rate_associate' => 'required|numeric',
+                'als_intern' => 'required|numeric',
+                'rate_intern' => 'required|numeric',
+            ]
+        );
+
+        if($validator->fails())
+        {
+            $messages = $validator->getMessageBag();
+
+            return redirect()->back()->with('error', $messages->first());
+        }
+        
+        $project_offerings = new ProjectOfferings();
+
+        $project = Project::find($id);
+        $project->budget = $request->budget;
+
+        $project_offerings->project_id = $id;
+        $project_offerings->als_partners = $request->als_partners;
+        $project_offerings->rate_partners = $request->rate_partners;
+        $project_offerings->als_manager = $request->als_manager;
+        $project_offerings->rate_manager = $request->rate_manager;
+        $project_offerings->als_senior_associate = $request->als_senior_associate;
+        $project_offerings->rate_senior_associate = $request->rate_senior_associate;
+        $project_offerings->als_associate = $request->als_associate;
+        $project_offerings->rate_associate = $request->rate_associate;
+        $project_offerings->als_intern = $request->als_intern;
+        $project_offerings->rate_intern = $request->rate_intern;
+
+        $project_offerings->save();
+        $project->save();
+
+        return redirect()->route('projects.index')->with('success', __('Project Time Budget Data Successfully Created'));
+
     }
 
     public function inviteClientView(Request $request, $project_id)

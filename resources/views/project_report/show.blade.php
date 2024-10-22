@@ -253,6 +253,75 @@
                 <div class="col-md-12">
                     <div class="card">
                         <div class="card-header">
+                            <div class="float-end">
+                                  <a href="#" data-bs-toggle="tooltip" data-bs-placement="top" title="Refferals"><i class=""></i></a>
+                              </div>
+                            <h5>{{ __('Project Time') }}</h5>
+                        </div>
+                        <div class="card-body"  style="min-height: 280px;">
+                            <div class="row align-items-center">
+                                <div class="col-12">
+                                      <div id="chart-project-hours"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>{{ __('Project Hours User')}}</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-7">
+                                    <table class="table">
+                                        <tbody>
+                                        @if(isset($project_offerings) && !empty($project_offerings) > 0)
+                                            <tr class="border-0" >
+                                                <th class="border-0" >{{ __('Partner')}}:</th>
+                                                <td class="border-0"> {{ $project_offerings->als_partners ? $project_offerings->als_partners . ' H' : __('No Data Available')}}</td>
+                                            </tr>
+                                            <tr role="row">
+                                                <th class="border-0">{{ __('Manager') }}:</th>
+                                                <td class="border-0">{{$project_offerings->als_manager ? $project_offerings->als_manager . ' H' : __('No Data Available')}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Senior Associate')}}:</th>
+                                                <td class="border-0">{{$project_offerings->als_senior_associate ? $project_offerings->als_senior_associate . ' H' : __('No Data Available')}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Associate')}}:</th>
+                                                <td class="border-0">{{$project_offerings->als_associate ? $project_offerings->als_associate . ' H' : __('No Data Available')}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Assistant')}}:</th>
+                                                <td class="border-0">{{$project_offerings->als_intern ? $project_offerings->als_intern . ' H' : __('No Data Available')}}</td>
+                                            </tr>
+                                            <tr>
+                                                <th class="border-0">{{ __('Total Estimated Hours')}}:</th>
+                                                <td class="border-0"><strong>
+                                                        {{ ($project_offerings->als_partners + $project_offerings->als_manager + $project_offerings->als_senior_associate + $project_offerings->als_associate + $project_offerings->als_intern) ? 
+                                                        ($project_offerings->als_partners + $project_offerings->als_manager + $project_offerings->als_senior_associate + $project_offerings->als_associate + $project_offerings->als_intern) . ' H' : __('No Data Available') }}
+                                                    </strong></td>
+                                            </tr>
+                                            @else
+                                            <tr>
+                                                <th scope="col" colspan="7"><h6 class="text-center">{{__('No Projects Offering Found.')}}</h6></th>
+                                            </tr>
+                                        @endif
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
                             <h5>{{ __(' Task Quality Control')}}</h5>
                         </div>
                         <div class="card-body" style="min-height: 280px;">
@@ -291,129 +360,7 @@
                         </div>
                     </div>
                 </div>
-
-                {{-- @if($project->label == 'Audit')
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5>{{ __('Hours Estimation Category')}}</h5>
-                            </div>
-                            <div class="card-body" style="min-height: 280px;">
-                                <div class="row align-items-center">
-                                    <div class="col-7">
-                                        <table class="table" >
-                                            <tbody>
-                                                <tr class="border-0" >
-                                                    <th class="border-0" >{{ __('Preengagement')}}:</th>
-                                                    <td class="border-0"> {{$Preengagement . ' Hours'}}</td>
-                                                </tr>
-                                                <tr role="row">
-                                                    <th class="border-0">{{ __('Riskassessment') }}:</th>
-                                                    <td class="border-0">{{$Riskassessment . ' Hours'}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="border-0">{{ __('Riskresponse') }}:</th>
-                                                    <td class="border-0">{{$Riskresponse . ' Hours'}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="border-0">{{ __('Conclution and Completion')}}:</th>
-                                                    <td class="border-0">{{$Conclutioncompletion . ' Hours'}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="border-0">{{ __('Total Hours Estimation Category')}}:</th>
-                                                    <td class="border-0"><div class="badge  bg-info p-2 px-3 rounded"> {{$totalhoursestimate . ' Hours'}}</div></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5>{{ __(' Task Quality Control')}}</h5>
-                            </div>
-                            <div class="card-body" style="min-height: 280px;">
-                                <div class="row align-items-center">
-                                    <div class="col-7">
-                                        <table class="table" >
-                                            <tbody>
-                                                <tr class="border-0" >
-                                                    <th class="border-0" >{{ __('Total Sub Task')}}:</th>
-                                                    <td class="border-0"> {{$countsubtask}}</td>
-                                                </tr>
-                                                <tr role="row">
-                                                    <th class="border-0">{{ __('Total Link') }}:</th>
-                                                    <td class="border-0">{{$counttasklink}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="border-0">{{ __('Total Comment') }}:</th>
-                                                    <td class="border-0">{{$counttaskcomment}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="border-0">{{ __('Subtask Checked / Total Sub Task')}}:</th>
-                                                    <td class="border-0">{{$totalchecked}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="border-0">{{ __('Minimum Link Per Tasks')}}:</th>
-                                                    <td class="border-0">{{$rataratalink}} {{'Link'}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="border-0">{{ __('Minimum Comment Per Tasks')}}:</th>
-                                                    <td class="border-0">{{$rataratacomment}} {{'Comment'}}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @else
-                    <div class="col-md-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5>{{ __(' Task Quality Control')}}</h5>
-                            </div>
-                            <div class="card-body" style="min-height: 280px;">
-                                <div class="row align-items-center">
-                                    <div class="col-7">
-                                        <table class="table" >
-                                            <tbody>
-                                                <tr class="border-0" >
-                                                    <th class="border-0" >{{ __('Total Sub Task')}}:</th>
-                                                    <td class="border-0"> {{$countsubtask}}</td>
-                                                </tr>
-                                                <tr role="row">
-                                                    <th class="border-0">{{ __('Total Link') }}:</th>
-                                                    <td class="border-0">{{$counttasklink}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="border-0">{{ __('Total Comment') }}:</th>
-                                                    <td class="border-0">{{$counttaskcomment}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="border-0">{{ __('Subtask Checked / Total Sub Task')}}:</th>
-                                                    <td class="border-0">{{$totalchecked}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="border-0">{{ __('Minimum Link Per Tasks')}}:</th>
-                                                    <td class="border-0">{{$rataratalink}} {{'Link'}}</td>
-                                                </tr>
-                                                <tr>
-                                                    <th class="border-0">{{ __('Minimum Comment Per Tasks')}}:</th>
-                                                    <td class="border-0">{{$rataratacomment}} {{'Comment'}}</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endif --}}
+                
                 @php
                 $lastStage=\App\Models\TaskStage::where('created_by',\Auth::user()->creatorId())->orderby('id','desc')->first();
 
@@ -458,26 +405,12 @@
                                                         ->whereRaw("find_in_set('" . $user->id . "', assign_to)")
                                                         ->count();
 
-                                                    $logged_hours = 0;
-                                                    $timesheets = App\Models\Timesheet::where('project_id', $project->id)
-                                                        ->where('created_by', $user->id)
-                                                        ->get();
                                                 @endphp
-
-                                                @foreach($timesheets as $timesheet)
-                                                    @php
-                                                        $hours = date('H', strtotime($timesheet->time));
-                                                        $minutes = date('i', strtotime($timesheet->time));
-                                                        $total_hours = $hours + ($minutes / 60);
-                                                        $logged_hours += $total_hours;
-                                                        $hours_format_number = number_format($logged_hours, 2, '.', '');
-                                                    @endphp
-                                                @endforeach
                                                 <tr>
                                                     <td>{{$user->name}}</td>
                                                     <td>{{$total_user_task}}</td>
                                                     <td>{{$total_complete_task}}</td>
-                                                    <td>{{$hours_format_number}}</td>
+                                                    <td>{{ $project->totalHoursUser($user->id) }} {{__('H')}}</td>
                                                 </tr>
                                             @endif
                                         @endforeach
@@ -500,103 +433,6 @@
             </div>
         </div> -->
 
-        @if($project->label == 'Audit')
-        <div class="col-sm-12 mt-3">
-            <div class="card">
-                <div class="card-body mt-3 mx-2">
-                    <div class="row mt-2">
-                        <div class="table-responsive">
-                            <table class="table datatable">
-                                <thead>
-                                    <tr>
-                                        <th>{{ __('Category Task') }}</th>
-                                        <th>{{ __('Task Name') }}</th>                                        
-                                        <th>{{ __('Start Date') }}</th>
-                                        <th>{{ __('End Date') }}</th>
-                                        <th>{{ __('Assigned to') }}</th>
-                                        <th> {{__('Total Estimated Hours')}}</th>
-                                        <th> {{__('Total Logged Hours')}}</th>
-                                        <th>{{ __('Priority') }}</th>
-                                        <th>{{ __('Stage') }}</th>
-                                    </tr>
-                                </thead>
-                                    <tbody class="list">
-                                    @foreach($tasks as $task)
-                                        @php
-                                                $hours_format_number = 0;
-                                                $total_hours = 0;
-                                                $hourdiff_late = 0;
-                                                $esti_late_hour =0;
-                                                $esti_late_hour_chart=0;
-
-                                                $total_user_task = App\Models\ProjectTask::where('project_id',$project->id)->whereRaw("FIND_IN_SET(?,  assign_to) > 0", [$user->id])->get()->count();
-
-                                                $all_task = App\Models\ProjectTask::where('project_id',$project->id)->whereRaw("FIND_IN_SET(?,  assign_to) > 0", [$user->id])->get();
-
-                                                $total_complete_task = App\Models\ProjectTask::join('task_stages','task_stages.id','=','project_tasks.stage_id')
-                                                ->where('task_stages.project_id','=',$project->id)->where('stage_id',4)->where('assign_to','=',$user->id)->get()->count();
-
-                                                $logged_hours = 0;
-                                                $timesheets = App\Models\Timesheet::where('project_id',$project->id)->where('task_id' ,$task->id)->get();
-                                        @endphp
-                                        @foreach($timesheets as $timesheet)
-
-                                                @php
-
-                                                    $hours =  date('H', strtotime($timesheet->time));
-                                                    $minutes =  date('i', strtotime($timesheet->time));
-                                                    $total_hours = $hours + ($minutes/60) ;
-                                                    $logged_hours += $total_hours ;
-                                                    $hours_format_number = number_format($logged_hours, 2, '.', '');
-                                                @endphp
-                                        @endforeach
-                                        <tr>
-                                            <td>{{$task->category_templates->name}}</td>
-                                            <td>{{$task->name}}</td>
-                                            <td>{{$task->start_date}}</td>
-                                            <td>{{$task->end_date}}</td>
-                                            <td>
-                                                <div class="avatar-group">
-                                                    @if($task->users()->count() > 0)
-                                                        @if($users = $task->users())
-                                                            @foreach($users as $key => $user)
-                                                                @if($key < 3)
-                                                                    <a href="#" class="avatar rounded-circle avatar-sm">
-                                                                        <img src="{{$user->getImgImageAttribute()}}" title="{{ $user->name }}">
-                                                                    </a>
-                                                                @else
-                                                                    @break
-                                                                @endif
-                                                            @endforeach
-                                                        @endif
-                                                        @if(count($users) > 3)
-                                                            <a href="#" class="avatar rounded-circle avatar-sm">
-                                                                <img src="{{$user->getImgImageAttribute()}}">
-                                                            </a>
-                                                        @endif
-                                                    @else
-                                                        {{ __('-') }}
-                                                    @endif
-                                                </div>
-                                            </td>
-                                            <td>{{$task->estimated_hrs. ' H'}}</td>
-                                            <td>{{$hours_format_number. ' H'}}</td>
-                                            <td>
-                                                <div class="">
-                                                    <span class="badge p-2 px-3 status_badge rounded bg-{{\App\Models\ProjectTask::$priority_color[$task->priority]}}">{{ \App\Models\ProjectTask::$priority[$task->priority] }}</span>
-                                                </div>
-                                            </td>
-                                            <td>{{ $task->stage->name }}</td>
-                                        </tr>
-                                    @endforeach
-                                    </tbody>
-                            </table>
-                            </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @else
         <div class="col-sm-12 mt-3">
             <div class="card">
                 <div class="card-body mt-3 mx-2">
@@ -690,7 +526,6 @@
                 </div>
             </div>
         </div>
-        @endif
 
     </div>
 </div>
@@ -867,6 +702,53 @@
 
         var chart = new ApexCharts(document.querySelector("#chart-hours"), options);
         chart.render();
+
+        var options = {
+            series: [{
+                name: 'Estimated Hours',
+                data: [
+                    {!! json_encode($estimated_hours['partners']) !!},
+                    {!! json_encode($estimated_hours['manager']) !!},
+                    {!! json_encode($estimated_hours['senior_associate']) !!},
+                    {!! json_encode($estimated_hours['associate']) !!},
+                    {!! json_encode($estimated_hours['intern']) !!}
+                ]
+            }, {
+                name: 'Logged Hours',
+                data: [
+                    {!! json_encode($real_hours['partners'] ?? 0) !!},
+                    {!! json_encode($real_hours['manager'] ?? 0) !!},
+                    {!! json_encode($real_hours['senior_associate'] ?? 0) !!},
+                    {!! json_encode($real_hours['associate'] ?? 0) !!},
+                    {!! json_encode($real_hours['intern'] ?? 0) !!}
+                ]
+            }],
+            chart: {
+                height: 400,
+                type: 'bar',
+            },
+            colors: ['#963aff', '#ffa21d'],
+            plotOptions: {
+                bar: {
+                    horizontal: false,
+                    columnWidth: '50%',
+                    endingShape: 'rounded'
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            xaxis: {
+                categories: ['Partners', 'Manager', 'Senior Associate', 'Associate', 'Intern'],
+            },
+            legend: {
+                show: true
+            }
+        };
+
+        var chart = new ApexCharts(document.querySelector("#chart-project-hours"), options);
+        chart.render();
+
 
 
 

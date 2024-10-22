@@ -146,7 +146,6 @@
                                     <!-- <td>{{$trecker->name}}</td> -->
                                     <td>{{date("l, d-m-Y",strtotime($trecker->start_time))}}</td>
                                     <td>{{!empty($trecker->user->name)?$trecker->user->name:'-'}}</td>
-                                    <td>{{!empty($trecker->tasks->name)?$trecker->tasks->name:'-'}}</td>
                                     <td>{{!empty($trecker->project_name)?$trecker->project_name:'-'}}</td>
                                     <td>{{date("H:i:s",strtotime($trecker->start_time))}}</td>
                                     <td>{{date("H:i:s",strtotime($trecker->end_time))}}</td>

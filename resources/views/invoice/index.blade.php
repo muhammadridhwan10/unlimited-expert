@@ -171,8 +171,8 @@
 {{--                            @if (!\Auth::guard('customer')->check())--}}
                                 <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
                                     <div class="btn-box">
-                                        {{ Form::label('client', __('Client'),['class'=>'form-label'])}}
-                                        {{ Form::select('client', $client, isset($_GET['client']) ? $_GET['client'] : '', ['class' => 'form-control select']) }}
+                                        {{ Form::label('client', __('Client'), ['class' => 'form-label']) }}
+                                        {{ Form::select('client', $client, isset($_GET['client']) ? $_GET['client'] : null, ['class' => 'form-control select2','id'=>'choices-multiple1']) }}
                                     </div>
                                 </div>
 {{--                            @endif--}}

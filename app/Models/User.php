@@ -3005,4 +3005,109 @@ class User extends Authenticatable
         }
     }
 
+    public function userProject($user_id)
+    {
+
+        $projectIds = ProjectUser::where('user_id', $user_id)->pluck('project_id');
+
+        $projects = Project::whereIn('id', $projectIds)->orderBy('end_date', 'desc')->paginate(10);
+
+        return $projects;
+    }
+
+    public function userTracker($user_id, $filter = null)
+    {
+        $query = TimeTracker::where('created_by', $user_id)->orderBy('id', 'desc');
+
+        if ($filter) {
+            switch ($filter) {
+                case 'this_month':
+                    $query->whereMonth('start_time', date('m'))
+                        ->whereYear('start_time', date('Y'));
+                    break;
+
+                case 'last_7_days':
+                    $query->where('start_time', '>=', now()->subDays(7));
+                    break;
+
+                case 'last_month':
+                    $query->whereMonth('start_time', '=', now()->subMonth()->month)
+                        ->whereYear('start_time', '=', now()->subMonth()->year);
+                    break;
+            }
+        }
+
+        // Lanjutkan dengan paginasi
+        return $query->paginate(10)->appends(['filter' => $filter]);
+    }
+
+    public function userTimesheet($user_id, $filter = null)
+    {
+        // Mulai query dasar
+        $query = Timesheet::where('created_by', $user_id)->orderBy('id', 'desc');
+
+        // Terapkan filter berdasarkan periode waktu
+        if ($filter) {
+            switch ($filter) {
+                case 'this_month':
+                    $query->whereMonth('date', date('m'))
+                        ->whereYear('date', date('Y'));
+                    break;
+
+                case 'last_7_days':
+                    $query->where('date', '>=', now()->subDays(7));
+                    break;
+
+                case 'last_month':
+                    $query->whereMonth('date', '=', now()->subMonth()->month)
+                        ->whereYear('date', '=', now()->subMonth()->year);
+                    break;
+            }
+        }
+
+        // Lanjutkan dengan paginasi
+        return $query->paginate(10)->appends(['filter' => $filter]);
+    }
+
+
+    public function getTotalTimesheetHours($userId, $filter = null)
+    {
+        $query = Timesheet::where('created_by', $userId);
+
+        // Terapkan filter jika ada
+        if ($filter) {
+            switch ($filter) {
+                case 'this_month':
+                    $query->whereMonth('date', date('m'))
+                        ->whereYear('date', date('Y'));
+                    break;
+
+                case 'last_7_days':
+                    $query->where('date', '>=', now()->subDays(7));
+                    break;
+
+                case 'last_month':
+                    $query->whereMonth('date', '=', now()->subMonth()->month)
+                        ->whereYear('date', '=', now()->subMonth()->year);
+                    break;
+            }
+        }
+
+        $times = $query->pluck('time');
+        $totalSeconds = 0;
+
+        foreach ($times as $time) {
+            list($hours, $minutes, $seconds) = explode(':', $time);
+            $totalSeconds += $hours * 3600 + $minutes * 60 + $seconds;
+        }
+
+        $hours = floor($totalSeconds / 3600);
+        $minutes = floor(($totalSeconds % 3600) / 60);
+        $seconds = $totalSeconds % 60;
+
+        return sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+    }
+
+
+
 }

@@ -318,7 +318,7 @@
                                     </div>
                                     <div class="ms-3">
                                         <small class="text-muted">{{__('Total')}}</small>
-                                        <h6 class="m-0">{{__('Budget')}}</h6>
+                                        <h6 class="m-0">{{__('Fee')}}</h6>
                                     </div>
                                 </div>
                             </div>
@@ -562,7 +562,7 @@
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
-                            <h5>{{ __('Project Offerings')}}</h5>
+                            <h5>{{ __('Project Offering')}}</h5>
                         </div>
                         <div class="card-body" style="min-height: 280px;">
                             <div class="row">
@@ -575,44 +575,52 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                    @if(isset($project_offerings) && !empty($project_offerings) > 0)
                                         <tr>
                                             <td>{{ __('Partners') }}</td>
-                                            <td>{{ $project_offerings->als_partners . ' H' }}</td>
-                                            <td>{{ \Auth::user()->priceFormat($project_offerings->rate_partners) }}</td>
+                                            <td>{{ $project_offerings->als_partners ? $project_offerings->als_partners . ' H' : __('No Data Available') }}</td>
+                                            <td>{{ $project_offerings->rate_partners ? \Auth::user()->priceFormat($project_offerings->rate_partners) : __('No Data Available') }}</td>
                                         </tr>
                                         <tr>
                                             <td>{{ __('Manager') }}</td>
-                                            <td>{{ $project_offerings->als_manager . ' H' }}</td>
-                                            <td>{{ \Auth::user()->priceFormat($project_offerings->rate_manager) }}</td>
+                                            <td>{{ $project_offerings->als_manager ? $project_offerings->als_manager . ' H' : __('No Data Available') }}</td>
+                                            <td>{{ $project_offerings->rate_manager ? \Auth::user()->priceFormat($project_offerings->rate_manager) : __('No Data Available') }}</td>
                                         </tr>
                                         <tr>
                                             <td>{{ __('Senior Associate') }}</td>
-                                            <td>{{ $project_offerings->als_senior_associate . ' H' }}</td>
-                                            <td>{{ \Auth::user()->priceFormat($project_offerings->rate_senior_associate) }}</td>
+                                            <td>{{ $project_offerings->als_senior_associate ? $project_offerings->als_senior_associate . ' H' : __('No Data Available') }}</td>
+                                            <td>{{ $project_offerings->rate_senior_associate ? \Auth::user()->priceFormat($project_offerings->rate_senior_associate) : __('No Data Available') }}</td>
                                         </tr>
                                         <tr>
                                             <td>{{ __('Associate') }}</td>
-                                            <td>{{ $project_offerings->als_associate . ' H' }}</td>
-                                            <td>{{ \Auth::user()->priceFormat($project_offerings->rate_associate) }}</td>
+                                            <td>{{ $project_offerings->als_associate ? $project_offerings->als_associate . ' H' : __('No Data Available') }}</td>
+                                            <td>{{ $project_offerings->rate_associate ? \Auth::user()->priceFormat($project_offerings->rate_associate) : __('No Data Available') }}</td>
                                         </tr>
                                         <tr>
                                             <td>{{ __('Assistant') }}</td>
-                                            <td>{{ $project_offerings->als_intern . ' H' }}</td>
-                                            <td>{{ \Auth::user()->priceFormat($project_offerings->rate_intern) }}</td>
+                                            <td>{{ $project_offerings->als_intern ? $project_offerings->als_intern . ' H' : __('No Data Available') }}</td>
+                                            <td>{{ $project_offerings->rate_intern ? \Auth::user()->priceFormat($project_offerings->rate_intern) : __('No Data Available') }}</td>
                                         </tr>
                                         <tr>
                                             <td><strong>{{ __('Total') }}</strong></td>
                                             <td>
                                                 <strong>
-                                                    {{ $project_offerings->als_partners + $project_offerings->als_manager + $project_offerings->als_senior_associate + $project_offerings->als_associate + $project_offerings->als_intern . ' H' }}
+                                                    {{ ($project_offerings->als_partners + $project_offerings->als_manager + $project_offerings->als_senior_associate + $project_offerings->als_associate + $project_offerings->als_intern) ? 
+                                                    ($project_offerings->als_partners + $project_offerings->als_manager + $project_offerings->als_senior_associate + $project_offerings->als_associate + $project_offerings->als_intern) . ' H' : __('No Data Available') }}
                                                 </strong>
                                             </td>
                                             <td>
                                                 <strong>
-                                                    {{ \Auth::user()->priceFormat($project_offerings->rate_partners + $project_offerings->rate_manager + $project_offerings->rate_senior_associate + $project_offerings->rate_associate + $project_offerings->rate_intern) }}
+                                                    {{ ($project_offerings->rate_partners + $project_offerings->rate_manager + $project_offerings->rate_senior_associate + $project_offerings->rate_associate + $project_offerings->rate_intern) ? 
+                                                    \Auth::user()->priceFormat($project_offerings->rate_partners + $project_offerings->rate_manager + $project_offerings->rate_senior_associate + $project_offerings->rate_associate + $project_offerings->rate_intern) : __('No Data Available') }}
                                                 </strong>
                                             </td>
                                         </tr>
+                                    @else
+                                        <tr>
+                                            <th scope="col" colspan="7"><h6 class="text-center">{{__('No Projects Offering Found.')}}</h6></th>
+                                        </tr>
+                                    @endif
                                     </tbody>
                                 </table>
                             </div>

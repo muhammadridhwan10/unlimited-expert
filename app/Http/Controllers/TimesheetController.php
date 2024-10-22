@@ -659,24 +659,20 @@ class TimesheetController extends Controller
         }
         else
         {
-            $employee = Employee::where('user_id', \Auth::user()->id)->first();
-            $employeeTimesheet = Timesheet::where('created_by',\Auth::user()->id);
+            $currentYear = now()->year;
+            $employeeTimesheet = Timesheet::query();
+
+            $employee = User::where('type', '!=', 'client' )->get()->pluck('name', 'id');
+            $employee->prepend('Select Employee', '0');
+
             $client =   User::where('type','=','client')->pluck('name','id');
             $client->prepend('Select Client', '');
 
             $filter_project = $request->project_id;
             $filter_status = $request->status;
             $filter_client = $request->client_id;
-            $employess =   User::where('type','!=','client')->pluck('name','id');
 
-            $assign_pro_ids = ProjectUser::where('user_id',\Auth::user()->id)->pluck('project_id');
-
-            $project      = Project::with(['tasks' => function($query)
-            {
-                $user = auth()->user();
-                $query->whereRaw("find_in_set('" . $user->id . "',assign_to)")->get();
-    
-            }])->whereIn('id', $assign_pro_ids)->get()->pluck('project_name', 'id');
+            $project      = Project::get()->pluck('project_name', 'id');
             $project->prepend('All Project', '0');
 
             if (!empty($request->user_id)) {
@@ -689,6 +685,11 @@ class TimesheetController extends Controller
                 ->whereHas('project', function ($query) use ($filter_status) {
                     $query->where('status', $filter_status);
                 });
+            }
+
+            if (!empty($request->date)) {
+                $selectedDate = $request->date;
+                $employeeTimesheet->whereDate('date', $selectedDate);
             }
 
             if (!empty($request->project_id)) {
@@ -705,11 +706,6 @@ class TimesheetController extends Controller
                 });
             }
 
-            if (!empty($request->date)) {
-                $selectedDate = $request->date;
-                $employeeTimesheet->whereDate('date', $selectedDate);
-            }
-
             if (!empty($request->month)) {
                 $month = date('m', strtotime($request->month));
                 $year  = date('Y', strtotime($request->month));
@@ -719,6 +715,8 @@ class TimesheetController extends Controller
 
                 $employeeTimesheet->whereBetween('date', [$start_date, $end_date]);
             } 
+
+            $employeeTimesheet->whereYear('date', $currentYear);
 
             $totalTimesheet = $employeeTimesheet->get();
             $totalSeconds = 0;

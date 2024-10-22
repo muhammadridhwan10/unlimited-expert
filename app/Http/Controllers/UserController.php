@@ -635,4 +635,19 @@ class UserController extends Controller
         return redirect()->back()->with('success', 'User successfully deleted.');
     }
 
+    public function show(User $user)
+    {
+        if(\Auth::user()->can('manage user'))
+        {
+            
+            $filter = request()->input('filter');
+
+            return view('user.show', compact('user', 'filter'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+    }
+
 }

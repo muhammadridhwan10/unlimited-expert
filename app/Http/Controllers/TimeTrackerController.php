@@ -163,6 +163,76 @@ class TimeTrackerController extends Controller
             ]);    
 
         }
+        else
+        {
+            $branch      = Branch::get();
+            $department = Department::get();
+
+            $data['branch']     = __('All');
+            $data['department'] = __('All');
+
+            $employee = Employee::where('user_id', \Auth::user()->id)->first();
+
+            $employeebranch = Employee::where('branch_id', $employee->branch_id);
+            $employees = $employeebranch->pluck('user_id');
+
+            $employeeTimeTracker = TimeTracker::whereIn('created_by', $employees);
+
+            $client =   User::where('type','=','client')->pluck('name','id');
+            $filter_clients = $request->client_id;
+
+            $employess = User::whereIn('id', $employees)
+            ->where('type', '!=', 'client')
+            ->where('is_active', 1)
+            ->pluck('name', 'id');
+
+
+            $status = Project::$project_status;
+            $label = Project::$label;
+
+            $projectStatus = $request->status;
+            $projectLabel = $request->label;
+
+            if (isset($request->start_date) && !empty($request->start_date)) {
+                $employeeTimeTracker->where('start_time', '>=', $request->start_date);
+            }
+
+            if (isset($request->end_date) && !empty($request->end_date)) {
+                $employeeTimeTracker->where('start_time', '>=', $request->end_date);
+            }
+
+            if (!empty($request->user_ids)) {
+                $selectedEmployees = $request->user_ids;
+                $employeeTimeTracker->where('created_by', $selectedEmployees);
+            }
+
+            if (!empty($request->client_id)) {
+                $employeeTimeTracker->whereHas('project', function ($query) use ($filter_clients) {
+                    $query->whereIn('client_id', (array) $filter_clients);
+                });
+            }
+            
+            if (!empty($request->status)) {
+                $employeeTimeTracker->whereHas('project', function ($query) use ($projectStatus) {
+                    $query->where('status', $projectStatus);
+                });
+            }
+
+            if (!empty($request->label)) {
+                $employeeTimeTracker->whereHas('project', function ($query) use ($projectLabel) {
+                    $query->where('label', $projectLabel);
+                });
+            }
+
+            $employeeTimeTracker = $employeeTimeTracker->orderByDesc('id')->paginate(10)->appends([
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+                'user_ids' => $request->user_ids,
+                'client_id' => $request->client_id,
+                'status' => $request->status,
+                'label' => $request->label,
+            ]); 
+        }
         return view('time_trackers.index',compact('employeeTimeTracker','branch','employess','client', 'department','status','label'));
 
     }

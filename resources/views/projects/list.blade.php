@@ -99,6 +99,15 @@
                                     </td>
                                     <td class="text-end">
                                          <span>
+                                            @can('edit project')
+                                                @if($project->project_offerings == NULL)
+                                                 <div class="action-btn bg-success ms-2">
+                                                    <a href="#" class="mx-3 btn btn-sm d-inline-flex align-items-center" data-url="{{ route('project.time.budget.view', $project->id) }}" data-ajax-popup="true" data-size="lg" data-bs-toggle="tooltip" title="{{__('Add Time Budget')}}" data-title="{{__('Add Time Budget')}}">
+                                                        <i class="ti ti-clock text-white"></i>
+                                                    </a>
+                                                </div>
+                                                @endif
+                                             @endcan
                                              @can('edit project')
                                                  <div class="action-btn bg-warning ms-2">
                                                     <a href="#" class="mx-3 btn btn-sm d-inline-flex align-items-center" data-url="{{ route('invite.project.member.view', $project->id) }}" data-ajax-popup="true" data-size="lg" data-bs-toggle="tooltip" title="{{__('Invite User')}}" data-title="{{__('Invite User')}}">

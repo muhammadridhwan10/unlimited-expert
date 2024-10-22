@@ -30,7 +30,7 @@
 @endpush
 
 @section('content')
-    @if(Auth::user()->type == 'company')
+
     <div class="row">
         <div class="col-sm-12">
             <div class="mt-2 " >
@@ -106,7 +106,6 @@
             </div>
         </div>
     </div>
-    @endif
 
     <div class="row">
         <div class="col-lg-12 col-md-12">

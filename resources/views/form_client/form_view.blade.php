@@ -150,7 +150,7 @@
                                     <div class="step-title text-center">Company Information</div>
                                     <br>
                                     <div class="row">
-                                        <div class="col-md-6">
+                                        {{-- <div class="col-md-6">
                                             <div class="form-group">
                                                 {{ Form::label('name', __('Company Name'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
                                                 {{ Form::text('name', null, array('class' => 'form-control', 'placeholder' => 'Enter Company Name', 'required')) }}
@@ -163,7 +163,7 @@
                                                 {{ Form::text('email', null, array('class' => 'form-control', 'placeholder' => 'Enter Company Email', 'required')) }}
                                                 <div class="error-message" id="email_error"></div>
                                             </div>
-                                        </div>
+                                        </div> --}}
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 {{ Form::label('country', __('Country'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
@@ -262,12 +262,12 @@
                                                 {{ Form::number('total_branch_offices', null, array('class' => 'form-control', 'placeholder' => 'Enter Total Branch Offices', 'required')) }}
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
+                                        {{-- <div class="col-md-6">
                                             <div class="form-group">
                                                 {{ Form::label('npwp', __('Tax Number'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
                                                 {{ Form::text('npwp', null, array('class' => 'form-control', 'placeholder' => 'Enter Tax Number', 'required')) }}
                                             </div>
-                                        </div>
+                                        </div> --}}
                                         <div class="col-md-6">
                                             <div class="form-group">
                                                 {{ Form::label('where_did_you_find_out_about_us', __('Where Did You Find Out About Us?'), ['class' => 'form-label']) }}<span class="text-danger">*</span>

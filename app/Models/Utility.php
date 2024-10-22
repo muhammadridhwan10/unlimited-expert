@@ -392,6 +392,9 @@ class Utility extends Model
             "template13" => "Template KAP MJ Non Signature",
             "template14" => "Template KAP DA Non Signature",
             "template15" => "Template ARA MJ",
+            "template16" => "Template KAP Cancel",
+            "template17" => "Template ARA Cancel",
+            "template18" => "Template XGA Cancel",
             
         ];
 

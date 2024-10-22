@@ -278,6 +278,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                         @endif
                                     </li>
                                     <li class="dash-item {{ request()->is('form-response') ? 'active' : '' }}">
+                                        <a href="{{route('employee-details.index')}}" class="dash-link">
+                                           <span class="dash-mtext">{{__('Employee Details')}}</span>
+                                        </a>
+                                    </li>
+                                    <li class="dash-item {{ request()->is('form-response') ? 'active' : '' }}">
                                         <a href="{{route('form-response.index')}}" class="dash-link">
                                            <span class="dash-mtext">{{__('Personel Assessment')}}</span><sup style="color: red;">Beta</sup>
                                         </a>
@@ -603,6 +608,12 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
 
                          <!--------------------- Start Account ----------------------------------->
 
+                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'marketing-files')?'active':''}}">
+                                <a href="{{route('marketing-files.index')}}" class="dash-link">
+                                    <span class="dash-micon"><i class="ti ti-files"></i></span><span class="dash-mtext">{{__('Marketing Files')}}</span>
+                                </a>
+                            </li>
+                            
                             @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting')
                                 <li class="dash-item dash-hasmenu {{ ( Request::segment(1) == 'project-orders')?' active dash-trigger':''}}">
                                     <a href="#!" class="dash-link"><span class="dash-micon"><i class="ti ti-shopping-cart"></i></span><span class="dash-mtext">{{__('Sales Order ')}}
@@ -714,6 +725,16 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             </ul>
                                         </li> --}}
                                     @endif
+                                    <li class="dash-item {{ (Request::route()->getName() == 'medical-allowance.index' || Request::route()->getName() == 'medical-allowance.create' || Request::route()->getName() == 'medical-allowance.edit') ? ' active' : '' }}">
+                                        <a class="dash-link" href="{{ route('medical-allowance.index') }}">{{__('Medical Allowance')}}</a>
+                                    </li>
+                                    <li class="dash-item {{ (Request::route()->getName() == 'reimbursment-personal.index' || Request::route()->getName() == 'reimbursment-personal.create' || Request::route()->getName() == 'reimbursment-personal.edit') ? ' active' : '' }} ">
+                                        <a class="dash-link" href="{{route('reimbursment-personal.index')}}">{{__('Reimbursment Personal')}}</a>
+                                    </li>
+                                    <li class="dash-item {{ (Request::route()->getName() == 'reimbursment-client.index' || Request::segment(1) == 'reimbursment-client.create' || Request::route()->getName() == 'reimbursment-client.edit') ? ' active' : '' }}">
+                                        <a class="dash-link" href="{{ route('reimbursment-client.index') }}">{{__('Reimbursment Client')}}</a>
+                                    </li>
+
                                     {{-- @if( Gate::check('manage chart of account') || Gate::check('manage journal entry') || Gate::check('balance sheet report') || Gate::check('ledger report') || Gate::check('trial balance report'))
                                     <li class="dash-item dash-hasmenu {{(Request::segment(1) == 'chart-of-account' || Request::segment(1) == 'journal-entry' || Request::segment(2) == 'ledger' ||  Request::segment(2) == 'balance-sheet' ||  Request::segment(2) == 'trial-balance')? 'active dash-trigger' :''}}">
                                         <a class="dash-link" href="#">{{__('Chart of Accounts')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
@@ -944,11 +965,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                         </li>
                                         @endcan
                                     @endif --}}
-                                    @can('manage project task')
+                                    {{-- @can('manage project task')
                                     <li class="dash-item {{ (request()->is('taskboard*') ? 'active' : '')}}">
                                         <a class="dash-link" href="{{ route('taskBoard.view', 'list') }}">{{__('Tasks')}}</a>
                                     </li>
-                                    @endcan
+                                    @endcan --}}
                                     @can('manage timesheet')
                                         @if(\Auth::user()->type !== 'admin' && \Auth::user()->type !== 'company' && \Auth::user()->type !== 'partners')
                                             <li class="dash-item {{ (request()->is('timesheet-list*') ? 'active' : '')}}">
@@ -966,11 +987,6 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                                     <a class="dash-link" href="{{ route('task.calendar',['all']) }}">{{__('Task Calendar')}}</a>
                                                 </li>
                                             @endcan -->
-                                    @if(\Auth::user()->type !== 'admin' && \Auth::user()->type !== 'company')
-                                    <li class="dash-item  {{ (Request::segment(1) == 'time-tracker')?'active open':''}}">
-                                        <a class="dash-link" href="{{ route('time.tracker') }}">{{__('Tracker')}}</a>
-                                    </li>
-                                    @endif
                                     <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'reports-time-projects') ? 'active dash-trigger' : ''}}" href="#hr-report" data-toggle="collapse" role="button" aria-expanded="{{(Request::segment(1) == 'reports-time-projects') ? 'true' : 'false'}}">
                                         <a class="dash-link" href="#">{{__('Reports')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                         <ul class="dash-submenu">
@@ -980,6 +996,18 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'partners')
                                             <li class="dash-item  {{(Request::route()->getName() == 'timesheet.index') ? 'active' : ''}}">
                                                 <a class="dash-link" href="{{route('timesheet.index') }}">{{__('Timesheet Reports')}}</a>
+                                            </li>
+                                            @endif
+                                            @can('manage timesheet')
+                                                @if(\Auth::user()->type !== 'admin' && \Auth::user()->type !== 'company' && \Auth::user()->type !== 'partners')
+                                                    <li class="dash-item {{ (request()->is('timesheet-list*') ? 'active' : '')}}">
+                                                        <a class="dash-link" href="{{route('timesheet.index')}}">{{__('Timesheet Reports')}}</a>
+                                                    </li>
+                                                @endif
+                                            @endcan
+                                            @if(\Auth::user()->type !== 'admin' && \Auth::user()->type !== 'company')
+                                            <li class="dash-item  {{ (Request::segment(1) == 'time-tracker')?'active open':''}}">
+                                                <a class="dash-link" href="{{ route('time.tracker') }}">{{__('Project Tracker')}}</a>
                                             </li>
                                             @endif
                                             {{-- @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'partners')

@@ -72,7 +72,6 @@ class FormClientController extends Controller
         $rules = [
             'name' => 'required|string|max:255',
             'client_business_sector_id' => 'required|integer',
-            'email' => 'required|string|email|max:255',
             'name_pic' => 'required|string|max:255',
             'email_pic' => 'required|string|email|max:255',
             'telp_pic' => 'required|string|max:20',
@@ -188,9 +187,7 @@ class FormClientController extends Controller
     {
 
         $rules = [
-            'name' => 'required|string|max:255',
             'client_business_sector_id' => 'required|integer',
-            'email' => 'required|string|email|max:255',
             'name_pic' => 'required|string|max:255',
             'email_pic' => 'required|string|email|max:255',
             'telp_pic' => 'required|string|max:20',
@@ -199,7 +196,6 @@ class FormClientController extends Controller
             'total_company_profit_or_loss' => 'required|numeric',
             'total_employee' => 'required|integer',
             'total_branch_offices' => 'required|integer',
-            'npwp' => 'required|string|max:25',
             'country' => 'required|string|max:100',
             'city' => 'required|string|max:100',
             'periode' => 'required|string',
@@ -228,11 +224,10 @@ class FormClientController extends Controller
         }
 
         $projectOrder = new ProjectOrders();
-        $projectOrder->name = $request->name;
+        $projectOrder->name = 'Client';
         $projectOrder->client_business_sector_id = $request->client_business_sector_id;
         $projectOrder->client_ownership_id = $request->client_ownership_id ?? 0;
         $projectOrder->accounting_standars_id = $request->accounting_standars_id ?? 0;
-        $projectOrder->email = $request->email;
         $projectOrder->name_invoice = $request->name_invoice;
         $projectOrder->position = $request->position;
         $projectOrder->telp = $request->telp;
@@ -244,7 +239,6 @@ class FormClientController extends Controller
         $projectOrder->total_company_profit_or_loss = $request->total_company_profit_or_loss;
         $projectOrder->total_employee = $request->total_employee;
         $projectOrder->total_branch_offices = $request->total_branch_offices;
-        $projectOrder->npwp = $request->npwp;
         $projectOrder->address = $request->address;
         $projectOrder->country = $request->country;
         $projectOrder->state = $request->state;
@@ -257,7 +251,7 @@ class FormClientController extends Controller
 
         $projectOrder->save();
 
-        return redirect()->back()->with('success', __('Data submit successfully. We will contact you soon, please wait up to 7 days.'));
+        return redirect()->back()->with('success', __('Data submit successfully. We will contact you soon, please wait up to 3-7 days.'));
     }
 
     public function updateStatus($id, Request $request)
@@ -305,7 +299,7 @@ class FormClientController extends Controller
                 'ph_assistant' => 'required|numeric',
                 'rate_assistant' => 'required|numeric',
                 'estimated_hrs' => 'required|numeric',
-                'ph_assbudgetistant' => 'required|numeric',
+                'ph_assistant' => 'required|numeric',
             ]
         );
 
@@ -337,5 +331,5 @@ class FormClientController extends Controller
 
         return redirect()->route('form_client.index')->with('success', __('Time Budget Data Successfully Created'));
 
-}
+    }
 }

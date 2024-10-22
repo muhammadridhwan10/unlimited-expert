@@ -2591,6 +2591,20 @@ Route::get(
 );
 
 Route::get(
+    'time-budget/{id}', [
+    'as' => 'project.time.budget.view',
+    'uses' => 'ProjectController@timeBudgetView',
+]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post('project/{id}/add-time-budget', 'ProjectController@addTimeBudget')->name('save.time.budgets');
+
+Route::get(
     'invite-project-client/{id}', [
     'as' => 'invite.project.client.view',
     'uses' => 'ProjectController@inviteClientView',
@@ -4536,3 +4550,16 @@ Route::post('tracker/project/{id}', 'TimeTrackerController@trackerJson')->name('
     ]
 );
 Route::get('/assessment/{user_id}/{year}', 'FormResponseController@assessment')->name('form-response.assessment');
+Route::resource('marketing-files', 'MarketingFileController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::post('marketing-files/file', ['as' => 'marketing-files.view','uses' => 'MarketingFileController@getFile']);
+Route::resource('employee-details', 'EmployeeDetailController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
