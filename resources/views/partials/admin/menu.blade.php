@@ -991,7 +991,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                         <a class="dash-link" href="#">{{__('Reports')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                         <ul class="dash-submenu">
                                             <li class="dash-item  {{(Request::route()->getName() == 'project_report.index' || Request::route()->getName() == 'project_report.show') ? 'active' : ''}}">
-                                                <a class="dash-link" href="{{route('project_report.index') }}">{{__('Project Progres Reports')}}</a>
+                                                <a class="dash-link" href="{{route('project_report.index') }}">{{__('Project Progress Reports')}}</a>
                                             </li>
                                             @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'partners')
                                             <li class="dash-item  {{(Request::route()->getName() == 'timesheet.index') ? 'active' : ''}}">

@@ -181,10 +181,34 @@ class TimeTrackerController extends Controller
             $client =   User::where('type','=','client')->pluck('name','id');
             $filter_clients = $request->client_id;
 
-            $employess = User::whereIn('id', $employees)
-            ->where('type', '!=', 'client')
-            ->where('is_active', 1)
-            ->pluck('name', 'id');
+
+            if($employee->branch_id == 1)
+            {
+                $employess = User::whereIn('id', $employees)
+                ->where('type', '!=', 'client')
+                ->whereHas('employee', function ($query) {
+                    $query->where('branch_id', 1);
+                })
+                ->get()->pluck('name', 'id');
+            }
+            elseif($employee->branch_id  == 2)
+            {
+                $employess = User::whereIn('id', $employees)
+                ->where('type', '!=', 'client')
+                ->whereHas('employee', function ($query) {
+                    $query->where('branch_id', 2);
+                })
+                ->get()->pluck('name', 'id');
+            }
+            elseif($employee->branch_id  == 3)
+            {
+                $employess = User::whereIn('id', $employees)
+                ->where('type', '!=', 'client')
+                ->whereHas('employee', function ($query) {
+                    $query->where('branch_id', 3);
+                })
+                ->get()->pluck('name', 'id');
+            }
 
 
             $status = Project::$project_status;

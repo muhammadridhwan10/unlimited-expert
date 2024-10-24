@@ -779,20 +779,24 @@
                                                                 <div data-v-f2a183a6="" class="d-table-label">{{__('Tax')}}:</div>
                                                                 <div data-v-f2a183a6="" class="d-table-value"> 
                                                                 @if ($invoice->currency == '$')
-                                                                    {{Utility::priceFormat2($settings,$invoice->getTotalTax())}}
+                                                                    {{Utility::priceFormat2($settings,floor($invoice->getTotalTax()))}}
+                                                                @elseif($invoice->currency == '€')
+                                                                    {{Utility::priceFormat3($settings,floor($invoice->getTotalTax()))}}
                                                                 @else
-                                                                    {{Utility::priceFormat($settings,$invoice->getTotalTax())}}
+                                                                    {{Utility::priceFormat($settings,floor($invoice->getTotalTax()))}}
                                                                 @endif 
                                                                 </div>
                                                             </div>
                                                     @endif
-                                                    <div data-v-f2a183a6="" class="d-table-summary-item" style="background: {{$color}};color:{{$font_color}}">
+                                                    <div data-v-f2a183a6="" class="d-table-summary-item">
                                                         <div data-v-f2a183a6="" class="d-table-label"><strong>{{__('Total')}} :</strong></div>
                                                         <div data-v-f2a183a6="" class="d-table-value"><strong>
-                                                        @if ($invoice->currency == '$')
-                                                                    {{Utility::priceFormat2($settings,$invoice->getSubTotal() - $invoice->getTotalTax())}}
+                                                                @if ($invoice->currency == '$')
+                                                                    {{Utility::priceFormat2($settings,$invoice->getSubTotal() - floor($invoice->getTotalTax()))}}
+                                                                @elseif($invoice->currency == '€')
+                                                                    {{Utility::priceFormat3($settings, $invoice->getSubTotal() - floor($invoice->getTotalTax()))}}
                                                                 @else
-                                                                    {{Utility::priceFormat($settings,$invoice->getSubTotal() - $invoice->getTotalTax())}}
+                                                                    {{Utility::priceFormat($settings,$invoice->getSubTotal() - floor($invoice->getTotalTax()))}}
                                                                 @endif
                                                             </strong></div>
                                                     </div>

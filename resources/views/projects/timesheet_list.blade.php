@@ -88,14 +88,12 @@
                                     </select>
                                 </div>
                             </div>
-                            @if(Auth::user()->type == "admin" || Auth::user()->type == "company" || Auth::user()->type == "partners")
                             <div class="col-auto">
                                 <div class="btn-box" style = "width:400px;">
                                     {{ Form::label('user_id', __('Employee'), ['class' => 'form-label']) }}
                                     {{ Form::select('user_id', $employee, isset($_GET['user_id']) ? $_GET['user_id'] : 0, ['class' => 'form-control select2']) }}
                                 </div>
                             </div>
-                            @endif
                             <div class="col-auto">
                                 <div class="row">
                                     <div class="col-auto mt-4">

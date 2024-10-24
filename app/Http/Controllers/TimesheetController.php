@@ -662,7 +662,44 @@ class TimesheetController extends Controller
             $currentYear = now()->year;
             $employeeTimesheet = Timesheet::query();
 
-            $employee = User::where('type', '!=', 'client' )->get()->pluck('name', 'id');
+            // Ambil data user yang login
+            $loggedInUser = \Auth::user();
+
+            // Ambil cabang dari user yang login
+            $branchId = $loggedInUser->employee->branch_id;
+
+            // Filter berdasarkan cabang yang sama
+            $employeeTimesheet->whereHas('user', function ($query) use ($branchId) {
+                $query->whereHas('employee', function ($subQuery) use ($branchId) {
+                    $subQuery->where('branch_id', $branchId);
+                });
+            });
+
+            if($branchId == 1)
+            {
+                $employee = User::where('type', '!=', 'client')
+                ->whereHas('employee', function ($query) {
+                    $query->where('branch_id', 1);
+                })
+                ->get()->pluck('name', 'id');
+            }
+            elseif($branchId == 2)
+            {
+                $employee = User::where('type', '!=', 'client')
+                ->whereHas('employee', function ($query) {
+                    $query->where('branch_id', 2);
+                })
+                ->get()->pluck('name', 'id');
+            }
+            elseif($branchId == 3)
+            {
+                $employee = User::where('type', '!=', 'client')
+                ->whereHas('employee', function ($query) {
+                    $query->where('branch_id', 3);
+                })
+                ->get()->pluck('name', 'id');
+            }
+
             $employee->prepend('Select Employee', '0');
 
             $client =   User::where('type','=','client')->pluck('name','id');

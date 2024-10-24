@@ -40,7 +40,7 @@ class ProjectReportController extends Controller
                 $status=[];
 
             }
-            elseif(\Auth::user()->type == 'company')
+            elseif(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'partners')
             {
                 $client =   User::where('type','=','client')->pluck('name','id');
                 $client->prepend('Select Client', '');
@@ -84,57 +84,8 @@ class ProjectReportController extends Controller
                 $status = Project::$project_status;
                 $label = Project::$label;
                 $tags = Project::$tags;
-
             }
-            elseif(\Auth::user()->type == 'admin')
-            {
-
-                $client =   User::where('type','=','client')->pluck('name','id');
-                $client->prepend('Select Client', '');
-
-                if(isset($request->all_users)&& !empty($request->all_users)){
-                    $projects = Project::select('projects.*')
-                        ->leftjoin('project_users', 'project_users.project_id', 'projects.id')
-                        ->where('project_users.user_id', '=', $request->all_users)->orderby('id','desc');
-
-
-                }else{
-                    $projects = Project::orderby('id','desc')->get();
-                }
-
-                if(isset($request->status)&& !empty($request->status)){
-                    $projects->where('status', '=', $request->status);
-                }
-                if(isset($request->label)&& !empty($request->label)){
-                    $projects->where('label', '=', $request->label);
-                }
-                if(isset($request->tags)&& !empty($request->tags)){
-                    $projects->where('tags', '=', $request->tags);
-                }
-
-                if (isset($request->start_date) && !empty($request->start_date)) {
-                    $projects->whereHas('timesheets', function ($query) use ($request) {
-                        $query->where('date', '>=', $request->start_date);
-                    });
-                }
-                
-                if (isset($request->end_date) && !empty($request->end_date)) {
-                    $projects->whereHas('timesheets', function ($query) use ($request) {
-                        $query->where('date', '<=', $request->end_date);
-                    });
-                }
-
-                if (!empty($request->client_id)) {
-                    $projects->where('client_id', '=', $request->client_id);
-                }
-
-                $users = User::where('created_by', '=', $user->creatorId())->where('type', '!=', 'client')->get();
-                $status = Project::$project_status;
-                $label = Project::$label;
-                $tags = Project::$tags;
-
-            }
-            else
+            elseif(\Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'staff IT')
             {
                 $client =   User::where('type','=','client')->pluck('name','id');
                 $client->prepend('Select Client', '');
@@ -143,10 +94,10 @@ class ProjectReportController extends Controller
                     $projects = Project::select('projects.*')
                         ->leftjoin('project_users', 'project_users.project_id', 'projects.id')
                         ->where('project_users.user_id', '=', $request->all_users)->orderby('id','desc');
-
-
-                }else{
-                    $projects = Project::orderby('id','desc');
+                }
+                else
+                {
+                    $projects = Project::select('projects.*')->leftjoin('project_users', 'project_users.project_id', 'projects.id')->where('project_users.user_id', '=', $user->id)->orderby('id','desc');
                 }
 
                 if(isset($request->status)&& !empty($request->status)){
@@ -174,7 +125,31 @@ class ProjectReportController extends Controller
                     $projects->where('client_id', '=', $request->client_id);
                 }
 
-                $users = User::where('type', '!=', 'client')->get();
+                if(\Auth::user()->employee->branch_id == 1)
+                {
+                    $users = User::where('type', '!=', 'client')
+                    ->whereHas('employee', function ($query) {
+                        $query->where('branch_id', 1);
+                    })
+                    ->get();
+                }
+                elseif(\Auth::user()->employee->branch_id == 2)
+                {
+                    $users = User::where('type', '!=', 'client')
+                    ->whereHas('employee', function ($query) {
+                        $query->where('branch_id', 2);
+                    })
+                    ->get();
+                }
+                elseif(\Auth::user()->employee->branch_id == 3)
+                {
+                    $users = User::where('type', '!=', 'client')
+                    ->whereHas('employee', function ($query) {
+                        $query->where('branch_id', 3);
+                    })
+                    ->get();
+                }
+
                 $status = Project::$project_status;
                 $label = Project::$label;
                 $tags = Project::$tags;
@@ -286,11 +261,11 @@ class ProjectReportController extends Controller
             
 
             $estimated_hours = [
-                'partners' => $project_offerings->als_partners,
-                'manager' => $project_offerings->als_manager,
-                'senior_associate' => $project_offerings->als_senior_associate,
-                'associate' => $project_offerings->als_associate,
-                'intern' => $project_offerings->als_intern
+                'partners' => $project_offerings->als_partners ?? 0,
+                'manager' => $project_offerings->als_manager ?? 0,
+                'senior_associate' => $project_offerings->als_senior_associate ?? 0,
+                'associate' => $project_offerings->als_associate ?? 0,
+                'intern' => $project_offerings->als_intern ?? 0,
             ];
 
             // dd($real_hours, $estimated_hours);

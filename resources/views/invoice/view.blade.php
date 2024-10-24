@@ -517,7 +517,7 @@
                                                                             @elseif($invoice->currency == '€')
                                                                                 {{ \Auth::user()->priceFormat3($taxPrice) }}
                                                                             @else
-                                                                                {{ \Auth::user()->priceFormat($taxPrice) }}
+                                                                                {{ \Auth::user()->priceFormat(floor($taxPrice)) }}
                                                                             @endif
                                                                         </td>
                                                                     </tr>
@@ -558,7 +558,7 @@
                                                     @elseif($invoice->currency == '€')
                                                          {{ \Auth::user()->priceFormat3($totalTaxPrice) }}
                                                     @else
-                                                        {{ \Auth::user()->priceFormat($totalTaxPrice) }}
+                                                        {{ \Auth::user()->priceFormat(floor($totalTaxPrice)) }}
                                                     @endif   
                                                 </b></td>
                                                 {{-- <td>  @if($invoice->discount_apply==1)
@@ -595,7 +595,7 @@
                                                     @elseif($invoice->currency == '€')
                                                         {{ \Auth::user()->priceFormat3($invoice->getTotalTax()) }}
                                                     @else
-                                                        {{ \Auth::user()->priceFormat($invoice->getTotalTax()) }}
+                                                        {{ \Auth::user()->priceFormat(floor($invoice->getTotalTax())) }}
                                                     @endif  
                                                 </td>
                                             </tr>
@@ -608,7 +608,7 @@
                                                     @elseif($invoice->currency == '€')
                                                         {{ \Auth::user()->priceFormat3($invoice->getTotal()) }}
                                                     @else
-                                                        {{ \Auth::user()->priceFormat($invoice->getTotal()) }}
+                                                        {{ \Auth::user()->priceFormat($invoice->getSubTotal() - floor($invoice->getTotalTax())) }}
                                                     @endif  
                                                 </td>
                                             </tr>
