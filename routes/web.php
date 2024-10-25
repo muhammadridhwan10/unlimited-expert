@@ -2358,6 +2358,18 @@ Route::get('employee/{id}/overtime/{month}', 'ReportController@employeeOvertime'
         'XSS',
     ]
 );
+Route::get('employee/{id}/timesheet/{month}/{startdate}/{enddate}', 'ReportController@employeeTimesheet')->name('report.employee.timesheet')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('employee/{id}/meeting/{month}/{startdate}/{enddate}', 'ReportController@employeeMeeting')->name('report.employee.meeting')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
 Route::get('reports-payroll', 'ReportController@payroll')->name('report.payroll')->middleware(
     [
         'auth',
@@ -2371,6 +2383,12 @@ Route::get('reports-monthly-attendance', 'ReportController@monthlyAttendance')->
     ]
 );
 Route::get('reports-overtime', 'ReportController@overtime')->name('report.overtime')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('timesheet-report', 'ReportController@timesheet')->name('report.timesheet')->middleware(
     [
         'auth',
         'XSS',

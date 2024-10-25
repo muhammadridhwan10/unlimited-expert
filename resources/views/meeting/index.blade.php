@@ -1,11 +1,11 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{__('Manage Meeting')}}
+    {{__('Manage Meeting Time')}}
 @endsection
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('Meeting')}}</li>
+    <li class="breadcrumb-item">{{__('Meeting Time')}}</li>
 @endsection
 
 @section('action-btn')
@@ -31,6 +31,7 @@
                                 <th>{{__('Meeting title')}}</th>
                                 <th>{{__('Meeting Date')}}</th>
                                 <th>{{__('Meeting Time')}}</th>
+                                <th>{{__('Meeting With')}}</th>
                                 @if(Gate::check('edit meeting') || Gate::check('delete meeting'))
                                     <th width="200px">{{__('Action')}}</th>
                                 @endif
@@ -42,7 +43,14 @@
 
                                     <td>{{ $meeting->title }}</td>
                                     <td>{{  \Auth::user()->dateFormat($meeting->date) }}</td>
-                                    <td>{{  \Auth::user()->timeFormat($meeting->time) }}</td>
+                                    <td>{{  $meeting->time . ' H' }}</td>
+                                    <td>
+                                        @php
+                                            $employeeIds = json_decode($meeting->employee_id);
+                                            $employeeNames = \App\Models\Employee::whereIn('id', $employeeIds)->pluck('name')->toArray();
+                                        @endphp
+                                        {{ implode(', ', $employeeNames) }}
+                                    </td>
                                     @if(Gate::check('edit meeting') || Gate::check('delete meeting'))
                                         <td>
                                             @can('edit meeting')

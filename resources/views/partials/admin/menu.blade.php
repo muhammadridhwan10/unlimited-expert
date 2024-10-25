@@ -204,6 +204,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                            <span class="dash-mtext">{{__('Personel Assessment')}}</span><sup style="color: red;">Beta</sup>
                                         </a>
                                     </li>
+                                    <li class="dash-item {{ request()->is('meeting') ? 'active' : '' }}">
+                                        <a href="{{route('meeting.index')}}" class="dash-link">
+                                           <span class="dash-mtext">{{__('Meeting Time')}}</span><sup style="color: red;">Beta</sup>
+                                        </a>
+                                    </li>
                                     <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'report-hrm') ? 'active dash-trigger' : ''}}" href="#hr-report" data-toggle="collapse" role="button" aria-expanded="{{(Request::segment(1) == 'report-hrm') ? 'true' : 'false'}}">
                                         <a class="dash-link" href="#">{{__('Reports')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                         <ul class="dash-submenu">
@@ -285,6 +290,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                     <li class="dash-item {{ request()->is('form-response') ? 'active' : '' }}">
                                         <a href="{{route('form-response.index')}}" class="dash-link">
                                            <span class="dash-mtext">{{__('Personel Assessment')}}</span><sup style="color: red;">Beta</sup>
+                                        </a>
+                                    </li>
+                                    <li class="dash-item {{ request()->is('meeting') ? 'active' : '' }}">
+                                        <a href="{{route('meeting.index')}}" class="dash-link">
+                                           <span class="dash-mtext">{{__('Meeting Time')}}</span><sup style="color: red;">Beta</sup>
                                         </a>
                                     </li>
                                     <li class="dash-item {{ request()->is('absence-request') ? 'active' : '' }}">
@@ -578,16 +588,19 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                                     <li class="dash-item {{ request()->is('time-tracker') ? 'active' : '' }}">
                                                         <a class="dash-link" href="{{ route('time.tracker') }}">{{__('Project Tracker')}}</a>
                                                     </li>
+                                                    <li class="dash-item {{ request()->is('reports-timesheet') ? 'active' : '' }}">
+                                                        <a class="dash-link" href="{{ route('report.timesheet') }}">{{__('Timesheet Report')}}</a>
+                                                    </li>
                                                     {{-- <li class="dash-item  {{(Request::route()->getName() == 'project_report.index' || Request::route()->getName() == 'project_report.show') ? 'active' : ''}}">
                                                         <a class="dash-link" href="{{route('project_report.index') }}">{{__('Project Progres Reports')}}</a>
                                                     </li> --}}
                                                 </ul>
                                             </li>
                                             <li class="dash-item {{ request()->is('reports-overtime') ? 'active' : '' }}">
-                                                <a class="dash-link" href="{{ route('report.overtime') }}">{{__('Report Overtime')}}</a>
+                                                <a class="dash-link" href="{{ route('report.overtime') }}">{{__('Overtime Report')}}</a>
                                             </li>
                                             <li class="dash-item {{ request()->is('reports-performance') ? 'active' : '' }}">
-                                                <a class="dash-link" href="{{ route('report.performance') }}">{{__('Report Perfomance')}}</a>
+                                                <a class="dash-link" href="{{ route('report.performance') }}">{{__('Perfomance Report')}}</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -995,13 +1008,13 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             </li>
                                             @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'partners')
                                             <li class="dash-item  {{(Request::route()->getName() == 'timesheet.index') ? 'active' : ''}}">
-                                                <a class="dash-link" href="{{route('timesheet.index') }}">{{__('Timesheet Reports')}}</a>
+                                                <a class="dash-link" href="{{route('timesheet.index') }}">{{__('Timesheet Detail Reports')}}</a>
                                             </li>
                                             @endif
                                             @can('manage timesheet')
                                                 @if(\Auth::user()->type !== 'admin' && \Auth::user()->type !== 'company' && \Auth::user()->type !== 'partners')
                                                     <li class="dash-item {{ (request()->is('timesheet-list*') ? 'active' : '')}}">
-                                                        <a class="dash-link" href="{{route('timesheet.index')}}">{{__('Timesheet Reports')}}</a>
+                                                        <a class="dash-link" href="{{route('timesheet.index')}}">{{__('Timesheet Detail Reports')}}</a>
                                                     </li>
                                                 @endif
                                             @endcan

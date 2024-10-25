@@ -14,19 +14,9 @@
             </div>
         </div>
         <div class="col-md-12">
-            <div class="form-group" id="department_div">
-                {{Form::label('department_id',__('Department'),['class'=>'form-label'])}}
-                <select class="form-control select" name="department_id[]" id="department_id" placeholder="Select Department" >
-
-                </select>
-            </div>
-        </div>
-        <div class="col-md-12">
             <div class="form-group" id="employee_div">
-                {{Form::label('employee_id',__('Employee'),['class'=>'form-label'])}}
-                <select class="form-control select" name="employee_id[]" id="employee_id" placeholder="Select Employee" >
-
-                </select>
+                {{Form::label('employee_id',__('Meeting With'),['class'=>'form-label'])}}
+                {{ Form::select('employee_id[]', $employees, isset($_GET['employee_id']) ? $_GET['employee_id'] : null, ['class' => 'form-control select2','id'=>'choices-multiple2','multiple']) }}
             </div>
         </div>
         <div class="col-md-12">
@@ -47,13 +37,6 @@
                 {{Form::time('time',null,array('class'=>'form-control timepicker'))}}
             </div>
         </div>
-        <div class="col-md-12">
-            <div class="form-group">
-                {{Form::label('note',__('Meeting Note'),['class'=>'form-label'])}}
-                {{Form::textarea('note',null,array('class'=>'form-control','placeholder'=>__('Enter Meeting Note')))}}
-            </div>
-        </div>
-
     </div>
 </div>
 <div class="modal-footer">

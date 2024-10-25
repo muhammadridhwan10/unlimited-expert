@@ -19,12 +19,6 @@
                 {{Form::time('time',null,array('class'=>'form-control timepicker'))}}
             </div>
         </div>
-        <div class="col-md-12">
-            <div class="form-group">
-                {{Form::label('note',__('Meeting Note'),['class'=>'form-label'])}}
-                {{Form::textarea('note',null,array('class'=>'form-control','placeholder'=>__('Enter Meeting Note')))}}
-            </div>
-        </div>
 
     </div>
 </div>

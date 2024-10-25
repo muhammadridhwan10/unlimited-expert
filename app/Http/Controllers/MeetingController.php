@@ -20,25 +20,14 @@ class MeetingController extends Controller
         if(\Auth::user()->can('manage meeting'))
         {
             $employees = Employee::get();
-            if(Auth::user()->type == 'employee')
-            {
-                $current_employee = Employee::where('user_id', '=', \Auth::user()->id)->first();
-                $meetings         = Meeting::orderBy('meetings.id', 'desc')
-                                           ->leftjoin('meeting_employees', 'meetings.id', '=', 'meeting_employees.meeting_id')
-                                           ->where('meeting_employees.employee_id', '=', $current_employee->id)
-                                            ->orWhere(function($q) {
-                                                $q->where('meetings.department_id', '["0"]')
-                                                  ->where('meetings.employee_id', '["0"]');
-                                            })
-                                           ->get();
-            }
-            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+
+            if(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $meetings = Meeting::all();
             }
             else
             {
-                $meetings = Meeting::where('created_by', '=', \Auth::user()->creatorId())->get();
+                $meetings = Meeting::where('created_by', '=', \Auth::user()->id)->get();
             }
 
             return view('meeting.index', compact('meetings', 'employees'));
@@ -53,23 +42,12 @@ class MeetingController extends Controller
     {
         if(\Auth::user()->can('create meeting'))
         {
-            if(Auth::user()->type == 'employee')
-            {
-                $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->where('user_id', '!=', \Auth::user()->id)->get()->pluck('name', 'id');
-            }
-            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
-            {
-                $branch      = Branch::all();
-                $departments = Department::all();
-                $employees   = Employee::all()->pluck('name', 'id');
-            }
-            else
-            {
-                $branch      = Branch::where('created_by', '=', \Auth::user()->creatorId())->get();
-                $departments = Department::where('created_by', '=', Auth::user()->creatorId())->get();
-                $employees   = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-            }
-
+            $branch      = Branch::all();
+            $departments = Department::all();
+            $employees                   = Employee::whereHas('user', function($query) {
+                $query->where('is_active', 1);
+            })->pluck('name', 'id');
+            
             return view('meeting.create', compact('employees', 'departments', 'branch'));
         }
         else
@@ -84,9 +62,7 @@ class MeetingController extends Controller
         $validator = \Validator::make(
             $request->all(), [
                                'branch_id' => 'required',
-                               'department_id' => 'required',
                                'employee_id' => 'required',
-                               'department_id' => 'required',
                                'title' => 'required',
                                'date' => 'required',
                                'time' => 'required',
@@ -103,60 +79,25 @@ class MeetingController extends Controller
         {
             $meeting                = new Meeting();
             $meeting->branch_id     = $request->branch_id;
-            $meeting->department_id = json_encode($request->department_id);
             $meeting->employee_id   = json_encode($request->employee_id);
             $meeting->title         = $request->title;
             $meeting->date          = $request->date;
             $meeting->time          = $request->time;
-            $meeting->note          = $request->note;
-            $meeting->created_by    = \Auth::user()->creatorId();
+            $meeting->created_by    = \Auth::user()->id;
 
             $meeting->save();
-
-            if(in_array('0', $request->employee_id))
-            {
-                $departmentEmployee = Employee::whereIn('department_id', $request->department_id)->get()->pluck('id');
-                $departmentEmployee = $departmentEmployee;
-            }
-            else
-            {
-                
-                $departmentEmployee = Employee::where('id', $request->employee_id)->get();
-            }
-            foreach($departmentEmployee as $employee)
+    
+            $employeeIds = $request->employee_id;
+            foreach($employeeIds as $employeeId)
             {
                 $meetingEmployee              = new MeetingEmployee();
                 $meetingEmployee->meeting_id  = $meeting->id; 
-                $meetingEmployee->employee_id = $employee->id;
-                $meetingEmployee->created_by  = \Auth::user()->creatorId();
+                $meetingEmployee->employee_id = $employeeId;
+                $meetingEmployee->created_by  = \Auth::user()->id;
                 $meetingEmployee->save();
             }
 
-            // $zoom = Meeting::orderBy('id', 'DESC')->get();
-            $zoom = Meeting::with('employee')->orderBy('id', 'DESC')->get();
-            $id = json_decode($meeting->employee_id);
-            $data = Employee::whereIn('id', $id)->pluck('email');
-
-            //Email Notification
-            Mail::to($data)->send(new MeetingNotification($meeting));
-
-            //Slack Notification
-            $setting  = Utility::settings(\Auth::user()->creatorId());
-            $branch = Branch::find($request->branch_id);
-            if(isset($setting['meeting_notification']) && $setting['meeting_notification'] ==1){
-                $msg = $request->title .' '.__("meeting created for branch").' '. $branch->name.' '. __("from").' '. $request->date. ' '.__("at").' '.$request->time.'.';
-                Utility::send_slack_msg($msg);
-            }
-
-            //Telegram Notification
-            $setting  = Utility::settings(\Auth::user()->creatorId());
-            $branch = Branch::find($request->branch_id);
-            if(isset($setting['telegram_meeting_notification']) && $setting['telegram_meeting_notification'] ==1){
-                $msg = $request->title .' '.__("meeting created for branch").' '. $branch->name.' '. __("from").' '. $request->date. ' '.__("at").' '.$request->time.'.';
-                Utility::send_telegram_msg($msg);
-            }
-
-            return redirect()->route('meeting.index')->with('success', __('Meeting  successfully created.'));
+            return redirect()->route('meeting.index')->with('success', __('Meeting Time successfully created.'));
         }
         else
         {
@@ -173,37 +114,13 @@ class MeetingController extends Controller
     {
         if(\Auth::user()->can('edit meeting'))
         {
-            $meeting = Meeting::find($meeting);
-            if($meeting->created_by == Auth::user()->creatorId())
-            {
-                if(Auth::user()->type == 'employee')
-                {
-                    $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->where('user_id', '!=', Auth::user()->id)->get()->pluck('name', 'id');
-                }
-                else
-                {
-                    $employees = Employee::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                }
+            $meeting    = Meeting::find($meeting);
+            $employees  = Employee::whereHas('user', function($query) {
+                $query->where('is_active', 1);
+            })->pluck('name', 'id');
+                    
 
-                return view('meeting.edit', compact('meeting', 'employees'));
-            }
-            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
-            {
-                if(Auth::user()->type == 'employee')
-                {
-                    $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->where('user_id', '!=', Auth::user()->id)->get()->pluck('name', 'id');
-                }
-                else
-                {
-                    $employees = Employee::get()->pluck('name', 'id');
-                }
-
-                return view('meeting.edit', compact('meeting', 'employees'));
-            }
-            else
-            {
-                return response()->json(['error' => __('Permission denied.')], 401);
-            }
+            return view('meeting.edit', compact('meeting', 'employees'));
         }
         else
         {
@@ -230,20 +147,13 @@ class MeetingController extends Controller
                 return redirect()->back()->with('error', $messages->first());
             }
 
-            if($meeting->created_by == \Auth::user()->creatorId())
-            {
-                $meeting->title = $request->title;
-                $meeting->date  = $request->date;
-                $meeting->time  = $request->time;
-                $meeting->note  = $request->note;
-                $meeting->save();
+            $meeting->title = $request->title;
+            $meeting->date  = $request->date;
+            $meeting->time  = $request->time;
+            $meeting->note  = $request->note;
+            $meeting->save();
 
-                return redirect()->route('meeting.index')->with('success', __('Meeting successfully updated.'));
-            }
-            else
-            {
-                return redirect()->back()->with('error', __('Permission denied.'));
-            }
+            return redirect()->route('meeting.index')->with('success', __('Meeting Time successfully updated.'));
         }
         else
         {
@@ -255,13 +165,8 @@ class MeetingController extends Controller
     {
         if(\Auth::user()->can('delete meeting'))
         {
-            if($meeting->created_by == \Auth::user()->creatorId())
-            {
-                $meeting->delete();
 
-                return redirect()->route('meeting.index')->with('success', __('Meeting successfully deleted.'));
-            }
-            elseif(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
+            if(Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $meeting->delete();
 

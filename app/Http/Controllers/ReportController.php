@@ -16,6 +16,7 @@ use App\Models\UserOvertime;
 use App\Models\Department;
 use App\Models\ProjectUser;
 use App\Models\Employee;
+use App\Models\Meeting;
 use App\Models\Lead;
 use App\Models\Leave;
 use App\Models\PaySlip;
@@ -6416,6 +6417,162 @@ class ReportController extends Controller
             }
         }
     }
+
+    public function timesheet(Request $request)
+    {
+        $user = Auth::user();
+        if (\Auth::user()->can('manage report')) {
+            $branch = Branch::get()->pluck('name', 'id');
+            $branch->prepend('Select Branch', '');
+        
+            $employees = Employee::select('user_id', 'name')
+                ->whereHas('user', function ($query) {
+                    $query->where('is_active', 1);
+                });
+        
+            if (!empty($request->employee_id) && $request->employee_id[0] != 0) {
+                $employees->whereIn('id', $request->employee_id);
+            }
+        
+            if (!empty($request->branch)) {
+                $employees->where('branch_id', $request->branch);
+                $data['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
+            }
+        
+            $employees = $employees->get()->pluck('name', 'user_id');
+        
+            $startDate = !empty($request->start_date) ? $request->start_date : null;
+            $endDate = !empty($request->end_date) ? $request->end_date : null;
+        
+            $employeesAttendance = [];
+            
+            foreach ($employees as $userId => $employeeName) {
+                $timesheetQuery = Timesheet::where('created_by', $userId);
+                $meetingQuery = Meeting::where('created_by', $userId);
+                
+                if ($startDate && $endDate) {
+                    $timesheetQuery->whereBetween('date', [$startDate, $endDate]);
+                    $meetingQuery->whereBetween('date', [$startDate, $endDate]);
+                } elseif (!empty($request->month)) {
+                    $currentdate = strtotime($request->month);
+                    $month = date('m', $currentdate);
+                    $year = date('Y', $currentdate);
+                    $curMonth = date('M-Y', strtotime($request->month));
+                    
+                    $timesheetQuery->whereMonth('date', $month)->whereYear('date', $year);
+                    $meetingQuery->whereMonth('date', $month)->whereYear('date', $year);
+                } else {
+                    $month = date('m');
+                    $year = date('Y');
+                    $curMonth = date('M-Y', strtotime($year . '-' . $month));
+                    
+                    $timesheetQuery->whereMonth('date', $month)->whereYear('date', $year);
+                    $meetingQuery->whereMonth('date', $month)->whereYear('date', $year);
+                }
+        
+                $timesheetData = $timesheetQuery->get();
+                $meetingData = $meetingQuery->get();
+        
+                $totalWorkingHours = 0;
+                $totalMeetingHours = 0;
+        
+                foreach ($timesheetData as $timesheet) {
+                    list($hours, $minutes, $seconds) = explode(':', $timesheet->time);
+                    $totalWorkingHours += ($hours * 3600) + ($minutes * 60) + $seconds;
+                }
+        
+                foreach ($meetingData as $meeting) {
+                    list($hours, $minutes, $seconds) = explode(':', $meeting->time);
+                    $totalMeetingHours += ($hours * 3600) + ($minutes * 60) + $seconds;
+                }
+        
+                $formattedWorkingHours = sprintf('%02d:%02d:%02d', floor($totalWorkingHours / 3600), floor(($totalWorkingHours % 3600) / 60), ($totalWorkingHours % 60));
+                $formattedMeetingHours = sprintf('%02d:%02d:%02d', floor($totalMeetingHours / 3600), floor(($totalMeetingHours % 3600) / 60), ($totalMeetingHours % 60));
+        
+                $employeesAttendance[] = [
+                    'name' => $employeeName,
+                    'total_working_hours' => $formattedWorkingHours,
+                    'total_meeting_hours' => $formattedMeetingHours,
+                    'id' => $userId,
+                ];
+            }
+
+        
+            return view('report.timesheet', compact('employeesAttendance', 'branch', ));
+        } else {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+        
+    }
+
+    public function employeeTimesheet(Request $request, $employee_id, $month, $startdate, $enddate)
+    {
+        if(\Auth::user()->can('manage report'))
+        {
+            $employee_timesheet   = Timesheet::where('created_by', $employee_id);
+            $m = date('m', strtotime($month));
+            $y = date('Y', strtotime($month));
+
+            $startDate = !empty($request->start_date) ? $request->start_date : null;
+            $endDate = !empty($request->end_date) ? $request->end_date : null;
+
+            if(!empty($request->month))
+            {
+                $employee_timesheet->whereMonth('date', $m)->whereYear('date', $y);
+            }
+            
+            if($startDate && $endDate)
+            {
+                $employee_timesheet->whereBetween('date', [$startDate, $endDate]);
+            }
+
+            $employee_timesheet = $employee_timesheet->get();
+
+
+            return view('report.timesheetShow', compact('employee_timesheet'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+
+
+    }
+
+    public function employeeMeeting(Request $request, $employee_id, $month, $startdate, $enddate)
+    {
+        if(\Auth::user()->can('manage report'))
+        {
+            $employee_meeting   = Meeting::where('created_by', $employee_id);
+            $m = date('m', strtotime($month));
+            $y = date('Y', strtotime($month));
+
+            $startDate = !empty($request->start_date) ? $request->start_date : null;
+            $endDate = !empty($request->end_date) ? $request->end_date : null;
+
+            if(!empty($request->month))
+            {
+                $employee_meeting->whereMonth('date', $m)->whereYear('date', $y);
+            }
+            
+            if($startDate && $endDate)
+            {
+                $employee_meeting->whereBetween('date', [$startDate, $endDate]);
+            }
+
+            $employee_meeting = $employee_meeting->get();
+
+
+            return view('report.meetingShow', compact('employee_meeting'));
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+
+
+    }
+
 
 
 
