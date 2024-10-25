@@ -58,12 +58,6 @@
                                                 {{Form::date('end_date', isset($_GET['end_date']) ? $_GET['end_date'] : '', ['class' => 'form-control'])}}
                                             </div>
                                         </div>
-                                        <div class="col-auto">
-                                            <div class="btn-box">
-                                                {{Form::label('month',__('Month'),['class'=>'form-label'])}}
-                                                {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
-                                            </div>
-                                        </div>
                                         <div class="col-auto" style="width:200px;">
                                             <div class="btn-box">
                                                 {{ Form::label('branch', __('Branch'), ['class' => 'form-label']) }}
@@ -120,7 +114,6 @@
                                             <a href="#" class="text-info" 
                                             data-url="{{ route('report.employee.timesheet', [
                                                     $attendance['id'], 
-                                                    isset($_GET['month']) ? $_GET['month'] : date('Y-m'),
                                                     isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01'),
                                                     isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t')
                                                 ]) }}" 
@@ -136,7 +129,6 @@
                                             <a href="#" class="text-info" 
                                             data-url="{{ route('report.employee.meeting', [
                                                     $attendance['id'], 
-                                                    isset($_GET['month']) ? $_GET['month'] : date('Y-m'),
                                                     isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01'),
                                                     isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-t')
                                                 ]) }}" 

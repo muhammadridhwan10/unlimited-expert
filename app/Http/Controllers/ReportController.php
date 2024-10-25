@@ -6453,14 +6453,6 @@ class ReportController extends Controller
                 if ($startDate && $endDate) {
                     $timesheetQuery->whereBetween('date', [$startDate, $endDate]);
                     $meetingQuery->whereBetween('date', [$startDate, $endDate]);
-                } elseif (!empty($request->month)) {
-                    $currentdate = strtotime($request->month);
-                    $month = date('m', $currentdate);
-                    $year = date('Y', $currentdate);
-                    $curMonth = date('M-Y', strtotime($request->month));
-                    
-                    $timesheetQuery->whereMonth('date', $month)->whereYear('date', $year);
-                    $meetingQuery->whereMonth('date', $month)->whereYear('date', $year);
                 } else {
                     $month = date('m');
                     $year = date('Y');
@@ -6505,25 +6497,15 @@ class ReportController extends Controller
         
     }
 
-    public function employeeTimesheet(Request $request, $employee_id, $month, $startdate, $enddate)
+    public function employeeTimesheet(Request $request, $employee_id, $startdate, $enddate)
     {
         if(\Auth::user()->can('manage report'))
         {
             $employee_timesheet   = Timesheet::where('created_by', $employee_id);
-            $m = date('m', strtotime($month));
-            $y = date('Y', strtotime($month));
 
-            $startDate = !empty($request->start_date) ? $request->start_date : null;
-            $endDate = !empty($request->end_date) ? $request->end_date : null;
-
-            if(!empty($request->month))
+            if($startdate && $enddate)
             {
-                $employee_timesheet->whereMonth('date', $m)->whereYear('date', $y);
-            }
-            
-            if($startDate && $endDate)
-            {
-                $employee_timesheet->whereBetween('date', [$startDate, $endDate]);
+                $employee_timesheet->whereBetween('date', [$startdate, $enddate]);
             }
 
             $employee_timesheet = $employee_timesheet->get();
@@ -6539,25 +6521,15 @@ class ReportController extends Controller
 
     }
 
-    public function employeeMeeting(Request $request, $employee_id, $month, $startdate, $enddate)
+    public function employeeMeeting(Request $request, $employee_id, $startdate, $enddate)
     {
         if(\Auth::user()->can('manage report'))
         {
             $employee_meeting   = Meeting::where('created_by', $employee_id);
-            $m = date('m', strtotime($month));
-            $y = date('Y', strtotime($month));
-
-            $startDate = !empty($request->start_date) ? $request->start_date : null;
-            $endDate = !empty($request->end_date) ? $request->end_date : null;
-
-            if(!empty($request->month))
-            {
-                $employee_meeting->whereMonth('date', $m)->whereYear('date', $y);
-            }
             
-            if($startDate && $endDate)
+            if($startdate && $enddate)
             {
-                $employee_meeting->whereBetween('date', [$startDate, $endDate]);
+                $employee_meeting->whereBetween('date', [$startdate, $enddate]);
             }
 
             $employee_meeting = $employee_meeting->get();
