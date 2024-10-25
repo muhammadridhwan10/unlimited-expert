@@ -707,7 +707,7 @@ class ProjectController extends Controller
             $project->template_task_id = $request->template_task;
             // dd($project->template_task_id);
             $project->total_days = $request->total_days;
-            $project->budget = $request->budget;
+            $project->budget = $request->total_calculation;
             $project->client_id = $request->client;
             $project->public_accountant_id = $request->public_accountant_id;
             $project->description = $request->description;
@@ -728,6 +728,8 @@ class ProjectController extends Controller
                         'rate_partners' => $request->rate_partners,
                         'als_manager' => $request->als_manager,
                         'rate_manager' => $request->rate_manager,
+                        'als_leader' => $request->als_leader,
+                        'rate_leader' => $request->rate_leader,
                         'als_senior_associate' => $request->als_senior_associate,
                         'rate_senior_associate' => $request->rate_senior_associate,
                         'als_associate' => $request->als_associate,
@@ -920,6 +922,8 @@ class ProjectController extends Controller
                 'rate_partners' => 'required|numeric',
                 'als_manager' => 'required|numeric',
                 'rate_manager' => 'required|numeric',
+                'als_leader' => 'required|numeric',
+                'rate_leader' => 'required|numeric',
                 'als_senior_associate' => 'required|numeric',
                 'rate_senior_associate' => 'required|numeric',
                 'als_associate' => 'required|numeric',
@@ -939,13 +943,15 @@ class ProjectController extends Controller
         $project_offerings = new ProjectOfferings();
 
         $project = Project::find($id);
-        $project->budget = $request->budget;
+        $project->budget = $request->total_calculation;
 
         $project_offerings->project_id = $id;
         $project_offerings->als_partners = $request->als_partners;
         $project_offerings->rate_partners = $request->rate_partners;
         $project_offerings->als_manager = $request->als_manager;
         $project_offerings->rate_manager = $request->rate_manager;
+        $project_offerings->als_leader = $request->als_leader;
+        $project_offerings->rate_leader = $request->rate_leader;
         $project_offerings->als_senior_associate = $request->als_senior_associate;
         $project_offerings->rate_senior_associate = $request->rate_senior_associate;
         $project_offerings->als_associate = $request->als_associate;
