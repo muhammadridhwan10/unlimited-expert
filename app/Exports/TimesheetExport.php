@@ -25,7 +25,10 @@ class TimesheetExport implements FromArray, WithHeadings
             'Employee',
             'Date',
             'Project Name',
+            'Start Time',
+            'End Time',
             'Time',
+            'Hours Shortfall',
             'Platform',
             'Project Status',
         ];

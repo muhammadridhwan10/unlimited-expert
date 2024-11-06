@@ -339,10 +339,13 @@ class DocumentRequestController extends Controller
         $document->status = 'Completed';
         $document->save();
 
-        //Email Notification
-        $employee = Employee::where('id', $document->employee_id)->first();
-        $email = $employee->email;
-        Mail::to($email)->send(new DocumentCompletedNotification($document));
+        if( $document->document_type != 'Invoice' )
+        {
+            //Email Notification
+            $employee = Employee::where('id', $document->employee_id)->first();
+            $email = $employee->email;
+            Mail::to($email)->send(new DocumentCompletedNotification($document));
+        }
 
         return redirect()->route('document-request.index')->with('success', __('Document Request successfully updated.'));
     }

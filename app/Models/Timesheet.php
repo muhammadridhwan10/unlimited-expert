@@ -16,6 +16,11 @@ class Timesheet extends Model
         'platform',
     ];
 
+    public function timeTracker()
+    {
+        return $this->hasOne(TimeTracker::class, 'project_id', 'project_id');
+    }
+
     public function project()
     {
         return $this->hasOne('App\Models\Project', 'id', 'project_id');

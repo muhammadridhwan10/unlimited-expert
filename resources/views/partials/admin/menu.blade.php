@@ -32,7 +32,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                     <ul class="dash-navbar">
 
                         <!--------------------- Start Dashboard ----------------------------------->
-                        @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern' || \Auth::user()->type == 'support') 
+                        @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern' || \Auth::user()->type == 'support' || \Auth::user()->type == 'staff') 
                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'home')?'active':''}}">
                                 <a href="{{route('home')}}" class="dash-link">
                                     <span class="dash-micon"><i class="ti ti-home"></i></span><span class="dash-mtext">{{__('Home')}}</span>
@@ -983,13 +983,13 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                         <a class="dash-link" href="{{ route('taskBoard.view', 'list') }}">{{__('Tasks')}}</a>
                                     </li>
                                     @endcan --}}
-                                    @can('manage timesheet')
+                                    {{-- @can('manage timesheet')
                                         @if(\Auth::user()->type !== 'admin' && \Auth::user()->type !== 'company' && \Auth::user()->type !== 'partners')
                                             <li class="dash-item {{ (request()->is('timesheet-list*') ? 'active' : '')}}">
                                                 <a class="dash-link" href="{{route('timesheet.index')}}">{{__('Timesheet')}}</a>
                                             </li>
                                         @endif
-                                    @endcan
+                                    @endcan --}}
                                     {{-- @can('manage bug report')
                                     <li class="dash-item {{ (request()->is('bugs-report*') ? 'active' : '')}}">
                                         <a class="dash-link" href="{{route('bugs.view','list')}}">{{__('Bug')}}</a>

@@ -64,7 +64,7 @@
                 </tr>
                 <tr>
                     <th>{{__('Name Attention (PIC)')}}</th>
-                    <td>{{ !empty($document->name_attention)?$document->name_attention:'-' }}</td>
+                    <td class="text-wrap">{{ !empty($document->name_attention)?$document->name_attention:'-' }}</td>
                 </tr>
                 <tr>
                     <th>{{__('Position Attention (PIC)')}}</th>

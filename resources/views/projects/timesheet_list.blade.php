@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 @section('page-title')
-    {{__('Manage Timesheet')}}
+    {{__('Manage Timesheet Detail')}}
 @endsection
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('Timesheet')}}</li>
+    <li class="breadcrumb-item">{{__('Timesheet Detail')}}</li>
 @endsection
 
 @push('script-page')
@@ -48,6 +48,18 @@
                         {{ Form::open(array('route' => array('timesheet.index'),'method'=>'get','id'=>'report_monthly_tracker')) }}
                         {{ Form::hidden('export_excel', 0, ['id' => 'export_excel']) }}
                         <div class="row align-items-center justify-content-end">
+                            <div class="col-auto" style = "width:400px;">
+                                <div class="btn-box">
+                                    {{ Form::label('project_id', __('Project'), ['class' => 'form-label']) }}
+                                    {{ Form::select('project_id', $project, isset($_GET['project_id']) ? $_GET['project_id'] : 0, ['class' => 'form-control select2']) }}
+                                </div>
+                            </div>
+                            <div class="col-auto" style= "width:300px;">
+                                <div class="btn-box">
+                                    {{ Form::label('client_id', __('Client'), ['class' => 'form-label']) }}
+                                    {{ Form::select('client_id', $client, isset($_GET['client_id']) ? $_GET['client_id'] : null, ['class' => 'form-control select2','id'=>'choices-multiple1']) }}
+                                </div>
+                            </div>
                             <div class="col-auto">
                                 <div class="row">
                                     <div class="col-auto">
@@ -61,20 +73,14 @@
                             </div>
                             <div class="col-auto">
                                 <div class="btn-box">
-                                    {{ Form::label('date', __('Date'), ['class' => 'form-label']) }}
-                                    {{ Form::date('date', request()->input('date'), ['class' => 'form-control']) }}
+                                    {{Form::label('start_date', __('From Date'), ['class' => 'form-label'])}}
+                                    {{Form::date('start_date', isset($_GET['start_date']) ? $_GET['start_date'] : '', ['class' => 'form-control'])}}
                                 </div>
                             </div>
-                            <div class="col-auto" style = "width:400px;">
+                            <div class="col-auto">
                                 <div class="btn-box">
-                                    {{ Form::label('project_id', __('Project'), ['class' => 'form-label']) }}
-                                    {{ Form::select('project_id', $project, isset($_GET['project_id']) ? $_GET['project_id'] : 0, ['class' => 'form-control select2']) }}
-                                </div>
-                            </div>
-                            <div class="col-auto" style= "width:300px;">
-                                <div class="btn-box">
-                                    {{ Form::label('client_id', __('Client'), ['class' => 'form-label']) }}
-                                    {{ Form::select('client_id', $client, isset($_GET['client_id']) ? $_GET['client_id'] : null, ['class' => 'form-control select2','id'=>'choices-multiple1']) }}
+                                    {{Form::label('end_date', __('To Date'), ['class' => 'form-label'])}}
+                                    {{Form::date('end_date', isset($_GET['end_date']) ? $_GET['end_date'] : '', ['class' => 'form-control'])}}
                                 </div>
                             </div>
                             <div class="col-auto">
