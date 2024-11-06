@@ -567,7 +567,7 @@ class TimesheetController extends Controller
         if($user->type == 'admin' || $user->type == 'company' || $user->type == 'partners')
         {
             $currentYear = now()->year;
-            $employeeTimesheet = Timesheet::with(['timeTracker']);
+            $employeeTimesheet = Timesheet::query();
 
             $employee = User::where('type', '!=', 'client' )->get()->pluck('name', 'id');
             $employee->prepend('Select Employee', '0');
@@ -945,33 +945,35 @@ class TimesheetController extends Controller
     public function prepareExportData($employeeTimesheet)
 {
     $exportData = new Collection();
-    $dailyHours = []; // Array untuk menyimpan total waktu per hari
-    $dailyRecords = []; // Array untuk menyimpan data timesheet per tanggal
-    $totalTimeInSeconds = 0; // Total semua waktu dalam detik
-    $totalShortfallInSeconds = 0; // Total selisih waktu yang negatif dalam detik
+    $dailyHours = [];
+    $dailyRecords = [];
+    $totalTimeInSeconds = 0;
+    $totalPositiveInSeconds = 0;
+    $totalNegativeInSeconds = 0;
 
     foreach ($employeeTimesheet as $timesheet_user) {
         $date = $timesheet_user->date;
+        
+        // Ambil data TimeTracker yang sesuai dengan date
+        $timeTrackerForDate = $timesheet_user->timeTrackers->first();
 
         $data = [
             'Employee' => !empty($timesheet_user->user->name) ? $timesheet_user->user->name : '-',
             'Date' => $date ?? '-',
             'Project Name' => !empty($timesheet_user->project->project_name) ? $timesheet_user->project->project_name : '-',
-            'Start Time' => $timesheet_user->timeTracker->start_time ?? '-',
-            'End Time' => $timesheet_user->timeTracker->end_time ?? '-',
+            'Start Time' => $timeTrackerForDate ? $timeTrackerForDate->start_time : '-',
+            'End Time' => $timeTrackerForDate ? $timeTrackerForDate->end_time : '-',
             'Time' => !empty($timesheet_user->time) ? $this->formatTime($timesheet_user->time) : '-',
             'Hours Shortfall' => '-',
             'Platform' => !empty($timesheet_user->platform) ? $timesheet_user->platform : '-',
             'Status Project' => !empty($timesheet_user->project->status) ? $timesheet_user->project->status : '-',
         ];
 
-        // Menyimpan data timesheet per tanggal
         $dailyRecords[$date][] = $data;
 
-        // Mengumpulkan total waktu per hari
         if (!empty($timesheet_user->time)) {
             list($hours, $minutes, $seconds) = explode(':', $timesheet_user->time);
-            $timeInSeconds = $hours * 3600 + $minutes * 60 + $seconds;
+            $timeInSeconds = ($hours * 3600) + ($minutes * 60) + $seconds;
             $totalTimeInSeconds += $timeInSeconds;
 
             if (!isset($dailyHours[$date])) {
@@ -988,42 +990,42 @@ class TimesheetController extends Controller
     foreach ($dailyRecords as $date => $records) {
         $totalSeconds = $dailyHours[$date];
         $difference = $totalSeconds - $targetSecondsPerDay;
+
+        if ($difference >= 0) {
+            $totalPositiveInSeconds += $difference;
+        } else {
+            $totalNegativeInSeconds += abs($difference);
+        }
+
         $sign = $difference >= 0 ? '+' : '-';
         $difference = abs($difference);
-
-        // Hitung selisih dalam format jam, menit, detik
         $diffHours = floor($difference / 3600);
         $diffMinutes = floor(($difference % 3600) / 60);
         $diffSeconds = $difference % 60;
         $hoursShortfall = $sign . sprintf('%02d:%02d:%02d', $diffHours, $diffMinutes, $diffSeconds);
 
-        // Menambahkan "Jam yang Kurang" hanya pada record terakhir dari tanggal tersebut
         foreach ($records as $index => $record) {
             if ($index === count($records) - 1) {
                 $record['Hours Shortfall'] = $hoursShortfall;
-
-                // Jika shortfall adalah negatif, tambahkan ke total shortfall
-                if ($sign === '-') {
-                    $totalShortfallInSeconds += $difference;
-                }
             }
             $exportData->push($record);
         }
     }
 
-    // Menghitung total waktu yang dicapai dalam format jam, menit, dan detik
     $totalHours = floor($totalTimeInSeconds / 3600);
     $totalMinutes = floor(($totalTimeInSeconds % 3600) / 60);
     $totalSeconds = $totalTimeInSeconds % 60;
     $totalTimeFormatted = sprintf('%02d:%02d:%02d', $totalHours, $totalMinutes, $totalSeconds);
 
-    // Menghitung total shortfall yang negatif dalam format jam, menit, dan detik
-    $shortfallHours = floor($totalShortfallInSeconds / 3600);
-    $shortfallMinutes = floor(($totalShortfallInSeconds % 3600) / 60);
-    $shortfallSeconds = $totalShortfallInSeconds % 60;
-    $totalShortfallFormatted = sprintf('%02d:%02d:%02d', $shortfallHours, $shortfallMinutes, $shortfallSeconds);
+    $netShortfallInSeconds = $totalPositiveInSeconds - $totalNegativeInSeconds;
+    $netSign = $netShortfallInSeconds >= 0 ? '+' : '-';
+    $netShortfallInSeconds = abs($netShortfallInSeconds);
 
-    // Tambahkan baris total di bagian bawah
+    $netHours = floor($netShortfallInSeconds / 3600);
+    $netMinutes = floor(($netShortfallInSeconds % 3600) / 60);
+    $netSeconds = $netShortfallInSeconds % 60;
+    $netShortfallFormatted = $netSign . sprintf('%02d:%02d:%02d', $netHours, $netMinutes, $netSeconds);
+
     $exportData->push([
         'Employee' => 'Total',
         'Date' => '-',
@@ -1031,13 +1033,16 @@ class TimesheetController extends Controller
         'Start Time' => '-',
         'End Time' => '-',
         'Time' => $totalTimeFormatted,
-        'Hours Shortfall' => $totalShortfallFormatted,
+        'Hours Shortfall' => $netShortfallFormatted,
         'Platform' => '-',
         'Status Project' => '-',
     ]);
 
     return $exportData;
 }
+
+
+
 
 
 

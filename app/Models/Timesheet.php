@@ -16,9 +16,11 @@ class Timesheet extends Model
         'platform',
     ];
 
-    public function timeTracker()
+    public function timeTrackers()
     {
-        return $this->hasOne(TimeTracker::class, 'project_id', 'project_id');
+        return $this->hasMany(TimeTracker::class, 'project_id', 'project_id')
+                    ->whereColumn('task_id', 'task_id')
+                    ->whereRaw('DATE(start_time) = ?', [$this->date]);
     }
 
     public function project()

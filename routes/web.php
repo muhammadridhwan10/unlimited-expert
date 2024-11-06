@@ -43,6 +43,8 @@ Route::get('/download_win', 'Auth\AuthenticatedSessionController@download_win')-
 Route::get('/download_mac', 'Auth\AuthenticatedSessionController@download_mac')->name('filemac.download');
 Route::get('/form/new-client', 'FormClientController@formClientView')->name('form.client.view')->middleware(['XSS']);
 
+Route::get('/guide-book', 'DocumentationController@index')->name('documentation.index');
+
 // Route::get('/password/resets/{lang?}', 'Auth\AuthenticatedSessionController@showLinkRequestForm')->name('change.langPass');
 // Route::get('/password/resets/{lang?}', 'Auth\LoginController@showLinkRequestForm')->name('change.langPass');
 

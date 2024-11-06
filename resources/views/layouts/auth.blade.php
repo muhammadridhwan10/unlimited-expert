@@ -247,7 +247,7 @@
                         <div class="collapse navbar-collapse" id="navbarlogin">
                             <ul class="navbar-nav align-items-center ms-auto mb-2 mb-lg-0">
                                 <li class="nav-item">
-                                    <a class="nav-link" target="_blank" href="https://aup-docs.au-partners.com/">{{ __('Documentation')}}</a>
+                                    <a class="nav-link" target="_blank" href="{{route('documentation.index')}}">{{ __('Guide Book')}}</a>
                                 </li>
                                 {{-- <li class="nav-item">
                                     <a class="nav-link" href="#">{{ __('Terms')}}</a>
