@@ -743,35 +743,40 @@ class AttendanceEmployeeController extends Controller
     public function attendance(Request $request)
     {
         $settings = Utility::settings();
-
-        $employeeId      = !empty(\Auth::user()->employee) ? \Auth::user()->employee->id : 0;
+        $employeeId = !empty(\Auth::user()->employee) ? \Auth::user()->employee->id : 0;
         $todayAttendance = AttendanceEmployee::where('employee_id', '=', $employeeId)->where('date', date('Y-m-d'))->first();
+        
         if(empty($todayAttendance))
         {
-
             $employee = Employee::where('id', $employeeId)->first();
             
-            if($employee->branch_id == 1)
-            {
+            // Office location coordinates for branch
+            $officeLatitudePusat = -6.2245196;
+            $officeLongitudePusat = 106.8402893;
+
+            $officeLatitudeBekasi = -6.2245196;
+            $officeLongitudeBekasi = 106.8402893;
+
+            $officeLatitudeMalang = -7.95058;
+            $officeLongitudeMalang = 112.63041;
+            $allowedRadius = 1.0;
+
+            if ($employee->branch_id == 1) {
                 $startTime = Utility::getValByName('company_start_time');
                 $endTime   = Utility::getValByName('company_end_time');
-            }
-            elseif($employee->branch_id == 2)
-            {
+            } 
+            elseif($employee->branch_id == 2) {
                 $startTime = "08:30";
                 $endTime   = "17:30";
             }
-            elseif($employee->branch_id == 3)
-            {
+            elseif($employee->branch_id == 3) {
                 $startTime = "08:00";
                 $endTime   = "17:00";
             }
 
+            // Other existing code to handle clock-in and out logic
             $attendance = AttendanceEmployee::orderBy('id', 'desc')->where('employee_id', '=', $employeeId)->where('clock_out', '=', '00:00:00')->first();
-
-            if($attendance != null)
-            {
-                $attendance            = AttendanceEmployee::find($attendance->id);
+            if ($attendance != null) {
                 $attendance->clock_out = $endTime;
                 $attendance->save();
             }
@@ -779,95 +784,72 @@ class AttendanceEmployeeController extends Controller
             $date = date("Y-m-d");
             $time = date("H:i:s");
 
-            //late
             $totalLateSeconds = time() - strtotime($date . $startTime);
-            $hours            = floor($totalLateSeconds / 3600);
-            $mins             = floor($totalLateSeconds / 60 % 60);
-            $secs             = floor($totalLateSeconds % 60);
-            $late             = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
+            $hours = floor($totalLateSeconds / 3600);
+            $mins = floor($totalLateSeconds / 60 % 60);
+            $secs = floor($totalLateSeconds % 60);
+            $late = sprintf('%02d:%02d:%02d', $hours, $mins, $secs);
 
             $checkDb = AttendanceEmployee::where('employee_id', '=', \Auth::user()->id)->get()->toArray();
-            // $clientIP = geoip()->getLocation($_SERVER['REMOTE_ADDR']);
 
-            // if (isset($_SERVER["HTTP_CF_CONNECTING_IP"])) {
-            //     $_SERVER['REMOTE_ADDR'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
-            //     $_SERVER['HTTP_CLIENT_IP'] = $_SERVER["HTTP_CF_CONNECTING_IP"];
-            // }
-            // $client  = @$_SERVER['HTTP_CLIENT_IP'];
-            // $forward = @$_SERVER['HTTP_X_FORWARDED_FOR'];
-            // $remote  = $_SERVER['REMOTE_ADDR'];
-        
-            // if(filter_var($client, FILTER_VALIDATE_IP))
-            // {
-            //     $ip = $client;
-            // }
-            // elseif(filter_var($forward, FILTER_VALIDATE_IP))
-            // {
-            //     $ip = $forward;
-            // }
-            // else
-            // {
-            //     $ip = $remote;
-            // }
+            // Fetch employee's latitude and longitude from the request
+            $employeeLatitude = $request->latitude;
+            $employeeLongitude = $request->longitude;
 
-            // $clientIP = geoip()->getLocation($ip);
-
-            // if($clientIP->city != "Matraman Dalam")
-            // {
-            //     $city = "Anda berada diluar kantor";
-            // }
-            // else
-            // {
-            //     $city = "Matraman Dalam";
-            // }
-
-            if(empty($checkDb))
-            {
-                $employeeAttendance                = new AttendanceEmployee();
-                $employeeAttendance->employee_id   = $employeeId;
-                $employeeAttendance->date          = $date;
-                $employeeAttendance->status        = 'Present';
-                $employeeAttendance->clock_in      = $time;
-                $employeeAttendance->clock_out     = '00:00:00';
-                // $employeeAttendance->ip            = $clientIP->ip;
-                // $employeeAttendance->location      = $city;
-                $employeeAttendance->late          = $late;
-                $employeeAttendance->early_leaving = '00:00:00';
-                $employeeAttendance->overtime      = '00:00:00';
-                $employeeAttendance->total_rest    = '00:00:00';
-                $employeeAttendance->created_by    = \Auth::user()->id;
-
-                $employeeAttendance->save();
-
-                return redirect()->back()->with('success', __('Employee Successfully Clock In.'));
+            if ($employee->branch_id == 1) {
+                $distance = $this->calculateDistance($officeLatitudePusat, $officeLongitudePusat, $employeeLatitude, $employeeLongitude);
+            } 
+            elseif($employee->branch_id == 2) {
+                $distance = $this->calculateDistance($officeLatitudeBekasi, $officeLongitudeBekasi, $employeeLatitude, $employeeLongitude);
             }
-            foreach($checkDb as $check)
-            {
-
-
-                $employeeAttendance                = new AttendanceEmployee();
-                $employeeAttendance->employee_id   = $employeeId;
-                $employeeAttendance->date          = $date;
-                $employeeAttendance->status        = 'Present';
-                $employeeAttendance->clock_in      = $time;
-                $employeeAttendance->clock_out     = '00:00:00';
-                // $employeeAttendance->ip            = $clientIP->ip;
-                // $employeeAttendance->location      = $city;
-                $employeeAttendance->late          = $late;
-                $employeeAttendance->early_leaving = '00:00:00';
-                $employeeAttendance->overtime      = '00:00:00';
-                $employeeAttendance->total_rest    = '00:00:00';
-                $employeeAttendance->created_by    = \Auth::user()->id;
-
-                $employeeAttendance->save();
-
-                return redirect()->back()->with('success', __('Employee Successfully Clock In.'));
-
+            elseif($employee->branch_id == 3) {
+                $distance = $this->calculateDistance($officeLatitudeMalang, $officeLongitudeMalang, $employeeLatitude, $employeeLongitude);
             }
+
+            $employeeAttendance = new AttendanceEmployee();
+            $employeeAttendance->employee_id = $employeeId;
+            $employeeAttendance->date = $date;
+            $employeeAttendance->status = 'Present';
+            $employeeAttendance->clock_in = $time;
+            $employeeAttendance->clock_out = '00:00:00';
+            $employeeAttendance->latitude = $employeeLatitude;
+            $employeeAttendance->longitude = $employeeLongitude;
+            $employeeAttendance->late = $late;
+            $employeeAttendance->early_leaving = '00:00:00';
+            $employeeAttendance->overtime = '00:00:00';
+            $employeeAttendance->total_rest = '01:00:00';
+            $employeeAttendance->distance_from_office = $distance;
+            $employeeAttendance->created_by = \Auth::user()->id;
+            $employeeAttendance->save();
+
+            return redirect()->back()->with('success', __('Employee Successfully Clocked In.'));
+
+            // if ($distance <= $allowedRadius) 
+            // {
+
+            //     $employeeAttendance = new AttendanceEmployee();
+            //     $employeeAttendance->employee_id = $employeeId;
+            //     $employeeAttendance->date = $date;
+            //     $employeeAttendance->status = 'Present';
+            //     $employeeAttendance->clock_in = $time;
+            //     $employeeAttendance->clock_out = '00:00:00';
+            //     $employeeAttendance->latitude = $employeeLatitude;
+            //     $employeeAttendance->longitude = $employeeLongitude;
+            //     $employeeAttendance->late = $late;
+            //     $employeeAttendance->early_leaving = '00:00:00';
+            //     $employeeAttendance->overtime = '00:00:00';
+            //     $employeeAttendance->total_rest = '01:00:00';
+            //     $employeeAttendance->distance_from_office = $distance;
+            //     $employeeAttendance->created_by = \Auth::user()->id;
+            //     $employeeAttendance->save();
+    
+            //     return redirect()->back()->with('success', __('Employee Successfully Clocked In.'));
+            // } else {
+            //     return redirect()->back()->with('error', __('You are too far from the office to clock in.'));
+            // }
         }
-        else
-        {
-            return redirect()->back()->with('error', __('Employee are not allow multiple time clock in & clock for every day.'));
+        else {
+            return redirect()->back()->with('error', __('Employee are not allowed multiple time clock in & clock for every day.'));
         }
     }
 
@@ -1113,6 +1095,23 @@ class AttendanceEmployeeController extends Controller
         }
 
         return $exportData;
+    }
+
+    private function calculateDistance($lat1, $lon1, $lat2, $lon2) 
+    {
+        $earthRadius = 6371; // Earth radius in kilometers
+
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * 
+            sin($dLon / 2) * sin($dLon / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        $distance = $earthRadius * $c;
+
+        return round($distance, 2); // Rounded to 2 decimal places
     }
 
 

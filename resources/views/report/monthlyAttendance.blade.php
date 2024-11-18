@@ -236,6 +236,9 @@
                                                         <a href="https://www.google.com/maps/search/?api=1&query={{ $attendance['latitude'][$date] }},{{ $attendance['longitude'][$date] }}" target="_blank" title="View on map">
                                                             <i class="ti ti-map-pin" style="font-size: 24px;"></i>
                                                         </a>
+                                                        <div style="font-size: 12px;">
+                                                            {{ $attendance['radius'][$date] ?? '0' }} km
+                                                        </div>
                                                     @elseif($attendance['status'][$date]=='A')
                                                         <i class="badge bg-danger p-2 rounded">{{__('A')}}</i>
                                                     @elseif($attendance['status'][$date]=='W')

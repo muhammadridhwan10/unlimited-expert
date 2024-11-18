@@ -503,10 +503,14 @@ class ReimbursmentClientController extends Controller
 
         $reimbursment->save();
 
-        //Email Notification
-        $employee = Employee::where('id', $reimbursment->employee_id)->first();
-        $email = $employee->email;
-        Mail::to($email)->send(new ReimbursmentClientApprovalNotification($reimbursment));
+        if($reimbursment->status == 'Paid')
+        {
+            //Email Notification
+            $employee = Employee::where('id', $reimbursment->employee_id)->first();
+            $email = $employee->email;
+            Mail::to($email)->send(new ReimbursmentClientApprovalNotification($reimbursment));
+        }
+        
 
         return redirect()->route('reimbursment-client.index')->with('success', __('Reimbursment Client successfully updated.'));
     }

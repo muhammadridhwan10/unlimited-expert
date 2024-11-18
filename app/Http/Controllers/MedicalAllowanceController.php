@@ -491,10 +491,14 @@ class MedicalAllowanceController extends Controller
 
         $reimbursment->save();
 
-        //Email Notification
-        $employee = Employee::where('id', $reimbursment->employee_id)->first();
-        $email = $employee->email;
-        Mail::to($email)->send(new MedicalAllowanceApprovalNotification($reimbursment));
+        if($reimbursment->status == 'Paid')
+        {
+            //Email Notification
+            $employee = Employee::where('id', $reimbursment->employee_id)->first();
+            $email = $employee->email;
+            Mail::to($email)->send(new MedicalAllowanceApprovalNotification($reimbursment));
+        }
+
 
         return redirect()->route('medical-allowance.index')->with('success', __('Medical Allowance successfully updated.'));
     }

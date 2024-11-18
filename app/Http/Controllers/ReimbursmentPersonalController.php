@@ -488,10 +488,13 @@ class ReimbursmentPersonalController extends Controller
 
         $reimbursment->save();
 
-        //Email Notification
-        $employee = Employee::where('id', $reimbursment->employee_id)->first();
-        $email = $employee->email;
-        Mail::to($email)->send(new ReimbursmentPersonalApprovalNotification($reimbursment));
+        if($reimbursment->status == 'Paid')
+        {
+            //Email Notification
+            $employee = Employee::where('id', $reimbursment->employee_id)->first();
+            $email = $employee->email;
+            Mail::to($email)->send(new ReimbursmentPersonalApprovalNotification($reimbursment));
+        }
 
         return redirect()->route('reimbursment-personal.index')->with('success', __('Reimbursment Personal successfully updated.'));
     }

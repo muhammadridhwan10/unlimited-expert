@@ -1,17 +1,24 @@
 {{ Form::open(['route' => ['projects.tasks.store',$project_id],'id' => 'create_task']) }}
 <div class="modal-body">
     <div class="row">
+        @if ($project->label == "Audit")
         <div class="col-6">
             <div class="form-group">
                 {{ Form::label('name', __('Task name'),['class' => 'form-label']) }}<span class="text-danger">*</span>
                 {{ Form::text('name', null, ['class' => 'form-control','required'=>'required']) }}
             </div>
         </div>
-        @if ($project->label == "Audit")
         <div class="col-6">
             <div class="form-group">
                 {{ Form::label('category_template_id', __('Group Name'),['class'=>'form-label']) }}
                 {{ Form::select('category_template_id',$category_template_id,null, array('class' => 'form-control select')) }}
+            </div>
+        </div>
+        @else
+        <div class="col-12">
+            <div class="form-group">
+                {{ Form::label('name', __('Task name'),['class' => 'form-label']) }}<span class="text-danger">*</span>
+                {{ Form::text('name', null, ['class' => 'form-control','required'=>'required']) }}
             </div>
         </div>
         @endif

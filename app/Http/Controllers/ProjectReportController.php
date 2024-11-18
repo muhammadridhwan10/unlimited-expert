@@ -97,7 +97,7 @@ class ProjectReportController extends Controller
                 }
                 else
                 {
-                    $projects = Project::select('projects.*')->leftjoin('project_users', 'project_users.project_id', 'projects.id')->where('project_users.user_id', '=', $user->id)->orderby('id','desc');
+                    $projects = Project::select('projects.*')->leftjoin('project_users', 'project_users.project_id', 'projects.id')->where('project_users.user_id', '=', $user->id)->distinct()->orderby('id','desc');
                 }
 
                 if(isset($request->status)&& !empty($request->status)){
@@ -153,6 +153,82 @@ class ProjectReportController extends Controller
                 $status = Project::$project_status;
                 $label = Project::$label;
                 $tags = Project::$tags;
+            }
+            else
+            {
+                $client =   User::where('type','=','client')->pluck('name','id');
+                $client->prepend('Select Client', '');
+
+                if(isset($request->all_users)&& !empty($request->all_users)){
+                    $projects = Project::select('projects.*')
+                        ->leftjoin('project_users', 'project_users.project_id', 'projects.id')
+                        ->where('project_users.user_id', '=', $request->all_users)->orderby('id','desc');
+                }
+                else
+                {
+                    $projects = Project::select('projects.*')->leftjoin('project_users', 'project_users.project_id', 'projects.id')->where('project_users.user_id', '=', $user->id)->distinct()->orderby('id','desc');
+                }
+
+                if(isset($request->status)&& !empty($request->status)){
+                    $projects->where('status', '=', $request->status);
+                }
+                if(isset($request->label)&& !empty($request->label)){
+                    $projects->where('label', '=', $request->label);
+                }
+                if(isset($request->tags)&& !empty($request->tags)){
+                    $projects->where('tags', '=', $request->tags);
+                }
+                if (isset($request->start_date) && !empty($request->start_date)) {
+                    $projects->whereHas('timesheets', function ($query) use ($request) {
+                        $query->where('date', '>=', $request->start_date);
+                    });
+                }
+                
+                if (isset($request->end_date) && !empty($request->end_date)) {
+                    $projects->whereHas('timesheets', function ($query) use ($request) {
+                        $query->where('date', '<=', $request->end_date);
+                    });
+                }
+
+                if (!empty($request->client_id)) {
+                    $projects->where('client_id', '=', $request->client_id);
+                }
+
+                if(\Auth::user()->employee->branch_id == 1)
+                {
+                    $users = User::where('type', '!=', 'client')
+                    ->whereHas('employee', function ($query) {
+                        $query->where('branch_id', 1);
+                    })
+                    ->get();
+                }
+                elseif(\Auth::user()->employee->branch_id == 2)
+                {
+                    $users = User::where('type', '!=', 'client')
+                    ->whereHas('employee', function ($query) {
+                        $query->where('branch_id', 2);
+                    })
+                    ->get();
+                }
+                elseif(\Auth::user()->employee->branch_id == 3)
+                {
+                    $users = User::where('type', '!=', 'client')
+                    ->whereHas('employee', function ($query) {
+                        $query->where('branch_id', 3);
+                    })
+                    ->get();
+                }
+
+                $status = Project::$project_status;
+                $label = Project::$label;
+                $tags = Project::$tags;
+
+                // $user          = Auth::user();
+                // $users         = User::where('id', '=', $user->id)->get();
+                // $status        = Project::$project_status;
+                // $label         = Project::$label;
+                // $tags          = Project::$tags;
+                // $projects = Project::select('projects.*')->leftjoin('project_users', 'project_users.project_id', 'projects.id')->where('project_users.user_id', '=', $user->id)->orderby('id','desc');
             }
 
             $totalAllProjectHours = $projects->get();
@@ -263,6 +339,7 @@ class ProjectReportController extends Controller
             $estimated_hours = [
                 'partners' => $project_offerings->als_partners ?? 0,
                 'manager' => $project_offerings->als_manager ?? 0,
+                'leader' => $project_offerings->als_leader ?? 0,
                 'senior_associate' => $project_offerings->als_senior_associate ?? 0,
                 'associate' => $project_offerings->als_associate ?? 0,
                 'intern' => $project_offerings->als_intern ?? 0,

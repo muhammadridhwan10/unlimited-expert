@@ -660,10 +660,10 @@ class TimesheetController extends Controller
                 return Excel::download(new TimesheetExport($exportDataArray), 'timesheet_report.xlsx');
             }
         }
-        else
+        elseif($user->type == 'senior accounting' || $user->type == 'senior audit' || $user->type == 'manager audit')
         {
             $currentYear = now()->year;
-            $employeeTimesheet = Timesheet::with(['timeTracker']);
+            $employeeTimesheet = Timesheet::query();
 
             // Ambil data user yang login
             $loggedInUser = \Auth::user();
@@ -702,6 +702,108 @@ class TimesheetController extends Controller
                 })
                 ->get()->pluck('name', 'id');
             }
+
+            $employee->prepend('Select Employee', '0');
+
+            $client =   User::where('type','=','client')->pluck('name','id');
+            $client->prepend('Select Client', '');
+
+            $filter_project = $request->project_id;
+            $filter_status = $request->status;
+            $filter_client = $request->client_id;
+
+            $project      = Project::get()->pluck('project_name', 'id');
+            $project->prepend('All Project', '0');
+
+            $startDate = !empty($request->start_date) ? $request->start_date : null;
+            $endDate = !empty($request->end_date) ? $request->end_date : null;
+
+            if ($startDate && $endDate) {
+                $employeeTimesheet->whereBetween('date', [$startDate, $endDate]);
+            }
+
+            if (!empty($request->user_id)) {
+                $selectedEmployees = $request->user_id;
+                $employeeTimesheet->where('created_by', $selectedEmployees);
+            }
+
+            if (!empty($request->status)) {
+                $employeeTimesheet
+                ->whereHas('project', function ($query) use ($filter_status) {
+                    $query->where('status', $filter_status);
+                });
+            }
+
+            if (!empty($request->date)) {
+                $selectedDate = $request->date;
+                $employeeTimesheet->whereDate('date', $selectedDate);
+            }
+
+            if (!empty($request->project_id)) {
+                $employeeTimesheet
+                ->whereHas('project', function ($query) use ($filter_project) {
+                    $query->where('id', $filter_project);
+                });
+            }
+
+            if (!empty($request->client_id)) {
+                $employeeTimesheet
+                ->whereHas('project', function ($query) use ($filter_client) {
+                    $query->where('client_id', $filter_client);
+                });
+            }
+
+            if (!empty($request->month)) {
+                $month = date('m', strtotime($request->month));
+                $year  = date('Y', strtotime($request->month));
+
+                $start_date = date($year . '-' . $month . '-01');
+                $end_date   = date($year . '-' . $month . '-t');
+
+                $employeeTimesheet->whereBetween('date', [$start_date, $end_date]);
+            } 
+
+            $employeeTimesheet->whereYear('date', $currentYear);
+
+            $totalTimesheet = $employeeTimesheet->get();
+            $totalSeconds = 0;
+
+            foreach ($totalTimesheet as $timesheet) {
+                list($hours, $minutes, $seconds) = explode(':', $timesheet->time);
+
+                $totalSeconds += $hours * 3600 + $minutes * 60 + $seconds;
+            }
+
+            $hours = floor($totalSeconds / 3600);
+            $minutes = floor(($totalSeconds % 3600) / 60);
+            $seconds = $totalSeconds % 60;
+
+            $logged_hours = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+
+            $employeeTimesheet = $employeeTimesheet->orderByDesc('id')->paginate(10)->appends([
+                'project_id' => $request->project_id,
+                'client_id' => $request->client_id,
+                'user_id' => $request->user_id,
+                'status' => $request->status,
+                'date' => $request->date,
+                'month' => $request->month,
+            ]);  
+
+            if (!empty($request->export_excel)) {
+
+                $exportData = $this->prepareExportData($totalTimesheet);
+        
+                $exportDataArray = $exportData->toArray();
+
+                return Excel::download(new TimesheetExport($exportDataArray), 'timesheet_report.xlsx');
+            }
+        }
+        else
+        {
+            $currentYear = now()->year;
+            $employeeTimesheet = Timesheet::where('created_by',\Auth::user()->id);
+
+            $employee = Employee::where('user_id', \Auth::user()->id)->get()->pluck('name', 'id');
 
             $employee->prepend('Select Employee', '0');
 
@@ -943,108 +1045,120 @@ class TimesheetController extends Controller
     }
 
     public function prepareExportData($employeeTimesheet)
-{
-    $exportData = new Collection();
-    $dailyHours = [];
-    $dailyRecords = [];
-    $totalTimeInSeconds = 0;
-    $totalPositiveInSeconds = 0;
-    $totalNegativeInSeconds = 0;
+    {
+        $exportData = new Collection();
+        $dailyHours = [];
+        $dailyRecords = [];
+        $totalTimeInSeconds = 0;
+        $totalPositiveInSeconds = 0;
+        $totalNegativeInSeconds = 0;
 
-    foreach ($employeeTimesheet as $timesheet_user) {
-        $date = $timesheet_user->date;
-        
-        // Ambil data TimeTracker yang sesuai dengan date
-        $timeTrackerForDate = $timesheet_user->timeTrackers->first();
+        foreach ($employeeTimesheet as $timesheet_user) {
+            $date = $timesheet_user->date;
+            $projectName = $timesheet_user->project->project_name ?? '-';
 
-        $data = [
-            'Employee' => !empty($timesheet_user->user->name) ? $timesheet_user->user->name : '-',
-            'Date' => $date ?? '-',
-            'Project Name' => !empty($timesheet_user->project->project_name) ? $timesheet_user->project->project_name : '-',
-            'Start Time' => $timeTrackerForDate ? $timeTrackerForDate->start_time : '-',
-            'End Time' => $timeTrackerForDate ? $timeTrackerForDate->end_time : '-',
-            'Time' => !empty($timesheet_user->time) ? $this->formatTime($timesheet_user->time) : '-',
-            'Hours Shortfall' => '-',
-            'Platform' => !empty($timesheet_user->platform) ? $timesheet_user->platform : '-',
-            'Status Project' => !empty($timesheet_user->project->status) ? $timesheet_user->project->status : '-',
-        ];
+            // Gunakan kombinasi date dan project_name sebagai kunci unik
+            $dateProjectKey = $date . '_' . $projectName;
 
-        $dailyRecords[$date][] = $data;
+            // Ambil data TimeTracker yang sesuai dengan date
+            $timeTrackerForDate = $timesheet_user->timeTrackers->first();
 
-        if (!empty($timesheet_user->time)) {
-            list($hours, $minutes, $seconds) = explode(':', $timesheet_user->time);
-            $timeInSeconds = ($hours * 3600) + ($minutes * 60) + $seconds;
-            $totalTimeInSeconds += $timeInSeconds;
+            // Jika sudah ada entry untuk proyek pada tanggal yang sama, kita tambahkan waktu
+            if (isset($dailyRecords[$dateProjectKey])) {
+                // Tambahkan waktu ke data yang sudah ada
+                if (!empty($timesheet_user->time)) {
+                    list($hours, $minutes, $seconds) = explode(':', $timesheet_user->time);
+                    $timeInSeconds = ($hours * 3600) + ($minutes * 60) + $seconds;
+                    $totalTimeInSeconds += $timeInSeconds;
 
-            if (!isset($dailyHours[$date])) {
-                $dailyHours[$date] = 0;
+                    $dailyHours[$dateProjectKey] += $timeInSeconds;
+                }
+            } else {
+                // Entry baru untuk proyek pada tanggal ini
+                $data = [
+                    'Employee' => !empty($timesheet_user->user->name) ? $timesheet_user->user->name : '-',
+                    'Date' => $date ?? '-',
+                    'Project Name' => $projectName,
+                    'Start Time' => $timeTrackerForDate ? $timeTrackerForDate->start_time : '-',
+                    'End Time' => $timeTrackerForDate ? $timeTrackerForDate->end_time : '-',
+                    'Time' => !empty($timesheet_user->time) ? $this->formatTime($timesheet_user->time) : '-',
+                    'Hours Shortfall' => '-',
+                    'Platform' => !empty($timesheet_user->platform) ? $timesheet_user->platform : '-',
+                    'Status Project' => !empty($timesheet_user->project->status) ? $timesheet_user->project->status : '-',
+                ];
+
+                $dailyRecords[$dateProjectKey] = $data;
+
+                if (!empty($timesheet_user->time)) {
+                    list($hours, $minutes, $seconds) = explode(':', $timesheet_user->time);
+                    $timeInSeconds = ($hours * 3600) + ($minutes * 60) + $seconds;
+                    $totalTimeInSeconds += $timeInSeconds;
+
+                    $dailyHours[$dateProjectKey] = $timeInSeconds;
+                }
             }
-            $dailyHours[$date] += $timeInSeconds;
-        }
-    }
-
-    // Target jam kerja per hari (9 jam dalam detik)
-    $targetSecondsPerDay = 9 * 3600;
-
-    // Memproses data untuk setiap tanggal
-    foreach ($dailyRecords as $date => $records) {
-        $totalSeconds = $dailyHours[$date];
-        $difference = $totalSeconds - $targetSecondsPerDay;
-
-        if ($difference >= 0) {
-            $totalPositiveInSeconds += $difference;
-        } else {
-            $totalNegativeInSeconds += abs($difference);
         }
 
-        $sign = $difference >= 0 ? '+' : '-';
-        $difference = abs($difference);
-        $diffHours = floor($difference / 3600);
-        $diffMinutes = floor(($difference % 3600) / 60);
-        $diffSeconds = $difference % 60;
-        $hoursShortfall = $sign . sprintf('%02d:%02d:%02d', $diffHours, $diffMinutes, $diffSeconds);
+        // Target jam kerja per hari (9 jam dalam detik)
+        $targetSecondsPerDay = 9 * 3600;
 
-        foreach ($records as $index => $record) {
-            if ($index === count($records) - 1) {
-                $record['Hours Shortfall'] = $hoursShortfall;
+        // Memproses data untuk setiap proyek pada tanggal tertentu
+        foreach ($dailyRecords as $key => $record) {
+            $totalSeconds = $dailyHours[$key];
+            $difference = $totalSeconds - $targetSecondsPerDay;
+
+            if ($difference >= 0) {
+                $totalPositiveInSeconds += $difference;
+            } else {
+                $totalNegativeInSeconds += abs($difference);
             }
+
+            $sign = $difference >= 0 ? '+' : '-';
+            $difference = abs($difference);
+            $diffHours = floor($difference / 3600);
+            $diffMinutes = floor(($difference % 3600) / 60);
+            $diffSeconds = $difference % 60;
+            $hoursShortfall = $sign . sprintf('%02d:%02d:%02d', $diffHours, $diffMinutes, $diffSeconds);
+
+            // Update waktu gabungan dan selisih jam kerja
+            $totalHours = floor($totalSeconds / 3600);
+            $totalMinutes = floor(($totalSeconds % 3600) / 60);
+            $totalSecondsFormatted = sprintf('%02d:%02d:%02d', $totalHours, $totalMinutes, $totalSeconds % 60);
+            
+            $record['Time'] = $totalSecondsFormatted;
+            $record['Hours Shortfall'] = $hoursShortfall;
+
             $exportData->push($record);
         }
+
+        $totalHours = floor($totalTimeInSeconds / 3600);
+        $totalMinutes = floor(($totalTimeInSeconds % 3600) / 60);
+        $totalSeconds = $totalTimeInSeconds % 60;
+        $totalTimeFormatted = sprintf('%02d:%02d:%02d', $totalHours, $totalMinutes, $totalSeconds);
+
+        $netShortfallInSeconds = $totalPositiveInSeconds - $totalNegativeInSeconds;
+        $netSign = $netShortfallInSeconds >= 0 ? '+' : '-';
+        $netShortfallInSeconds = abs($netShortfallInSeconds);
+
+        $netHours = floor($netShortfallInSeconds / 3600);
+        $netMinutes = floor(($netShortfallInSeconds % 3600) / 60);
+        $netSeconds = $netShortfallInSeconds % 60;
+        $netShortfallFormatted = $netSign . sprintf('%02d:%02d:%02d', $netHours, $netMinutes, $netSeconds);
+
+        $exportData->push([
+            'Employee' => 'Total',
+            'Date' => '-',
+            'Project Name' => '-',
+            'Start Time' => '-',
+            'End Time' => '-',
+            'Time' => $totalTimeFormatted,
+            'Hours Shortfall' => $netShortfallFormatted,
+            'Platform' => '-',
+            'Status Project' => '-',
+        ]);
+
+        return $exportData;
     }
-
-    $totalHours = floor($totalTimeInSeconds / 3600);
-    $totalMinutes = floor(($totalTimeInSeconds % 3600) / 60);
-    $totalSeconds = $totalTimeInSeconds % 60;
-    $totalTimeFormatted = sprintf('%02d:%02d:%02d', $totalHours, $totalMinutes, $totalSeconds);
-
-    $netShortfallInSeconds = $totalPositiveInSeconds - $totalNegativeInSeconds;
-    $netSign = $netShortfallInSeconds >= 0 ? '+' : '-';
-    $netShortfallInSeconds = abs($netShortfallInSeconds);
-
-    $netHours = floor($netShortfallInSeconds / 3600);
-    $netMinutes = floor(($netShortfallInSeconds % 3600) / 60);
-    $netSeconds = $netShortfallInSeconds % 60;
-    $netShortfallFormatted = $netSign . sprintf('%02d:%02d:%02d', $netHours, $netMinutes, $netSeconds);
-
-    $exportData->push([
-        'Employee' => 'Total',
-        'Date' => '-',
-        'Project Name' => '-',
-        'Start Time' => '-',
-        'End Time' => '-',
-        'Time' => $totalTimeFormatted,
-        'Hours Shortfall' => $netShortfallFormatted,
-        'Platform' => '-',
-        'Status Project' => '-',
-    ]);
-
-    return $exportData;
-}
-
-
-
-
-
 
     protected function formatTime($time)
     {

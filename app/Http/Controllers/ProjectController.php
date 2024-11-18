@@ -712,7 +712,7 @@ class ProjectController extends Controller
             $project->public_accountant_id = $request->public_accountant_id;
             $project->description = $request->description;
             $project->status = $request->status;
-            $project->estimated_hrs = $request->estimated_hrs;
+            // $project->estimated_hrs = $request->estimated_hrs;
             $project->book_year = $request->book_year;
             $project->tags = $request->tag;
             $project->label = $request->label;
@@ -944,6 +944,7 @@ class ProjectController extends Controller
 
         $project = Project::find($id);
         $project->budget = $request->total_calculation;
+        $project->estimated_hrs = $request->estimated_hrs;
 
         $project_offerings->project_id = $id;
         $project_offerings->als_partners = $request->als_partners;

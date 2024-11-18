@@ -230,7 +230,7 @@ class LeaveController extends Controller
             if($leave->absence_type == 'leave')
             {
                 $user = User::where('id', $leave->approval)->first();
-                $email = $user->email;
+                $email = $user->employee->email;
                 Mail::to($email)->send(new LeaveNotification($leave));
             }
 
@@ -462,7 +462,7 @@ class LeaveController extends Controller
 
         $leave->save();
 
-        if($leave->status == 'Approval')
+        if($leave->status == 'Approved')
         {
             //Email Notification
             $employee = Employee::where('id', $leave->employee_id)->first();

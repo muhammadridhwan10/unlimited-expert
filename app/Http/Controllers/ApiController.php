@@ -195,6 +195,8 @@ class ApiController extends Controller
             $track['tag_id']      = $request->has('workin_on') ? $request->input('workin_on') : '';
             $track['start_time']  = $request->has('time') ?  date("Y-m-d H:i:s",strtotime($request->input('time'))) : date("Y-m-d H:i:s");
             $track['task_id']     = 0;
+            $track['latitude']    = $request->has('latitude') ? $request->input('latitude') : '';
+            $track['longitude']   = $request->has('longitude') ? $request->input('longitude') : '';
             $track['created_by']  = $user->id;
             $track                = TimeTracker::create($track);
             $track->action        ='start';
@@ -307,20 +309,37 @@ class ApiController extends Controller
 			{
 				$employee = Employee::where('id', $employeeId)->first();
 
+                // Office location coordinates for branch
+                $officeLatitudePusat = -6.2245196;
+                $officeLongitudePusat = 106.8402893;
+
+                $officeLatitudeBekasi = -6.2245196;
+                $officeLongitudeBekasi = 106.8402893;
+
+                $officeLatitudeMalang = -7.95058;
+                $officeLongitudeMalang = 112.63041;
+                $allowedRadius = 1.0;
+
+                $employeeLatitude = $request->latitude;
+                $employeeLongitude = $request->longitude;
+
 				if($employee->branch_id == 1)
 				{
 					$startTime = Utility::getValByName('company_start_time');
 					$endTime   = Utility::getValByName('company_end_time');
+                    $distance = $this->calculateDistance($officeLatitudePusat, $officeLongitudePusat, $employeeLatitude, $employeeLongitude);
 				}
 				elseif($employee->branch_id == 2)
 				{
 					$startTime = "08:30";
 					$endTime   = "17:30";
+                    $distance = $this->calculateDistance($officeLatitudeBekasi, $officeLongitudeBekasi, $employeeLatitude, $employeeLongitude);
 				}
 				elseif($employee->branch_id == 3)
 				{
 					$startTime = "08:00";
 					$endTime   = "17:00";
+                    $distance = $this->calculateDistance($officeLatitudeMalang, $officeLongitudeMalang, $employeeLatitude, $employeeLongitude);
 				}
 
 				$attendance = AttendanceEmployee::orderBy('id', 'desc')->where('employee_id', '=', $employeeId)->where('clock_out', '=', '00:00:00')->first();
@@ -358,6 +377,7 @@ class ApiController extends Controller
 					$employeeAttendance->created_by    = \Auth::user()->id;
 					$employeeAttendance->latitude = $request->latitude;
         			$employeeAttendance->longitude = $request->longitude;
+                    $employeeAttendance->distance_from_office = $distance;
 
 					$employeeAttendance->save();
 
@@ -1046,6 +1066,23 @@ class ApiController extends Controller
         $services = ProductServiceCategory::where('created_by', \Auth::user()->creatorId())->where('type', 1)->get();
 
         return response()->json($services, 200);
+    }
+
+    private function calculateDistance($lat1, $lon1, $lat2, $lon2) 
+    {
+        $earthRadius = 6371; // Earth radius in kilometers
+
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * 
+            sin($dLon / 2) * sin($dLon / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        $distance = $earthRadius * $c;
+
+        return round($distance, 2); // Rounded to 2 decimal places
     }
 
 }

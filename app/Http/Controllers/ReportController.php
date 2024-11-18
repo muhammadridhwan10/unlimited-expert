@@ -4056,6 +4056,7 @@ class ReportController extends Controller
                 $attendanceStatus = [];
                 $attendanceLong = [];
                 $attendanceLat = [];
+                $attendanceRad = [];
 
                 foreach ($dates as $date) {
                     if ($date <= date('Y-m-d')) {
@@ -4067,6 +4068,7 @@ class ReportController extends Controller
                             $attendanceStatus[$date] = 'P';
                             $attendanceLong[$date] = $employeeAttendance->longitude;
                             $attendanceLat[$date] = $employeeAttendance->latitude;
+                            $attendanceRad[$date] = $employeeAttendance->distance_from_office;
                             $totalPresent++;
 
                             if ($employeeAttendance->overtime > 0) {
@@ -4089,18 +4091,21 @@ class ReportController extends Controller
                         } else {
                             $attendanceStatus[$date] = '';
                             $attendanceLong[$date] = '';
+                            $attendanceRad[$date] = '';
                             $attendanceLat[$date] = '';
                         }
                     } else {
                         $attendanceStatus[$date] = '';
                         $attendanceLong[$date] = '';
                         $attendanceLat[$date] = '';
+                        $attendanceRad[$date] = '';
                     }
                 }
 
                 $attendances['status'] = $attendanceStatus;
                 $attendances['longitude'] = $attendanceLong;
                 $attendances['latitude'] = $attendanceLat;
+                $attendances['radius'] = $attendanceRad;
                 $employeesAttendance[] = $attendances;
             }
 

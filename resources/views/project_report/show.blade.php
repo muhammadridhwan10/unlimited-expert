@@ -288,6 +288,10 @@
                                                 <th class="border-0">{{ __('Manager') }}:</th>
                                                 <td class="border-0">{{$project_offerings->als_manager ? $project_offerings->als_manager . ' H' : __('No Data Available')}}</td>
                                             </tr>
+                                            <tr role="row">
+                                                <th class="border-0">{{ __('Leader') }}:</th>
+                                                <td class="border-0">{{$project_offerings->als_leader ? $project_offerings->als_leader . ' H' : __('No Data Available')}}</td>
+                                            </tr>
                                             <tr>
                                                 <th class="border-0">{{ __('Senior Associate')}}:</th>
                                                 <td class="border-0">{{$project_offerings->als_senior_associate ? $project_offerings->als_senior_associate . ' H' : __('No Data Available')}}</td>
@@ -303,8 +307,8 @@
                                             <tr>
                                                 <th class="border-0">{{ __('Total Estimated Hours')}}:</th>
                                                 <td class="border-0"><strong>
-                                                        {{ ($project_offerings->als_partners + $project_offerings->als_manager + $project_offerings->als_senior_associate + $project_offerings->als_associate + $project_offerings->als_intern) ? 
-                                                        ($project_offerings->als_partners + $project_offerings->als_manager + $project_offerings->als_senior_associate + $project_offerings->als_associate + $project_offerings->als_intern) . ' H' : __('No Data Available') }}
+                                                        {{ ($project_offerings->als_partners + $project_offerings->als_manager + $project_offerings->als_leader + $project_offerings->als_senior_associate + $project_offerings->als_associate + $project_offerings->als_intern) ? 
+                                                        ($project_offerings->als_partners + $project_offerings->als_manager + $project_offerings->als_leader + $project_offerings->als_senior_associate + $project_offerings->als_associate + $project_offerings->als_intern) . ' H' : __('No Data Available') }}
                                                     </strong></td>
                                             </tr>
                                             @else
@@ -360,67 +364,6 @@
                         </div>
                     </div>
                 </div>
-                
-                @php
-                $lastStage=\App\Models\TaskStage::where('created_by',\Auth::user()->creatorId())->orderby('id','desc')->first();
-
-                @endphp
-                <div class="col-md-12">
-                    <div class="card ">
-                        <div class="card-header">
-                            <h5>{{ __('Users') }}</h5>
-                        </div>
-                        <div class="card-body table-border-style ">
-                            <div class="table-responsive milestone">
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>{{__('Name')}}</th>
-                                            <th>{{__('Assigned Tasks')}}</th>
-                                            <th>{{__('Done Tasks')}}</th>
-                                            <th>{{__('Logged Hours')}}</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach($project->users as $user)
-                                            @if($user->type !== 'admin' && $user->type !== 'company')
-                                                @php
-                                                    $hours_format_number = 0;
-                                                    $total_hours = 0;
-                                                    $hourdiff_late = 0;
-                                                    $esti_late_hour = 0;
-                                                    $esti_late_hour_chart = 0;
-
-                                                    $total_user_task = App\Models\ProjectTask::where('project_id', $project->id)
-                                                        ->whereRaw("FIND_IN_SET(?, assign_to) > 0", [$user->id])
-                                                        ->get()
-                                                        ->count();
-
-                                                    $all_task = App\Models\ProjectTask::where('project_id', $project->id)
-                                                        ->whereRaw("FIND_IN_SET(?, assign_to) > 0", [$user->id])
-                                                        ->get();
-
-                                                    $total_complete_task = App\Models\ProjectTask::where('project_id', '=', $project->id)
-                                                        ->where('stage_id', $lastStage->id)
-                                                        ->whereRaw("find_in_set('" . $user->id . "', assign_to)")
-                                                        ->count();
-
-                                                @endphp
-                                                <tr>
-                                                    <td>{{$user->name}}</td>
-                                                    <td>{{$total_user_task}}</td>
-                                                    <td>{{$total_complete_task}}</td>
-                                                    <td>{{ $project->totalHoursUser($user->id) }} {{__('H')}}</td>
-                                                </tr>
-                                            @endif
-                                        @endforeach
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
         </div>
 
         <!-- <div class="col-sm-12">
@@ -709,6 +652,7 @@
                 data: [
                     {!! json_encode($estimated_hours['partners']) !!},
                     {!! json_encode($estimated_hours['manager']) !!},
+                    {!! json_encode($estimated_hours['leader']) !!},
                     {!! json_encode($estimated_hours['senior_associate']) !!},
                     {!! json_encode($estimated_hours['associate']) !!},
                     {!! json_encode($estimated_hours['intern']) !!}
@@ -718,6 +662,7 @@
                 data: [
                     {!! json_encode($real_hours['partners'] ?? 0) !!},
                     {!! json_encode($real_hours['manager'] ?? 0) !!},
+                    {!! json_encode($real_hours['leader'] ?? 0) !!},
                     {!! json_encode($real_hours['senior_associate'] ?? 0) !!},
                     {!! json_encode($real_hours['associate'] ?? 0) !!},
                     {!! json_encode($real_hours['intern'] ?? 0) !!}
@@ -739,7 +684,7 @@
                 enabled: false
             },
             xaxis: {
-                categories: ['Partners', 'Manager', 'Senior Associate', 'Associate', 'Intern'],
+                categories: ['Partners', 'Manager','Leader', 'Senior Associate', 'Associate', 'Intern'],
             },
             legend: {
                 show: true

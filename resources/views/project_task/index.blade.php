@@ -551,6 +551,7 @@
 @endsection
 
 @section('content')
+    @if($project->label == "Audit")
     <div class="row">
         <div class="col-sm-12">
             <div class=" mt-2 " id="multiCollapseExample1">
@@ -582,6 +583,7 @@
             </div>
         </div>
     </div>
+    @endif
     <div class="row">
         <div class="col-md-12">
             <div class="card">

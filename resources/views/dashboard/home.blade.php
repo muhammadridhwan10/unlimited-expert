@@ -494,6 +494,33 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
 
     @endif
     </script>
+    <script>
+       document.getElementById('clock_in').addEventListener('click', function(event) {
+        event.preventDefault();
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    // Isi input tersembunyi yang sudah ada
+                    document.getElementById('latitude').value = position.coords.latitude;
+                    document.getElementById('longitude').value = position.coords.longitude;
+
+                    // Kirim form setelah data diisi
+                    document.getElementById('clock_in_form').submit();
+                },
+                function(error) {
+                    if (error.code === error.PERMISSION_DENIED) {
+                        alert('Location permission is required to clock in. Please enable location services and try again.');
+                    } else {
+                        alert('Unable to retrieve your location. Please ensure location services are enabled.');
+                    }
+                }
+            );
+        } else {
+            alert('Geolocation is not supported by your browser.');
+        }
+    });
+    </script>
 @endpush
 @push('css-page')
     <style>
@@ -542,12 +569,14 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                         <center>
                             <div class="row">
                                 <div class="col-md-6">
-                                    {{Form::open(array('url'=>'attendanceemployee/attendance','method'=>'post'))}}
-                                    @if(empty($employeeAttendance) || $employeeAttendance->clock_out != '00:00:00')
-                                        <button type="submit" value="0" name="in" id="clock_in" class="btn btn-success ">{{__('CLOCK IN')}}</button>
-                                    @else
-                                        <button type="submit" value="0" name="in" id="clock_in" class="btn btn-success disabled" disabled>{{__('CLOCK IN')}}</button>
-                                    @endif
+                                    {{Form::open(array('url'=>'attendanceemployee/attendance','method'=>'post', 'id' => 'clock_in_form'))}}
+                                        <input type="hidden" name="latitude" id="latitude">
+                                        <input type="hidden" name="longitude" id="longitude">
+                                        @if(empty($employeeAttendance) || $employeeAttendance->clock_out != '00:00:00')
+                                            <button type="button" value="0" name="in" id="clock_in" class="btn btn-success">{{__('CLOCK IN')}}</button>
+                                        @else
+                                            <button type="button" value="0" name="in" id="clock_in" class="btn btn-success disabled" disabled>{{__('CLOCK IN')}}</button>
+                                        @endif
                                     {{Form::close()}}
                                 </div>
                                 <div class="col-md-6">
@@ -803,127 +832,6 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                 </div>
             </div>
         </div>
-
-        {{-- <div class="row">
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>{{__('Top Due Projects')}}</h5>
-                    </div>
-                    <div class="card-body project_table">
-                        <div class="table-responsive ">
-                            <table class="table table-hover mb-0">
-                                <thead>
-                                <tr>
-                                    <th>{{__('Name')}}</th>
-                                    <th>{{__('End Date')}}</th>
-                                    <th class="text-end">{{__('Status')}}</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                @if($home_data['due_project']->count() > 0)
-                                    @foreach($home_data['due_project'] as $due_project)
-
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div>
-                                                        <h5 class="mb-0"><a class="text-blue" href="{{ route('projects.show',$due_project) }}">{{ $due_project->project_name }}</a></h5>
-                                                        <!-- <p class="mb-0"><span class="text-success">{{ \Auth::user()->priceFormat($due_project->budget) }}</p> -->
-
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td >{{  Utility::getDateFormated($due_project->end_date) }}</td>
-                                            <td class="text-end">
-                                                <span class="status_badge p-2 px-3 rounded badge bg-{{\App\Models\Project::$status_color[$due_project->status]}}">{{ __(\App\Models\Project::$project_status[$due_project->status]) }}</span>
-
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                @else
-                                    <div class="py-5">
-                                        <h5 class="text-center mb-0">{{__('No Due Projects Found.')}}</h5>
-                                    </div>
-                                @endif
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>{{__('Projects Remaining In 2 Weeks')}}</h5>
-                    </div>
-                    <div class="card-body project_table">
-                        <div class="table-responsive ">
-                            <table class="table table-hover mb-0">
-                                <thead>
-                                <tr>
-                                    <th>{{__('Name')}}</th>
-                                    <th>{{__('End Date')}}</th>
-                                    <th class="text-end">{{__('Status')}}</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                @if($home_data['project']->count() > 0)
-                                    @foreach($home_data['project'] as $project)
-                                        <?php
-                                            $harisekarang =   date('Y-m-d');
-                                        
-                                            $date_now = strtotime($harisekarang . "+1 days");
-                                            $date_end = strtotime($project->end_date);
-                        
-                                            $jarak = $date_end - $date_now;
-                                            $hari = $jarak / 60 / 60 / 24;
-                        
-                                            $jml_hari = array();
-                                            $sabtuminggu = array();
-                                            
-                                            for ($i = $date_now; $i <= $date_end; $i += (60 * 60 * 24)) {
-                                                if (date('w', $i) !== '0' && date('w', $i) !== '6') {
-                                                    $jml_hari[] = $i;
-                                                } else {
-                                                    $sabtuminggu[] = $i;
-                                                }
-                                            
-                                            }
-
-                                            $jumlah_hari = count($jml_hari);
-                                        ?>
-                                        @if ($jumlah_hari == 14)
-                                            <tr>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <div>
-                                                           <h5 class="mb-0"><a class="text-blue" href="{{ route('projects.show',$project) }}">{{ $project->project_name }}</a></h5>
-                                                            <!-- <p class="mb-0"><span class="text-success">{{ \Auth::user()->priceFormat($due_project->budget) }}</p> -->
-
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td >{{  Utility::getDateFormated($project->end_date) }}</td>
-                                                <td class="text-end">
-                                                    <span class="status_badge p-2 px-3 rounded badge bg-{{\App\Models\Project::$status_color[$project->status]}}">{{ __(\App\Models\Project::$project_status[$project->status]) }}</span>
-
-                                                </td>
-                                            </tr>
-                                        @endif
-                                    @endforeach
-                                @else
-                                    <div class="py-5">
-                                        <h5 class="text-center mb-0">{{__('No Project Remaining In 2 Weeks Found.')}}</h5>
-                                    </div>
-                                @endif
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> --}}
 
         @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
             <div class="row">

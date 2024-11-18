@@ -11,7 +11,7 @@
     <div class="row">
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
-                {{ Form::label('start_date', __('Start Date'), ['class' => 'form-label']) }}
+                {{ Form::label('start_date', __('Start Date'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
                 {{ Form::date('start_date', null, ['class' => 'form-control']) }}
             </div>
         </div>
@@ -42,12 +42,12 @@
                 {!! Form::select('client', $clients, null,array('class' => 'form-control select2','id'=>'choices-multiple1','required'=>'required')) !!}
             </div>
         </div>
-        <div class="col-sm-6 col-md-6">
+        {{-- <div class="col-sm-6 col-md-6">
             <div class="form-group">
                 {{ Form::label('budget', __('Budget'), ['class' => 'form-label']) }}
                 {{ Form::number('budget', null, ['class' => 'form-control']) }}
             </div>
-        </div>
+        </div> --}}
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
                 {{ Form::label('user', __('Team Leader'),['class'=>'form-label']) }}<span class="text-danger">*</span>
@@ -82,7 +82,7 @@
     <div class="row">
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
-                {{ Form::label('tag', __('Tag'), ['class' => 'form-label']) }}
+                {{ Form::label('tag', __('Tag'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
                 <select name="tag" id="tag" class="form-control main-element">
                     @foreach(\App\Models\Project::$tags as $k => $v)
                         <option value="{{$k}}">{{__($v)}}</option>

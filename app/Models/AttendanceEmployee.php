@@ -18,6 +18,7 @@ class AttendanceEmployee extends Model
         'total_rest',
         'longitude',
         'latitude',
+        'distance_from_office',
         'created_by',
     ];
 

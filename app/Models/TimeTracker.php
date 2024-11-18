@@ -17,6 +17,8 @@ class TimeTracker extends Model
         'start_time',
         'end_time',
         'total_time',
+        'latitude',
+        'longitude',
         'created_by',
 
     ];
