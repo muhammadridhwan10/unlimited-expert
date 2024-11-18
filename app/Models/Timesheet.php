@@ -19,7 +19,7 @@ class Timesheet extends Model
     public function timeTrackers()
     {
         return $this->hasMany(TimeTracker::class, 'project_id', 'project_id')
-                    ->whereColumn('task_id', 'task_id')
+                    ->whereRaw('created_by = ?', [$this->created_by])
                     ->whereRaw('DATE(start_time) = ?', [$this->date]);
     }
 
