@@ -239,10 +239,10 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             @endif
                                         @endif
                                             <li class="dash-item {{ (Request::route()->getName() == 'reimbursment-personal.index' || Request::route()->getName() == 'reimbursment-personal.create' || Request::route()->getName() == 'reimbursment-personal.edit') ? ' active' : '' }} ">
-                                                <a class="dash-link" href="{{route('reimbursment-personal.index')}}">{{__('Reimbursment Personal')}}</a>
+                                                <a class="dash-link" href="{{route('reimbursment-personal.index')}}">{{__('Reimbursement Personal')}}</a>
                                             </li>
                                             <li class="dash-item {{ (Request::route()->getName() == 'reimbursment-client.index' || Request::segment(1) == 'reimbursment-client.create' || Request::route()->getName() == 'reimbursment-client.edit') ? ' active' : '' }}">
-                                                <a class="dash-link" href="{{ route('reimbursment-client.index') }}">{{__('Reimbursment Client')}}</a>
+                                                <a class="dash-link" href="{{ route('reimbursment-client.index') }}">{{__('Reimbursement Client')}}</a>
                                             </li>
                                     </ul>
                                 </li>
@@ -742,10 +742,10 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                         <a class="dash-link" href="{{ route('medical-allowance.index') }}">{{__('Medical Allowance')}}</a>
                                     </li>
                                     <li class="dash-item {{ (Request::route()->getName() == 'reimbursment-personal.index' || Request::route()->getName() == 'reimbursment-personal.create' || Request::route()->getName() == 'reimbursment-personal.edit') ? ' active' : '' }} ">
-                                        <a class="dash-link" href="{{route('reimbursment-personal.index')}}">{{__('Reimbursment Personal')}}</a>
+                                        <a class="dash-link" href="{{route('reimbursment-personal.index')}}">{{__('Reimbursement Personal')}}</a>
                                     </li>
                                     <li class="dash-item {{ (Request::route()->getName() == 'reimbursment-client.index' || Request::segment(1) == 'reimbursment-client.create' || Request::route()->getName() == 'reimbursment-client.edit') ? ' active' : '' }}">
-                                        <a class="dash-link" href="{{ route('reimbursment-client.index') }}">{{__('Reimbursment Client')}}</a>
+                                        <a class="dash-link" href="{{ route('reimbursment-client.index') }}">{{__('Reimbursement Client')}}</a>
                                     </li>
 
                                     {{-- @if( Gate::check('manage chart of account') || Gate::check('manage journal entry') || Gate::check('balance sheet report') || Gate::check('ledger report') || Gate::check('trial balance report'))
@@ -813,7 +813,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                                     </li>
                                                 @endcan --}}
                                                 <li class="dash-item {{ request()->is('reports-reimbursment') ? 'active' : '' }}">
-                                                    <a class="dash-link" href="{{ route('report.reimbursment') }}">{{__('Report Reimbursment')}}</a>
+                                                    <a class="dash-link" href="{{ route('report.reimbursment') }}">{{__('Report Reimbursement')}}</a>
                                                 </li>
                                                 @can('income report')
                                                     <li class="dash-item {{ (Request::route()->getName() == 'report.income.summary' ) ? ' active' : '' }}">
@@ -1196,6 +1196,12 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                         <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'document-request')?'active':''}}">
                             <a href="{{route('document-request.index')}}" class="dash-link">
                                 <span class="dash-micon"><i class="ti ti-file"></i></span><span class="dash-mtext">{{__('Document Request')}}</span>
+                            </a>
+                        </li>
+
+                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'print-labels')?'active':''}}">
+                            <a href="{{route('print-labels.index')}}" class="dash-link">
+                                <span class="dash-micon"><i class="ti ti-files"></i></span><span class="dash-mtext">{{__('Print Labels')}}</span>
                             </a>
                         </li>
 

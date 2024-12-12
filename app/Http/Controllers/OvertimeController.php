@@ -19,6 +19,7 @@ class OvertimeController extends Controller
 
     public function index(Request $request)
     {
+        $perPage = $request->get('show_entries', 10);
 
         if(\Auth::user()->type == 'admin')
         {
@@ -38,7 +39,10 @@ class OvertimeController extends Controller
                 $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
             } 
 
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate(10);
+            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate($perPage)->appends([
+                'month' => $request->month,
+                'show_entries' => $perPage,
+            ]);
 
 
             $users        = \Auth::user();
@@ -63,9 +67,10 @@ class OvertimeController extends Controller
                 $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
             } 
 
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate(10)->appends([
+            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate($perPage)->appends([
                 'month' => $request->month,
-            ]);     
+                'show_entries' => $perPage, 
+            ]);  
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
@@ -89,9 +94,10 @@ class OvertimeController extends Controller
                 $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
             } 
 
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate(10)->appends([
+            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate($perPage)->appends([
                 'month' => $request->month,
-            ]);  
+                'show_entries' => $perPage, 
+            ]);    
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
@@ -126,9 +132,10 @@ class OvertimeController extends Controller
                 $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
             } 
 
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate(10)->appends([
+            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate($perPage)->appends([
                 'month' => $request->month,
-            ]);  
+                'show_entries' => $perPage, 
+            ]);    
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
@@ -152,9 +159,10 @@ class OvertimeController extends Controller
                 $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
             } 
 
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate(10)->appends([
+            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate($perPage)->appends([
                 'month' => $request->month,
-            ]);  
+                'show_entries' => $perPage, 
+            ]);   
 
             $users        = \Auth::user();
             $employee     = Employee::where('user_id', '=', $users->id)->first();
@@ -178,9 +186,10 @@ class OvertimeController extends Controller
                 $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
             } 
 
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate(10)->appends([
+            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate($perPage)->appends([
                 'month' => $request->month,
-            ]);  
+                'show_entries' => $perPage, 
+            ]);    
 
             $employee     = Employee::where('user_id', '=', \Auth::user()->id)->first();
             $overtimes    = UserOvertime::where('user_id', '=', $employee->id)->get();

@@ -20,6 +20,7 @@ class Invoice extends Model
         'account_id',
         'client_id',
         'currency',
+        'operator',
         'category_invoice',
         'invoice_template'
     ];
@@ -152,9 +153,14 @@ class Invoice extends Model
 
     public function getTotal()
     {
-
-        return $this->getSubTotal() - $this->getTotalTax();
-//        return ($this->getSubTotal() + $this->getTotalTax()) - $this->getTotalDiscount();
+        if($this->operator == '+')
+        {
+            return $this->getSubTotal() + $this->getTotalTax();
+        }
+        else
+        {
+            return $this->getSubTotal() - $this->getTotalTax();
+        }
     }
 
     public function getDue()

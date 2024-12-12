@@ -26,7 +26,7 @@
                 <div class="card-header"><h6 class="mb-0" style="font-size: 15px;">{{__('Leave Request')}}</h6></div>
                 <div class="card-body table-border-style">
                     <div class="table-responsive">
-                        <table class="table datatable">
+                        <table class="table">
                             <thead>
                                 <tr>
                                     @if(\Auth::user()->type!='employee')
@@ -104,7 +104,7 @@
                 <div class="card-header"><h6 class="mb-0" style="font-size: 15px;">{{__('Sick Request')}}</h6></div>
                 <div class="card-body table-border-style">
                     <div class="table-responsive">
-                        <table class="table datatables">
+                        <table class="table">
                             <thead>
                                 <tr>
                                     @if(\Auth::user()->type!='employee')

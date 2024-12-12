@@ -783,12 +783,12 @@
                                                     <div data-v-f2a183a6="" class="d-table-summary-item">
                                                         <div data-v-f2a183a6="" class="d-table-label"><strong>{{__('Total')}} :</strong></div>
                                                         <div data-v-f2a183a6="" class="d-table-value"><strong>
-                                                                @if ($invoice->currency == '$')
-                                                                    {{Utility::priceFormat2($settings,$invoice->getSubTotal() - $invoice->getTotalTax())}}
+                                                               @if ($invoice->currency == '$')
+                                                                    {{Utility::priceFormat2($settings,$invoice->getTotal())}}
                                                                 @elseif($invoice->currency == '€')
-                                                                    {{Utility::priceFormat3($settings, $invoice->getSubTotal() - $invoice->getTotalTax())}}
+                                                                    {{Utility::priceFormat3($settings, $invoice->getTotal())}}
                                                                 @else
-                                                                    {{Utility::priceFormat($settings,$invoice->getSubTotal() - $invoice->getTotalTax())}}
+                                                                    {{Utility::priceFormat($settings,$invoice->getTotal())}}
                                                                 @endif
                                                             </strong></div>
                                                     </div>

@@ -30,7 +30,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="form-group">
-                {{Form::label('reimbursment_type',__('Reimbursment Type') ,['class'=>'form-label'])}}<span class="text-danger">*</span>
+                {{Form::label('reimbursment_type',__('Reimbursement Type') ,['class'=>'form-label'])}}<span class="text-danger">*</span>
                 <select name="reimbursment_type" id="reimbursment_type" class="form-control select">
                     @foreach($reimbursment_type as $reimbursmenttypes)
                         <option value="{{ $reimbursmenttypes->title }}">{{ $reimbursmenttypes->title }} (<p class="float-right pr-5">{{ $reimbursmenttypes->amount }}</p>)</option>

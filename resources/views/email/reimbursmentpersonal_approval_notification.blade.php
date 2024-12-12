@@ -1,5 +1,5 @@
 <div style="background-color:#f6f6f6;font-family:sans-serif;font-size:14px;line-height:1.4;margin:0;padding:0">
-    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Halo! {{ $reimbursment->employee->name }} Thank you for submitting your personal reimbursment request. We are pleased to inform you that your personal reimbursment application has been <strong>APPROVED</strong>.</span>
+    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Halo! {{ $reimbursment->employee->name }} Thank you for submitting your personal reimbursement request. We are pleased to inform you that your personal reimbursment application has been <strong>APPROVED</strong>.</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse:separate;background-color:#f6f6f6;width:100%" width="100%" bgcolor="#f6f6f6">
         <tbody>
             <tr>
@@ -23,7 +23,7 @@
                                                         </div>
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Halo! {{ $reimbursment->employee->name }}</p>
-                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Thank you for submitting your reimbursment personal request. We would like to inform you that your personal reimbursement request has been <strong>APPROVED</strong> and the status has been updated to <strong>PAID</strong> in the application.</p>
+                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Thank you for submitting your reimbursement personal request. We would like to inform you that your personal reimbursement request has been <strong>APPROVED</strong> and the status has been updated to <strong>PAID</strong> in the application.</p>
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">An amount of {{ number_format($reimbursment->amount) }} has been transferred to the registered account as reimbursement of personal expenses you have incurred in relation to {{ $reimbursment->description }}.</p>
                                                         <br>

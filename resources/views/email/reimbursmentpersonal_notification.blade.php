@@ -1,5 +1,5 @@
 <div style="background-color:#f6f6f6;font-family:sans-serif;font-size:14px;line-height:1.4;margin:0;padding:0">
-    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Halo! {{ $reimbursment->approvals->name }} We have received an personal reimbursment request from  {{ $reimbursment->employee->name }}.</span>
+    <span style="color:transparent;display:none;height:0;max-height:0;max-width:0;opacity:0;overflow:hidden;width:0">Halo! {{ $reimbursment->approvals->name }} We have received an personal reimbursement request from  {{ $reimbursment->employee->name }}.</span>
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" style="border-collapse:separate;background-color:#f6f6f6;width:100%" width="100%" bgcolor="#f6f6f6">
         <tbody>
             <tr>
@@ -23,7 +23,7 @@
                                                         </div>
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">Halo! {{ $reimbursment->approvals->name }}, Please allow the Admin to approve the personal reimbursment application submitted by me.</p>
-                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">The details of this personal reimbursment application are as follows:</p>
+                                                        <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">The details of this personal reimbursement application are as follows:</p>
                                                         <br>
                                                         <p style="color:#444444;font-family:sans-serif;font-size:14px;font-weight:normal;margin:0;margin-bottom:5px">
                                                         Employee Name:

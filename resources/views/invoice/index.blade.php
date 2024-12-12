@@ -154,69 +154,66 @@
             <div class="mt-2 ">
                 <div class="card">
                     <div class="card-body">
-{{--                         @if (!\Auth::guard('customer')->check())--}}
-                            {{ Form::open(['route' => ['invoice.index'], 'method' => 'GET', 'id' => 'customer_submit']) }}
-{{--                        @else--}}
-{{--                            {{ Form::open(['route' => ['customer.invoice'], 'method' => 'GET', 'id' => 'customer_submit']) }}--}}
-{{--                        @endif--}}
-                        <div class="row d-flex align-items-center justify-content-end">
-                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
-                                <div class="btn-box">
-                                    {{ Form::label('issue_date', __('Issue Date'),['class'=>'form-label'])}}
-                                    {{ Form::date('issue_date', isset($_GET['issue_date'])?$_GET['issue_date']:'', array('class' => 'form-control month-btn','id'=>'pc-daterangepicker-1')) }}
-
-
+                        {{ Form::open(['route' => ['invoice.index'], 'method' => 'GET', 'id' => 'customer_submit']) }}
+                            <div class="row d-flex align-items-center justify-content-end">
+                                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
+                                    <div class="btn-box">
+                                        {{ Form::label('issue_date', __('Issue Date'),['class'=>'form-label'])}}
+                                        {{ Form::date('issue_date', isset($_GET['issue_date'])?$_GET['issue_date']:'', array('class' => 'form-control month-btn','id'=>'pc-daterangepicker-1')) }}
+                                    </div>
                                 </div>
-                            </div>
-{{--                            @if (!\Auth::guard('customer')->check())--}}
                                 <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
                                     <div class="btn-box">
                                         {{ Form::label('client', __('Client'), ['class' => 'form-label']) }}
                                         {{ Form::select('client', $client, isset($_GET['client']) ? $_GET['client'] : null, ['class' => 'form-control select2','id'=>'choices-multiple1']) }}
                                     </div>
                                 </div>
-{{--                            @endif--}}
-                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
-                                <div class="btn-box">
-                                    {{ Form::label('partner', __('Partner'),['class'=>'form-label'])}}
-                                    {{ Form::select('user_id', $partner, isset($_GET['user_id']) ? $_GET['user_id'] : '', ['class' => 'form-control select']) }}
+                                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
+                                    <div class="btn-box">
+                                        {{ Form::label('partner', __('Partner'),['class'=>'form-label'])}}
+                                        {{ Form::select('user_id', $partner, isset($_GET['user_id']) ? $_GET['user_id'] : '', ['class' => 'form-control select']) }}
+                                    </div>
+                                </div>
+                                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
+                                    <div class="btn-box">
+                                        {{ Form::label('status', __('Status'),['class'=>'form-label'])}}
+                                        {{ Form::select('status', [''=>'Select Status'] + $status,isset($_GET['status'])?$_GET['status']:'', array('class' => 'form-control select')) }}
+
+                                    </div>
+                                </div>
+                                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
+                                    <div class="btn-box">
+                                        {{ Form::label('category_invoice', __('Category Invoice'),['class'=>'form-label'])}}
+                                        {{ Form::select('category_invoice', [''=>'Select Category Invoice'] + $category_invoice,isset($_GET['category_invoice'])?$_GET['category_invoice']:'', array('class' => 'form-control select')) }}
+
+                                    </div>
+                                </div>
+                                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
+                                    <div class="btn-box">
+                                        {{ Form::label('company', __('Company'), ['class' => 'form-label']) }}
+                                        {{ Form::select('company', [''=>'Select Company'] + $companies, isset($_GET['company']) ? $_GET['company'] : '', ['class' => 'form-control select']) }}
+                                    </div>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="btn-box">
+                                        {{ Form::label('show_entries', __('Show Entries'), ['class' => 'form-label']) }}
+                                        {{ Form::select('show_entries', [10 => '10', 25 => '25', 50 => '50', 100 => '100'], request('show_entries', 10), ['class' => 'form-select', 'onchange' => 'this.form.submit()']) }}
+                                    </div>
+                                </div>
+                                <div class="col-auto float-end ms-2 mt-4">
+
+                                    <a href="#" class="btn btn-sm btn-primary"
+                                    onclick="document.getElementById('customer_submit').submit(); return false;"
+                                    data-toggle="tooltip" data-original-title="{{ __('apply') }}">
+                                        <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
+                                    </a>
+
+                                    <a href="{{ route('invoice.index') }}" class="btn btn-sm btn-danger" data-toggle="tooltip"
+                                    data-original-title="{{ __('Reset') }}">
+                                        <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off"></i></span>
+                                    </a>
                                 </div>
                             </div>
-                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
-                                <div class="btn-box">
-                                    {{ Form::label('status', __('Status'),['class'=>'form-label'])}}
-                                    {{ Form::select('status', [''=>'Select Status'] + $status,isset($_GET['status'])?$_GET['status']:'', array('class' => 'form-control select')) }}
-
-                                </div>
-                            </div>
-                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12">
-                                <div class="btn-box">
-                                    {{ Form::label('category_invoice', __('Category Invoice'),['class'=>'form-label'])}}
-                                    {{ Form::select('category_invoice', [''=>'Select Category Invoice'] + $category_invoice,isset($_GET['category_invoice'])?$_GET['category_invoice']:'', array('class' => 'form-control select')) }}
-
-                                </div>
-                            </div>
-                            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 mr-2">
-                                <div class="btn-box">
-                                    {{ Form::label('company', __('Company'), ['class' => 'form-label']) }}
-                                    {{ Form::select('company', [''=>'Select Company'] + $companies, isset($_GET['company']) ? $_GET['company'] : '', ['class' => 'form-control select']) }}
-                                </div>
-                            </div>
-                            <div class="col-auto float-end ms-2 mt-4">
-
-                                <a href="#" class="btn btn-sm btn-primary"
-                                   onclick="document.getElementById('customer_submit').submit(); return false;"
-                                   data-toggle="tooltip" data-original-title="{{ __('apply') }}">
-                                    <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
-                                </a>
-
-                                <a href="{{ route('invoice.index') }}" class="btn btn-sm btn-danger" data-toggle="tooltip"
-                                   data-original-title="{{ __('Reset') }}">
-                                    <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off"></i></span>
-                                </a>
-                            </div>
-
-                        </div>
                         {{ Form::close() }}
                     </div>
                 </div>
@@ -366,11 +363,11 @@
                                     </td>
                                     <td>
                                         @if ($invoice->currency == '$')
-                                            {{ \Auth::user()->priceFormat2($invoice->getDue()) }}
+                                            {{ \Auth::user()->priceFormat2($invoice->getTotal()) }}
                                         @elseif($invoice->currency == '€')
-                                            {{ \Auth::user()->priceFormat3($invoice->getDue()) }}
+                                            {{ \Auth::user()->priceFormat3($invoice->getTotal()) }}
                                         @else
-                                            {{ \Auth::user()->priceFormat($invoice->getDue()) }}
+                                            {{ \Auth::user()->priceFormat($invoice->getTotal()) }}
                                         @endif
                                     </td>
                                     <td>
@@ -454,7 +451,7 @@
                             </tbody>
                         </table>
                         <div class="d-flex justify-content-center mt-3">
-                            {{ $invoices->links() }}
+                            {{ $invoices->appends(['month' => request('month'),'issue_date' => request('issue_date'), 'client' => request('client'), 'user_id' => request('user_id'), 'status' => request('status'), 'category_invoice' => request('category_invoice'), 'company' => request('company'), 'show_entries' => request('show_entries')])->links() }}
                         </div>
                     </div>
                     @elseif (Auth::user()->type == 'partners')
@@ -596,6 +593,9 @@
                                 @endforeach
                             </tbody>
                         </table>
+                        <div class="d-flex justify-content-center mt-3">
+                            {{ $invoices->appends(['month' => request('month'),'issue_date' => request('issue_date'), 'client' => request('client'), 'user_id' => request('user_id'), 'status' => request('status'), 'category_invoice' => request('category_invoice'), 'company' => request('company'), 'show_entries' => request('show_entries')])->links() }}
+                        </div>
                     </div>
                     @endif
                 </div>

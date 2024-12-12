@@ -20,11 +20,38 @@
 
 @section('content')
     <div class="row">
+        <div class="col-sm-12">
+            <div class=" mt-2 " id="multiCollapseExample1">
+                <div class="card">
+                    <div class="card-body">
+                        {{ Form::open(array('route' => array('document-request.index'),'method'=>'get','id'=>'document-request')) }}
+                        <div class="row">
+                            <div class="col-auto">
+                                <div class="btn-box">
+                                    {{ Form::label('show_entries', __('Show Entries'), ['class' => 'form-label']) }}
+                                    {{ Form::select('show_entries', [10 => '10', 25 => '25', 50 => '50', 100 => '100'], request('show_entries', 10), ['class' => 'form-select', 'onchange' => 'this.form.submit()']) }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                {{ Form::label('search', __('Search'), ['class' => 'form-label']) }}
+                                <div class="input-group">
+                                    {{ Form::text('search', request('search'), ['class' => 'form-control', 'placeholder' => __('Search Document...')]) }}
+                                    <button type="submit" class="btn btn-primary">{{ __('Search') }}</button>
+                                </div>
+                            </div>
+                        </div>
+                        {{ Form::close() }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
         <div class="col-xl-12">
             <div class="card">
                 <div class="card-body table-border-style">
                     <div class="table-responsive">
-                        <table class="table datatable">
+                        <table class="table">
                             <thead>
                                 <tr>
                                     @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'company' || \Auth::user()->type == 'partners')
@@ -96,8 +123,8 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="d-flex justify-content-center">
-                        {!! $documents->links() !!}
+                    <div class="d-flex justify-content-center mt-3">
+                        {{ $documents->appends(['show_entries' => request('show_entries')])->links() }}
                     </div>
                 </div>
             </div>

@@ -116,6 +116,7 @@
             var el = $(this).parent().parent().parent().parent();
             var price = $(this).val();
             var tax = $(el.find('.tax')).val();
+            var operator = $('#operator').val();
             var totalItemPrice = (1 * price);
 
             var amount = (Math.round(totalItemPrice));
@@ -138,9 +139,12 @@
             for (var i = 0; i < inputs.length; i++) {
                 subTotal = parseFloat(subTotal) + parseFloat($(inputs[i]).html());
             }
+            var totalAmount = operator === '+' 
+                ? (parseFloat(subTotal) + parseFloat(totalItemTaxPrice))
+                : (parseFloat(subTotal) - parseFloat(totalItemTaxPrice));
             $('.totalTax').html(totalItemTaxPrice.toFixed(0));
             $('.subTotal').html(subTotal.toFixed(0));
-            $('.totalAmount').html((parseFloat(subTotal) - parseFloat(totalItemTaxPrice)).toFixed(0));
+            $('.totalAmount').html(totalAmount.toFixed(0));
 
         })
 
@@ -148,6 +152,7 @@
             var el = $(this).parent().parent().parent().parent();
             var tax = $(this).val();
             var price = $(el.find('.price')).val();
+            var operator = $('#operator').val();
 
             var totalItemPrice = (1 * price);
 
@@ -171,10 +176,13 @@
             for (var i = 0; i < inputs.length; i++) {
                 subTotal = parseFloat(subTotal) + parseFloat($(inputs[i]).html());
             }
+            var totalAmount = operator === '+' 
+            ? (parseFloat(subTotal) + parseFloat(totalItemTaxPrice))
+            : (parseFloat(subTotal) - parseFloat(totalItemTaxPrice));
             $('.subTotal').html(subTotal.toFixed(0));
             $('.totalTax').html(totalItemTaxPrice.toFixed(0));
 
-            $('.totalAmount').html((parseFloat(subTotal) - parseFloat(totalItemTaxPrice)).toFixed(0));
+            $('.totalAmount').html(totalAmount.toFixed(0));
         })
 
 
@@ -328,6 +336,16 @@
                                             <option value="{{ $siteCurrencySymbol2 }}">{{ $siteCurrencySymbol2 }}</option>
                                             <option value="{{ $siteCurrencySymbol3 }}">{{ $siteCurrencySymbol3 }}</option>
                                             <!-- Tambahkan opsi lain jika diperlukan -->
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ Form::label('operator', __('Operator'),['class'=>'form-label']) }}
+                                        <select class="form-control operator" name="operator" id="operator">
+                                            <option value="0">Select Operator</option>
+                                            <option value="+">+</option>
+                                            <option value="-">-</option>
                                         </select>
                                     </div>
                                 </div>

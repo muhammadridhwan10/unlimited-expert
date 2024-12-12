@@ -1,16 +1,16 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{__('Manage Reimbursment Personal')}}
+    {{__('Manage Reimbursement Personal')}}
 @endsection
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('Manage  Reimbursment Personal')}}</li>
+    <li class="breadcrumb-item">{{__('Manage  Reimbursement Personal')}}</li>
 @endsection
 
 @section('action-btn')
     <div class="float-end">
-        <a href="#" data-size="lg" data-url="{{ route('reimbursment-personal.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create')}}" data-title="{{__('Create Reimbursment Personal')}}" class="btn btn-sm btn-primary">
+        <a href="#" data-size="lg" data-url="{{ route('reimbursment-personal.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create')}}" data-title="{{__('Create Reimbursement Personal')}}" class="btn btn-sm btn-primary">
             <i class="ti ti-plus"></i>
         </a>
     </div>
@@ -71,7 +71,7 @@
                                     <div class="col-auto">
                                         <div class="btn-box">
                                             {{Form::label('month',__('Month'),['class'=>'form-label'])}}
-                                            {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
+                                            {{Form::month('month',isset($_GET['month'])?$_GET['month']:null,array('class'=>'month-btn form-control'))}}
                                         </div>
                                     </div>
                                 </div>
@@ -90,7 +90,6 @@
                             </div>
                         </div>
                     </div>
-                    {{ Form::close() }}
                 </div>
             </div>
         </div>
@@ -98,9 +97,20 @@
     <div class="row">
         <div class="col-xl-12">
             <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-auto">
+                        <div class="btn-box">
+                            {{ Form::label('show_entries', __('Show Entries'), ['class' => 'form-label']) }}
+                            {{ Form::select('show_entries', [10 => '10', 25 => '25', 50 => '50', 100 => '100'], request('show_entries', 10), ['class' => 'form-select', 'onchange' => 'this.form.submit()']) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {{ Form::close() }}
             <div class="card-body table-border-style">
                     <div class="table-responsive">
-                    <table class="table datatable">
+                    <table class="table">
                             <thead>
                             <tr>
                                 @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners')
@@ -108,7 +118,7 @@
                                 @endif
                                 <th>{{__('Client')}}</th>
                                 <th>{{__('Approval By')}}</th>
-                                <th>{{__('Reimbursment Type')}}</th>
+                                <th>{{__('Reimbursement Type')}}</th>
                                 <th>{{__('Date')}}</th>
                                 <th>{{__('Amount')}}</th>
                                 <th width="200px">{{__('Description')}}</th>
@@ -154,7 +164,7 @@
                             </tbody>
                         </table>
                         <div class="d-flex justify-content-center mt-3">
-                            {{ $employeeReimbursment->links() }}
+                            {{ $employeeReimbursment->appends(['month' => request('month'), 'employee_id' => request('employee_id'), 'show_entries' => request('show_entries')])->links() }}
                         </div>
                     </div>
                 </div>
@@ -175,7 +185,7 @@
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">
-                <div class="card-header"><h6 class="mb-0">{{__('Request Approval Reimbursment')}}</h6></div>
+                <div class="card-header"><h6 class="mb-0">{{__('Request Approval Reimbursement')}}</h6></div>
                 <div class="card-body table-border-style">
                     <div class="float-end">
                         <button class="btn btn-primary" id="approve-selected">Approve Selected</button>
@@ -190,7 +200,7 @@
                                     @endif
                                     <th>{{__('Client')}}</th>
                                     <th>{{__('Approval By')}}</th>
-                                    <th>{{__('Reimbursment Type')}}</th>
+                                    <th>{{__('Reimbursement Type')}}</th>
                                     <th>{{__('Date')}}</th>
                                     <th>{{__('Amount')}}</th>
                                     <th width="200px">{{__('Description')}}</th>

@@ -48,6 +48,8 @@ class InvoiceController extends Controller
     {
         if(\Auth::user()->can('manage invoice'))
         {
+            $perPage = $request->get('show_entries', 10);
+
             if(\Auth::user()->type == 'partners')
             {
                 $client = User::where('type','=','client')->get()->pluck('name', 'id');
@@ -117,14 +119,15 @@ class InvoiceController extends Controller
 
                 }
 
-                $invoices = $query->orderByDesc('id')->paginate(10)->appends([
+                $invoices = $query->orderByDesc('id')->paginate($perPage)->appends([
                     'issue_date' => $request->issue_date,
                     'client' => $request->client,
                     'user_id' => $request->user_id,
                     'status' => $request->status,
                     'category_invoice' => $request->category_invoice,
                     'company' => $request->company,
-                ]);         
+                    'show_entries' => $perPage,
+                ]);  
 
             }
             else
@@ -192,14 +195,15 @@ class InvoiceController extends Controller
 
                 }
 
-                $invoices = $query->orderByDesc('id')->paginate(10)->appends([
+                $invoices = $query->orderByDesc('id')->paginate($perPage)->appends([
                     'issue_date' => $request->issue_date,
                     'client' => $request->client,
                     'user_id' => $request->user_id,
                     'status' => $request->status,
                     'category_invoice' => $request->category_invoice,
                     'company' => $request->company,
-                ]);         
+                    'show_entries' => $perPage,
+                ]);        
                 
 
        
@@ -301,6 +305,7 @@ class InvoiceController extends Controller
             $invoice->ref_number     = $request->ref_number;
             $invoice->invoice_template = $request->invoice_template;
             $invoice->currency       = $request->currency;
+            $invoice->operator       = $request->operator;
             $invoice->user_id        = $request->user_id;
             $invoice->company        = $request->company;
             $invoice->account_id     = $request->account_id;
@@ -436,6 +441,15 @@ class InvoiceController extends Controller
             //     return redirect()->route('invoice.index')->with('error', $messages->first());
             // }
 
+            if($request->operator == 0 && $request->operator == "-")
+            {
+                $operator = "-";
+            }
+            else
+            {
+                $operator = "+";
+            }
+
             $invoice->invoice_id = $request->invoice_id;
             $invoice->client_id = $request->client_id;
             $invoice->issue_date = $request->issue_date;
@@ -444,6 +458,7 @@ class InvoiceController extends Controller
             $invoice->invoice_template = $request->invoice_template;
             $invoice->category_invoice = $request->category_invoice;
             $invoice->currency = $request->currency;
+            $invoice->operator = $operator;
             $invoice->category_id = implode(',', $request->input('category_id'));
             $invoice->user_id = $request->user_id;
             $invoice->company = $request->company;

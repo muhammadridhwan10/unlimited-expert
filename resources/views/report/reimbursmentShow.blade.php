@@ -38,7 +38,7 @@
             <thead>
             <tr>
                 <th>{{__('Client')}}</th>
-                <th>{{__('Reimbursment Type')}}</th>
+                <th>{{__('Reimbursement Type')}}</th>
                 <th>{{__('Amount')}}</th>
                 <th>{{__('Description')}}</th>
                 <th>{{__('Image')}}</th>

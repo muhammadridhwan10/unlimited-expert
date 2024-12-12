@@ -14,27 +14,45 @@ use Illuminate\Support\Facades\Mail;
 
 class DocumentRequestController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
 
         if(\Auth::user()->can('manage document'))
         {
-            if(Auth::user()->type == 'admin')
-            {
-                $documents = DocumentRequest::orderByDesc('id')->paginate(10);
+            $perPage = $request->get('show_entries', 10);
+            $search = $request->get('search');
 
-                return view('document-request.index', compact('documents'));
-            }
-            elseif(\Auth::user()->type == 'company')
+            if(Auth::user()->type == 'admin' || Auth::user()->type == 'company')
             {
-                $documents = DocumentRequest::orderByDesc('id')->paginate(10);
+                $documents = DocumentRequest::orderByDesc('id');
+
+                if ($search) {
+                    $documents = $documents->where(function($query) use ($search) {
+                        $query->where('client_name', 'LIKE', "%{$search}%")
+                            ->orWhere('document_type', 'LIKE', "%{$search}%")
+                            ->orWhereHas('employee', function($q) use ($search) {
+                                $q->where('name', 'LIKE', "%{$search}%");
+                            });
+                    });
+                }
+
+                $documents = $documents->paginate($perPage);
 
                 return view('document-request.index', compact('documents'));
             }
             else
             {
                 $employee = Employee::where('user_id', \Auth::user()->id)->first();
-                $documents = DocumentRequest::where('employee_id', '=', $employee->id)->orderByDesc('id')->paginate(10);
+                $documents = DocumentRequest::where('employee_id', '=', $employee->id)->orderByDesc('id');
+
+                if ($search) {
+                    $documents = $documents->where(function($query) use ($search) {
+                        $query->where('client_name', 'LIKE', "%{$search}%")
+                            ->orWhere('document_type', 'LIKE', "%{$search}%");
+                    });
+                }
+
+                $documents = $documents->paginate($perPage);
 
                 return view('document-request.index', compact('documents'));
             }

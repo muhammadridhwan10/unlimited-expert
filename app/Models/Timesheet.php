@@ -14,6 +14,7 @@ class Timesheet extends Model
         'description',
         'created_by',
         'platform',
+        'traker_id',
     ];
 
     public function timeTrackers()

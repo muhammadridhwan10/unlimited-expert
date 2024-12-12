@@ -12,7 +12,7 @@
                         <td>{{ !empty($reimbursment->client->name)?$reimbursment->client->name:'' }}</td>
                     </tr>
                      <tr>
-                        <th>{{__('Reimbursment Type')}}</th>
+                        <th>{{__('Reimbursement Type')}}</th>
                         <td>{{ !empty($reimbursment->reimbursment_type)?$reimbursment->reimbursment_type:'' }}</td>
                     </tr>
                     <tr>

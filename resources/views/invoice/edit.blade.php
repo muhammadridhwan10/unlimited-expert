@@ -17,6 +17,7 @@
                 let subTotal = 0;
                 let totalTax = 0;
                 let rows = document.querySelectorAll('#sortable-table tbody tr');
+                let operator = document.querySelector('#operator').value;
 
                 rows.forEach(row => {
                     let priceInput = row.querySelector('.price');
@@ -37,14 +38,20 @@
                     }
                 });
 
+                let totalAmount = operator === '+' 
+                ? subTotal + totalTax 
+                : subTotal - totalTax;
+
                 document.querySelector('.subTotal').textContent = subTotal.toFixed(2);
                 document.querySelector('.totalTax').textContent = totalTax.toFixed(2);
-                document.querySelector('.totalAmount').textContent = (subTotal - totalTax).toFixed(2);
+                document.querySelector('.totalAmount').textContent = totalAmount.toFixed(2);
             }
 
             document.querySelectorAll('.price, .tax').forEach(input => {
                 input.addEventListener('input', updateAmounts);
             });
+
+            document.querySelector('#operator').addEventListener('change', updateAmounts);
 
             document.querySelectorAll('.delete_item').forEach(button => {
                 button.addEventListener('click', function(event) {
@@ -176,6 +183,16 @@
                                         </select>
                                     </div>
                                 </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        {{ Form::label('operator', __('Operator'), ['class' => 'form-label']) }}
+                                        <select class="form-control operator" name="operator" id="operator">
+                                            <option value="+" {{ old('operator', $invoice->operator ?? '-') == '+' ? 'selected' : '' }}>+</option>
+                                            <option value="-" {{ old('operator', $invoice->operator ?? '-') == '-' ? 'selected' : '' }}>-</option>
+                                        </select>
+                                    </div>
+                                </div>
+
                                 {{-- <div class="col-md-6">
                                     <div class="form-check custom-checkbox mt-4">
                                         <input class="form-check-input" type="checkbox" name="discount_apply" id="discount_apply">

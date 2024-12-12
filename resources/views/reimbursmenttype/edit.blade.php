@@ -4,7 +4,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="form-group">
-                {{Form::label('title',__('Reimbursment Type'),['class'=>'form-label'])}}
+                {{Form::label('title',__('Reimbursement Type'),['class'=>'form-label'])}}
                 {{Form::text('title',null,array('class'=>'form-control','placeholder'=>__('Enter Reimbursment Type Name')))}}
                 @error('title')
                 <span class="invalid-name" role="alert">

@@ -1,18 +1,18 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{__('Manage Reimbursment Type')}}
+    {{__('Manage Reimbursement Type')}}
 @endsection
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('Reimbursment Type')}}</li>
+    <li class="breadcrumb-item">{{__('Reimbursement Type')}}</li>
 @endsection
 
 
 @section('action-btn')
     <div class="float-end">
         @can('create leave type')
-            <a href="#" data-url="{{ route('reimbursmenttype.create') }}" data-ajax-popup="true" data-title="{{__('Create New Reimbursment Type')}}" data-bs-toggle="tooltip" title="{{__('Create')}}"  class="btn btn-sm btn-primary">
+            <a href="#" data-url="{{ route('reimbursmenttype.create') }}" data-ajax-popup="true" data-title="{{__('Create New Reimbursement Type')}}" data-bs-toggle="tooltip" title="{{__('Create')}}"  class="btn btn-sm btn-primary">
                 <i class="ti ti-plus"></i>
             </a>
         @endcan
@@ -31,7 +31,7 @@
                         <table class="table datatable">
                             <thead>
                             <tr>
-                                <th>{{__('Reimbursment Type')}}</th>
+                                <th>{{__('Reimbursement Type')}}</th>
                                 <th>{{__('Amount / Year')}}</th>
                                 <th width="200px">{{__('Action')}}</th>
                             </tr>
@@ -47,7 +47,7 @@
 
                                         @can('edit leave type')
                                             <div class="action-btn bg-primary ms-2">
-                                                <a href="#" class="mx-3 btn btn-sm align-items-center" data-url="{{ URL::to('reimbursmenttype/'.$reimbursmenttype->id.'/edit') }}" data-ajax-popup="true" data-title="{{__('Edit Reimbursment Type')}}" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-original-title="{{__('Edit')}}">
+                                                <a href="#" class="mx-3 btn btn-sm align-items-center" data-url="{{ URL::to('reimbursmenttype/'.$reimbursmenttype->id.'/edit') }}" data-ajax-popup="true" data-title="{{__('Edit Reimbursement Type')}}" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-original-title="{{__('Edit')}}">
                                                     <i class="ti ti-pencil text-white"></i>
                                                 </a>
                                             </div>

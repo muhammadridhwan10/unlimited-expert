@@ -9,7 +9,14 @@ foreach ($invoiceProducts as $invoiceProduct) {
     $rate = $invoiceProduct->tax;
     $price = $invoiceProduct->price;
     
-    $totalAmount += $price - ($price * $rate / 100);
+    if($invoice->operator == "+")
+    {
+            $totalAmount += $price + ($price * $rate / 100);
+    }
+    else
+    {
+            $totalAmount += $price - ($price * $rate / 100);
+    }
     
 }
 

@@ -101,6 +101,27 @@
     </script>
 @endpush
 
+@push('css-page')
+    <style>
+        .attendance-table-responsive {
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .sticky-column {
+            position: sticky;
+            left: 0;
+            z-index: 2; 
+            box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        .sticky-column:hover {
+            z-index: 3; 
+        }
+    </style>
+
+@endpush
+
 
 
 @section('action-btn')
@@ -220,7 +241,7 @@
                             <table class="table">
                                 <thead>
                                 <tr>
-                                    <th class="active">{{__('Name')}}</th>
+                                    <th class="active sticky-column">{{__('Name')}}</th>
                                     @foreach($dates as $date)
                                         <th>{{$date}}</th>
                                     @endforeach
@@ -229,7 +250,7 @@
                                 <tbody>
                                     @foreach($employeesAttendance as $attendance)
                                         <tr>
-                                            <td>{{$attendance['name']}}</td>
+                                            <td class="sticky-column" style="background-color:white;">{{$attendance['name']}}</td>
                                             @foreach($dates as $date)
                                                 <td>
                                                     @if($attendance['status'][$date] == 'P')

@@ -24,6 +24,8 @@ class MedicalAllowanceController extends Controller
      */
     public function index(Request $request)
     {
+        $perPage = $request->get('show_entries', 10);
+
         if(\Auth::user()->type == 'admin')
         {
             $reimbursment   = Reimbursment::where('reimbursment_type', '=', 'Medical Allowance')->get();
@@ -46,9 +48,10 @@ class MedicalAllowanceController extends Controller
                 $employeeReimbursment->where('employee_id', $request->employee_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate(10)->appends([
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate($perPage)->appends([
                 'month' => $request->month,
                 'employee_id' => $request->employee_id,
+                'show_entries' => $perPage,
             ]); 
 
             $employees = Employee::all()->pluck('name','id');
@@ -80,9 +83,10 @@ class MedicalAllowanceController extends Controller
                 $employeeReimbursment->where('employee_id', $request->employee_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate(10)->appends([
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate($perPage)->appends([
                 'month' => $request->month,
                 'employee_id' => $request->employee_id,
+                'show_entries' => $perPage,
             ]); 
 
             $employees = Employee::all()->pluck('name','id');
@@ -113,9 +117,10 @@ class MedicalAllowanceController extends Controller
                 $employeeReimbursment->where('employee_id', $request->employee_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate(10)->appends([
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate($perPage)->appends([
                 'month' => $request->month,
                 'employee_id' => $request->employee_id,
+                'show_entries' => $perPage,
             ]); 
 
             $employees = Employee::all()->pluck('name','id');
@@ -145,9 +150,10 @@ class MedicalAllowanceController extends Controller
                 $employeeReimbursment->where('employee_id', $request->employee_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate(10)->appends([
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate($perPage)->appends([
                 'month' => $request->month,
                 'employee_id' => $request->employee_id,
+                'show_entries' => $perPage,
             ]); 
 
             $employees = Employee::where('user_id', '=', \Auth::user()->id)->first()->pluck('name','id');
@@ -179,9 +185,10 @@ class MedicalAllowanceController extends Controller
                 $employeeReimbursment->where('employee_id', $request->employee_id);
             }
 
-            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate(10)->appends([
+            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate($perPage)->appends([
                 'month' => $request->month,
                 'employee_id' => $request->employee_id,
+                'show_entries' => $perPage,
             ]); 
 
             $employees = Employee::where('user_id', '=', \Auth::user()->id)->first()->pluck('name','id');

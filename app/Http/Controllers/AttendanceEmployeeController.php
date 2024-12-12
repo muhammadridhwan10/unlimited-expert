@@ -754,8 +754,8 @@ class AttendanceEmployeeController extends Controller
             $officeLatitudePusat = -6.2245196;
             $officeLongitudePusat = 106.8402893;
 
-            $officeLatitudeBekasi = -6.2245196;
-            $officeLongitudeBekasi = 106.8402893;
+            $officeLatitudeBekasi = -6.2778273;
+            $officeLongitudeBekasi = 106.9745264;
 
             $officeLatitudeMalang = -7.95058;
             $officeLongitudeMalang = 112.63041;

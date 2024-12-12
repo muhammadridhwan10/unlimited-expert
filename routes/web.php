@@ -4510,6 +4510,19 @@ Route::post('document-request/changeaction', 'DocumentRequestController@changeac
         'XSS',
     ]
 );
+
+Route::resource('print-labels', 'PrintLabelController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::post('print', 'PrintLabelController@printLabels')->name('print.labels')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
 Route::resource('el', 'ElController')->middleware(
     [
         'auth',

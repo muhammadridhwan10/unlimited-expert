@@ -787,7 +787,9 @@ class TimesheetController extends Controller
                 'status' => $request->status,
                 'date' => $request->date,
                 'month' => $request->month,
-            ]);  
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+            ]);    
 
             if (!empty($request->export_excel)) {
 
@@ -803,7 +805,7 @@ class TimesheetController extends Controller
             $currentYear = now()->year;
             $employeeTimesheet = Timesheet::where('created_by',\Auth::user()->id);
 
-            $employee = Employee::where('user_id', \Auth::user()->id)->get()->pluck('name', 'id');
+            $employee = Employee::where('user_id', \Auth::user()->id)->get()->pluck('name', 'user_id');
 
             $employee->prepend('Select Employee', '0');
 
@@ -889,7 +891,9 @@ class TimesheetController extends Controller
                 'status' => $request->status,
                 'date' => $request->date,
                 'month' => $request->month,
-            ]);  
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
+            ]);              
 
             if (!empty($request->export_excel)) {
 

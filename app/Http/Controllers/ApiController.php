@@ -195,8 +195,6 @@ class ApiController extends Controller
             $track['tag_id']      = $request->has('workin_on') ? $request->input('workin_on') : '';
             $track['start_time']  = $request->has('time') ?  date("Y-m-d H:i:s",strtotime($request->input('time'))) : date("Y-m-d H:i:s");
             $track['task_id']     = 0;
-            $track['latitude']    = $request->has('latitude') ? $request->input('latitude') : '';
-            $track['longitude']   = $request->has('longitude') ? $request->input('longitude') : '';
             $track['created_by']  = $user->id;
             $track                = TimeTracker::create($track);
             $track->action        ='start';
@@ -241,7 +239,7 @@ class ApiController extends Controller
 
                 $timesheet->save();
 
-                return $this->success( $tracker,'Stop time successfully.');
+                return $this->success($tracker,'Stop time successfully.');
             }
         }
 

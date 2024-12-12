@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 @section('page-title')
-    {{__('Manage Report Reimbursment')}}
+    {{__('Manage Report Reimbursement')}}
 @endsection
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('Report Reimbursment')}}</li>
+    <li class="breadcrumb-item">{{__('Report Reimbursement')}}</li>
 @endsection
 @push('script-page')
     <script type="text/javascript" src="{{ asset('js/html2pdf.bundle.min.js') }}"></script>
@@ -135,8 +135,8 @@
                                     </div>
                                     <div class="col-auto" style = "width:250px;">
                                         <div class="btn-box">
-                                            {{ Form::label('reimbursment_type', __('Reimbursment Type'), ['class' => 'form-label']) }}
-                                            {{ Form::select('reimbursment_type', \App\Models\Reimbursment::$reimbursment_type, isset($_GET['reimbursment_type']) ? $_GET['reimbursment_type'] : null, ['class' => 'form-control', 'placeholder' => 'Select Reimbursment Type']) }}
+                                            {{ Form::label('reimbursment_type', __('Reimbursement Type'), ['class' => 'form-label']) }}
+                                            {{ Form::select('reimbursment_type', \App\Models\Reimbursment::$reimbursment_type, isset($_GET['reimbursment_type']) ? $_GET['reimbursment_type'] : null, ['class' => 'form-control', 'placeholder' => 'Select Reimbursement Type']) }}
                                         </div>
                                     </div>
 
@@ -241,10 +241,10 @@
                                 <thead>
                                 <tr>
                                     <th class="active">{{__('Name Employee')}}</th>
-                                    <th class="active">{{__('Total Amount Reimbursment')}}</th>
-                                    <th class="active">{{__('Total Paid Reimbursment')}}</th>
-                                    <th class="active">{{__('Total Unpaid Reimbursment')}}</th>
-                                    <th class="active">{{__('Detail Reimbursment')}}</th>
+                                    <th class="active">{{__('Total Amount Reimbursement')}}</th>
+                                    <th class="active">{{__('Total Paid Reimbursement')}}</th>
+                                    <th class="active">{{__('Total Unpaid Reimbursement')}}</th>
+                                    <th class="active">{{__('Detail Reimbursement')}}</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -257,7 +257,7 @@
                                             <td>{{number_format($reimbursment['unpaid_amount'])}}</td>
                                             <td>
                                                 <div class="m-view-btn badge bg-info p-2 px-3 rounded">{{$reimbursment['total_reimbursment_count']}}
-                                                    <a href="#" class="text-white" data-url="{{ route('report.employee.reimbursment',[$reimbursment['id'],isset($_GET['month']) ? $_GET['month']:date('Y-m'),isset($_GET['reimbursment_type']) ? $_GET['reimbursment_type']:0]) }}" data-ajax-popup="true" data-title="{{__('Reimbursment List Detail')}}" data-size="xl" data-bs-toggle="tooltip" title="{{__('View')}}" data-original-title="{{__('View')}}">{{__('View')}}</a>
+                                                    <a href="#" class="text-white" data-url="{{ route('report.employee.reimbursment',[$reimbursment['id'],isset($_GET['month']) ? $_GET['month']:date('Y-m'),isset($_GET['reimbursment_type']) ? $_GET['reimbursment_type']:0]) }}" data-ajax-popup="true" data-title="{{__('Reimbursement List Detail')}}" data-size="xl" data-bs-toggle="tooltip" title="{{__('View')}}" data-original-title="{{__('View')}}">{{__('View')}}</a>
                                                 </div>
                                             </td>
                                         </tr>
