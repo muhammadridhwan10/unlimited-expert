@@ -1235,7 +1235,7 @@ class InvoiceController extends Controller
         $logo         = asset(Storage::url('uploads/logo/'));
         $invoice_logo = Utility::getValByName('invoice_logo');
         $company_logo = \App\Models\Utility::GetLogo();
-        $img          = asset($logo . '/1_logo-dark.png');
+        $img          = asset(\Storage::url('logo').'/tgsau.png');
         
         // if(isset($invoice_logo) && !empty($invoice_logo))
         // {
@@ -1330,7 +1330,7 @@ class InvoiceController extends Controller
         $logo         = asset(Storage::url('uploads/logo/'));
         $invoice_logo = Utility::getValByName('invoice_logo');
         $company_logo = \App\Models\Utility::GetLogo();
-        $img          = asset($logo . '/1_logo-dark.png');
+        $img          = asset(\Storage::url('logo').'/tgsau.png');
         // if(isset($invoice_logo) && !empty($invoice_logo))
         // {
         //     $img          = asset(\Storage::url('uploads/invoice_logo').'/'. $invoice_logo);

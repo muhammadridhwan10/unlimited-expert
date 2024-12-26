@@ -158,62 +158,6 @@
             </div>
         </div>
     </div>
-    <!-- <div class="card">
-        <div class="card-body">
-            <div class="row mb-4 align-items-center">
-                <div class="col-6">
-                    <h5> {{__('Link (Optional)')}}</h5>
-                </div>
-                <div class="col-6 ">
-                    <div class="float-end">
-                        <a data-bs-toggle="collapse" href="#form-link" role="button" aria-expanded="false" aria-controls="form-link" data-bs-toggle="tooltip" title="{{__('Add item')}}" class="btn btn-sm btn-primary">
-                            <i class="ti ti-plus"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="link" id="link">
-                <form id="form-link" class="collapse pb-2" data-action="{{route('link.store',[$task->project_id,$task->id])}}">
-                    <div class="card border shadow-none">
-                        <div class="px-3 py-2 row align-items-center">
-                            @csrf
-                            <div class="col-10">
-                                <input type="url" name="link" required class="form-control" placeholder="{{__('https://example.com')}}"/>
-                            </div>
-                            <div class="col-2 card-meta d-inline-flex align-items-center">
-                                <button class="btn btn-sm btn-primary" type="button" id="link_submit" data-bs-toggle="tooltip" title="{{__('Create')}}">
-                                    <i class="ti ti-check"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-
-                @foreach($task->link as $link)
-                    <div class="card border shadow-none link-member">
-                        <div class="px-3 py-2 row align-items-center">
-                            <div class="col">
-                                <div class="form-check form-check-inline">
-                                    <label class="form-check-label h6 text-sm" for="check-item-{{ $link->id }}">
-                                    <a id="tasklinks" href="{{ $link->link }}" target="_blank">{{ $link->link }}</a>
-
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <div class="action-btn bg-danger ms-2">
-                                    <a href="#" class="mx-3 btn btn-sm  align-items-center delete-link" data-url="{{ route('link.destroy',[$task->project_id,$link->id]) }}">
-                                        <i data-bs-toggle="tooltip" title="{{__('Delete')}}" class="ti ti-trash text-white"></i>
-                                    </a>
-                                </div>
-
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </div> -->
     <div class="card">
         <div class="card-body">
             <div class="row mb-4 align-items-center">

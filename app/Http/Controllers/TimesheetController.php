@@ -649,6 +649,8 @@ class TimesheetController extends Controller
                 'status' => $request->status,
                 'date' => $request->date,
                 'month' => $request->month,
+                'start_date' => $request->start_date,
+                'end_date' => $request->end_date,
             ]);  
 
             if (!empty($request->export_excel)) {

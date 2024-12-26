@@ -5,7 +5,7 @@
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            font-size: 12px;
+            font-size: 11px;
         }
         .label {
             width: 10cm; 
@@ -22,9 +22,15 @@
             padding-right: 10cm;
             padding-top: 0.4cm; 
             box-sizing: border-box;
+            word-wrap: break-word; 
+            word-break: break-all;
+            white-space: normal;
         }
         .page-break {
             page-break-after: always;
+            word-wrap: break-word; 
+            word-break: break-all;
+            white-space: normal;
         }
     </style>
 </head>

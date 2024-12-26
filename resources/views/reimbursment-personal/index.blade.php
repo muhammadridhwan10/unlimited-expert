@@ -226,7 +226,7 @@
                                     </td>
                                     <td>
                                         <div class="action-btn bg-warning ms-2">
-                                            <a href="#" data-url="{{ URL::to('reimbursment-personal/'.$approvals->id.'/action') }}" data-size="lg" data-ajax-popup="true" data-title="{{__('Overtime Action')}}" class="mx-3 btn btn-sm  align-items-center" data-bs-toggle="tooltip" title="{{__('Overtime Action')}}" data-original-title="{{__('Overtime Action')}}">
+                                            <a href="#" data-url="{{ URL::to('reimbursment-personal/'.$approvals->id.'/action') }}" data-size="lg" data-ajax-popup="true" data-title="{{__('Reimbursment Action')}}" class="mx-3 btn btn-sm  align-items-center" data-bs-toggle="tooltip" title="{{__('Reimbursment Action')}}" data-original-title="{{__('Reimbursment Action')}}">
                                                 <i class="ti ti-caret-right text-white"></i> </a>
                                         </div>
                                     </td>

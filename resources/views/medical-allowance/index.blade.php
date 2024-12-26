@@ -222,7 +222,7 @@
                                     </td>
                                     <td>
                                         <div class="action-btn bg-warning ms-2">
-                                            <a href="#" data-url="{{ URL::to('medical-allowance/'.$approvals->id.'/action') }}" data-size="lg" data-ajax-popup="true" data-title="{{__('Overtime Action')}}" class="mx-3 btn btn-sm  align-items-center" data-bs-toggle="tooltip" title="{{__('Overtime Action')}}" data-original-title="{{__('Overtime Action')}}">
+                                            <a href="#" data-url="{{ URL::to('medical-allowance/'.$approvals->id.'/action') }}" data-size="lg" data-ajax-popup="true" data-title="{{__('Medical Action')}}" class="mx-3 btn btn-sm  align-items-center" data-bs-toggle="tooltip" title="{{__('Medical Action')}}" data-original-title="{{__('Medical Action')}}">
                                                 <i class="ti ti-caret-right text-white"></i> </a>
                                         </div>
                                     </td>

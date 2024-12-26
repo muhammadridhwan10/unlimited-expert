@@ -162,87 +162,119 @@ class ApiController extends Controller
     public function addTracker(Request $request){
 
         $user = auth()->user();
-
+    
         $LogDesktop = new LogDesktop();
         $LogDesktop->user_id = auth()->user()->id;
         $LogDesktop->last_active_at = now();
         $LogDesktop->save();
-        
+    
         if($request->has('action') && $request->action == 'start'){
-
+    
             $validatorArray = [
                 'project_id' => 'required|integer',
             ];
-            $validator      = \Validator::make(
+            $validator = \Validator::make(
                 $request->all(), $validatorArray
             );
-            if($validator->fails())
-            {
+    
+            if($validator->fails()) {
                 return $this->error($validator->errors()->first(), 401);
             }
-            $project= Project::find($request->project_id);
-
-            if(empty($project)){
+    
+            $project = Project::find($request->project_id);
+            if(empty($project)) {
                 return $this->error('Invalid Project', 401);
             }
-
+    
             $project_id = $request->has('project_id') ? $request->project_id : null;
-            TimeTracker::where('created_by', '=', $user->id)->where('is_active', '=', 1)->update(['end_time' => date("Y-m-d H:i:s")]);
-
+    
+            TimeTracker::where('created_by', '=', $user->id)->where('is_active', '=', 1)
+                ->update(['end_time' => date("Y-m-d H:i:s")]);
+    
             $track['name']        = $request->has('workin_on') ? $request->input('workin_on') : '';
             $track['project_id']  = $project_id;
-            $track['is_billable'] =  $request->has('is_billable')? $request->is_billable:0;
+            $track['is_billable'] = $request->has('is_billable') ? $request->is_billable : 0;
             $track['tag_id']      = $request->has('workin_on') ? $request->input('workin_on') : '';
-            $track['start_time']  = $request->has('time') ?  date("Y-m-d H:i:s",strtotime($request->input('time'))) : date("Y-m-d H:i:s");
+            $track['start_time']  = $request->has('time') ? date("Y-m-d H:i:s", strtotime($request->input('time'))) : date("Y-m-d H:i:s");
             $track['task_id']     = 0;
             $track['created_by']  = $user->id;
-            $track                = TimeTracker::create($track);
-            $track->action        ='start';
-
-            return $this->success( $track,'Track successfully create.');
-        }else{
-            $validatorArray = [
-                'project_id' => 'required|integer',
-                'traker_id' =>'required|integer',
-            ];
-            $validator      = Validator::make(
-                $request->all(), $validatorArray
-            );
-            if($validator->fails())
-            {
-                return Utility::error_res($validator->errors()->first());
-            }
-            $tracker = TimeTracker::where('id',$request->traker_id)->first();
-            // dd($tracker);
-            if($tracker)
-            {
-                $date = date("Y-m-d");
-                $tracker->end_time   = $request->has('time') ?  date("Y-m-d H:i:s",strtotime($request->input('time'))) : date("Y-m-d H:i:s");
-                $tracker->is_active  = 0;
-                $tracker->total_time = Utility::diffance_to_time($tracker->start_time, $tracker->end_time);
-                $tracker->save();
-
+    
+            $current_time = strtotime($track['start_time']);
+            $end_of_day = strtotime(date("Y-m-d 23:59:59", $current_time));
+    
+            if ($current_time >= $end_of_day - 60) { 
+                $track['end_time'] = date("Y-m-d 23:59:59", $current_time);
+                $track['is_active'] = 0;
+                $track['total_time'] = Utility::diffance_to_time($track['start_time'], $track['end_time']);
+    
                 $timesheet = new Timesheet;
-                $timesheet->project_id = $tracker->project_id;
+                $timesheet->project_id = $track['project_id'];
                 $timesheet->task_id = 0;
-                $timesheet->date = $date;
-                $seconds = $tracker->total_time;
-
+                $timesheet->date = date("Y-m-d", $current_time);
+    
+                $seconds = strtotime($track['end_time']) - strtotime($track['start_time']);
                 $H = floor($seconds / 3600);
                 $i = ($seconds / 60) % 60;
                 $s = $seconds % 60;
-
-                $time = sprintf("%02d:%02d:%02d", $H, $i, $s);
-                $timesheet->time = $time;
+    
+                $timesheet->time = sprintf("%02d:%02d:%02d", $H, $i, $s);
                 $timesheet->platform = 'Desktop';
-                $timesheet->created_by = $tracker->created_by;
-
+                $timesheet->created_by = $user->id;
                 $timesheet->save();
-
-                return $this->success($tracker,'Stop time successfully.');
+    
+                return $this->success($track, 'Tracker automatically stopped at midnight.');
+            }
+    
+            $track = TimeTracker::create($track);
+            $track->action = 'start';
+    
+            return $this->success($track, 'Track successfully created.');
+    
+        } else {
+            $validatorArray = [
+                'project_id' => 'required|integer',
+                'traker_id' => 'required|integer',
+            ];
+            $validator = Validator::make($request->all(), $validatorArray);
+    
+            if($validator->fails()) {
+                return Utility::error_res($validator->errors()->first());
+            }
+    
+            $tracker = TimeTracker::where('id', $request->traker_id)->first();
+            if($tracker) {
+                $date = date("Y-m-d");
+                $current_time = $request->has('time') ? date("Y-m-d H:i:s", strtotime($request->input('time'))) : date("Y-m-d H:i:s");
+    
+                $tracker->end_time = $current_time;
+                $tracker->is_active = 0;
+                $tracker->total_time = Utility::diffance_to_time($tracker->start_time, $current_time);
+                $tracker->save();
+    
+                $this->saveTimesheet($tracker, $date);
+    
+                return $this->success($tracker, 'Stop time successfully.');
             }
         }
-
+    }
+    
+    private function saveTimesheet($tracker, $date) {
+        $timesheet = new Timesheet;
+        $timesheet->project_id = $tracker->project_id;
+        $timesheet->task_id = 0;
+        $timesheet->date = $date;
+    
+        $seconds = $tracker->total_time;
+        $H = floor($seconds / 3600);
+        $i = ($seconds / 60) % 60;
+        $s = $seconds % 60;
+    
+        $time = sprintf("%02d:%02d:%02d", $H, $i, $s);
+        $timesheet->time = $time;
+        $timesheet->platform = 'Desktop';
+        $timesheet->created_by = $tracker->created_by;
+    
+        $timesheet->save();
     }
     public function uploadImage(Request $request)
     {

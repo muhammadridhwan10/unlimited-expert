@@ -144,6 +144,7 @@
             line-height: 30px;
             font-weight: bold;
             margin-bottom: 20px;
+             margin-top: 100px;
         }
 
         .d-header[data-v-f2a183a6] {
@@ -541,11 +542,8 @@
                                 <div data-v-f2a183a6="" class="d-header-inner">
                                     <div data-v-f2a183a6="" class="d-header-50">
                                         <div data-v-f2a183a6="" class="d-header-brand">
-                                            <img src="{{$img}}" style="max-width: 220px"/>
+                                            <img src="{{$logo_kap}}" style="max-width: 500px; margin-left:140px;">
                                         </div>
-                                        <br>
-                                        <br>
-                                        <br>
                                         <table data-v-f2a183a6="" class="summary-table">
                                             <tbody data-v-f2a183a6="">
                                             <tr>
@@ -567,26 +565,13 @@
                                             </tbody>
                                         </table>
                                         <div data-v-f2a183a6="" class="break-25"></div>
-                                        <!-- <p data-v-f2a183a6="">@if($settings['company_name']){{$settings['company_name']}}@endif</p>
-                                        <p data-v-f2a183a6="">
-                                            {{-- @if($settings['company_email']){{$settings['company_email']}}@endif<br>
-                                            @if($settings['company_telephone']){{$settings['company_telephone']}}@endif<br>
-                                            @if($settings['company_address']){{$settings['company_address']}}@endif
-                                            @if($settings['company_city']) <br> {{$settings['company_city']}}, @endif @if($settings['company_state']){{$settings['company_state']}}@endif @if($settings['company_zipcode']) - {{$settings['company_zipcode']}}@endif
-                                            @if($settings['company_country']) <br>{{$settings['company_country']}}@endif <br>
-                                            @if(!empty($settings['registration_number'])){{__('Registration Number')}} : {{$settings['registration_number']}} @endif<br>
-                                            @if(!empty($settings['tax_type']) && !empty($settings['vat_number'])){{$settings['tax_type'].' '. __('Number')}} : {{$settings['vat_number']}} <br>@endif --}}
-
-                                        </p> -->
                                     </div>
 
                                     <div data-v-f2a183a6="" class="d-header-50 d-right">
-                                        <img src="{{$logo_kap}}" style="max-width: 340px"/>
-                                        <br>
                                         <div data-v-f2a183a6="" class="d-title">{{__('INVOICE')}}</div>
 
                                         <div class="float-right mb-5">
-                                            {!! DNS2D::getBarcodeHTML(route('invoice.link.copy',\Crypt::encrypt($invoice->invoice_id)), "QRCODE",2,2) !!}
+                                            {!! DNS2D::getBarcodeHTML(route('invoice.link.copy',\Crypt::encrypt($invoice->invoice_id)), "QRCODE",1.5,1.5) !!}
                                         </div>
 
                                         <table data-v-f2a183a6="" class="summary-table">
@@ -857,10 +842,26 @@
                                             </p>
                                         </div>
                                     </div>
-                                    <p style="text-align:center; font-size: 9px;">
-                                        KAP AGUS UBAIDILLAH & REKAN <br>
-                                        Wisma Staco 6th Fl, Jl Casablanca Kav 18, Jakarta 12870 | (+62) 21-8298265 | info@au-partners.com
-                                    </p>
+                                    <br>
+                                    <div class="row">
+                                        <div data-v-f2a183a6="" class="d-header-brands-left">
+                                            <strong data-v-f2a183a6="">{{__('')}}</strong>
+                                            <strong data-v-f2a183a6="">{{__('')}}</strong>
+                                            <p style="font-size: 10px;">
+                                                KAP Agus Ubaidillah dan Rekan Practice License KMK No. 386/KM.1/2012 <br>
+                                                Wisma Staco Lt.6, Jl. Casablanca Kav. 18. Jakarta 12960, Indonesia <br>
+                                                Tel: +62(21)829-8265 | Email: info@au-partners.com | www.au-partners.com
+                                            </p>
+                                            <p style="font-size: 10px;"><strong>
+                                                KAP Agus Ubaidillah dan Rekan (TGS AU Partners) is an independent member of TGS, <br>
+                                                an international network of accounting firms and professional business advisors.
+                                            </p></strong>
+                                            </div>
+                                                <p style= "text-align:center">
+                                                <img src="{{$img}}" style="width: 210px"/>
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
