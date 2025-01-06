@@ -819,7 +819,7 @@
                                             </p>
                                             </div>
                                             <p style= "text-align:center">
-                                                <img src="{{$ttd_mj}}" style="width: 210px; margin-top: 30px; margin-left:50px;"/>
+                                                <img src="{{$ttd_mj}}" style="width: 210px; margin-top: 30px;"/>
                                                 <br>
                                                 {{"Mikail Jaman"}}<br>
                                             </p>

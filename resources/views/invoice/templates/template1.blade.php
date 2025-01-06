@@ -746,7 +746,7 @@
                                             </p>
                                             </div>
                                                 <p style= "text-align:center">
-                                                <img src="{{$ttd}}" style="width: 210px; margin-top: 30px; margin-left:50px;"/>
+                                                <img src="{{$ttd}}" style="width: 210px; margin-top: 30px;"/>
                                                 <br>
                                                 {{"Melya Lubis"}}<br>
                                                 {{"Finance & Accounting"}}<br>
