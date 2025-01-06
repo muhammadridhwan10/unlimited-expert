@@ -295,6 +295,11 @@ class ProjectReportController extends Controller
                 $project = Project::select('projects.*')->leftjoin('project_users', 'project_users.project_id', 'projects.id')->where('project_users.user_id', '=', $user->id)->first();
             }
 
+            $timesheets = Timesheet::where('project_id', $id)
+            ->join('users', 'users.id', '=', 'timesheets.created_by')
+            ->select('timesheets.*', 'users.name as user_name')
+            ->get();
+
             $count = $project->estimated_hrs;
             $category = Project::category_progress($count, $project->id);
             $project_offerings = ProjectOfferings::where('project_id', $project->id)->first();
@@ -344,6 +349,27 @@ class ProjectReportController extends Controller
                 'associate' => $project_offerings->als_associate ?? 0,
                 'intern' => $project_offerings->als_intern ?? 0,
             ];
+
+            $timesheetPerUser = $timesheets->groupBy('created_by')->map(function ($timesheets) {
+                $totalSeconds = 0;
+            
+
+                foreach ($timesheets as $timesheet) {
+                    list($hours, $minutes, $seconds) = explode(':', $timesheet->time);
+                    $totalSeconds += $hours * 3600 + $minutes * 60 + $seconds;
+                }
+            
+
+                $totalHours = floor($totalSeconds / 3600);
+                $totalMinutes = floor(($totalSeconds % 3600) / 60);
+                $totalSeconds = $totalSeconds % 60;
+            
+                return [
+                    'user_name' => $timesheets->first()->user_name,
+                    'total_time' => sprintf('%02d:%02d:%02d', $totalHours, $totalMinutes, $totalSeconds),
+                    'timesheets' => $timesheets,
+                ];
+            });
 
             // dd($real_hours, $estimated_hours);
             
@@ -481,7 +507,7 @@ class ProjectReportController extends Controller
                 $tasks = ProjectTask::where('project_id','=',$id)->get();
 
 
-                return view('project_report.show', compact('user','users', 'rataratalink','rataratacomment', 'jumlahhari', 'countsubtask', 'counttasklink', 'counttaskcomment', 'totalchecked', 'arrProcessPer_status_task','arrProcess_Label_priority','esti_logged_hour_chart','logged_hour_chart','arrProcessPer_priority','arrProcess_Label_status_tasks','project','milestones', 'daysleft','chartData','arrProcessClass','stages','tasks','project_offerings','estimated_hours', 'real_hours'));
+                return view('project_report.show', compact('user','users', 'rataratalink','rataratacomment', 'jumlahhari', 'countsubtask', 'counttasklink', 'counttaskcomment', 'totalchecked', 'arrProcessPer_status_task','arrProcess_Label_priority','esti_logged_hour_chart','logged_hour_chart','arrProcessPer_priority','arrProcess_Label_status_tasks','project','milestones', 'daysleft','chartData','arrProcessClass','stages','tasks','project_offerings','estimated_hours', 'real_hours','timesheetPerUser'));
             }
         }
 

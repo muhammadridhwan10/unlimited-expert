@@ -47,7 +47,7 @@
         }
 
         .d-table[data-v-f2a183a6] {
-            margin-top: 20px;
+            margin-top: 5px;
         }
 
         .d-table-footer[data-v-f2a183a6] {
@@ -122,6 +122,7 @@
 
         .d-body[data-v-f2a183a6] {
             padding: 50px;
+            margin-top: -20px;
         }
 
         .d[data-v-f2a183a6] {
@@ -143,8 +144,8 @@
             font-size: 30px;
             line-height: 30px;
             font-weight: bold;
-            margin-bottom: 20px;
-            margin-top: 100px;
+            margin-bottom: 10px;
+            margin-top: 0px;
         }
 
         .d-header[data-v-f2a183a6] {
@@ -154,6 +155,7 @@
         .d-header-50[data-v-f2a183a6] {
             -webkit-box-flex: 1;
             flex: 1;
+            margin-top: -60px;
         }
 
         .d-header-inner[data-v-f2a183a6] {
@@ -536,11 +538,9 @@
                     <div class="preview-main client-preview">
                         <div data-v-f2a183a6="" class="d" id="boxes" style="width:710px;margin-left: auto;margin-right: auto;">
                             <div data-v-f2a183a6="" class="d-header">
+                                <img src="{{$logo_kap}}" style="max-width: 500px; margin-left:185px;">
                                 <div data-v-f2a183a6="" class="d-header-inner">
                                     <div data-v-f2a183a6="" class="d-header-50">
-                                        <div data-v-f2a183a6="" class="d-header-brand">
-                                            <img src="{{$logo_kap}}" style="max-width: 500px; margin-left:140px;">
-                                        </div>
                                         <table data-v-f2a183a6="" class="summary-table">
                                             <tbody data-v-f2a183a6="">
                                             <tr>
@@ -600,7 +600,7 @@
                             </div>
 
                             <div data-v-f2a183a6="" class="d-body">
-                                <div data-v-f2a183a6="" class="d-bill-to">
+                                <div data-v-f2a183a6="" class="d-bill-to" style="margin-top:-50px">
                                     <div class="row">
                                         <div class="bill_to">
                                             <strong data-v-f2a183a6="">{{__('Bill To')}}:</strong>
@@ -803,10 +803,8 @@
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div data-v-f2a183a6="" class="d-header-brands-left">
+                                        <div data-v-f2a183a6="" class="d-header-brands-left" style="margin-top: 50px;">
                                             <strong data-v-f2a183a6="">{{__('Thank you for your business!')}}</strong>
-                                            <br>
-                                            <br>
                                             <strong data-v-f2a183a6="">{{__('Payment Instructions')}}:</strong>
                                             <p>
                                                 {{"Payment by bank transfer : "}}<br>
@@ -820,25 +818,14 @@
                                                 <strong data-v-f2a183a6="">{{__('Please email us your transfer proof to info@au-partners.com')}}</strong>
                                             </p>
                                             </div>
-                                                <p data-v-f2a183a6="" class="d-table-value" style= "text-align:center">
-                                                {{-- <img src="{{$ttd}}" style="width: 210px"/> --}}
-                                                <br>
-                                                <br>
-                                                <br>
-                                                <br>
-                                                <br>
-                                                <br>
-                                                <br>
-                                                <br>
-                                                <br>
-                                                <br>
+                                                <p style= "text-align:center; margin-top:180px; margin-left:50px">
                                                 {{"Dimas Emha Amir Fikri Anas"}}<br>
                                             </p>
                                         </div>
                                     </div>
                                     <br>
                                     <div class="row">
-                                        <div data-v-f2a183a6="" class="d-header-brands-left">
+                                        <div data-v-f2a183a6="" class="d-header-brands-left" style="margin-top: -20px;">
                                             <strong data-v-f2a183a6="">{{__('')}}</strong>
                                             <strong data-v-f2a183a6="">{{__('')}}</strong>
                                             <p style="font-size: 10px;">
@@ -852,7 +839,7 @@
                                             </p></strong>
                                             </div>
                                                 <p style= "text-align:center">
-                                                <img src="{{$img}}" style="width: 210px"/>
+                                                <img src="{{$img}}" style="width: 210px; margin-top: -30px;"/>
                                             </p>
                                         </div>
                                     </div>

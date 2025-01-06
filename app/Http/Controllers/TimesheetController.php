@@ -625,7 +625,7 @@ class TimesheetController extends Controller
                 $employeeTimesheet->whereBetween('date', [$start_date, $end_date]);
             } 
 
-            $employeeTimesheet->whereYear('date', $currentYear);
+            // $employeeTimesheet->whereYear('date', $currentYear);
 
             $totalTimesheet = $employeeTimesheet->get();
             $totalSeconds = 0;
@@ -765,7 +765,7 @@ class TimesheetController extends Controller
                 $employeeTimesheet->whereBetween('date', [$start_date, $end_date]);
             } 
 
-            $employeeTimesheet->whereYear('date', $currentYear);
+            // $employeeTimesheet->whereYear('date', $currentYear);
 
             $totalTimesheet = $employeeTimesheet->get();
             $totalSeconds = 0;
@@ -869,7 +869,7 @@ class TimesheetController extends Controller
                 $employeeTimesheet->whereBetween('date', [$start_date, $end_date]);
             } 
 
-            $employeeTimesheet->whereYear('date', $currentYear);
+            // $employeeTimesheet->whereYear('date', $currentYear);
 
             $totalTimesheet = $employeeTimesheet->get();
             $totalSeconds = 0;

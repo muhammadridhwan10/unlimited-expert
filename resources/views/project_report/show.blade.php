@@ -272,7 +272,7 @@
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
-                            <h5>{{ __('Project Hours User')}}</h5>
+                            <h5>{{ __('Project Hours Per Role')}}</h5>
                         </div>
                         <div class="card-body">
                             <div class="row align-items-center">
@@ -323,6 +323,68 @@
                         </div>
                     </div>
                 </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>{{ __('Project Hours Per User') }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-12">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>{{ __('User') }}</th>
+                                                <th>{{ __('Total Time') }}</th>
+                                                <th>{{ __('Details') }}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($timesheetPerUser as $userTimesheet)
+                                                <tr>
+                                                    <td>{{ $userTimesheet['user_name'] }}</td>
+                                                    <td>{{ $userTimesheet['total_time'] }}</td>
+                                                    <td>
+                                                        <button 
+                                                            type="button" 
+                                                            class="btn btn-sm btn-primary" 
+                                                            data-bs-toggle="collapse" 
+                                                            data-bs-target="#details-{{ $loop->index }}" 
+                                                            aria-expanded="false" 
+                                                            aria-controls="details-{{ $loop->index }}">
+                                                            {{ __('View Details') }}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                <tr class="collapse" id="details-{{ $loop->index }}">
+                                                    <td colspan="3">
+                                                        <table class="table table-bordered">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>{{ __('Date') }}</th>
+                                                                    <th>{{ __('Time') }}</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach ($userTimesheet['timesheets'] as $timesheet)
+                                                                    <tr>
+                                                                        <td>{{ $timesheet->date }}</td>
+                                                                        <td>{{ $timesheet->time }}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
