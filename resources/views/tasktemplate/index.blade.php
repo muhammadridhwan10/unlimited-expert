@@ -101,13 +101,10 @@
                             <thead>
                             <tr>
                                 <th> {{ __('Category') }}</th>
-                                <th> {{ __('Category Template') }}</th>
                                 @if (!\Auth::guard('customer')->check())
                                     <th>{{ __('Name') }}</th>
                                 @endif
                                 <th>{{ __('Estimated Hours') }}</th>
-                                <!-- <th>{{ __('Start Date') }}</th>
-                                <th>{{ __('End Date') }}</th> -->
                                 <th>{{ __('Status') }}</th>
                                 @if (Gate::check('edit project task template') || Gate::check('delete project task template'))
                                     <th>{{ __('Action') }}</th>
@@ -117,18 +114,12 @@
 
                             <tbody>
                             @foreach ($templates as $template)
-                            <!-- <?php
-                                // dd($template);
-                            ?> -->
                                 <tr>
                                     @if (!\Auth::guard('customer')->check())
                                         <td> {{ !empty($template->category) ? $template->category->name : '' }} </td>
-                                        <td> {{ !empty($template->category_templates) ? $template->category_templates->name : '' }} </td>
                                     @endif
                                     <td>{{($template['name'])}}</td>
                                     <td>{{($template->estimated_hrs)}}</td>
-                                    <!-- <td>{{ Auth::user()->dateFormat($template->start_date) }}</td>
-                                    <td>{{ Auth::user()->dateFormat($template->end_date) }}</td> -->
                                     <td>
                                     @if($template->stage_id == 1)
                                             <span

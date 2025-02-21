@@ -2242,6 +2242,8 @@ Route::get(
         'XSS',
     ]
 );
+Route::post('tasks/{taskID}/status', 'ProjectTaskController@updateTaskStatus')->name('status.update');
+Route::post('/projects/{id}/file', 'ProjectTaskController@commentStoreFile')->name('comment.store.file')->middleware(['auth', 'XSS']);
 Route::resource('document-upload', 'DucumentUploadController')->middleware(
     [
         'auth',
@@ -3085,12 +3087,6 @@ Route::patch(
     ]
 );
 
-Route::post(
-    '/projects/{id}/comment/{tid}/file', [
-    'as' => 'comment.store.file',
-    'uses' => 'ProjectTaskController@commentStoreFile',
-]
-);
 Route::delete(
     '/projects/{id}/comment/{tid}/file/{fid}', [
     'as' => 'comment.destroy.file',
@@ -3252,8 +3248,8 @@ Route::resource('mappingaccountdata', 'MappingAccountDataController')->middlewar
         'XSS',
     ]
 );
-Route::get('mappingaccountdata/create', 'TaskTemplateController@create')->name('tasktemplate.create');
-Route::get('tasktemplate/create', 'MappingAccountDataController@create')->name('mappingaccountdata.create');
+Route::get('tasktemplate/create', 'TaskTemplateController@create')->name('tasktemplate.create');
+Route::get('mappingaccountdata/create', 'MappingAccountDataController@create')->name('mappingaccountdata.create');
 Route::post(
     '/project-task-stages/order', [
     'as' => 'project-task-stages.order',
@@ -4596,3 +4592,39 @@ Route::resource('employee-details', 'EmployeeDetailController')->middleware(
         'XSS',
     ]
 );
+Route::post('comments', 'CommentController@store')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+)->name('project.comment');
+Route::get('/comments/{projectId}', 'CommentController@index')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+)->name('get.project.comment');
+Route::post('plannings', 'PlanningController@store')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+)->name('project.planning');
+Route::get('/plannings/{projectId}', 'PlanningController@index')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+)->name('get.project.planning');
+Route::delete('/plannings/{id}', 'PlanningController@destroy')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+)->name('delete.project.planning');
+Route::post('reminders', 'ReminderController@store')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+)->name('planning.reminders');

@@ -36,7 +36,15 @@ return [
 
         'database' => [
             'driver' => 'database',
-            'table' => 'jobs',
+            'table' => 'reminder_jobs',
+            'queue' => 'default',
+            'retry_after' => 90,
+            'after_commit' => false,
+        ],
+
+        'reminder' => [
+            'driver' => 'database',
+            'table' => 'reminder_jobs',
             'queue' => 'default',
             'retry_after' => 90,
             'after_commit' => false,

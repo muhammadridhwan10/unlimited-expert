@@ -1,110 +1,77 @@
 @extends('layouts.admin')
+
 @section('page-title')
-    {{__('Project Task Template Edit')}}
+    {{ __('Project Task Template Edit') }}
 @endsection
 
 @section('breadcrumb')
-    <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item"><a href="{{route('tasktemplate.index')}}">{{__('Project Task Template')}}</a></li>
-    <li class="breadcrumb-item">{{__('Project Task Template Edit')}}</li>
+    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('tasktemplate.index') }}">{{ __('Project Task Template') }}</a></li>
+    <li class="breadcrumb-item">{{ __('Project Task Template Edit') }}</li>
 @endsection
-@push('script-page')
-    <script src="{{asset('js/jquery-ui.min.js')}}"></script>
-    <script src="{{asset('js/jquery.repeater.min.js')}}"></script>
-@endpush
-@section('content')
-    {{--    @dd($invoice)--}}
-    <div class="row">
-        {{ Form::model($tasktemplate, array('route' => array('tasktemplate.update', $tasktemplate->id), 'method' => 'PUT','class'=>'w-100')) }}
-        <div class="col-12">
-            <input type="hidden" name="_token" id="token" value="{{ csrf_token() }}">
-            <div class="card">
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    {{ Form::label('category_id', __('Category'),['class'=>'form-label']) }}
-                                    {{ Form::select('category_id', $category,null, array('class' => 'form-control select','required'=>'required')) }}
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        {{ Form::label('category_template_id', __('Category Template'),['class'=>'form-label']) }}
-                                        {{ Form::select('category_template_id', $category_template,null, array('class' => 'form-control select','required'=>'required')) }}
-                                    </div>
-                                </div>
 
-                                @if(!$customFields->isEmpty())
-                                    <div class="col-md-6">
-                                        <div class="tab-pane fade show" id="tab-2" role="tabpanel">
-                                            @include('customFields.formBuilder')
-                                        </div>
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
+@section('content')
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>{{ __('Edit Task Template') }}
+                    </h5>
+                    <a href="{{ route('tasktemplate.index') }}" class="btn btn-sm btn-primary">
+                        {{ __('Back') }}
+                    </a>
                 </div>
-            </div>
-        </div>
-        <div class="col-12">
-            <h5 class=" d-inline-block mb-4">{{__('Task Details')}}</h5>
-            <div class="card repeater">
-                <div class="card-body table-border-style">
-                    <div class="table-responsive">
-                        <table class="table mb-0 table-custom-style" data-repeater-list="items" id="sortable-table">
+                <div class="card-body">
+                    {{ Form::model($tasktemplate, ['route' => ['tasktemplate.update', $tasktemplate->id], 'method' => 'PUT', 'class' => 'w-100']) }}
+
+                    <!-- Category Selection -->
+                    <div class="form-group">
+                        {{ Form::label('category_id', __('Category'), ['class' => 'form-label']) }}
+                        {{ Form::select('category_id', $category, null, ['class' => 'form-control select', 'required' => 'required']) }}
+                    </div>
+
+                    <!-- Custom Fields -->
+                    @if (!$customFields->isEmpty())
+                        <div class="form-group">
+                            @include('customFields.formBuilder')
+                        </div>
+                    @endif
+
+                    <!-- Task Details -->
+                    <div class="mt-4">
+                        <h6>{{ __('Task Details') }}</h6>
+                        <table class="table table-bordered" id="taskTable">
                             <thead>
-                            <tr>
-                                <th>{{__('Name')}}</th>
-                                <th>{{__('Estimated Hours')}} </th>
-                                <!-- <th>{{__('Start Date')}}</th>
-                                <th>{{__('End Date')}}</th> -->
-                                <th></th>
-                            </tr>
+                                <tr>
+                                    <th>{{ __('Name') }}</th>
+                                    <th>{{ __('Estimated Hours') }}</th>
+                                    <th>{{ __('Description') }}</th>
+                                </tr>
                             </thead>
-                            <tbody class="ui-sortable" data-repeater-item>
-                            <tr>
-                                {{ Form::hidden('id',null, array('class' => 'form-control id')) }}
-                                <td>
-                                    <div class="form-group price-input input-group search-form">
-                                        {{ Form::text('name',null, array('class' => 'form-control','required'=>'required','required'=>'required')) }}
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="form-group price-input input-group search-form">
-                                        {{ Form::text('estimated_hrs',null, array('class' => 'form-control','required'=>'required','required'=>'required')) }}
-                                    </div>
-                                </td>
-                                <!-- <td>
-                                    <div class="form-group price-input input-group search-form">
-                                    {{Form::date('start_date',null,array('class'=>'form-control','required'=>'required'))}}
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="form-group price-input input-group search-form">
-                                    {{Form::date('end_date',null,array('class'=>'form-control','required'=>'required'))}}
-                                    </div>
-                                </td> -->
-                            </tr>
-                            <tr>
-                                <td colspan="2">
-                                    <div class="form-group">
-                                        {{ Form::textarea('description', null, ['class'=>'form-control pro_description','rows'=>'2','placeholder'=>__('Description')]) }}
-                                    </div>
-                                </td>
-                                <td colspan="5"></td>
-                            </tr>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        {{ Form::text('name', $tasktemplate->name, ['class' => 'form-control', 'required' => 'required', 'placeholder' => __('Task Name')]) }}
+                                    </td>
+                                    <td>
+                                        {{ Form::number('estimated_hrs', $tasktemplate->estimated_hrs, ['class' => 'form-control', 'required' => 'required', 'placeholder' => __('Estimated Hours'), 'min' => '0', 'step' => '0.01']) }}
+                                    </td>
+                                    <td>
+                                        {{ Form::textarea('description', $tasktemplate->description, ['class' => 'form-control', 'rows' => '2', 'placeholder' => __('Description')]) }}
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Submit Button -->
+                    <div class="mt-3">
+                        {{ Form::submit(__('Update'), ['class' => 'btn btn-primary']) }}
+                    </div>
+
+                    {{ Form::close() }}
                 </div>
             </div>
         </div>
-        <div class="modal-footer">
-            <input type="button" value="{{__('Cancel')}}" onclick="location.href = '{{route("tasktemplate.index")}}';" class="btn btn-light">
-            <input type="submit" value="{{__('Update')}}" class="btn  btn-primary">
-        </div>
-        {{ Form::close() }}
     </div>
 @endsection
-

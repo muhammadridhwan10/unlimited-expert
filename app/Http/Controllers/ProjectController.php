@@ -66,52 +66,15 @@ class ProjectController extends Controller
     {
         if(\Auth::user()->can('create project'))
         {
-            if(\Auth::user()->type == 'company')
-            {
-                $users   = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
-                $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
-                $tasktemplate = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
-                $public_accountant = PublicAccountant::get()->pluck('name', 'id');
-                $public_accountant->prepend('Select Public Accountant', '');
-                $clients->prepend('Select Client', '');
-                $users->prepend('Select User', '');
-                $tasktemplate->prepend('Select Task Template', '');
-            }
-            elseif(\Auth::user()->type == 'admin')
-            {
-                $users   = User::where('type', '!=', 'client')->get()->pluck('name', 'id');
-                $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
-                $tasktemplate = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
-                $public_accountant = PublicAccountant::get()->pluck('name', 'id');
-                $public_accountant->prepend('Select Public Accountant', '');
-                $clients->prepend('Select Client', '');
-                $users->prepend('Select User', '');
-                $tasktemplate->prepend('Select Task Template', '');
-                
-            }
-            elseif(\Auth::user()->can('create project'))
-            {
-                $users   = User::where('type', '!=', 'client')->get()->pluck('name', 'id');
-                $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
-                $tasktemplate = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
-                $public_accountant = PublicAccountant::get()->pluck('name', 'id');
-                $public_accountant->prepend('Select Public Accountant', '');
-                $clients->prepend('Select Client', '');
-                $users->prepend('Select User', '');
-                $tasktemplate->prepend('Select Task Template', '');
-                
-            }
-            else
-            {
-                $users   = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
-                $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
-                $tasktemplate = ProductServiceCategory::where('type', 0)->where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('category_id', 'id');
-                $public_accountant = PublicAccountant::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                $public_accountant->prepend('Select Public Accountant', '');
-                $clients->prepend('Select Client', '');
-                $users->prepend('Select User', '');
-                $tasktemplate->prepend('Select Task Template', '');
-            }
+            $users   = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->get()->pluck('name', 'id');
+            $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
+            $tasktemplate = CategoryTemplate::get()->pluck('name', 'id');
+            $public_accountant = PublicAccountant::get()->pluck('name', 'id');
+            $public_accountant->prepend('Select Partner', '');
+            $clients->prepend('Select Client', '');
+            $users->prepend('Select User', '');
+            $tasktemplate->prepend('Select Task Template', '');
+
             return view('projects.create', compact('clients','users','public_accountant','tasktemplate'));
         }
         else
@@ -152,32 +115,7 @@ class ProjectController extends Controller
                 $project->start_date = date("Y-m-d H:i:s", strtotime($request->start_date));
             }   
 
-            $tanggal_mulai = $project->start_date;
-            $tanggal_akhir = $request->total_days;
-        
-            $d = new DateTime($tanggal_mulai);
-            $t = $d->getTimestamp();
-        
-            for($i=0; $i< $tanggal_akhir; $i++){
-        
-                $addDay = 86400;
-        
-                $nextDay = date('w', ($t+$addDay));
-        
-                if($nextDay == 0 || $nextDay == 6) {
-                    $i--;
-                }
-        
-                $t = $t+$addDay;
-            }
-        
-            $d->setTimestamp($t);
-        
-            $end_date = $d->format( 'Y-m-d H:i:s' );
-
-            $project->end_date = $end_date;
-
-            $count = $tanggal_akhir * 8;
+            $project->end_date = date("Y-m-d H:i:s", strtotime($request->start_date));
 
             if($request->hasFile('project_image'))
             {
@@ -191,7 +129,6 @@ class ProjectController extends Controller
             $project->budget = !empty($request->budget) ? $request->budget : 0;
             $project->description = $request->description;
             $project->status = $request->status;
-            // $project->estimated_hrs = $count;
             $project->total_days = $request->total_days;
             $project->book_year = $request->book_year;
             $project->tags = $request->tag;
@@ -241,34 +178,6 @@ class ProjectController extends Controller
     
                 Notification::create($notificationData);
 
-                // $firebaseToken = User::where('id', $value)->whereNotNull('device_token')->pluck('device_token');
-                // $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
-
-                // $data = [
-                //     "registration_ids" => $firebaseToken,
-                //     "notification" => [
-                //         "title" => 'AUP-APPS',
-                //         "body" => $authuser->name . ' inviting you into the project ' . $project->project_name,  
-                //         "icon" => 'https://i.postimg.cc/8z1vzXPV/logo-tgs-fix.png',
-                //         "content_available" => true,
-                //         "priority" => "high",
-                //     ]
-                // ];
-                // $dataString = json_encode($data);
-            
-                // $headers = [
-                //     'Authorization: key=' . $SERVER_API_KEY,
-                //     'Content-Type: application/json',
-                // ];
-            
-                // $ch = curl_init();
-                // curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
-                // curl_setopt($ch, CURLOPT_POST, true);
-                // curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-                // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-                // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                // curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
-
                 
                 // $response = curl_exec($ch);
                 $datas = User::where('id', $value)->pluck('email');
@@ -291,15 +200,14 @@ class ProjectController extends Controller
 
                 for($i = 0; $i < count($details); $i++)
                 {
-                    // dd($details);
                     $tasks                 = new ProjectTask();
                     $tasks->project_id     = $project->id;
                     $tasks->assign_to      = 0;
                     $tasks->stage_id       =  $details[$i]['stage_id'];
                     $tasks->name           = $details[$i]['name'];
                     $tasks->category_template_id      =  $details[$i]['category_template_id'];
-                    $tasks->start_date     = $project->start_date;
-                    $tasks->end_date       = $project->end_date;
+                    $tasks->start_date     = '';
+                    $tasks->end_date       = '';
                     $tasks->estimated_hrs  = $details[$i]['estimated_hrs'];
                     $tasks->description    = $details[$i]['description'];
                     $tasks->created_by     = \Auth::user()->creatorId();
@@ -314,45 +222,6 @@ class ProjectController extends Controller
                             'remark' => json_encode(['title' => $tasks->name]),
                         ]
                     );
-                }
-
-                $category = Project::category_progress($count, $project->id); 
-
-                $Preengagement = $category['TotalPreengagement'];
-                $Riskassessment = $category['TotalRiskassessment'];
-                $Riskresponse = $category['TotalRiskresponse'];
-                $Conclutioncompletion = $category['TotalConclutioncompletion'];
-
-                $task = ProjectTask::where('project_id','=', $project->id)->get();
-
-                for($i = 0; $i < count($task); $i++)
-                {
-                    if($task[$i]['category_template_id'] == 1)
-                    {
-                        $estimated_hrs = 0;
-                    }
-                    elseif($task[$i]['category_template_id'] == 2)
-                    {
-                        $estimated_hrs = $Preengagement;
-                    }
-                    elseif($task[$i]['category_template_id'] == 3)
-                    {
-                        $estimated_hrs = $Riskassessment;
-                    }
-                    elseif($task[$i]['category_template_id'] == 4)
-                    {
-                        $estimated_hrs = $Riskresponse;
-                    }
-                    elseif($task[$i]['category_template_id'] == 5)
-                    {
-                        $estimated_hrs = $Conclutioncompletion;
-                    }
-
-                    ProjectTask::where(['id' => $task[$i]['id']])->update([
-                        'estimated_hrs' => $estimated_hrs,
-                    ]);
-
-    
                 }
             }
             else
@@ -417,14 +286,21 @@ class ProjectController extends Controller
                 // Task Count
                 $tasks = ProjectTask::where('project_id',$project->id)->get();
                 $project_task         = $tasks->count();
-                $completedTask = ProjectTask::where('project_id',$project->id)->where('is_complete',1)->get();
+                $completedTask = ProjectTask::where('project_id',$project->id)->where('stage_id',4)->get();
 
                 $project_done_task    = $completedTask->count();
+
+                $overdueTasks = $tasks->where('end_date', '<', now())->where('stage_id', '!=', 4);
+                $activeTasks = $tasks->where('end_date', '>=', now())->where('stage_id','!=', 4);
+                $completedTasks = $tasks->where('stage_id', 4);
 
                 $project_data['task'] = [
                     'total' => number_format($project_task),
                     'done' => number_format($project_done_task),
                     'percentage' => Utility::getPercentage($project_done_task, $project_task),
+                    'overdue_tasks' => $overdueTasks->count(),
+                    'active_tasks' => $activeTasks->count(),
+                    'completed_tasks' => $completedTasks->count(),
                 ];
 
                 // end Task Count
@@ -560,8 +436,9 @@ class ProjectController extends Controller
                 $auditplan = AuditPlan::where('project_id', $project->id)->get();
                 $project_offerings = ProjectOfferings::where('project_id', $project->id)->first();
                 $el = El::where('project_id', $project->id)->get();
+                $projects = Project::where('created_by', \Auth::user()->creatorId())->get();
 
-                return view('projects.view',compact('project','project_offerings','project_data','auditplan','el'));
+                return view('projects.view',compact('project','project_offerings','project_data','auditplan','el','projects'));
             }
             else
             {
@@ -585,60 +462,14 @@ class ProjectController extends Controller
         $usr = \Auth::user();
         if(\Auth::user()->can('edit project'))
         {
-            if($usr->type == 'admin')
-            {
-                $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
-                $project = Project::findOrfail($project->id);
-                $tasktemplate = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
-                $public_accountant = PublicAccountant::get()->pluck('name', 'id');
-                $public_accountant->prepend('Select Public Accountant', '');
-                $tasktemplate->prepend('Select Task Template', '');
+            $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
+            $project = Project::findOrfail($project->id);
+            $tasktemplate = CategoryTemplate::get()->pluck('name', 'id');
+            $public_accountant = PublicAccountant::get()->pluck('name', 'id');
+            $public_accountant->prepend('Select Partner', '');
+            $tasktemplate->prepend('Select Task Template', '');
 
-                return view('projects.edit', compact('tasktemplate','public_accountant','project', 'clients'));
-
-            }
-            elseif($usr->type == 'company')
-            {
-                $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
-                $project = Project::findOrfail($project->id);
-                $tasktemplate = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
-                $public_accountant = PublicAccountant::get()->pluck('name', 'id');
-                $public_accountant->prepend('Select Public Accountant', '');
-                $tasktemplate->prepend('Select Task Template', '');
-
-                return view('projects.edit', compact('tasktemplate','public_accountant', 'project', 'clients'));
-
-            }
-            elseif(\Auth::user()->can('edit project'))
-            {
-                $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
-                $project = Project::findOrfail($project->id);
-                $tasktemplate = ProductServiceCategory::where('type', 0)->get()->pluck('name', 'id');
-                $public_accountant = PublicAccountant::get()->pluck('name', 'id');
-                $public_accountant->prepend('Select Public Accountant', '');
-                $tasktemplate->prepend('Select Task Template', '');
-
-                return view('projects.edit', compact('tasktemplate','public_accountant','project', 'clients'));
-                
-            }
-            else{
-                
-                $clients = User::where('created_by', '=', \Auth::user()->creatorId())->where('type', '=', 'client')->get()->pluck('name', 'id');
-                $project = Project::findOrfail($project->id);
-                $tasktemplate = ProductServiceCategory::where('type', 0)->where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('category_id', 'id');
-                $public_accountant = PublicAccountant::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                $public_accountant->prepend('Select Public Accountant', '');
-                $tasktemplate->prepend('Select Task Template', '');
-                if($project->created_by == \Auth::user()->creatorId())
-                {
-                    return view('projects.edit', compact('tasktemplate','public_accountant','project', 'clients'));
-                }
-                else
-                {
-                    return response()->json(['error' => __('Permission denied.')], 401);
-                }
-            }
-            return view('projects.edit',compact('project','public_accountant'));
+            return view('projects.edit', compact('tasktemplate','public_accountant','project', 'clients'));
         }
         else
         {
@@ -655,180 +486,89 @@ class ProjectController extends Controller
      */
     public function update(Request $request, Project $project)
     {
-        if(\Auth::user()->can('edit project'))
-        {
-            $validator = \Validator::make(
-                $request->all(), [
-                                'project_name' => 'required',
-                            ]
-            );
-            if($validator->fails())
-            {
-                return redirect()->back()->with('error', Utility::errorFormat($validator->getMessageBag()));
-            }
-            $project = Project::find($project->id);
-            $project->project_name = $request->project_name;
-            $project->start_date = date("Y-m-d H:i:s", strtotime($request->start_date));
-            $project->end_date = date("Y-m-d H:i:s", strtotime($request->end_date));
-            $tanggal_mulai = $project->start_date;
-            $tanggal_akhir = $request->total_days;
-        
-            $d = new DateTime($tanggal_mulai);
-            $t = $d->getTimestamp();
-        
-            for($i=0; $i< $tanggal_akhir; $i++){
-        
-                $addDay = 86400;
-        
-                $nextDay = date('w', ($t+$addDay));
-        
-                if($nextDay == 0 || $nextDay == 6) {
-                    $i--;
-                }
-        
-                $t = $t+$addDay;
-            }
-        
-            $d->setTimestamp($t);
-        
-            $end_date = $d->format( 'Y-m-d H:i:s' );
-
-            $project->end_date = $end_date;
-
-            $count = $tanggal_akhir * 8;
-
-            if($request->hasFile('project_image'))
-            {
-                Utility::checkFileExistsnDelete([$project->project_image]);
-                $imageName = time() . '.' . $request->project_image->extension();
-                $request->file('project_image')->storeAs('projects', $imageName);
-                $project->project_image      = 'projects/'.$imageName;
-            }
-            $project->template_task_id = $request->template_task;
-            // dd($project->template_task_id);
-            $project->total_days = $request->total_days;
-            $project->budget = $request->total_calculation;
-            $project->client_id = $request->client;
-            $project->public_accountant_id = $request->public_accountant_id;
-            $project->description = $request->description;
-            $project->status = $request->status;
-            // $project->estimated_hrs = $request->estimated_hrs;
-            $project->book_year = $request->book_year;
-            $project->tags = $request->tag;
-            $project->label = $request->label;
-            $project->save();
-
-            $project_offerings = ProjectOfferings::where('project_id','=', $project->id)->first();
-            
-            if($project_offerings !== NULL)
-            {
-                $project_offerings->update(
-                    [
-                        'als_partners' => $request->als_partners,
-                        'rate_partners' => $request->rate_partners,
-                        'als_manager' => $request->als_manager,
-                        'rate_manager' => $request->rate_manager,
-                        'als_leader' => $request->als_leader,
-                        'rate_leader' => $request->rate_leader,
-                        'als_senior_associate' => $request->als_senior_associate,
-                        'rate_senior_associate' => $request->rate_senior_associate,
-                        'als_associate' => $request->als_associate,
-                        'rate_associate' => $request->rate_associate,
-                        'als_intern' => $request->als_intern,
-                        'rate_intern' => $request->rate_intern,
-                    ]
-                );
-            }
-            
-
-            ActivityLog::create(
-                [
-                    'user_id' => \Auth::user()->id,
-                    'project_id' => $project->id,
-                    'task_id' => 0,
-                    'log_type' => 'Update Project',
-                    'remark' => json_encode(['title' => $project->project_name]),
-                ]
-            );
-
-            if ($project->template_task_id !== $request->template_task) {
-                // Menghapus ProjectTask yang terkait dengan project
-                ProjectTask::where('project_id', $project->id)->delete();
-            }          
-
-
-            $template = Project::with('details')->find($project->id);
-            $details = $template->details;
-            // foreach ($template as $templates) {
-            //     $details = $templates->details;
-            // }
-
-            if ($project->template_task_id){
-                $category = $request->items;
-                $category_id = $request->category_id;
-
-                for ($i = 0; $i < count($details); $i++) {
-                    $tasks = new ProjectTask();
-                    $tasks->project_id = $project->id;
-                    $tasks->assign_to = 0;
-                    $tasks->stage_id = $details[$i]['stage_id'];
-                    $tasks->name = $details[$i]['name'];
-                    $tasks->category_template_id = $details[$i]['category_template_id'];
-                    $tasks->start_date = $project->start_date;
-                    $tasks->end_date = $project->end_date;
-                    $tasks->estimated_hrs = $details[$i]['estimated_hrs'];
-                    $tasks->description = $details[$i]['description'];
-                    $tasks->created_by = \Auth::user()->creatorId();
-                    $tasks->save();
-                }
-
-                $category = Project::category_progress($count, $project->id);
-
-                $Preengagement = $category['TotalPreengagement'];
-                $Riskassessment = $category['TotalRiskassessment'];
-                $Riskresponse = $category['TotalRiskresponse'];
-                $Conclutioncompletion = $category['TotalConclutioncompletion'];
-
-                $task = ProjectTask::where('project_id', '=', $project->id)->get();
-
-                for ($i = 0; $i < count($task); $i++) {
-                    if ($task[$i]['category_template_id'] == 1) {
-                        $estimated_hrs = 0;
-                    } elseif ($task[$i]['category_template_id'] == 2) {
-                        $estimated_hrs = $Preengagement;
-                    } elseif ($task[$i]['category_template_id'] == 3) {
-                        $estimated_hrs = $Riskassessment;
-                    } elseif ($task[$i]['category_template_id'] == 4) {
-                        $estimated_hrs = $Riskresponse;
-                    } elseif ($task[$i]['category_template_id'] == 5) {
-                        $estimated_hrs = $Conclutioncompletion;
-                    }
-
-                    ProjectTask::where(['id' => $task[$i]['id']])->update([
-                        'estimated_hrs' => $estimated_hrs,
-                    ]);
-                    $project = Project::find($project->id);
-
-                    $project->update([
-                        'is_template' => 1,
-                    ]);
-                }
-            } else {
-                $project = Project::find($project->id);
-
-                $project->update([
-                    'is_template' => 0,
-                ]);
-            }
-
-            
-
-            return redirect()->route('projects.index')->with('success', __('Project Updated Successfully'));
-        }
-        else
-        {
+        if (!\Auth::user()->can('edit project')) {
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
+
+        $validator = \Validator::make(
+            $request->all(), [
+                'project_name' => 'required',
+            ]
+        );
+        if ($validator->fails()) {
+            return redirect()->back()->with('error', Utility::errorFormat($validator->getMessageBag()));
+        }
+
+        $oldTemplateTaskId = $project->template_task_id;
+
+        $project->project_name = $request->project_name;
+        $project->start_date = date("Y-m-d H:i:s", strtotime($request->start_date));
+        $project->end_date = date("Y-m-d H:i:s", strtotime($request->end_date));
+
+        if ($request->hasFile('project_image')) {
+            Utility::checkFileExistsnDelete([$project->project_image]);
+            $imageName = time() . '.' . $request->project_image->extension();
+            $request->file('project_image')->storeAs('projects', $imageName);
+            $project->project_image = 'projects/' . $imageName;
+        }
+
+        $newTemplateTaskId = intval($request->template_task_id);
+
+        ActivityLog::create([
+            'user_id' => \Auth::user()->id,
+            'project_id' => $project->id,
+            'task_id' => 0,
+            'log_type' => 'Update Project',
+            'remark' => json_encode(['title' => $project->project_name]),
+        ]);
+
+        if ($newTemplateTaskId) {
+
+            $template = CategoryTemplate::find($newTemplateTaskId);
+
+            if ($template) {
+
+                if ($oldTemplateTaskId !== $newTemplateTaskId) {
+
+                    ProjectTask::where('project_id', $project->id)->delete();
+
+                    $tasks = ProjectTaskTemplate::where('category_id', $template->id)->get();
+
+                    foreach ($tasks as $taskDetail) {
+                        $newTask = new ProjectTask();
+                        $newTask->project_id = $project->id;
+                        $newTask->assign_to = 0;
+                        $newTask->stage_id = $taskDetail->stage_id;
+                        $newTask->name = $taskDetail->name;
+                        $newTask->category_template_id = $taskDetail->category_template_id;
+                        $newTask->start_date = '';
+                        $newTask->end_date = '';
+                        $newTask->estimated_hrs = $taskDetail->estimated_hrs;
+                        $newTask->description = $taskDetail->description;
+                        $newTask->created_by = \Auth::user()->creatorId();
+                        $newTask->save();
+                    }
+                }
+            }
+        } else {
+
+            ProjectTask::where('project_id', $project->id)->delete();
+        }
+
+        $project->template_task_id = $newTemplateTaskId;
+        $project->total_days = $request->total_days;
+        $project->budget = $request->total_calculation;
+        $project->client_id = $request->client;
+        $project->public_accountant_id = $request->public_accountant_id;
+        $project->description = $request->description;
+        $project->status = $request->status;
+        $project->book_year = $request->book_year;
+        $project->tags = $request->tag;
+        $project->label = $request->label;
+
+        $project->save();
+
+        return redirect()->route('projects.show', $project)->with('success', __('Project Updated Successfully'));
     }
 
     /**

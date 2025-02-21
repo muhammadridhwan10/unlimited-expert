@@ -80,6 +80,11 @@ class User extends Authenticatable
         return $this->belongsTo('App\Models\ClientBusinessSector', 'client_business_sector_id', 'id');
     }
 
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
     public function accounting_standard()
     {
         return $this->belongsTo('App\Models\ClientAccountingStandard', 'client_accounting_standard_id', 'id');

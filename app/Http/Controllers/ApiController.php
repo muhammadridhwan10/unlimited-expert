@@ -198,6 +198,7 @@ class ApiController extends Controller
             $track['start_time']  = $request->has('time') ? date("Y-m-d H:i:s", strtotime($request->input('time'))) : date("Y-m-d H:i:s");
             $track['task_id']     = 0;
             $track['created_by']  = $user->id;
+            $track['is_active'] = 1;
     
             $current_time = strtotime($track['start_time']);
             $end_of_day = strtotime(date("Y-m-d 23:59:59", $current_time));

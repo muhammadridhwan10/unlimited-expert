@@ -32,10 +32,6 @@ class ProjectTaskTemplate extends Model
     ];
 
     public function category(){
-        return $this->belongsTo('App\Models\ProductServiceCategory', 'category_id', 'id');
-    }
-
-    public function category_templates(){
-        return $this->belongsTo('App\Models\CategoryTemplate', 'category_template_id', 'id');
+        return $this->belongsTo('App\Models\CategoryTemplate', 'category_id', 'id');
     }
 }

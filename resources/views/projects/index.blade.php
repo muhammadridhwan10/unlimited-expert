@@ -64,7 +64,7 @@
 
             {{------------ Start Tags Filter ----------------}}
                 <a href="#" class="btn btn-sm btn-primary action-item" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="btn-inner--icon">{{__('Tags')}}</span>
+                    <span class="btn-inner--icon">{{__('Office')}}</span>
                 </a>
                 <div class="dropdown-menu  project-filter-actions-tags dropdown-steady" id="tags">
                     <a class="dropdown-item filter-action-tags filter-show-all-tags pl-4 active" href="#">{{__('Show All')}}</a>
@@ -76,7 +76,7 @@
 
             {{------------ Start Label Filter ----------------}}
                 <a href="#" class="btn btn-sm btn-primary action-item" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="btn-inner--icon">{{__('Label')}}</span>
+                    <span class="btn-inner--icon">{{__('Type Of Service')}}</span>
                 </a>
                 <div class="dropdown-menu  project-filter-actions-label dropdown-steady" id="label">
                     <a class="dropdown-item filter-action-label filter-show-all-label pl-4 active" href="#">{{__('Show All')}}</a>
@@ -278,7 +278,7 @@
                 success: function (data) {
                     mainEle.html(data.html);
                     $('[id^=fire-modal]').remove();
-                    loadConfirm();
+                    //loadConfirm();
                 }
             });
         }

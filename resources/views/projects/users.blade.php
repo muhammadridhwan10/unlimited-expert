@@ -11,7 +11,7 @@
                         <div class="div">
                             <h5 class="m-0">{{ $user->name }}  <span class="badge rounded-pill bg-info">{{ $user->type }}</span></h5>
                             <small class="text-muted">{{ $user->email }}</small>
-                            @php
+                            {{-- @php
                                     $hasRatingData = array_key_exists($user->employee->id, $overallRatings);
                                     $rating = $hasRatingData ? $overallRatings[$user->employee->id] : 0; 
                             @endphp
@@ -28,7 +28,7 @@
                                             @endif
                                         @endfor
                                         <span class="theme-text-color">({{number_format($rating,1)}})</span>
-                            </h5>
+                            </h5> --}}
                         </div>
                     </div>
                 </div>

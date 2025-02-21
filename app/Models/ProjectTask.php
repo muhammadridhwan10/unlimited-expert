@@ -265,28 +265,29 @@ class ProjectTask extends Model
 
     public function taskProgress()
     {
+
         $project    = Project::find($this->project_id);
+
         $percentage = 0;
 
-        $total_checklist     = $this->checklist->where('parent_id','=',0)->count();
+        $total_checklist     = $this->checklist->count();
         $completed_checklist = $this->checklist()->where('status', '=', '1')->count();
+
 
         if($total_checklist > 0)
         {
             $percentage = intval(($completed_checklist / $total_checklist) * 100);
         }
-
-        if($this->name == "Materialitas")
+        else if($total_checklist == 0) 
         {
-            $percentage = 100;
-        }
-        elseif($this->name == "FINANCIAL INFORMATION")
-        {
-            $percentage = 100;
-        }
-        elseif($this->name == "Adjustment / Reclassification Journal Entries")
-        {
-            $percentage = 100;
+            if($this->stage_id == 4)
+            {
+                $percentage = 100;
+            }
+            else
+            {
+                $percentage = 0;
+            }
         }
 
         $color = Utility::getProgressColor($percentage);

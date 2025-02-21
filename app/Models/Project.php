@@ -102,8 +102,14 @@ class Project extends Model
         return $this->hasOne('App\Models\ProjectOfferings', 'project_id', 'id');
     }
 
-    public function details(){
+    public function details()
+    {
         return $this->hasMany('App\Models\ProjectTaskTemplate', 'category_id', 'template_task_id');
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
     }
 
     public function milestones()

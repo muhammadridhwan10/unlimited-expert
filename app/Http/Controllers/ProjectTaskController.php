@@ -18,6 +18,7 @@ use App\Models\ActivityLog;
 use App\Models\ProjectTask;
 use App\Models\TaskComment;
 use App\Models\TaskLink;
+use App\Models\Milestone;
 use App\Models\TaskChecklist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -46,220 +47,43 @@ class ProjectTaskController extends Controller
     public function index(Request $request, $project_id)
     {
         $usr = \Auth::user();
-        if(\Auth::user()->can('manage project task'))
-        {
-            if($usr->type == 'admin')
-            {
-                $category_template_id       = CategoryTemplate::all()->pluck('name', 'id');
-                $category_template_id->prepend('All', '');
-                $project    = Project::find($project_id);
-                $taskstage   = TaskStage::all();
-                $taskss      = ProjectTask::where('project_id', '=', $project_id)->get();
-                if(!empty($request->category_template_id))
-                {
-                    $tasks = $taskss->where('category_template_id', '=', $request->category_template_id);         
-                }elseif($request->category_template_id = 'All')
-                {
-                    $tasks = ProjectTask::where('project_id', '=', $project_id)->get();
-                }
 
-                $data_task = ProjectTask::where('project_id', $project_id)->where('name', 'Prosedur Analitis')->first();
+        if (\Auth::user()->can('manage project task')) {
+            // Ambil data milestone
+            $milestone_id = Milestone::where('project_id', $project_id)->pluck('title', 'id');
+            $milestone_id->prepend('All', '');
 
-                if(!empty($data_task))
-                {
-                    $existingSubTasks = TaskChecklist::whereIn('name', ['Perbandingan Data Antar Periode', 'Rasio Keuangan', 'Audit Memorandum'])
-                        ->where('task_id', $data_task->id)
-                        ->where('project_id', $project_id)
-                        ->pluck('name')
-                        ->toArray();
+            // Ambil data proyek
+            $project = Project::find($project_id);
 
-                    $createSubTask = [];
+            // Ambil data stage
+            $taskstage = TaskStage::where('created_by', \Auth::user()->creatorId())->get();
 
-                    if (!in_array('Perbandingan Data Antar Periode', $existingSubTasks)) {
-                        $createSubTask[] = [
-                            'name' => 'Perbandingan Data Antar Periode',
-                            'task_id' => $data_task->id,
-                            'project_id' => $project_id,
-                            'created_by' => 1,
-                            'user_type' => 'User',
-                            'status' => 0,
-                        ];
-                    }
+            // Query dasar untuk task
+            $tasks = ProjectTask::where('project_id', '=', $project_id)
+                ->with('checklist');
 
-                    if (!in_array('Rasio Keuangan', $existingSubTasks)) {
-                        $createSubTask[] = [
-                            'name' => 'Rasio Keuangan',
-                            'task_id' => $data_task->id,
-                            'project_id' => $project_id,
-                            'created_by' => 1,
-                            'user_type' => 'User',
-                            'status' => 0,
-                        ];
-                    }
-
-                    if (!in_array('Audit Memorandum', $existingSubTasks)) {
-                        $createSubTask[] = [
-                            'name' => 'Audit Memorandum',
-                            'task_id' => $data_task->id,
-                            'project_id' => $project_id,
-                            'created_by' => 1,
-                            'user_type' => 'User',
-                            'status' => 0,
-                        ];
-                    }
-
-                    if (!empty($createSubTask)) {
-                        $checklist = TaskChecklist::insert($createSubTask);
-                    }
-                }
-
-
-
-                return view('project_task.index', compact('tasks','taskstage','category_template_id','project'));
-            }
-            elseif($usr->type == 'company')
-            {
-                $category_template_id       = CategoryTemplate::all()->pluck('name', 'id');
-                $category_template_id->prepend('All', '');
-                $project    = Project::find($project_id);
-                $taskstage   = TaskStage::all();
-                $taskss      = ProjectTask::where('project_id', '=', $project_id)->get();
-                if(!empty($request->category_template_id))
-                {
-                    $tasks = $taskss->where('category_template_id', '=', $request->category_template_id);         
-                }elseif($request->category_template_id = 'All')
-                {
-                    $tasks = ProjectTask::where('project_id', '=', $project_id)->get();
-                }
-
-                $data_task = ProjectTask::where('project_id', '=', $project_id)->where('name','=','Prosedur Analitis')->get();
-
-                if(!empty($data_task))
-                {
-                    foreach($data_task as $data)
-                    {
-
-                        $createSubTask = [
-                            [
-                                'name' => 'Perbandingan Data Antar Periode',
-                                'task_id' => $data->id,
-                                'project_id' => $data->project_id,
-                                'created_by' => 1,
-                                'user_type' => 'User',
-                                'status' => 0,
-                            ],
-                            [
-                                'name' => 'Rasio Keuangan',
-                                'task_id' => $data->id,
-                                'project_id' => $data->project_id,
-                                'created_by' => 1,
-                                'user_type' => 'User',
-                                'status' => 0,
-                            ],
-                            [
-                                'name' => 'Audit Memorandum',
-                                'task_id' => $data->id,
-                                'project_id' => $data->project_id,
-                                'created_by' => 1,
-                                'user_type' => 'User',
-                                'status' => 0,
-                            ],
-                        ];
-
-                        foreach ($createSubTask as $subTask) {
-                            $checklist = TaskChecklist::where('name', $subTask['name'])->where('task_id', $subTask['task_id'])->first();
-
-                            if(!$checklist) {
-                                $checklist = new TaskChecklist();
-                                $checklist->name = $subTask['name'];
-                                $checklist->task_id = $subTask['task_id'];
-                                $checklist->project_id = $subTask['project_id'];
-                                $checklist->created_by = $subTask['created_by'];
-                                $checklist->user_type = $subTask['user_type'];
-                                $checklist->status = $subTask['status'];
-                                $checklist->save();
-                            }
-                        }
-                    }
-                }
-
-
-
-                return view('project_task.index', compact('tasks','taskstage','category_template_id','project'));
-            }
-            else
-            {
-                $category_template_id       = CategoryTemplate::all()->pluck('name', 'id');
-                $category_template_id->prepend('All', '');
-                $project    = Project::find($project_id);
-                $taskstage   = TaskStage::all();
-                $taskss      = ProjectTask::where('project_id', '=', $project_id)->get();
-                if(!empty($request->category_template_id))
-                {
-                    $tasks = $taskss->where('category_template_id', '=', $request->category_template_id);         
-                }elseif($request->category_template_id = 'All')
-                {
-                    $tasks = ProjectTask::where('project_id', '=', $project_id)->get();
-                }
-
-                $data_task = ProjectTask::where('project_id', '=', $project_id)->where('name','=','Prosedur Analitis')->get();
-                
-                if(!empty($data_task))
-                {
-                    foreach($data_task as $data)
-                    {
-
-                        $createSubTask = [
-                            [
-                                'name' => 'Perbandingan Data Antar Periode',
-                                'task_id' => $data->id,
-                                'project_id' => $data->project_id,
-                                'created_by' => 1,
-                                'user_type' => 'User',
-                                'status' => 0,
-                            ],
-                            [
-                                'name' => 'Rasio Keuangan',
-                                'task_id' => $data->id,
-                                'project_id' => $data->project_id,
-                                'created_by' => 1,
-                                'user_type' => 'User',
-                                'status' => 0,
-                            ],
-                            [
-                                'name' => 'Audit Memorandum',
-                                'task_id' => $data->id,
-                                'project_id' => $data->project_id,
-                                'created_by' => 1,
-                                'user_type' => 'User',
-                                'status' => 0,
-                            ],
-                        ];
-
-                        foreach ($createSubTask as $subTask) {
-                            $checklist = TaskChecklist::where('name', $subTask['name'])->where('task_id', $subTask['task_id'])->first();
-
-                            if(!$checklist) {
-                                $checklist = new TaskChecklist();
-                                $checklist->name = $subTask['name'];
-                                $checklist->task_id = $subTask['task_id'];
-                                $checklist->project_id = $subTask['project_id'];
-                                $checklist->created_by = $subTask['created_by'];
-                                $checklist->user_type = $subTask['user_type'];
-                                $checklist->status = $subTask['status'];
-                                $checklist->save();
-                            }
-                        }
-                    }
-                }
-                
-                return view('project_task.index', compact('tasks','taskstage','category_template_id','project'));
+            // Filter berdasarkan milestone jika dipilih
+            if ($request->has('milestone_id') && $request->input('milestone_id') != 'All') {
+                $tasks->where('milestone_id', '=', $request->input('milestone_id'));
             }
 
-            
-        }
-        else
-        {
+            // Tambahkan filter berdasarkan view (all/assigned)
+            $view = $request->get('view', 'all'); // Default ke 'all' jika tidak ada parameter view
+            if ($view === 'assigned') {
+                // Filter task yang di-assign ke pengguna saat ini
+                $tasks->whereRaw("FIND_IN_SET(?, assign_to)", [$usr->id]);
+            }
+
+            // Eksekusi query
+            $tasks = $tasks->get();
+
+            // Tentukan tampilan berdasarkan parameter display
+            $display = $request->get('display', 'list'); // Default ke 'list'
+
+            // Kirim data ke view
+            return view('project_task.index', compact('tasks', 'taskstage', 'milestone_id', 'project', 'view', 'display'));
+        } else {
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
     }
@@ -268,11 +92,12 @@ class ProjectTaskController extends Controller
     {
         if(\Auth::user()->can('create project task'))
         {
-            $category_template_id   = CategoryTemplate::all()->pluck('name', 'id');
+            $milestone_id   = Milestone::where('project_id', $project_id)->pluck('title', 'id');
+            $milestone_id->prepend('Select Milestone', '');
             $project = Project::find($project_id);
             $hrs     = Project::projectHrs($project_id);
 
-            return view('project_task.create', compact('project_id', 'category_template_id', 'project', 'hrs'));
+            return view('project_task.create', compact('project_id', 'milestone_id', 'project', 'hrs'));
         }
         else
         {
@@ -298,34 +123,64 @@ class ProjectTaskController extends Controller
 
     public function store(Request $request, $project_id)
     {
+        if (\Auth::user()->can('create project task')) {
 
-        if(\Auth::user()->can('create project task'))
-        {
             $validator = Validator::make(
                 $request->all(), [
-                                'name' => 'required',
-                                'priority' => 'required',
-                            ]
+                    'name' => 'required',
+                    'priority' => 'required',
+                    'start_date' => 'nullable|date',
+                    'end_date' => 'nullable|date|after_or_equal:start_date',
+                ]
             );
 
-            if($validator->fails())
-            {
+            if ($validator->fails()) {
                 return redirect()->back()->with('error', Utility::errorFormat($validator->getMessageBag()));
             }
 
-            $usr        = Auth::user();
-            $project    = Project::find($project_id);
+            $usr = Auth::user();
+            $project = Project::find($project_id);
             $last_stage = $project->first()->id;
-            $post               = $request->all();
+            $post = $request->all();
             $post['project_id'] = $project->id;
-            $post['stage_id']   = 1;
+            $post['stage_id'] = 1;
             $post['assign_to'] = $request->assign_to;
+            $post['estimated_hrs'] = 0;
             $post['created_by'] = \Auth::user()->creatorId();
-            $post['start_date'] = $project->start_date;
-            $post['end_date'] = $project->end_date;
-            $post['category_template_id'] = $request->category_template_id;
+            $post['start_date'] = date("Y-m-d H:i:s", strtotime($request->start_date));
+            $post['end_date'] = date("Y-m-d H:i:s", strtotime($request->end_date));
+            $post['milestone_id'] = $request->milestone_id;
+
             $task = ProjectTask::create($post);
 
+            if ($request->has('subtasks')) {
+
+                $formattedSubtasks = [];
+                for ($i = 0; $i < count($request->subtasks); $i += 2) {
+                    $name = $request->subtasks[$i]['name'] ?? null;
+                    $description = $request->subtasks[$i + 1]['description'] ?? null;
+                    if ($name) {
+                        $formattedSubtasks[] = [
+                            'name' => $name,
+                            'description' => $description,
+                        ];
+                    }
+                }
+
+                foreach ($formattedSubtasks as $subtask) {
+                    $task->checklist()->create([
+                        'task_id' => $task->id,
+                        'project_id' => $project_id,
+                        'user_type' => 'User',
+                        'status' => 0,
+                        'name' => $subtask['name'],
+                        'description' => $subtask['description'],
+                        'created_by' => \Auth::user()->creatorId(),
+                    ]);
+                }
+            }
+
+            //Make entry in activity log
             ActivityLog::create(
                 [
                     'user_id' => $usr->id,
@@ -336,88 +191,53 @@ class ProjectTaskController extends Controller
                 ]
             );
 
-            $start_project = $project->start_date;
-            $end_project   = $project->end_date;
-            
-            $start_projects = strtotime($start_project . "+1 days");
-            $end_projects = strtotime($end_project);
-            
-            $jml_hari = array();
-            $sabtuminggu = array();
-            
-            for ($i = $start_projects; $i <= $end_projects; $i += (60 * 60 * 24)) {
-                if (date('w', $i) !== '0' && date('w', $i) !== '6') {
-                    $jml_hari[] = $i;
-                } else {
-                    $sabtuminggu[] = $i;
-                }
-            
-            }
-            $jumlah_hari = count($jml_hari);
+            // Create notification for the user assigned to the task
+            $notificationData = [
+                'user_id' => $request->assign_to,
+                'type' => 'create_task',
+                'data' => json_encode([
+                    'updated_by' => $usr->id,
+                    'project_id' => $task->project_id, // Update with the correct field from your data
+                    'task_id' => $task->id,
+                    'name' => $task->name,
+                ]),
+                'is_read' => false,
+            ];
 
-            if($project->is_template !== 0)
-            {
-                $category = ProjectTask::category_progress($jumlah_hari, $project->id); 
-
-                $Preengagement = $category['TotalPreengagement'];
-                $Riskassessment = $category['TotalRiskassessment'];
-                $Riskresponse = $category['TotalRiskresponse'];
-                $Conclutioncompletion = $category['TotalConclutioncompletion'];
-
-                $task = ProjectTask::where('project_id','=', $project->id)->get();
-
-                for($i = 0; $i < count($task); $i++)
-                {
-                    if($task[$i]['category_template_id'] == 1)
-                    {
-                        $estimated_hrs = 0;
-                    }
-                    elseif($task[$i]['category_template_id'] == 2)
-                    {
-                        $estimated_hrs = $Preengagement;
-                    }
-                    elseif($task[$i]['category_template_id'] == 3)
-                    {
-                        $estimated_hrs = $Riskassessment;
-                    }
-                    elseif($task[$i]['category_template_id'] == 4)
-                    {
-                        $estimated_hrs = $Riskresponse;
-                    }
-                    elseif($task[$i]['category_template_id'] == 5)
-                    {
-                        $estimated_hrs = $Conclutioncompletion;
-                    }
-
-                    ProjectTask::where(['id' => $task[$i]['id']])->update([
-                        'estimated_hrs' => $estimated_hrs,
-                    ]);
-
-                }
-            }
+            Notification::create($notificationData);
 
 
+            //For Notification
+            $setting = Utility::settings(\Auth::user()->creatorId());
+            $project_name = Project::find($project_id);
+            $project = Project::where('id', $project_name->id)->first();
+            $taskNotificationArr = [
+                'task_name' => $task->name,
+                'project_name' => $project->project_name,
+                'user_name' => \Auth::user()->name,
+            ];
             //Slack Notification
-            $setting  = Utility::settings(\Auth::user()->creatorId());
-            $project_name = Project::find($project_id);
-            $project = Project::where('id',$project_name->id)->first();
-            if(isset($setting['task_notification']) && $setting['task_notification'] ==1){
-                $msg = $task->name .__("of").' '.$project->project_name .__(" created by").' '.\Auth::user()->name.'.';
-                Utility::send_slack_msg($msg);
+            if (isset($setting['task_notification']) && $setting['task_notification'] == 1) {
+                Utility::send_slack_msg('new_task', $taskNotificationArr);
+            }
+            //Telegram Notification
+            if (isset($setting['telegram_task_notification']) && $setting['telegram_task_notification'] == 1) {
+                Utility::send_telegram_msg('new_task', $taskNotificationArr);
             }
 
-            //Telegram Notification
-            $setting  = Utility::settings(\Auth::user()->creatorId());
-            $project_name = Project::find($project_id);
-            $project = Project::where('id',$project_name->id)->first();
-            if(isset($setting['telegram_task_notification']) && $setting['telegram_task_notification'] ==1){
-                $msg = $task->name .__("of").' '.$project->project_name .__(" created by").' '.\Auth::user()->name.'.';
-                Utility::send_telegram_msg($msg);
+
+            //For Google Calendar
+            if ($request->get('synchronize_type') == 'google_calender') {
+                $type = 'task';
+                $request1 = new ProjectTask();
+                $request1->title = $request->name;
+                $request1->start_date = $request->start_date;
+                $request1->end_date = $request->end_date;
+                Utility::addCalendarData($request1, $type);
             }
+
             return redirect()->back()->with('success', __('Task added successfully.'));
-        }
-        else
-        {
+        } else {
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
     }
@@ -593,17 +413,14 @@ class ProjectTaskController extends Controller
 
     public function edit($project_id, $task_id)
     {
-        if(\Auth::user()->can('edit project task'))
-        {
+        if (\Auth::user()->can('edit project task')) {
             $project = Project::find($project_id);
-            $task    = ProjectTask::find($task_id);
-            $hrs     = Project::projectHrs($project_id);
-            $taskstage   = TaskStage::get()->pluck('name', 'id');
+            $task = ProjectTask::find($task_id);
+            $hrs = Project::projectHrs($project_id);
+            $milestone_id   = Milestone::where('project_id', $project_id)->pluck('title', 'id');
 
-            return view('project_task.edit', compact('project', 'taskstage', 'task', 'hrs'));
-        }
-        else
-        {
+            return view('project_task.edit', compact('project', 'task', 'hrs','milestone_id'));
+        } else {
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
     }
@@ -611,77 +428,65 @@ class ProjectTaskController extends Controller
     public function update(Request $request, $project_id, $task_id)
     {
 
-        if(\Auth::user()->can('edit project task'))
-        {
+        if (\Auth::user()->can('edit project task')) {
             $validator = Validator::make(
                 $request->all(), [
-                                'name' => 'required'
-                            ]
+                    'name' => 'required',
+                    'priority' => 'required',
+                ]
             );
 
-            if($validator->fails())
-            {
+            if ($validator->fails()) {
                 return redirect()->back()->with('error', Utility::errorFormat($validator->getMessageBag()));
             }
-
-            $authuser = Auth::user();
 
             $post = $request->all();
             $task = ProjectTask::find($task_id);
             $task->update($post);
 
-            if($task->stage_id == 4)
-            {
-                $task->is_complete = 1;
+            if ($request->has('subtasks')) {
+
+                $formattedSubtasks = [];
+                for ($i = 0; $i < count($request->subtasks); $i += 2) {
+                    $name = $request->subtasks[$i]['name'] ?? null;
+                    $description = $request->subtasks[$i + 1]['description'] ?? null;
+                    if ($name) {
+                        $formattedSubtasks[] = [
+                            'name' => $name,
+                            'description' => $description,
+                        ];
+                    }
+                }
+    
+
+                $existingSubtasks = $task->checklist()->get();
+    
+
+                foreach ($formattedSubtasks as $subtaskData) {
+                    $subtask = $existingSubtasks->firstWhere('name', $subtaskData['name']);
+                    if ($subtask) {
+
+                        $subtask->update($subtaskData);
+                    } else {
+
+                        $task->checklist()->create(array_merge($subtaskData, [
+                            'task_id' => $task_id,
+                            'project_id' => $project_id,
+                            'user_type' => 'User',
+                            'status' => 0,
+                            'created_by' => \Auth::user()->creatorId(),
+                        ]));
+                    }
+                }
+    
+                $formattedSubtaskNames = array_column($formattedSubtasks, 'name');
+                $existingSubtasks->whereNotIn('name', $formattedSubtaskNames)->each(function ($subtask) {
+                    $subtask->delete();
+                });
             }
 
-            $task->save();
-
-            $project = Project::where('id', $project_id)->pluck('project_name')->first();
-            $firebaseToken = User::whereIn('id', [$task->assign_to])->whereNotNull('device_token')->pluck('device_token');
-            $SERVER_API_KEY = 'AAAA9odnGYA:APA91bEW0H4cOYVOnneXeKl-cE1ECxNFiRmwzEAdspRw34q6RwjGNqO2o6l_4T3HtyIR0ahZ5g8tb_0AST6RnxOchE8S6DEEby_HpwJHDk1H9GYmKwrcFRkPYWDiNvjTnQoIcDjj5Ogx';
-
-            $data = [
-                "registration_ids" => $firebaseToken,
-                "notification" => [
-                    "title" => 'AUP-APPS',
-                    "body" => $authuser->name . ' inviting you into the task ' . $task->name . ' in project ' . $project,  
-                    "icon" => 'https://i.postimg.cc/8z1vzXPV/logo-tgs-fix.png',
-                    "content_available" => true,
-                    "priority" => "high",
-                ]
-            ];
-            $dataString = json_encode($data);
-        
-            $headers = [
-                'Authorization: key=' . $SERVER_API_KEY,
-                'Content-Type: application/json',
-            ];
-        
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, 'https://fcm.googleapis.com/fcm/send');
-            curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
-
-            $response = curl_exec($ch);
-
-            ActivityLog::create(
-                [
-                    'user_id' => \Auth::user()->id,
-                    'project_id' => $project_id,
-                    'task_id' => $task_id,
-                    'log_type' => 'Update Task',
-                    'remark' => json_encode(['title' => $task->name]),
-                ]
-            );
-
             return redirect()->back()->with('success', __('Task Updated successfully.'));
-        }
-        else
-        {
+        } else {
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
     }
@@ -936,35 +741,40 @@ class ProjectTaskController extends Controller
 
     public function checklistUpdate($projectID, $checklistID)
     {
-
-        if(\Auth::user()->can('view project task'))
-        {
+        if (\Auth::user()->can('view project task')) {
             $checkList = TaskChecklist::find($checklistID);
-            if($checkList->status == 0)
-            {
-                $checkList->status = 1;
-            }
-            else
-            {
-                $checkList->status = 0;
-            }
+            $checkList->status = $checkList->status == 0 ? 1 : 0;
             $checkList->save();
 
-            ActivityLog::create(
-                [
-                    'user_id' => \Auth::user()->id,
-                    'project_id' => $projectID,
-                    'task_id' => $checkList->task_id,
-                    'log_type' => 'Update Sub Task',
-                    'remark' => json_encode(['title' => $checkList->name]),
-                ]
-            );
+            $task = $checkList->task;
+            $totalSubtasks = $task->checklist()->count();
+            $completedSubtasks = $task->checklist()->where('status', 1)->count();
+            $completionPercentage = ($totalSubtasks > 0) ? round(($completedSubtasks / $totalSubtasks) * 100) : 0;
 
-            return $checkList->toJson();
-        }
-        else
-        {
-            return redirect()->back()->with('error', __('Permission Denied.'));
+            if ($completionPercentage === 100.0) {
+                $task->stage_id = 4;
+            } else {
+                $task->stage_id = 2;
+            }
+            $task->save();
+
+            ActivityLog::create([
+                'user_id' => \Auth::user()->id,
+                'project_id' => $projectID,
+                'task_id' => $checkList->task_id,
+                'log_type' => 'Update Sub Task',
+                'remark' => json_encode(['title' => $checkList->name]),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'task_id' => $task->id,
+                'completion_percentage' => $completionPercentage,
+                'stage_id' => $task->stage_id,
+            ]);
+
+        } else {
+            return response()->json(['error' => __('Permission Denied.')], 403);
         }
     }
 
@@ -1081,51 +891,27 @@ class ProjectTaskController extends Controller
         }
     }
 
-    public function commentStoreFile(Request $request, $projectID, $taskID)
+    public function commentStoreFile(Request $request, $projectID)
     {
+        $request->validate(['file' => 'required|file|max:10240']);
 
-        if(\Auth::user()->can('view project task'))
-        {
-            $request->validate(
-                ['file' => 'required|mimes:pdf,xls,csv,xlsx|max:20480']
-            );
-            $fileName = $taskID . time() . "_" . $request->file->getClientOriginalName();
-            $request->file->storeAs('tasks', $fileName);
-            $post['task_id']     = $taskID;
-            $post['file']        = $fileName;
-            $post['name']        = $request->file->getClientOriginalName();
-            $post['extension']   = $request->file->getClientOriginalExtension();
-            $post['file_size']   = round(($request->file->getSize() / 1024) / 1024, 2) . ' MB';
-            $post['created_by']  = \Auth::user()->id;
-            $post['user_type']   = 'User';
-            $post['project_id']  = $projectID;
-            $TaskFile            = TaskFile::create($post);
-            $user                = $TaskFile->user;
-            $TaskFile->deleteUrl = '';
-            $TaskFile->deleteUrl = route(
-                'comment.destroy.file', [
-                                        $projectID,
-                                        $taskID,
-                                        $TaskFile->id,
-                                    ]
-            );
+        if ($request->hasFile('file')) {
+            $fileName = $projectID . '_' . time() . '_' . $request->file('file')->getClientOriginalName();
+            $filePath = $request->file('file')->storeAs('tasks', $fileName);
 
-            ActivityLog::create(
-                [
-                    'user_id' => \Auth::user()->id,
-                    'project_id' => $projectID,
-                    'task_id' => $taskID,
-                    'log_type' => 'Create Attachment',
-                    'remark' => json_encode(['title' => $request->file->getClientOriginalName()]),
-                ]
-            );
+            $fileData = TaskFile::create([
+                'project_id' => $projectID,
+                'file' => $fileName,
+                'name' => $request->file('file')->getClientOriginalName(),
+                'extension' => $request->file('file')->getClientOriginalExtension(),
+                'file_size' => round($request->file('file')->getSize() / 1024 / 1024, 2) . ' MB',
+                'created_by' => \Auth::id(),
+            ]);
 
-            return $TaskFile->toJson();
+            return response()->json($fileData, 200);
         }
-        else
-        {
-            return redirect()->back()->with('error', __('Permission Denied.'));
-        }
+
+        return response()->json(['error' => 'File upload failed'], 400);
     }
 
     public function commentDestroyFile(Request $request, $projectID, $taskID, $fileID)
@@ -5438,6 +5224,39 @@ class ProjectTaskController extends Controller
 
         if ($pmpj && $pmpj->kesimpulan) {
             return response()->json(['kesimpulan' => $pmpj->kesimpulan]);
+        }
+    }
+
+    
+
+    public function updateTaskStatus(Request $request, $taskID)
+    {
+        if (\Auth::user()->can('edit project task')) {
+            $task = ProjectTask::findOrFail($taskID);
+            $status = $request->input('status', 0);
+
+            $task->stage_id = $status == 1 ? 4 : 2;
+            $task->save();
+
+            $task->checklist()->update(['status' => $status]);
+
+            $completionPercentage = $status == 1 ? 100 : 0;
+
+            ActivityLog::create([
+                'user_id' => \Auth::user()->id,
+                'project_id' => $task->project_id,
+                'task_id' => $taskID,
+                'log_type' => 'Update Task',
+                'remark' => json_encode(['title' => $task->name]),
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'completionPercentage' => $completionPercentage,
+                'stage_id' => $task->stage_id,
+            ]);
+        } else {
+            return response()->json(['error' => __('Permission Denied.')], 403);
         }
     }
 }

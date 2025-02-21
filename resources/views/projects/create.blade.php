@@ -17,10 +17,16 @@
         </div>
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
+                {{ Form::label('end_date', __('End Date'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                {{ Form::date('end_date', null, ['class' => 'form-control']) }}
+            </div>
+        </div>
+        {{-- <div class="col-sm-6 col-md-6">
+            <div class="form-group">
                 {{ Form::label('total_days', __('Total Days Working'), ['class' => 'form-label']) }}
                 {{ Form::text('total_days', null, ['class' => 'form-control']) }}
             </div>
-        </div>
+        </div> --}}
     </div>
     <div class="row">
         <div class="form-group col-sm-12 col-md-12">
@@ -32,7 +38,7 @@
         </div>
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
-                {{ Form::label('public_accountant_id', __('Public Accountant'),['class'=>'form-label']) }}
+                {{ Form::label('public_accountant_id', __('Partner'),['class'=>'form-label']) }}<span class="text-danger">*</span>
                 {!! Form::select('public_accountant_id', $public_accountant, null,array('class' => 'form-control')) !!}
             </div>
         </div>
@@ -62,9 +68,37 @@
         </div>
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
-                {{ Form::label('label', __('Label'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                {{ Form::label('label', __('Type Of Service'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
                 <select name="label" id="label" class="form-control main-element" required>
                     @foreach(\App\Models\Project::$label as $k => $v)
+                        <option value="{{$k}}">{{__($v)}}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6 col-md-6">
+            <div class="form-group">
+                {{ Form::label('tag', __('Office'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                <select name="tag" id="tag" class="form-control main-element">
+                    @foreach(\App\Models\Project::$tags as $k => $v)
+                        <option value="{{$k}}">{{__($v)}}</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
+        {{-- <div class="col-sm-6 col-md-6">
+            <div class="form-group">
+                {{ Form::label('book_year', __('Book Year'),['class'=>'form-label']) }}
+                {{ Form::text('book_year', null, array('class' => 'form-control','placeholder'=>__('Enter Book Year'))) }}
+            </div>
+        </div> --}}
+        <div class="col-sm-6 col-md-6">
+            <div class="form-group">
+                {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
+                <select name="status" id="status" class="form-control main-element">
+                    @foreach(\App\Models\Project::$project_status as $k => $v)
                         <option value="{{$k}}">{{__($v)}}</option>
                     @endforeach
                 </select>
@@ -79,25 +113,7 @@
             </div>
         </div>
     </div>
-    <div class="row">
-        <div class="col-sm-6 col-md-6">
-            <div class="form-group">
-                {{ Form::label('tag', __('Tag'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                <select name="tag" id="tag" class="form-control main-element">
-                    @foreach(\App\Models\Project::$tags as $k => $v)
-                        <option value="{{$k}}">{{__($v)}}</option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
-        <div class="col-sm-6 col-md-6">
-            <div class="form-group">
-                {{ Form::label('book_year', __('Book Year'),['class'=>'form-label']) }}
-                {{ Form::text('book_year', null, array('class' => 'form-control','placeholder'=>__('Enter Book Year'))) }}
-            </div>
-        </div>
-    </div>
-    <div class="row">
+    {{-- <div class="row">
         <div class="col-sm-12 col-md-12">
             <div class="form-group">
                 {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
@@ -108,7 +124,7 @@
                 </select>
             </div>
         </div>
-    </div>
+    </div> --}}
 </div>
 <div class="modal-footer">
     <input type="button" value="{{__('Cancel')}}" class="btn  btn-light" data-bs-dismiss="modal">

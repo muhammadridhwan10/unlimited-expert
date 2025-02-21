@@ -6,6 +6,37 @@
 @push('css-page')
     <link rel="stylesheet" href="{{asset('css/summernote/summernote-bs4.css')}}">
     <link rel="stylesheet" href="{{ asset('assets/css/plugins/dragula.min.css') }}" id="main-style-link">
+    <style>
+        .subtask-container {
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-left: 4px solid #007bff;
+        }
+        .subtask-container ul {
+            list-style: none;
+            padding: 0;
+        }
+        .subtask-container li {
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        .checklist-checkbox {
+            margin-right: 10px;
+        }
+        .subtask-row ul {
+            padding-left: 20px;
+        }
+
+        .subtask-row ul li {
+            list-style-type: none;
+        }
+
+        .subtask-row ul li p {
+            margin: 0;
+            font-size: 12px;
+            color: #6c757d;
+        }
+    </style>
 @endpush
 @push('script-page')
     <script src="{{asset('css/summernote/summernote-bs4.js')}}"></script>
@@ -231,7 +262,7 @@
                         type: 'POST',
                         success: function (data) {
                             data = JSON.parse(data);
-                            console.log('form-checklist', data);
+                            // console.log('form-checklist', data);
                             // load_task($('.task-id').attr('id'));
                             show_toastr('{{__('success')}}', '{{ __("Sub Task Added Successfully!")}}');
                             var html = '<div class="card border shadow-none checklist-member">' +
@@ -440,32 +471,6 @@
                 });
             });
 
-            $("#browser").treeview();
-
-            // second example
-            $("#navigation").treeview({
-                persist: "location",
-                collapsed: true,
-                unique: true
-            });
-
-            // third example
-            $("#red").treeview({
-                animated: "fast",
-                collapsed: true,
-                unique: true,
-                persist: "cookie",
-                toggle: function() {
-                    window.console && console.log("%o was toggled", this);
-                }
-            });
-
-            // fourth example
-            $("#black, #gray").treeview({
-                control: "#treecontrol",
-                persist: "cookie",
-                cookieId: "treeview-black"
-            });
 
             /*Progress Move*/
             $(document).on('change', '#task_progress', function () {
@@ -536,9 +541,6 @@
 @section('action-btn')
     <div class="float-end">
             @can('create project task')
-                <!-- <a href="#" data-size="lg" data-url="{{ route('projects.tasks.invite',$project->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Add Task')}}" class="btn btn-sm btn-primary">
-                    <i class="ti ti-user"></i>
-                </a> -->
                 <a href="#" data-size="lg" data-url="{{ route('projects.tasks.create',$project->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Add Task')}}" class="btn btn-sm btn-primary">
                     <i class="ti ti-plus"></i>
                 </a>
@@ -551,7 +553,6 @@
 @endsection
 
 @section('content')
-    @if($project->label == "Audit")
     <div class="row">
         <div class="col-sm-12">
             <div class=" mt-2 " id="multiCollapseExample1">
@@ -559,10 +560,10 @@
                     <div class="card-body">
                         {{ Form::open(array('route' => array('projects.tasks.index',$project->id),'method' => 'GET','id'=>'frm_submit')) }}
                         <div class="d-flex align-items-center justify-content-end">
-                                <div class="col-xl-3 col-lg-3 col-md-6 col-sm-12 col-12 me-2">
+                                <div class="col-xl-3 col-lg-5 col-md-6 col-sm-6 col-6 me-2">
                                     <div class="btn-box">
-                                        {{ Form::label('category_template_id', __('Group Name'),['class'=>'form-label']) }}
-                                        {{ Form::select('category_template_id',$category_template_id,null, array('class' => 'form-control select')) }}
+                                        {{ Form::label('milestone_id', __('Task Group / Milestone'), ['class' => 'form-label']) }}
+                                        {{ Form::select('milestone_id', $milestone_id, null, ['class' => 'form-control select']) }}
                                     </div>
                                 </div>
                             <div class="col-auto float-end ms-2 mt-4">
@@ -583,9 +584,17 @@
             </div>
         </div>
     </div>
-    @endif
     <div class="row">
         <div class="col-md-12">
+            <!-- Nav Tabs -->
+            <ul class="nav nav-tabs" id="taskTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link {{ request()->get('view') == 'all' ? 'active' : '' }}" href="{{ route('projects.tasks.index', ['id' => $project->id, 'view' => 'all']) }}" role="tab">All Tasks</a>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link {{ request()->get('view') == 'assigned' ? 'active' : '' }}" href="{{ route('projects.tasks.index', ['id' => $project->id, 'view' => 'assigned']) }}" role="tab">Assigned Tasks</a>
+                </li>
+            </ul>
             <div class="card">
                 <div class="col-12">
                     <div class="card-body table-border-style">
@@ -593,219 +602,301 @@
                             <table class="table datatable">
                                 <thead>
                                 <tr>
+                                    <th scope="col"></th>
                                     <th scope="col">{{__('Name')}}</th>
+                                    <th scope="col">{{__('Start Date')}}</th>
                                     <th scope="col">{{__('End Date')}}</th>
                                     <th scope="col">{{__('Assigned To')}}</th>
                                     <th scope="col">{{__('Priority')}}</th>
-                                    <th scope="col">{{__('Completion')}}
-                                    <div class="text-danger" style="font-size:8px;">
-                                    {{ __('from sub task') }}
                                     </div>
                                     </th>
                                     <th scope="col">{{__('Status')}}</th>
-                                    <th scope="col"></th>
+                                    <th scope="col">{{__('Completion')}}
+                                    {{-- <th scope="col"></th> --}}
                                     <th scope="col">{{ __('Action') }}</th>
                                 </tr>
                                 </thead>
                                 <tbody class="list">
-                                @if(count($tasks) > 0)
-                                    @foreach($tasks as $task)
-                                        <tr>
-                                            <td>
-                                                @if ($task->project->is_template !== 0)
-                                                <p>
-                                                    @php
-                                                        $categoryName = isset($task->category_templates->name) ? $task->category_templates->name : 'No Category';
-                                                    @endphp
-
-                                                    @if ($categoryName === "00. Client Data")
-                                                        <span class="badge-xs badge bg-info p-2 px-3 rounded">{{ $categoryName }}</span>
-                                                    @elseif ($categoryName === "A. Pre engagement")
-                                                        <span class="badge-xs badge bg-warning p-2 px-3 rounded">{{ $categoryName }}</span>
-                                                    @elseif ($categoryName === "B. Risk Assessment")
-                                                        <span class="badge-xs badge bg-danger p-2 px-3 rounded">{{ $categoryName }}</span>
-                                                    @elseif ($categoryName === "C. Risk Response")
-                                                        <span class="badge-xs badge bg-success p-2 px-3 rounded">{{ $categoryName }}</span>
-                                                    @elseif ($categoryName === "D. Conclusion and Completion")
-                                                        <span class="badge-xs badge bg-dark p-2 px-3 rounded">{{ $categoryName }}</span>
-                                                    @else
-                                                        <span class="badge-xs badge bg-secondary p-2 px-3 rounded">{{ $categoryName }}</span>
-                                                    @endif
-                                                </p>
-                                                @endif 
-                                                @if($task->name == 'FINANCIAL INFORMATION')
-                                                    <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.financial.statement',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>
-                                                @elseif($task->name == 'Materialitas')
-                                                    <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.materialitas',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>
-                                                @elseif($task->name == 'Adjustment / Reclassification Journal Entries')
-                                                    <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.journal.entries',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>
-                                                @elseif($task->name == 'Prosedur Analitis')
-                                                    <p class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.showproseduranalisis',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}}">{{$task->name}}</a></p>
-                                                @elseif($task->name == 'Summary Of Identified Misstatements')
-                                                    <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.identifiedmisstatements',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>
-                                                @elseif($task->name == 'Prosedur PMPJ')
-                                                    <p class="h6 text-sm font-weight-bold mb-0"><a href="{{ route('projects.tasks.pmpj',[$project->id,\Crypt::encrypt($task->id)]) }}">{{$task->name}}</a></p>
-                                                @else
-                                                    <p class="h6 text-sm font-weight-bold mb-0"><a href="#" data-url="{{ route('projects.tasks.show',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}}">{{$task->name}}</a></p>
-                                                @endif
-                                                <span class="d-flex text-sm text-muted justify-content-between">
-                                                <span style="font-size: 10px" class="m-0">{{ $task->project->project_name }}</span>
-                                                
-                                                <!-- @if ($task->stage_id == 1)
-                                                <span class="me-5 badge bg-primary p-2 px-3 rounded">{{ $task->stage->name }}</span>
-                                                @elseif ($task->stage_id == 2)
-                                                <span class="me-5 badge bg-info p-2 px-3 rounded">{{ $task->stage->name }}</span>
-                                                @elseif ($task->stage_id == 3)
-                                                <span class="me-5 badge bg-warning p-2 px-3 rounded">{{ $task->stage->name }}</span>
-                                                @elseif ($task->stage_id == 4)
-                                                <span class="me-5 badge bg-success p-2 px-3 rounded">{{ $task->stage->name }}</span>
-                                                @endif -->
-                                            </td>
-                                            <td class="{{ (strtotime($task->end_date) < time()) ? 'text-danger' : '' }}">{{ Utility::getDateFormated($task->end_date) }}</td>
-                                            <td>
-                                                <div class="avatar-group">
-                                                    @if($task->users()->count() > 0)
-                                                        @if($users = $task->users())
-                                                            @foreach($users as $key => $user)
-                                                                @if($key< 3)
-                                                                    <a href="#" class="avatar rounded-circle avatar-sm">
-                                                                        <img data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset(Storage::url($user->name . ".png"))}}" @endif title="{{ $user->name }}" class="hweb">
-                                                                    </a>
-                                                                    {{ $user->name }}
-                                                                @else
-                                                                    @break
-                                                                @endif
-                                                            @endforeach
+                                    @if(count($tasks) > 0)
+                                        @foreach($tasks as $task)
+                                            <tr class="task-row" data-task-id="{{ $task->id }}">
+                                                <td>
+                                                    <input type="checkbox" 
+                                                        class="task-checkbox" 
+                                                        data-task-id="{{ $task->id }}" 
+                                                        data-url="{{ route('status.update', $task->id) }}"
+                                                        {{ $task->stage_id == 4 ? 'checked' : '' }}>
+                                                </td>
+                                                <td>
+                                                    <p class="h6 text-sm font-weight-bold mb-0">
+                                                        <a href="javascript:void(0)" onclick="toggleSubtask({{ $task->id }})">
+                                                            {{ $task->name }}
+                                                        </a>
+                                                    </p>
+                                                    <span class="d-flex text-sm text-muted justify-content-between">
+                                                    <span style="font-size: 10px" class="m-0">{{ $task->project->project_name }}</span>
+                                                </td>
+                                                <td class="{{ ($task->start_date && strtotime($task->start_date) < time()) ? 'text-danger' : '' }}">
+                                                    {{ $task->start_date ? Utility::getDateFormated($task->start_date) : '-' }}
+                                                </td>
+                                                <td class="{{ ($task->end_date && strtotime($task->end_date) < time()) ? 'text-danger' : '' }}">
+                                                    {{ $task->end_date ? Utility::getDateFormated($task->end_date) : '-' }}
+                                                </td>
+                                                <td>
+                                                    <div class="avatar-group">
+                                                        @if($task->users()->count() > 0)
+                                                            @if($users = $task->users())
+                                                                @foreach($users as $key => $user)
+                                                                    @if($key< 3)
+                                                                        <a href="#" class="avatar rounded-circle avatar-sm">
+                                                                            <img data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset('/storage/uploads/avatar/avatar.png')}}" @endif title="{{ $user->name }}" class="hweb">
+                                                                        </a>
+                                                                    @else
+                                                                        @break
+                                                                    @endif
+                                                                @endforeach
+                                                            @endif
+                                                            @if(count($users) > 3)
+                                                                <a href="#" class="avatar rounded-circle avatar-sm">
+                                                                    <img  data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset('/storage/uploads/avatar/avatar.png')}}" @endif class="hweb">
+                                                                </a>
+                                                            @endif
+                                                        @else
+                                                            {{ __('-') }}
                                                         @endif
-                                                        @if(count($users) > 3)
-                                                            <a href="#" class="avatar rounded-circle avatar-sm">
-                                                                <img  data-original-title="{{(!empty($user)?$user->name:'')}}" @if($user->avatar) src="{{asset('/storage/uploads/avatar/'.$user->avatar)}}" @else src="{{asset(Storage::url($user->name . ".png"))}}" @endif class="hweb">
-                                                            </a>
-                                                            {{ $user->name }}
-                                                        @endif
-                                                    @else
-                                                        {{ __('-') }}
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge p-2 px-3 rounded badge-sm bg-{{__(\App\Models\ProjectTask::$priority_color[$task->priority])}}">{{ __(\App\Models\ProjectTask::$priority[$task->priority]) }}</span>
+                                                </td>
+                                                <td>
+                                                @if ($task->stage_id == 1)
+                                                    <span class="me-5 badge bg-primary p-2 px-3 rounded">{{ $task->stage->name }}</span>
+                                                    @elseif ($task->stage_id == 2)
+                                                    <span class="me-5 badge bg-info p-2 px-3 rounded">{{ $task->stage->name }}</span>
+                                                    @elseif ($task->stage_id == 3)
+                                                    <span class="me-5 badge bg-warning p-2 px-3 rounded">{{ $task->stage->name }}</span>
+                                                    @elseif ($task->stage_id == 4)
+                                                    <span class="me-5 badge bg-success p-2 px-3 rounded">{{ $task->stage->name }}</span>
                                                     @endif
-                                                </div>
-                                            </td>
-                                            <td>
-                                            <select class="form-control select" name="priority" id="priority" style = "width: 100px;" onchange="updateStatus(this.value, {{ $task->id }})">
-                                                @foreach(\App\Models\ProjectTask::$priority as $key => $val)
-                                                    <option value="{{ $key }}" {{ ($key == $task->priority) ? 'selected' : '' }} >{{ __($val) }}</option>
-                                                @endforeach
-                                            </select>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <span class="completion mr-2">{{ $task->taskProgress()['percentage'] }}</span>
-                                                    {{--<div>
-                                                        <div class="progress" style="width: 100px;">
-                                                            <div class="progress-bar bg-{{ $task->taskProgress()['color'] }}" role="progressbar" aria-valuenow="{{ $task->taskProgress()['percentage'] }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ $task->taskProgress()['percentage'] }};"></div>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center">     
+                                                        <div>
+                                                            <div class="progress" style="width: 100px;">
+                                                                <div class="progress-bar bg-{{ $task->taskProgress()['color'] }}" role="progressbar" aria-valuenow="{{ $task->taskProgress()['percentage'] }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ $task->taskProgress()['percentage'] }};"></div>
+                                                            </div>
                                                         </div>
-                                                    </div>--}}
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <select class="form-control select" name="stage_id" id="stage_id" style="width: 100px;" onchange="updateStage(this.value, {{ $task->id }})">
-                                                    <option value="0" hidden>{{ $task->stage ? $task->stage->name : 'N/A' }}</option>
-                                                    @foreach($taskstage as $stage)
-                                                        <option value="{{ $stage->id }}">{{ $stage->name }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </td>
-                                            <td class="text-end w-15">
-                                                <div class="actions">
-                                                    <a class="action-item px-1" data-bs-toggle="tooltip" title="{{__('Attachment')}}" data-original-title="{{__('Attachment')}}">
-                                                        <i class="ti ti-paperclip mr-2"></i>{{ count($task->taskFiles) }}
-                                                    </a>
-                                                    <a href="#" data-url="{{ route('projects.tasks.comment',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}} class="action-item px-1" data-bs-toggle="tooltip" title="{{__('Comment')}}" data-original-title="{{__('Comment')}}">
-                                                        <i class="ti ti-brand-hipchat mr-2"></i>{{ count($task->comments) }}
-                                                    </a>
-                                                    <a class="action-item px-1" data-bs-toggle="tooltip" title="{{__('Checklist')}}" data-original-title="{{__('Checklist')}}">
-                                                        <i class="ti ti-list-check mr-2"></i>{{ $task->countTaskChecklist() }}
-                                                    </a>
-                                                </div>
-                                            </td>
-                                            <td class="Action">
-                                                <span>
-                                                    @if(Auth::user()->type == "client")    
-                                                        @can('edit project task')
-                                                            <div class="action-btn bg-primary ms-2">
-                                                                <a href="#!" data-size="lg" data-url="{{ route('projects.tasks.edit',[$project->id,$task->id]) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Invite Member To ').$task->name}}"
-                                                                class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="Edit "
-                                                                data-original-title="{{ __('Invite User') }}">
-                                                                    <i class="ti ti-send text-white"></i>
-                                                                </a>
-                                                            </div>
-                                                        @endcan
-                                                    @else
-                                                        @can('edit project task')
-                                                            <div class="action-btn bg-primary ms-2">
-                                                                <a href="#!" data-size="lg" data-url="{{ route('projects.tasks.edit',[$project->id,$task->id]) }}" data-ajax-popup="true" 
-                                                                class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" data-bs-original-title="{{__('Edit ').$task->name}}">
-                                                                    <i class="ti ti-pencil text-white"></i>
-                                                                </a>
-                                                            </div>
-                                                        @endcan
-                                                    @endif
-                                                    @can('delete project task')
-                                                        <div class="action-btn bg-danger ms-2">
-                                                        {!! Form::open(['method' => 'DELETE', 'route' => ['projects.tasks.destroy', [$project->id,$task->id]]]) !!}
-                                                                    <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para " data-bs-toggle="tooltip" title="{{__('Delete')}}"
-                                                                       data-original-title="{{ __('Delete') }}"
-                                                                       data-confirm="{{ __('Are You Sure?') . '|' . __('This action can not be undone. Do you want to continue?') }}"
-                                                                       data-confirm-yes="document.getElementById('delete-form-{{ $task->id }}').submit();">
-                                                                        <i class="ti ti-trash text-white"></i>
+                                                    </div>
+                                                    <span class="completion mr-2">{{ $task->taskProgress()['percentage'] }}</span>
+                                                </td>
+                                                {{-- <td class="text-end w-15">
+                                                    <div class="actions">
+                                                        <a class="action-item px-1" data-bs-toggle="tooltip" title="{{__('Attachment')}}" data-original-title="{{__('Attachment')}}">
+                                                            <i class="ti ti-paperclip mr-2"></i>{{ count($task->taskFiles) }}
+                                                        </a>
+                                                        <a href="#" data-url="{{ route('projects.tasks.comment',[$project->id,$task->id]) }}" data-ajax-popup="true" data-size="lg" data-bs-original-title="{{$task->name}} class="action-item px-1" data-bs-toggle="tooltip" title="{{__('Comment')}}" data-original-title="{{__('Comment')}}">
+                                                            <i class="ti ti-brand-hipchat mr-2"></i>{{ count($task->comments) }}
+                                                        </a>
+                                                        <a class="action-item px-1" data-bs-toggle="tooltip" title="{{__('Checklist')}}" data-original-title="{{__('Checklist')}}">
+                                                            <i class="ti ti-list-check mr-2"></i>{{ $task->countTaskChecklist() }}
+                                                        </a>
+                                                    </div>
+                                                </td> --}}
+                                                <td class="Action">
+                                                    <span>
+                                                        @if(Auth::user()->type == "client")    
+                                                            @can('edit project task')
+                                                                <div class="action-btn bg-primary ms-2">
+                                                                    <a href="#!" data-size="lg" data-url="{{ route('projects.tasks.edit',[$project->id,$task->id]) }}" data-ajax-popup="true" class="dropdown-item" data-bs-original-title="{{__('Invite Member To ').$task->name}}"
+                                                                    class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" title="Edit "
+                                                                    data-original-title="{{ __('Invite User') }}">
+                                                                        <i class="ti ti-send text-white"></i>
                                                                     </a>
-                                                                {!! Form::close() !!}
-                                                            </div>
-                                                    @endcan
-                                                </span>
-                                        </td>
+                                                                </div>
+                                                            @endcan
+                                                        @else
+                                                            @can('edit project task')
+                                                                <div class="action-btn bg-primary ms-2">
+                                                                    <a href="#!" data-size="lg" data-url="{{ route('projects.tasks.edit',[$project->id,$task->id]) }}" data-ajax-popup="true" 
+                                                                    class="mx-3 btn btn-sm align-items-center" data-bs-toggle="tooltip" data-bs-original-title="{{__('Edit ').$task->name}}">
+                                                                        <i class="ti ti-pencil text-white"></i>
+                                                                    </a>
+                                                                </div>
+                                                            @endcan
+                                                        @endif
+                                                        @can('delete project task')
+                                                            <div class="action-btn bg-danger ms-2">
+                                                            {!! Form::open(['method' => 'DELETE', 'route' => ['projects.tasks.destroy', [$project->id,$task->id]]]) !!}
+                                                                        <a href="#" class="mx-3 btn btn-sm align-items-center bs-pass-para " data-bs-toggle="tooltip" title="{{__('Delete')}}"
+                                                                        data-original-title="{{ __('Delete') }}"
+                                                                        data-confirm="{{ __('Are You Sure?') . '|' . __('This action can not be undone. Do you want to continue?') }}"
+                                                                        data-confirm-yes="document.getElementById('delete-form-{{ $task->id }}').submit();">
+                                                                            <i class="ti ti-trash text-white"></i>
+                                                                        </a>
+                                                                    {!! Form::close() !!}
+                                                                </div>
+                                                        @endcan
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr id="subtask-{{ $task->id }}" class="subtask-row" style="display: none;">
+                                                <td colspan="7">
+                                                    <div class="subtask-container">
+                                                        @if($task->checklist->count() > 0)
+                                                            <ul>
+                                                                @foreach($task->checklist as $subtask)
+                                                                    <li>
+                                                                        <input type="checkbox" 
+                                                                                class="checklist-checkbox" 
+                                                                                id="subtask-{{ $subtask->id }}" 
+                                                                                data-url="{{ route('checklist.update', [$task->project_id, $subtask->id]) }}"
+                                                                                {{ $subtask->status ? 'checked' : '' }}>
+                                                                        <label for="subtask-{{ $subtask->id }}">{{ $subtask->name }}</label>
+                                                                        <p class="text-muted" style="margin-left: 20px;">{{ $subtask->description }}</p>
+                                                                    </li>
+                                                                @endforeach
+                                                            </ul>
+                                                        @else
+                                                            <p class="text-muted">{{ __('No subtasks available.') }}</p>
+                                                        @endif
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    @else
+                                        <tr>
+                                            <th scope="col" colspan="7"><h6 class="text-center">{{__('No tasks found')}}</h6></th>
                                         </tr>
-                                    @endforeach
-                                @else
-                                    <tr>
-                                        <th scope="col" colspan="7"><h6 class="text-center">{{__('No tasks found')}}</h6></th>
-                                    </tr>
-                                @endif
+                                    @endif
                                 </tbody>
                             </table>
 
                             <script>
-                                function updateStatus(priority, id) {
-                                    // Kirim request POST ke server dengan nilai status dan id data yang dipilih
-                                    $.ajax({
-                                        url: "{{route("update-priority")}}",
-                                        type: "POST",
-                                        data: { 
-                                            id: id,
-                                            priority: priority,
-                                            // Add the CSRF token to the request data
-                                            _token: "{{ csrf_token() }}"
-                                        },
-                                        success: function (data) {
-                                            console.log(data);
-                                        },
-                                    });
+                                function toggleSubtask(taskId) {
+                                    var subtaskRow = document.getElementById('subtask-' + taskId);
+                                    var subtaskContainer = subtaskRow.querySelector('.subtask-container');
+
+                                    if (!subtaskContainer || subtaskContainer.innerHTML.trim() === `<p class="text-muted">{{ __('No subtasks available.') }}</p>`) {
+                                        alert('No subtasks available for this task.');
+                                        return;
+                                    }
+
+                                    if (subtaskRow.style.display === 'none') {
+                                        $(subtaskRow).slideDown();
+                                    } else {
+                                        $(subtaskRow).slideUp();
+                                    }
                                 }
 
-                                function updateStage(stage_id, id) {
-                                    // Kirim request POST ke server dengan nilai status dan id data yang dipilih
-                                    $.ajax({
-                                        url: "{{route("update-stage")}}",
-                                        type: "POST",
-                                        data: { 
-                                            id: id,
-                                            stage_id: stage_id,
-                                            // Add the CSRF token to the request data
-                                            _token: "{{ csrf_token() }}"
-                                        },
-                                        success: function (data) {
-                                            console.log(data);
-                                        },
-                                    });
-                                }
+
+                                document.addEventListener('click', function (event) {
+                                    if (event.target.matches('.checklist-checkbox')) {
+                                        let checkbox = event.target;
+                                        let updateUrl = checkbox.dataset.url;
+
+                                        fetch(updateUrl, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                            },
+                                            body: JSON.stringify({}),
+                                        })
+                                        .then(response => {
+                                            if (!response.ok) {
+                                                throw new Error(`HTTP error! status: ${response.status}`);
+                                            }
+                                            return response.json();
+                                        })
+                                        .then(data => {
+                                            // Update completion percentage
+                                            const taskRow = document.querySelector(`.task-row[data-task-id="${data.task_id}"]`);
+                                            const progressBar = taskRow.querySelector('.progress-bar');
+                                            const completionSpan = taskRow.querySelector('.completion');
+
+                                            progressBar.style.width = `${data.completion_percentage}%`;
+                                            completionSpan.textContent = `${data.completion_percentage}%`;
+
+                                            // Update task stage if all subtasks are complete
+                                            if (data.stage_id == 4) {
+                                                const statusCell = taskRow.querySelector('td:nth-child(7)');
+                                                statusCell.innerHTML = '<span class="me-5 badge bg-success p-2 px-3 rounded">Done</span>';
+                                                const subtasks = taskRow.querySelectorAll('.task-checkbox');
+                                                subtasks.forEach(subtasks => {
+                                                    subtasks.checked = checkbox.checked;
+                                                });
+                                            }
+                                            else if (data.stage_id == 2)
+                                            {
+                                                const statusCell = taskRow.querySelector('td:nth-child(7)');
+                                                statusCell.innerHTML = '<span class="me-5 badge bg-info p-2 px-3 rounded">In Progress</span>';
+                                                const subtasks = taskRow.querySelectorAll('.task-checkbox');
+                                                subtasks.forEach(subtasks => {
+                                                    subtasks.checked = false;
+                                                });
+                                            }
+                                        })
+                                        .catch(error => console.error('Error updating subtask:', error));
+                                    }
+                                });
+
+                                document.addEventListener('change', function (event) {
+                                    if (event.target.matches('.task-checkbox')) {
+                                        let checkbox = event.target;
+                                        let taskId = checkbox.dataset.taskId;
+                                        let updateUrl = checkbox.dataset.url;
+
+                                        fetch(updateUrl, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                            },
+                                            body: JSON.stringify({ status: checkbox.checked ? 1 : 0 }),
+                                        })
+                                        .then(response => {
+                                            if (!response.ok) {
+                                                throw new Error(`HTTP error! status: ${response.status}`);
+                                            }
+                                            return response.json();
+                                        })
+                                        .then(data => {
+                                            if (data.success) {
+                                                console.log(data);
+                                                // Update progress bar langsung
+                                                const subtaskContainer = document.getElementById('subtask-' + taskId);
+                                                if (subtaskContainer) {
+                                                    const subtaskCheckboxes = subtaskContainer.querySelectorAll('.checklist-checkbox');
+                                                    subtaskCheckboxes.forEach(subtaskCheckbox => {
+                                                        subtaskCheckbox.checked = checkbox.checked;
+                                                    });
+                                                }
+
+                                                // Perbarui persentase penyelesaian
+                                                const taskRow = document.querySelector(`.task-row[data-task-id="${taskId}"]`);
+                                                const progressBar = taskRow.querySelector('.progress-bar');
+                                                const completionSpan = taskRow.querySelector('.completion');
+
+                                                progressBar.style.width = `${data.completionPercentage}%`;
+                                                completionSpan.textContent = `${data.completionPercentage}%`;
+
+                                                if (data.stage_id == 4) {
+                                                    const statusCell = taskRow.querySelector('td:nth-child(7)');
+                                                    statusCell.innerHTML = '<span class="me-6 badge bg-success p-2 px-3 rounded">Done</span>';
+                                                }
+                                                else if (data.stage_id == 2)
+                                                {
+                                                    const statusCell = taskRow.querySelector('td:nth-child(7)');
+                                                    statusCell.innerHTML = '<span class="me-6 badge bg-info p-2 px-3 rounded">In Progress</span>';
+                                                }
+
+                                            }
+                                        })
+                                        .catch(error => console.error('Error updating task and subtasks:', error));
+                                    }
+                                });
+
                             </script>
                         </div>
                     </div>

@@ -17,11 +17,10 @@
         </div>
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
-                {{ Form::label('total_days', __('Total Days Working'), ['class' => 'form-label']) }}
-                {{ Form::text('total_days', null, ['class' => 'form-control']) }}
+                {{ Form::label('end_date', __('End Date'), ['class' => 'form-label']) }}
+                {{ Form::date('end_date', null, ['class' => 'form-control']) }}
             </div>
         </div>
-
     </div>
     <div class="row">
         <div class="col-sm-6 col-md-6">
@@ -39,34 +38,15 @@
 
     </div>
     <div class="row">
-        @if($project->is_template == 0)
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
-                {{ Form::label('template_task', __('Task Template'),['class'=>'form-label']) }}<span class="text-danger"></span>
-                {!! Form::select('template_task', $tasktemplate, $project->template_task_id,array('class' => 'form-control')) !!}
+                {{ Form::label('template_task_id', __('Task Template'),['class'=>'form-label']) }}<span class="text-danger"></span>
+                {!! Form::select('template_task_id', $tasktemplate, $project->template_task_id,array('class' => 'form-control')) !!}
             </div>
         </div>
-        @endif
-        {{-- <div class="col-sm-6 col-md-6">
-            <div class="form-group">
-                {{ Form::label('budget', __('Budget'), ['class' => 'form-label']) }}
-                {{ Form::number('budget', null, ['class' => 'form-control', 'id'=>'budget']) }}
-            </div>
-        </div> --}}
-
-    </div>
-    <div class="row">
-        <div class="col-sm-12 col-md-12">
-            <div class="form-group">
-                {{ Form::label('description', __('Description'), ['class' => 'form-label']) }}
-                {{ Form::textarea('description', null, ['class' => 'form-control', 'rows' => '4', 'cols' => '50']) }}
-            </div>
-        </div>
-    </div>
-    <div class="row">
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
-                {{ Form::label('tag', __('Tag'), ['class' => 'form-label']) }}
+                {{ Form::label('tag', __('Office'), ['class' => 'form-label']) }}
                 <select name="tag" id="tag" class="form-control main-element">
                     @foreach(\App\Models\Project::$tags as $k => $v)
                         <option value="{{$k}}">{{__($v)}}</option>
@@ -74,17 +54,11 @@
                 </select>
             </div>
         </div>
-        <div class="col-sm-6 col-md-6">
-            <div class="form-group">
-                {{ Form::label('book_year', __('Book Year'),['class'=>'form-label']) }}
-                {{ Form::text('book_year', null, array('class' => 'form-control','placeholder'=>__('Enter Book Year'))) }}
-            </div>
-        </div>
     </div>
     <div class="row">
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
-                {{ Form::label('label', __('Label'), ['class' => 'form-label']) }}
+                {{ Form::label('label', __('Type Of Service'), ['class' => 'form-label']) }}
                 <select name="label" id="label" class="form-control main-element select2" >
                     @foreach(\App\Models\Project::$label as $k => $v)
                         <option value="{{$k}}" {{ ($project->status == $k) ? 'selected' : ''}}>{{__($v)}}</option>
@@ -100,6 +74,14 @@
                         <option value="{{$k}}" {{ ($project->status == $k) ? 'selected' : ''}}>{{__($v)}}</option>
                     @endforeach
                 </select>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12 col-md-12">
+            <div class="form-group">
+                {{ Form::label('description', __('Description'), ['class' => 'form-label']) }}
+                {{ Form::textarea('description', null, ['class' => 'form-control', 'rows' => '4', 'cols' => '50']) }}
             </div>
         </div>
     </div>
