@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\TimeTracker;
+use App\Models\Timesheet;
+use App\Models\UserOvertime;
 use App\Models\User;
 use App\Models\AuditPlan;
 use App\Models\ProjectOfferings;
@@ -37,6 +39,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Mail\InviteMemberNotification;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
+use GuzzleHttp\Client;
 
 class ProjectController extends Controller
 {
@@ -1938,7 +1941,6 @@ class ProjectController extends Controller
         }
     }
 
-    //manage overtime
     public function listOvertime(Request $request)
     {
         $user = \Auth::user();
@@ -1946,5 +1948,162 @@ class ProjectController extends Controller
         $users = User::where('type', '!=', 'client')->where('type', '!=', 'staff_client')->orderBy('name', 'ASC')->get();
         return view('projects.overtime', compact('users'));
     }
+
+    public function getProjectUsers($projectId) {
+        $users = User::whereHas('comments', function ($query) use ($projectId) {
+            $query->where('project_id', $projectId);
+        })->select('id', 'name')->get();
+    
+        return response()->json($users);
+    }
+
+    public function getRecommendations(Request $request)
+    {
+
+        $request->validate([
+            'prompt' => 'required|string',
+        ]);
+
+        $huggingFaceToken = env('HUGGINGFACE_API_KEY');
+
+        $prompt = $request->input('prompt');
+
+        $client = new Client();
+
+        try {
+
+            // $response = $client->post('https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta', [
+            // $response = $client->post('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', [
+            $response = $client->post('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', [
+                'headers' => [
+                    'Authorization' => "Bearer $huggingFaceToken",
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'inputs' => $prompt,
+                ],
+            ]);
+
+            $body = $response->getBody()->getContents();
+            $data = json_decode($body, true);
+
+            return response()->json($data);
+        } catch (\Exception $e) {
+
+            return response()->json([
+                'error' => 'Failed to fetch from Hugging Face API',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function reportData($id)
+    {
+
+        $project = Project::findOrFail($id);
+
+        $tasks = ProjectTask::where('project_id', $project->id)->get();
+        $totalTasks = $tasks->count();
+        $completedTasks = $tasks->where('stage_id', 4)->count();
+        $pendingTasks = $tasks->where('stage_id', 2)->count();
+        $overdueTasks = $tasks->where('end_date', '<', now())->where('stage_id', 4)->count();
+
+        $progressPercentage = $totalTasks > 0 ? ($completedTasks / $totalTasks) * 100 : 0;
+
+        $teamActivity = [];
+        $users = $project->users()->where('type', '!=', 'admin')->distinct()->get();
+        foreach ($users as $user) {
+            $assignedTasks = $tasks->filter(function ($task) use ($user) {
+
+                $assignedUserIds = array_map('intval', explode(',', $task->assign_to ?? ''));
+                return in_array($user->id, $assignedUserIds);
+
+            })->count();
+
+            $teamActivity[] = [
+                'name' => $user->name,
+                'tasks' => $assignedTasks,
+            ];
+        }
+
+        $taskDetails = [];
+        foreach ($users as $user) {
+            $userTasks = $tasks->filter(function ($task) use ($user) {
+                $assignedUserIds = array_map('intval', explode(',', $task->assign_to ?? ''));
+                return in_array($user->id, $assignedUserIds);
+            })->map(function ($task) {
+                return [
+                    'name' => $task->name,
+                    'status' => $task->is_complete ? 'Completed' : ($task->end_date < now() ? 'Overdue' : 'Pending'),
+                ];
+            })->values()->toArray();
+
+            $taskDetails[] = [
+                'name' => $user->name,
+                'tasks' => $userTasks,
+            ];
+        }
+
+        $timeSpent = [];
+        foreach ($users as $user) {
+            $timesheets = Timesheet::where('project_id', $project->id)
+                ->where('created_by', $user->id)
+                ->pluck('time')
+                ->toArray();
+
+            $totalSeconds = array_sum(array_map(function ($time) {
+                list($hours, $minutes, $seconds) = explode(':', $time);
+                return ($hours * 3600) + ($minutes * 60) + $seconds;
+            }, $timesheets));
+
+            $hours = floor($totalSeconds / 3600);
+            $minutes = floor(($totalSeconds % 3600) / 60);
+            $seconds = $totalSeconds % 60;
+
+            $formattedTime = sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+
+            $timeSpent[] = [
+                'name' => $user->name,
+                'time' => $formattedTime,
+            ];
+        }
+
+        $overtimeHours = [];
+        foreach ($users as $user) {
+            $overtime = UserOvertime::where('project_id', $project->id)
+                ->where('user_id', $user->id)
+                ->sum('total_time');
+            $overtimeHours[] = [
+                'name' => $user->name,
+                'hours' => round($overtime / 3600, 2),
+            ];
+        }
+
+        $projectData = [
+            'total_tasks' => $totalTasks,
+            'completed_tasks' => $completedTasks,
+            'pending_tasks' => $pendingTasks,
+            'overdue_tasks' => $overdueTasks,
+            'progress_percentage' => $progressPercentage,
+            'time_spent' => $timeSpent,
+            'overtime_hours' => $overtimeHours,
+        ];
+
+        return response()->json([
+            'project_overview' => [
+                'total_tasks' => $totalTasks,
+                'completed_tasks' => $completedTasks,
+                'pending_tasks' => $pendingTasks,
+                'overdue_tasks' => $overdueTasks,
+            ],
+            'progress_percentage' => $progressPercentage,
+            'team_activity' => $teamActivity,
+            'time_spent' => $timeSpent,
+            'overtime_hours' => $overtimeHours,
+            'project_data' => $projectData,
+            'task_details' => $taskDetails,
+        ]);
+    }
+    
 
 }

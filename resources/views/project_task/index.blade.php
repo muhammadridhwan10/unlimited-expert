@@ -599,7 +599,7 @@
                 <div class="col-12">
                     <div class="card-body table-border-style">
                         <div class="table-responsive">
-                            <table class="table datatable">
+                            <table class="table datatabless">
                                 <thead>
                                 <tr>
                                     <th scope="col"></th>

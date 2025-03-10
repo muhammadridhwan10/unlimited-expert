@@ -4586,12 +4586,13 @@ Route::resource('marketing-files', 'MarketingFileController')->middleware(
     ]
 );
 Route::post('marketing-files/file', ['as' => 'marketing-files.view','uses' => 'MarketingFileController@getFile']);
-Route::resource('employee-details', 'EmployeeDetailController')->middleware(
+Route::resource('employee-reports', 'EmployeeDetailController')->middleware(
     [
         'auth',
         'XSS',
     ]
 );
+Route::get('/filter/employee/view', 'EmployeeDetailController@filterEmployeeView')->name('filter.employee.view');
 Route::post('comments', 'CommentController@store')->middleware(
     [
         'auth',
@@ -4622,9 +4623,39 @@ Route::delete('/plannings/{id}', 'PlanningController@destroy')->middleware(
         'XSS',
     ]
 )->name('delete.project.planning');
+
+Route::get('/projects/{projectId}/notes', 'ProjectNoteController@index')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+)->name('notes.index');
+
+Route::post('/projects/{projectId}/notes', 'ProjectNoteController@store')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+)->name('notes.store');
+
+Route::put('/projects/notes/{id}/status', 'ProjectNoteController@updateStatus')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+)->name('notes.updateStatus');
+
+Route::delete('/projects/notes/{id}', 'ProjectNoteController@destroy')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+)->name('notes.destroy');
 Route::post('reminders', 'ReminderController@store')->middleware(
     [
         'auth',
         'XSS',
     ]
 )->name('planning.reminders');
+Route::get('/project/{projectId}/users', 'ProjectController@getProjectUsers')->name('get.project.users');
+Route::get('/projects/{id}/report-data', 'ProjectController@reportData')->name('project.report.data');

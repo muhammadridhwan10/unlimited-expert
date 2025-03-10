@@ -6,6 +6,54 @@
     <style>
         @import url({{ asset('css/font-awesome.css') }});
 
+        .dropdown-menu {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .dropdown-item input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .dropdown-menu {
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        #comment-form {
+            gap: 10px;
+        }
+
+        #comment-text {
+            resize: none;
+        }
+
+        #calendar {
+            min-height: 500px; 
+        }
+
+        .card {
+            border-radius: 8px; 
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); 
+        }
+
+        @media (max-width: 768px) {
+
+            .row > .col-md-8,
+            .row > .col-md-4 {
+                flex: 100%; 
+            }
+
+            #comment-form {
+                flex-direction: column;
+            }
+        }
+
         #comment-list {
             max-height: 380px;
             overflow-y: auto;
@@ -132,22 +180,22 @@
             }
         }
 
-        /* Styling for the calendar card */
         .card {
-            border-radius: 10px; /* Rounded corners */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         #calendar {
-            max-width: 100%; /* Ensure calendar fits within the card */
-            height: 500px; /* Set a fixed height */
-            margin: 0 auto; /* Center align the calendar */
+            max-width: 100%;
+            height: 500px;
+            margin: 0 auto;
         }
 
     </style>
 @endpush
 @push('script-page')
     <script src="{{ asset('js/bootstrap-toggle.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const baseUrl = document.querySelector('meta[name="base-url"]').getAttribute('content');
         $('document').ready(function () {
@@ -158,105 +206,476 @@
             });
         });
 
-        document.addEventListener("DOMContentLoaded", function () {
-            const commentForm = document.getElementById("comment-form");
-            const commentList = document.getElementById("comment-list");
-            const projectId = {{ $project->id }}; 
+        $(document).ready(function () {
+            const projectId = {{ $project->id }};
 
-            const fileInput = document.getElementById("comment-file");
-            const fileNamePreview = document.getElementById("file-name-preview");
-            const selectedFileName = document.getElementById("selected-file-name");
+            function fetchNotesByUser() {
+                $.ajax({
+                    url: `${baseUrl}/projects/${projectId}/notes`,
+                    method: "GET",
+                    success: function (data) {
+                        const container = $('#notes-by-user-container');
+                        container.empty();
 
-            fileInput.addEventListener("change", function () {
-                if (fileInput.files.length > 0) {
+                        if (data.length === 0) {
+                            container.append('<p class="text-muted">No notes available for this project.</p>');
+                            return;
+                        }
 
-                    fileNamePreview.style.display = "block";
-                    selectedFileName.textContent = fileInput.files[0].name;
-                } else {
+                        data.forEach(user => {
+                            const accordionId = `user-${user.id}`;
+                            const userCard = `
+                                <div class="accordion mb-3" id="${accordionId}">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header" id="heading-${accordionId}">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${accordionId}" aria-expanded="false" aria-controls="collapse-${accordionId}">
+                                                ${user.name} (${user.notes.length} notes)
+                                            </button>
+                                        </h2>
+                                        <div id="collapse-${accordionId}" class="accordion-collapse collapse" aria-labelledby="heading-${accordionId}" data-bs-parent="#${accordionId}">
+                                            <div class="accordion-body">
+                                                <ul class="list-group list-group-flush">
+                                                    ${user.notes.map(note => `
+                                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                            <div>
+                                                                <input type="checkbox" class="me-2 toggle-status" data-id="${note.id}" ${note.is_completed ? 'checked' : ''}>
+                                                                <span class="${note.is_completed ? 'text-decoration-line-through text-muted' : ''}">${note.content}</span>
+                                                            </div>
+                                                            <div>
+                                                                <button class="btn btn-danger btn-sm delete-note" data-id="${note.id}">
+                                                                <i class="ti ti-trash"></i>
+                                                                </button>
+                                                            </div>
+                                                        </li>
+                                                    `).join('')}
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            container.append(userCard);
+                        });
+                    },
+                    error: function (error) {
+                        console.error("Error fetching notes:", error);
+                    },
+                });
+            }
 
-                    fileNamePreview.style.display = "none";
-                    selectedFileName.textContent = "";
-                }
+            $('#add-note-form').on('submit', function (e) {
+                e.preventDefault();
+                const content = $('#note-content').val();
+
+                $.ajax({
+                    url: `${baseUrl}/projects/${projectId}/notes`,
+                    method: "POST",
+                    data: { content },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    },
+                    success: function () {
+                        $('#note-content').val('');
+                        show_toastr('{{__('success')}}', '{{ __("Notes Added Successfully!")}}');
+                        fetchNotesByUser();
+                    },
+                    error: function (error) {
+                        console.error("Error adding note:", error);
+                    },
+                });
             });
 
+            $(document).on('change', '.toggle-status', function () {
+                const noteId = $(this).data('id');
 
-            function fetchComments() {
-                fetch('{{ route('get.project.comment', ['projectId' => $project->id]) }}')
+                $.ajax({
+                    url: `${baseUrl}/projects/notes/${noteId}/status`,
+                    method: "PUT",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    },
+                    success: function () {
+                        fetchNotesByUser();
+                    },
+                    error: function (error) {
+                        console.error("Error updating note status:", error);
+                    },
+                });
+            });
+
+            $(document).on('click', '.delete-note', function () {
+                const noteId = $(this).data('id');
+
+                $.ajax({
+                    url: `${baseUrl}/projects/notes/${noteId}`,
+                    method: "DELETE",
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                    },
+                    success: function () {
+                        fetchNotesByUser();
+                    },
+                    error: function (error) {
+                        console.error("Error deleting note:", error);
+                    },
+                });
+            });
+
+            fetchNotesByUser();
+        });
+
+        $(document).ready(function () {
+            const projectId = {{ $project->id }};
+            const apiUrl = `${baseUrl}/projects/${projectId}/report-data`;
+
+            $.ajax({
+                url: apiUrl,
+                method: "GET",
+                success: function (data) {
+
+                    $('#total-tasks').text(data.project_overview.total_tasks);
+                    $('#completed-tasks').text(data.project_overview.completed_tasks);
+                    $('#pending-tasks').text(data.project_overview.pending_tasks);
+                    $('#overdue-tasks').text(data.project_overview.overdue_tasks);
+
+                    const progressPercentage = parseFloat(data.progress_percentage).toFixed(2);
+                    $('#progress-percentage').text(progressPercentage);
+
+                    new Chart(document.getElementById("progressChart").getContext("2d"), {
+                        type: "pie",
+                        data: {
+                            labels: ["Completed", "In Progress"],
+                            datasets: [{
+                                label: "Progress",
+                                data: [data.project_overview.completed_tasks, data.project_overview.pending_tasks],
+                                backgroundColor: ["#28a745", "#ffc107"],
+                            }],
+                        },
+                        options: { responsive: true },
+                    });
+
+                    new Chart(document.getElementById("teamActivityChart").getContext("2d"), {
+                        type: "bar",
+                        data: {
+                            labels: data.team_activity.map(user => user.name),
+                            datasets: [{
+                                label: "Tasks Assigned",
+                                data: data.team_activity.map(user => user.tasks),
+                                backgroundColor: ["#007bff", "#6c757d", "#17a2b8"],
+                            }],
+                        },
+                        options: { responsive: true },
+                    });
+
+                    new Chart(document.getElementById("timeSpentChart").getContext("2d"), {
+                        type: "bar",
+                        data: {
+                            labels: data.time_spent.map(user => user.name),
+                            datasets: [{
+                                label: "Time Spent (HH:MM:SS)",
+                                data: data.time_spent.map(user => timeToSeconds(user.time)),
+                                backgroundColor: ["#007bff", "#6c757d", "#17a2b8"],
+                            }],
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                tooltip: {
+                                    callbacks: {
+                                        label: function (context) {
+                                            const label = context.label || '';
+                                            const value = context.raw || 0;
+                                            const formattedTime = new Date(value * 1000).toISOString().substr(11, 8);
+                                            return `${label}: ${formattedTime}`;
+                                        },
+                                    },
+                                },
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        callback: function (value) {
+                                            const formattedTime = new Date(value * 1000).toISOString().substr(11, 8);
+                                            return formattedTime;
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    });
+
+                    new Chart(document.getElementById("overtimeHoursChart").getContext("2d"), {
+                        type: "bar",
+                        data: {
+                            labels: data.overtime_hours.map(user => user.name),
+                            datasets: [{
+                                label: "Overtime Hours",
+                                data: data.overtime_hours.map(user => user.hours),
+                                backgroundColor: ["#dc3545", "#ffc107", "#28a745"],
+                            }],
+                        },
+                        options: { responsive: true },
+                    });
+
+                    generateAIRecommendations(data.project_data);
+                    populateTaskDetails(data.task_details);
+                },
+                error: function (error) {
+                    console.error("Error fetching data:", error);
+                    alert("Failed to load data. Please try again later.");
+                },
+            });
+
+            function cleanAIResponse(text) {
+                return text.replace(/[\[\]{}"]/g, '').replace(/:/g, ': ').trim();
+            }
+
+            async function generateAIRecommendations(projectData) {
+                const aiRecommendationsList = $('#ai-recommendations');
+                const aiLoading = $('#ai-loading');
+
+                aiLoading.show();
+                aiRecommendationsList.hide();
+
+                const prompt = `I have data,
+                    Total Tasks: ${projectData.total_tasks}, Completed Tasks: ${projectData.completed_tasks}, In Progress Tasks: ${projectData.pending_tasks}, Overdue Tasks: ${projectData.overdue_tasks}, Progress Percentage: ${projectData.progress_percentage}%, Time Spent: ${JSON.stringify(projectData.time_spent)}, Overtime Hours: ${JSON.stringify(projectData.overtime_hours)}, please provide suggestions to improve productivity from the data.
+                `;
+
+                try {
+                    const response = await fetch("http://localhost/AUP_ERP3.2/api/generate", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({ prompt }),
+                    });
+
+                    const result = await response.json();
+
+                    if (result.error) {
+                        console.error("AI API Error:", result.error);
+                        aiRecommendationsList.append($('<li>').addClass('list-group-item text-danger').text("Error generating recommendations."));
+                        return;
+                    }
+
+                    let rawRecommendations = result[0]?.generated_text || "";
+
+                    rawRecommendations = rawRecommendations.replace(
+                        /I have data.*?please provide suggestions to improve productivity from the data\./s,
+                        ''
+                    );
+
+                    const recommendations = rawRecommendations.split("\n")
+                    .map(line => line.trim())
+                    .filter(line => line !== "")
+                    .map(cleanAIResponse);
+
+                    if (recommendations.length > 0) {
+                        aiLoading.hide();
+                        aiRecommendationsList.empty().show();
+                        displayRecommendationsSequentially(aiRecommendationsList, recommendations);
+                    } else {
+                        aiRecommendationsList.append($('<li>').addClass('list-group-item text-danger').text("No recommendations generated."));
+                    }
+                } catch (error) {
+                    console.error("Error generating AI recommendations:", error);
+                    aiRecommendationsList.append($('<li>').addClass('list-group-item text-danger').text("Failed to generate recommendations. Please try again later."));
+                }
+                finally {
+                    aiLoading.hide();
+                    aiRecommendationsList.show();
+            }
+            }
+        });
+
+        function timeToSeconds(time) {
+            const [hours, minutes, seconds] = time.split(':').map(Number);
+            return hours * 3600 + minutes * 60 + seconds;
+        }
+
+        function populateTaskDetails(taskDetails) {
+            const container = $('#task-details-container');
+            container.empty();
+
+            taskDetails.forEach(user => {
+                const accordionId = `accordion-${user.name.replace(/\s+/g, '-')}`;
+
+                const card = `
+                    <div class="accordion" id="${accordionId}">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading-${accordionId}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${accordionId}" aria-expanded="false" aria-controls="collapse-${accordionId}">
+                                    ${user.name} (${user.tasks.length} tasks)
+                                </button>
+                            </h2>
+                            <div id="collapse-${accordionId}" class="accordion-collapse collapse" aria-labelledby="heading-${accordionId}" data-bs-parent="#${accordionId}">
+                                <div class="accordion-body">
+                                    <ul class="list-group list-group-flush">
+                                        ${user.tasks.map(task => `
+                                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                ${task.name}
+                                                <span class="badge ${getTaskStatusBadge(task.status)} rounded-pill">${task.status}</span>
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <br>
+                    </div>
+                `;
+                container.append(card);
+            });
+        }
+
+        function getTaskStatusBadge(status) {
+            switch (status.toLowerCase()) {
+                case 'completed':
+                    return 'bg-success';
+                case 'pending':
+                    return 'bg-warning';
+                case 'overdue':
+                    return 'bg-danger';
+                default:
+                    return 'bg-secondary';
+            }
+        }
+
+        function displayRecommendationsSequentially(container, recommendations, index = 0) {
+            if (index >= recommendations.length) {
+                return;
+            }
+
+            const recommendation = recommendations[index];
+            const listItem = $('<li>').addClass('list-group-item');
+            container.append(listItem);
+
+            typeWriterEffect(listItem, recommendation, () => {
+
+                displayRecommendationsSequentially(container, recommendations, index + 1);
+            }, 20);
+        }
+
+        function typeWriterEffect(element, text, callback, speed = 20) {
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < text.length) {
+                    element.text(text.substring(0, i + 1));
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    if (callback) callback();
+                }
+            }, speed);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const userFilterDropdown = document.getElementById("user-filter-dropdown");
+            const commentList = document.getElementById("comment-list");
+
+            function fetchUsers() {
+                fetch('{{ route('get.project.users', ['projectId' => $project->id]) }}')
                     .then(response => response.json())
-                    .then(comments => {
-                        commentList.innerHTML = ""; 
-                        comments.forEach(comment => {
-                            const commentDiv = document.createElement("div");
-                            commentDiv.classList.add("comment-item");
+                    .then(users => {
 
-                            const header = document.createElement("div");
-                            header.classList.add("comment-header");
+                        const showAllOption = userFilterDropdown.querySelector(".filter-show-all-users");
+                        userFilterDropdown.innerHTML = "";
+                        userFilterDropdown.appendChild(showAllOption);
 
-                            const avatar = document.createElement("img");
-                            avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user.name)}&background=random`;
-                            avatar.alt = comment.user.name;
-                            header.appendChild(avatar);
+                        users.forEach(user => {
+                            const userOption = document.createElement("label");
+                            userOption.classList.add("dropdown-item", "pl-4", "d-flex", "align-items-center");
 
-                            const userInfo = document.createElement("div");
-                            userInfo.classList.add("user-info");
-                            userInfo.textContent = comment.user.name;
-                            header.appendChild(userInfo);
+                            const checkbox = document.createElement("input");
+                            checkbox.type = "checkbox";
+                            checkbox.classList.add("mr-2");
+                            checkbox.value = user.id;
 
-                            const timestamp = document.createElement("div");
-                            timestamp.classList.add("timestamp");
-                            timestamp.textContent = new Date(comment.created_at).toLocaleString();
-                            header.appendChild(timestamp);
+                            const userName = document.createElement("span");
+                            userName.textContent = user.name;
 
-                            commentDiv.appendChild(header);
+                            userOption.appendChild(checkbox);
+                            userOption.appendChild(userName);
 
-                            if (comment.text) {
-                                const body = document.createElement("div");
-                                body.classList.add("comment-body");
-                                body.textContent = comment.text;
-                                commentDiv.appendChild(body);
-                            }
+                            checkbox.addEventListener("change", function () {
+                                const selectedUsers = Array.from(userFilterDropdown.querySelectorAll("input[type='checkbox']:checked"))
+                                    .map(checkbox => checkbox.value);
 
-                            if (comment.file_path) {
-                                const fileLink = document.createElement("a");
-                                fileLink.classList.add("comment-file");
-                                fileLink.href = comment.file_path; 
-                                fileLink.target = "_blank";
-                                fileLink.textContent = "View File";
-                                commentDiv.appendChild(fileLink);
-                            }
+                                fetchComments(selectedUsers);
+                            });
 
-                            commentList.appendChild(commentDiv);
+                            userFilterDropdown.appendChild(userOption);
                         });
                     });
             }
 
-            commentForm.addEventListener("submit", function (e) {
+            function fetchComments(selectedUserIds = []) {
+                fetch('{{ route('get.project.comment', ['projectId' => $project->id]) }}')
+                    .then(response => response.json())
+                    .then(comments => {
+                        commentList.innerHTML = "";
+
+                        comments.forEach(comment => {
+
+                            if (selectedUserIds.length === 0 || selectedUserIds.includes(comment.user.id.toString())) {
+                                const commentDiv = document.createElement("div");
+                                commentDiv.classList.add("comment-item");
+
+                                const header = document.createElement("div");
+                                header.classList.add("comment-header");
+
+                                const avatar = document.createElement("img");
+                                avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(comment.user.name)}&background=random`;
+                                avatar.alt = comment.user.name;
+                                header.appendChild(avatar);
+
+                                const userInfo = document.createElement("div");
+                                userInfo.classList.add("user-info");
+                                userInfo.textContent = comment.user.name;
+                                header.appendChild(userInfo);
+
+                                const timestamp = document.createElement("div");
+                                timestamp.classList.add("timestamp");
+                                timestamp.textContent = new Date(comment.created_at).toLocaleString();
+                                header.appendChild(timestamp);
+
+                                commentDiv.appendChild(header);
+
+                                if (comment.text) {
+                                    const body = document.createElement("div");
+                                    body.classList.add("comment-body");
+                                    body.textContent = comment.text;
+                                    commentDiv.appendChild(body);
+                                }
+
+                                if (comment.file_path) {
+                                    const fileLink = document.createElement("a");
+                                    fileLink.classList.add("comment-file");
+                                    fileLink.href = comment.file_path;
+                                    fileLink.target = "_blank";
+                                    fileLink.textContent = "View File";
+                                    commentDiv.appendChild(fileLink);
+                                }
+
+                                commentList.appendChild(commentDiv);
+                            }
+                        });
+                    });
+            }
+
+            const showAllOption = userFilterDropdown.querySelector(".filter-show-all-users");
+            showAllOption.addEventListener("click", function (e) {
                 e.preventDefault();
 
-                const formData = new FormData();
-                formData.append('project_id', projectId);
-                formData.append('text', document.getElementById("comment-text").value.trim());
-                const fileInput = document.getElementById("comment-file");
-                if (fileInput.files.length > 0) {
-                    formData.append('file', fileInput.files[0]);
-                }
+                userFilterDropdown.querySelectorAll("input[type='checkbox']").forEach(checkbox => {
+                    checkbox.checked = false;
+                });
 
-                fetch('{{ route('project.comment') }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                    },
-                    body: formData,
-                })
-                    .then(response => response.json())
-                    .then(() => {
-                        commentForm.reset();
-                        fileNamePreview.style.display = "none"; 
-                        selectedFileName.textContent = ""; 
-                        fetchComments(); 
-                    });
+                fetchComments();
             });
 
+            fetchUsers();
             fetchComments();
         });
 
@@ -265,7 +684,6 @@
 
             async function fetchPlannings() {
                 try {
-                    console.log("Fetching plannings...");
                     const response = await fetch('{{ route('get.project.planning', ['projectId' => $project->id]) }}');
                     if (!response.ok) {
                         throw new Error('Failed to fetch plannings');
@@ -296,6 +714,7 @@
                     },
                     selectable: true,
                     editable: true,
+                    themeSystem: 'bootstrap',
                     events: plannings.map(planning => ({
                         id: planning.id,
                         title: planning.title,
@@ -306,13 +725,20 @@
                         borderColor: stringToColor(planning.user.name),
                         extendedProps: {
                             user: planning.user,
+                            description: planning.description,
                         },
                     })),
-                    dateClick: function (info) {
-                        document.getElementById('planning-start-date').value = info.dateStr;
-                        const modal = new bootstrap.Modal(document.getElementById('planningModal'));
-                        modal.show();
-                    },
+                    eventClick: function (info) {
+                        info.jsEvent.preventDefault();
+                        info.jsEvent.stopPropagation();
+
+                        document.getElementById('planning-user-detail').textContent = info.event.extendedProps.user.name;
+                        document.getElementById('planning-date-detail').textContent = `From ${info.event.startStr} to ${info.event.endStr}`;
+                        document.getElementById('planning-title-detail').textContent = info.event.title;
+
+                        const detailModal = new bootstrap.Modal(document.getElementById('planningDetailModal'));
+                        detailModal.show();
+                    }
                 });
 
                 calendar.render();
@@ -841,6 +1267,12 @@
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="planning-tab" data-bs-toggle="tab" data-bs-target="#planning" type="button" role="tab" aria-controls="planning" aria-selected="false">Planning</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab" aria-controls="notes" aria-selected="false">Notes</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <a class="nav-link" id="reports-tab" data-bs-toggle="tab" href="#reports" role="tab">{{__('Reports')}}</a>
             </li>
         </ul>
         <div class="tab-content" id="projectTabsContent">
@@ -1380,47 +1812,193 @@
                 </div>
             </div>
             <div class="tab-pane fade" id="comments" role="tabpanel" aria-labelledby="comments-tab">
-                <div class="mt-4">
-
-                    <div id="comment-list" class="mb-4">
-
+                <div class="d-flex justify-content-end align-items-center mb-3 mt-3">
+                    <!-- Dropdown Filter -->
+                    <div class="d-flex justify-content-end">
+                        <div class="form-group">
+                            <a href="#" class="btn btn-sm btn-primary action-item" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="btn-inner--icon"><i class="fas fa-filter" aria-hidden="true"></i></span>
+                            </a>
+                            <div class="dropdown-menu project-filter-actions-label dropdown-steady" id="user-filter-dropdown">
+                                <a class="dropdown-item filter-action-user filter-show-all-users pl-4 active" href="#">{{__('Show All')}}</a>
+                            </div>
+                        </div>
                     </div>
+                </div>
 
-                    <form id="comment-form">
-                        <textarea id="comment-text" class="form-control" placeholder="Type your message..." rows="1"></textarea>
-                        
-                        <label for="comment-file" id="comment-file-label">
+                <!-- Comment List and Form -->
+                <div class="mt-2">
+                    <div id="comment-list" class="mb-3"></div>
+                    <form id="comment-form" class="d-flex align-items-center">
+                        <textarea id="comment-text" class="form-control flex-grow-1 mr-2" placeholder="Type your message..." rows="1"></textarea>
+                        <label for="comment-file" id="comment-file-label" class="mr-2">
                             <i class="fas fa-paperclip"></i>
                         </label>
                         <input type="file" id="comment-file" class="d-none" accept=".jpg,.jpeg,.png,.pdf,.docx">
-
                         <div id="file-name-preview" class="text-muted small mt-2" style="display: none;">
                             Selected file: <span id="selected-file-name"></span>
                         </div>
-                        
-                        <button type="submit" id="send-button">
+                        <button type="submit" id="send-button" class="btn btn-primary btn-sm mb-2">
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </form>
-
                 </div>
             </div>
             <div class="tab-pane fade" id="planning" role="tabpanel" aria-labelledby="planning-tab">
-                <div class="mt-4 d-flex">
+                <div class="row mt-4">
                     <!-- Calendar Container -->
-                    <div class="flex-grow-1 me-4">
-                        <div class="card">
+                    <div class="col-md-8">
+                        <div class="card h-100">
                             <div class="card-body">
                                 <div id="calendar"></div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="flex-shrink-0" style="width: 300px;">
-                        <div class="card">
+                    <!-- Planning List -->
+                    <div class="col-md-4 mt-2">
+                        <div class="card h-100">
                             <div class="card-header">Planning List</div>
                             <div class="card-body" id="planning-list">
-                               
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="notes" role="tabpanel" aria-labelledby="notes-tab">
+                <div class="container-fluid mt-4">
+
+                    <!-- Two-Column Layout -->
+                    <div class="row">
+                        <!-- Left Column: Add Note Form -->
+                        <div class="col-md-7">
+                            <div class="card h-100">
+                                <div class="card-header text-black">Add New Note</div>
+                                <div class="card-body">
+                                    <form id="add-note-form">
+                                        <div class="mb-3">
+                                            <textarea class="form-control" id="note-content" rows="5" placeholder="Write your note here..." required></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100">Add Note</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Notes List -->
+                        <div class="col-md-5">
+                            <div class="card h-100">
+                                <div class="card-header text-black">Notes</div>
+                                <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+                                    <div id="notes-by-user-container">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
+                <div class="container-fluid mt-4">
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header text-black">Progress Overview</div>
+                                <div class="card-body">
+                                    <p>Progress: <span id="progress-percentage" class="fw-bold">Loading...</span>%</p>
+                                    <canvas id="progressChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header text-black">Project Overview</div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Total Tasks
+                                            <span id="total-tasks" class="badge bg-primary rounded-pill">Loading...</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Completed Tasks
+                                            <span id="completed-tasks" class="badge bg-success rounded-pill">Loading...</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Pending Tasks
+                                            <span id="pending-tasks" class="badge bg-warning rounded-pill">Loading...</span>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Overdue Tasks
+                                            <span id="overdue-tasks" class="badge bg-danger rounded-pill">Loading...</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">Team Activity</div>
+                                <div class="card-body">
+                                    <canvas id="teamActivityChart" width="800" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header text-black">Task Details per User</div>
+                                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                                    <div id="task-details-container">
+                                        
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header">Time Spent on Project (per User)</div>
+                                <div class="card-body">
+                                    <canvas id="timeSpentChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="card-header">Overtime Hours (per User)</div>
+                                <div class="card-body">
+                                    <canvas id="overtimeHoursChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">SmartAI Recommendations</div>
+                                    <div class="card-body">
+                                        <!-- Loading Indicator -->
+                                        <div id="ai-loading" class="text-center">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="visually-hidden">Loading...</span>
+                                            </div>
+                                            <p class="mt-2">Generating recommendations...</p>
+                                        </div>
+
+                                        <!-- Recommendations List -->
+                                        <ul class="list-group list-group-flush" id="ai-recommendations" style="display: none;">
+                                            <!-- Recommendations will be dynamically populated here -->
+                                        </ul>
+                                    </div>
                             </div>
                         </div>
                     </div>
@@ -1436,7 +2014,6 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <!-- Form -->
                         <form id="planning-form">
                             <div class="mb-3">
                                 <label for="planning-title" class="form-label">Title</label>
@@ -1478,6 +2055,21 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                         <button type="button" class="btn btn-primary" id="save-reminder">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="planningDetailModal" tabindex="-1" aria-labelledby="planningDetailModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="planningDetailModalLabel">Planning Details</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Employee:</strong> <span id="planning-user-detail"></span></p>
+                        <p><strong>Planning Date:</strong> <span id="planning-date-detail"></span></p>
+                        <p><strong>Planning:</strong> <span id="planning-title-detail"></span></p>
                     </div>
                 </div>
             </div>

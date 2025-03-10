@@ -80,6 +80,11 @@ class User extends Authenticatable
         return $this->belongsTo('App\Models\ClientBusinessSector', 'client_business_sector_id', 'id');
     }
 
+    public function notes()
+    {
+        return $this->hasMany(ProjectNote::class);
+    }
+
     public function comments()
     {
         return $this->hasMany(Comment::class);
@@ -3010,14 +3015,14 @@ class User extends Authenticatable
         }
     }
 
-    public function userProject($user_id)
+    public function userProject($user_id, $filter = null)
     {
 
         $projectIds = ProjectUser::where('user_id', $user_id)->pluck('project_id');
 
         $projects = Project::whereIn('id', $projectIds)->orderBy('end_date', 'desc')->paginate(10);
 
-        return $projects;
+        return $projects->appends(['filter' => $filter]);
     }
 
     public function userTracker($user_id, $filter = null)

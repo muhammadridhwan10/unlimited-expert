@@ -28,15 +28,16 @@
         <div class="col-xl-3">
             <div class="card sticky-top" style="top:30px">
                 <div class="list-group list-group-flush" id="useradd-sidenav">
-                    <a href="#about_me" class="list-group-item list-group-item-action border-0">{{__('About Me')}} <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
+                    {{-- <a href="#about_me" class="list-group-item list-group-item-action border-0">{{__('About Me')}} <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
                     <a href="#project_and_task_info" class="list-group-item list-group-item-action border-0">{{__('Project and Task Info')}} <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
-                    <a href="#employee_record" class="list-group-item list-group-item-action border-0">{{__('Training Record')}} <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
-                    <a href="#personal_info" class="list-group-item list-group-item-action border-0">{{__('Personal Info')}} <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
+                    <a href="#employee_record" class="list-group-item list-group-item-action border-0">{{__('Training Record')}} <div class="float-end"><i class="ti ti-chevron-right"></i></div></a> --}}
+                    {{-- <a href="#personal_info" class="list-group-item list-group-item-action border-0">{{__('Personal Info')}} <div class="float-end"><i class="ti ti-chevron-right"></i></div></a> --}}
+                    <a href="#change_password" class="list-group-item list-group-item-action border-0">{{__('Change Password')}} <div class="float-end"><i class="ti ti-chevron-right"></i></div></a>
                 </div>
             </div>
         </div>
         <div class="col-xl-9">
-            <div id="about_me" class="card">
+            {{-- <div id="about_me" class="card">
                 <div class="card-header">
                     <h5>{{('About Me')}}</h5>
                 </div>
@@ -365,22 +366,6 @@
                                 {{Form::textarea('personal_description',null,array('class'=>'form-control','placeholder'=>__('Enter Description')))}}
                                 </div>
                             </div>
-                            {{-- <div class="col-lg-6 col-md-6">
-                                <div class="form-group">
-                                    <div class="choose-files">
-                                        <label for="avatar">
-                                            <div class=" bg-primary profile_update"> <i class="ti ti-upload px-1"></i>{{__('Choose file here')}}</div>
-                                            <input type="file" class="form-control file" accept=".png, .jpg, .jpeg" name="profile" id="avatar" data-filename="profile_update">
-                                        </label>
-                                    </div>
-                                    <span class="text-xs text-muted">{{ __('Please upload a valid image file. Size of image should not be more than 2MB.')}}</span>
-                                    @error('avatar')
-                                    <span class="invalid-feedback text-danger text-xs" role="alert">{{ $message }}</span>
-                                    @enderror
-
-                                </div>
-
-                            </div> --}}
                             <div class="col-lg-12 text-end">
                                 <input type="submit" value="{{__('Save Changes')}}" class="btn btn-print-invoice  btn-primary m-r-10">
                             </div>
@@ -389,7 +374,7 @@
 
                 </div>
 
-            </div>
+            </div> --}}
             <div id="change_password" class="card">
                 <div class="card-header">
                     <h5>{{('Change Password')}}</h5>

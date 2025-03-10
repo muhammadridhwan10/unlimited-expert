@@ -44,7 +44,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                     {{ ( Request::segment(1) == null ||Request::segment(1) == 'account-dashboard' || Request::segment(1) == 'income report'
                                     || Request::segment(1) == 'report' || Request::segment(1) == 'reports-payroll' || Request::segment(1) == 'reports-leave' ||
                                         Request::segment(1) == 'reports-monthly-attendance') ?'active dash-trigger':''}}">
-                            <a href="{{route('admin.dashboard')}}"class="dash-link "><span class="dash-micon"><i class="ti ti-home"></i></span><span class="dash-mtext">{{__('Dashboard')}}</span>
+                            <a href="{{route('admin.dashboard')}}"class="dash-link "><span class="dash-micon"><i class="ti ti-home"></i></span><span class="dash-mtext">{{__('Home')}}</span>
                                 </a>
                             {{-- <ul class="dash-submenu">
                                 <!-- @if(\Auth::user()->show_account() == 1 && Gate::check('show account dashboard'))
@@ -189,6 +189,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                         <i data-feather="chevron-right"></i></span>
                                 </a>
                                 <ul class="dash-submenu">
+                                    <li class="dash-item {{ request()->is('employee-profile') ? 'active' : '' }}">
+                                        <a href="{{route('employee.profile')}}" class="dash-link">
+                                            </span><span class="dash-mtext">{{__('Employee Profile')}}</span>
+                                        </a>
+                                    </li>
                                     <li class="dash-item {{ request()->is('overtime') ? 'active' : '' }}">
                                         <a href="{{route('overtime.index')}}" class="dash-link">
                                             </span><span class="dash-mtext">{{__('Overtime')}}</span>
@@ -199,16 +204,16 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                            <span class="dash-mtext">{{__('Absence Request')}}</span>
                                         </a>
                                     </li>
-                                    <li class="dash-item {{ request()->is('form-response') ? 'active' : '' }}">
+                                    {{-- <li class="dash-item {{ request()->is('form-response') ? 'active' : '' }}">
                                         <a href="{{route('form-response.index')}}" class="dash-link">
                                            <span class="dash-mtext">{{__('Personel Assessment')}}</span><sup style="color: red;">Beta</sup>
                                         </a>
-                                    </li>
-                                    <li class="dash-item {{ request()->is('meeting') ? 'active' : '' }}">
+                                    </li> --}}
+                                    {{-- <li class="dash-item {{ request()->is('meeting') ? 'active' : '' }}">
                                         <a href="{{route('meeting.index')}}" class="dash-link">
                                            <span class="dash-mtext">{{__('Meeting Time')}}</span><sup style="color: red;">Beta</sup>
                                         </a>
-                                    </li>
+                                    </li> --}}
                                     <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'report-hrm') ? 'active dash-trigger' : ''}}" href="#hr-report" data-toggle="collapse" role="button" aria-expanded="{{(Request::segment(1) == 'report-hrm') ? 'true' : 'false'}}">
                                         <a class="dash-link" href="#">{{__('Reports')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                         <ul class="dash-submenu">
@@ -278,25 +283,20 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                         <a class="dash-link" href="{{route('employee.show',\Illuminate\Support\Facades\Crypt::encrypt(\Auth::user()->id))}}">{{__('Employee')}}</a>
                                         @else
                                         <a href="{{route('employee.index')}}" class="dash-link">
-                                            {{ __('Employee Identity') }}
+                                            {{ __('Employee List') }}
                                         </a>
                                         @endif
                                     </li>
-                                    <li class="dash-item {{ request()->is('form-response') ? 'active' : '' }}">
-                                        <a href="{{route('employee-details.index')}}" class="dash-link">
-                                           <span class="dash-mtext">{{__('Employee Details')}}</span>
-                                        </a>
-                                    </li>
-                                    <li class="dash-item {{ request()->is('form-response') ? 'active' : '' }}">
+                                    {{-- <li class="dash-item {{ request()->is('form-response') ? 'active' : '' }}">
                                         <a href="{{route('form-response.index')}}" class="dash-link">
                                            <span class="dash-mtext">{{__('Personel Assessment')}}</span><sup style="color: red;">Beta</sup>
                                         </a>
-                                    </li>
-                                    <li class="dash-item {{ request()->is('meeting') ? 'active' : '' }}">
+                                    </li> --}}
+                                    {{-- <li class="dash-item {{ request()->is('meeting') ? 'active' : '' }}">
                                         <a href="{{route('meeting.index')}}" class="dash-link">
                                            <span class="dash-mtext">{{__('Meeting Time')}}</span><sup style="color: red;">Beta</sup>
                                         </a>
-                                    </li>
+                                    </li> --}}
                                     <li class="dash-item {{ request()->is('absence-request') ? 'active' : '' }}">
                                         <a class="dash-link" href="{{route('absence-request.index')}}">{{__('Absence Request')}}</a>
                                     </li>
@@ -560,6 +560,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             {{-- <li class="dash-item {{ request()->is('reports-payroll') ? 'active' : '' }}">
                                                 <a class="dash-link" href="{{ route('report.payroll') }}">{{__('Payroll')}}</a>
                                             </li> --}}
+                                            <li class="dash-item {{ request()->is('form-response') ? 'active' : '' }}">
+                                                <a href="{{route('employee-reports.index')}}" class="dash-link">
+                                                <span class="dash-mtext">{{__('Employee Report')}}</span>
+                                                </a>
+                                            </li>
                                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'reports-leave') ? 'active dash-trigger' : ''}}" href="#navbar-attendance" data-toggle="collapse" role="button" aria-expanded="{{ (Request::segment(1) == 'reports-leave') ? 'true' : 'false'}}">
                                                 <a class="dash-link" href="#">{{__('Absence Request')}}<span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                                 <ul class="dash-submenu">

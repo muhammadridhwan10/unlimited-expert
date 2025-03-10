@@ -53,18 +53,34 @@ class EmployeeDetailController extends Controller
 
     }
 
-    public function show(User $employee_detail)
+    public function show(User $employee_report)
     {
         if(\Auth::user()->can('manage user'))
         {
-            
             $filter = request()->input('filter');
 
-            return view('employee-detail.show', compact('employee_detail', 'filter'));
+            return view('employee-detail.show', compact('employee_report', 'filter'));
         }
         else
         {
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
+    }
+
+    public function filterEmployeeView(Request $request)
+    {
+        $user = \Auth::user();
+
+        $query = User::where('type', '!=', 'client');
+
+        if ($request->has('keyword') && !empty($request->keyword)) {
+            $query->where('name', 'LIKE', "%{$request->keyword}%");
+        }
+
+        $users = $query->paginate(10);
+
+        return response()->json([
+            'html' => view('employee-detail.employee-list', compact('users'))->render()
+        ]);
     }
 }

@@ -6,15 +6,42 @@
     {{__('Employee List')}}
 @endsection
 @push('script-page')
+<script>
+    $(document).ready(function () {
+        function ajaxFilterEmployeeView(keyword = '', page = 1) {
+            $.ajax({
+                url: '{{ route('filter.employee.view') }}',
+                method: 'GET',
+                data: { keyword: keyword, page: page },
+                beforeSend: function () {
+                    $('#employee-list').html('<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>');
+                },
+                success: function (data) {
+                    $('#employee-list').html(data.html);
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error fetching employees:', error);
+                    $('#employee-list').html('<div class="text-center text-danger">Error loading data.</div>');
+                }
+            });
+        }
+
+
+        $(document).on('keyup', '#employee_keyword', function () {
+            const keyword = $(this).val();
+            ajaxFilterEmployeeView(keyword);
+        });
+
+        ajaxFilterEmployeeView();
+    });
+</script>
     <script>
-        // Menggunakan jQuery untuk menangani perubahan toggle switch
         $(document).ready(function() {
 
             $('.form-check-input').change(function() {
                 var userId = $(this).data('user-id');
                 var isActive = $(this).is(':checked') ? 1 : 0;
 
-                // Mengirim permintaan Ajax ke server untuk memperbarui status pengguna
                 $.ajax({
                     url: "{{route("update-active")}}",
                     method: 'POST',
@@ -24,11 +51,9 @@
                         _token: "{{ csrf_token() }}"
                     },
                     success: function(response) {
-                        // Tindakan sukses, misalnya memperbarui tampilan
                         console.log('User successfully updated.');
                     },
                     error: function(xhr, status, error) {
-                        // Penanganan kesalahan, misalnya menampilkan pesan kesalahan
                         console.error('Something Error: ' + error);
                     }
                 });
@@ -41,31 +66,23 @@
     <li class="breadcrumb-item">{{__('Employee List')}}</li>
 @endsection
 @section('action-btn')
-
+<div class="float-end">
+    <a href="#" class="btn btn-sm btn-primary action-item" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <span class="btn-inner--icon"><i class="fas fa-search"></i></span>
+        <span class="btn-inner--text"></span>
+    </a>
+    <div class="dropdown-menu dropdown-steady p-3" id="search_box">
+        <div class="input-group">
+            <span class="input-group-text text-body">
+                <i class="fas fa-search" aria-hidden="true"></i>
+            </span>
+            <input id="employee_keyword" name="keyword" type="search" class="form-control" placeholder="{{ __('Search Employee...') }}">
+        </div>
+    </div>
+</div>
 @endsection
 @section('content')
-    <div class="row">
-        <div class="col-xxl-12">
-            <div class="row">
-                @foreach($users as $user)
-                    <div class="col-md-3">
-                        <div class="card text-center">
-                            <div class="card-body full-card">
-                                <div class="card-avatar">
-                                    <img src="{{ (!empty($user->avatar)) ? asset(Storage::url('uploads/avatar/'.$user->avatar)) : asset(Storage::url('uploads/avatar/avatar.png')) }}" class="wid-80" style="width: 72px; height: 72px; object-fit: cover; object-position: center; border-radius: 50%;">
-                                </div>
-                                <h4 class=" mt-2 text-primary">{{ $user->name }}</h4>
-                                <small class="text-primary">{{ $user->email }}</small>
-                                <div class="align-items-center h6 mt-2" data-bs-toggle="tooltip" title="{{__('Detail User')}}">
-                                <a href="{{ route('employee-details.show',$user->id) }}"  class="btn btn-primary" data-bs-original-title="{{__('View')}}">
-                                    <span>{{__('Detail')}}</span>
-                                </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
+    <div id="employee-list" class="row">
+
     </div>
 @endsection

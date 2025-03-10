@@ -605,11 +605,29 @@ class Project extends Model
 
     }
 
-    public function totalHoursUser($user = null)
+    public function totalHoursUser($user = null, $filter = null)
     {
 
         // Ambil semua waktu dari timesheet berdasarkan project_id dan filter tanggal jika ada
         $query = Timesheet::where('project_id', $this->id)->where('created_by', '=', $user);
+
+        if ($filter) {
+            switch ($filter) {
+                case 'this_month':
+                    $query->whereMonth('date', date('m'))
+                        ->whereYear('date', date('Y'));
+                    break;
+
+                case 'last_7_days':
+                    $query->where('date', '>=', now()->subDays(7));
+                    break;
+
+                case 'last_month':
+                    $query->whereMonth('date', '=', now()->subMonth()->month)
+                        ->whereYear('date', '=', now()->subMonth()->year);
+                    break;
+            }
+        }
 
         $times = $query->pluck('time');
 
@@ -635,6 +653,7 @@ class Project extends Model
         $query = ProjectOfferings::where('project_id', $this->id);
 
         $type = User::find($user);
+        $als = 0;
 
         if ($type) {
             if ($type->type == 'partners') {

@@ -9,13 +9,23 @@
 @section('action-btn')
 
     <div class ="float-start">
-                <div class="input-group">
-                    <span class="input-group-text text-body"><i class="fas fa-search" aria-hidden="true"></i></span>
-                    <input id="project_keyword" name="keyword" type="search" class="form-control" placeholder="Search...">
-                </div>
+
     </div>
 
     <div class="float-end">
+        <a href="#" class="btn btn-sm btn-primary action-item" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            <span class="btn-inner--icon"><i class="fas fa-search"></i></span>
+            <span class="btn-inner--text"></span>
+        </a>
+        <div class="dropdown-menu dropdown-steady p-3" id="search_box">
+            <div class="input-group">
+                <span class="input-group-text text-body">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                </span>
+                <input id="project_keyword" name="keyword" type="search" class="form-control" placeholder="{{ __('Search Project...') }}">
+            </div>
+        </div>
+        
         @if($view == 'list')
             <a href="{{ route('projects.grid','grid') }}"  data-bs-toggle="tooltip" title="{{__('Grid View')}}" class="btn btn-sm btn-primary">
                 <i class="ti ti-layout-grid"></i>
@@ -271,9 +281,7 @@
                 url: '{{ route('filter.project.view') }}',
                 data: data,
                 beforeSend: function () {
-                    if (currentRequest != null) {
-                        currentRequest.abort();
-                    }
+                    $('#project_view').html('<div class="text-center"><i class="fas fa-spinner fa-spin"></i> Loading...</div>');
                 },
                 success: function (data) {
                     mainEle.html(data.html);

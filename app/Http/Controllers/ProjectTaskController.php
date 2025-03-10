@@ -417,9 +417,10 @@ class ProjectTaskController extends Controller
             $project = Project::find($project_id);
             $task = ProjectTask::find($task_id);
             $hrs = Project::projectHrs($project_id);
+            $taskstage = TaskStage::where('created_by', \Auth::user()->creatorId())->get()->pluck('name', 'id');;
             $milestone_id   = Milestone::where('project_id', $project_id)->pluck('title', 'id');
 
-            return view('project_task.edit', compact('project', 'task', 'hrs','milestone_id'));
+            return view('project_task.edit', compact('project', 'task', 'hrs','milestone_id','taskstage'));
         } else {
             return redirect()->back()->with('error', __('Permission Denied.'));
         }

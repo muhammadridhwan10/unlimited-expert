@@ -23717,11 +23717,6 @@ body.theme-4 .team-lists img {
     background: #ffffff;
 }
 
-.fc-h-event .fc-event-main {
-    color: inherit;
-    color: var(--fc-event-text-color, inherit);
-}
-
 .fc .fc-timegrid-slot {
     height: 2.5em;
 }
