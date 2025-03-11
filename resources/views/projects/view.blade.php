@@ -444,7 +444,7 @@
                 `;
 
                 try {
-                    const response = await fetch("http://localhost/AUP_ERP3.2/api/generate", {
+                    const response = await fetch(`${baseUrl}/api/generate`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
