@@ -1064,11 +1064,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                                 <a class="dash-link" href="{{route('tasktemplate.index')}}">{{__('Project Task Template')}}</a>
                                             </li>
                                             @endcan
-                                            @can('manage mapping account data')
+                                            {{-- @can('manage mapping account data')
                                             <li class="dash-item {{ (Request::route()->getName() == 'mapping-account-data.index') ? 'active' : '' }}">
                                                 <a class="dash-link" href="{{route('mappingaccountdata.index')}}">{{__('Mapping Account Data')}}</a>
                                             </li>
-                                            @endcan
+                                            @endcan --}}
                                         </ul>
                                     </li>
                                     @endif

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::post('login', 'ApiController@login');
+Route::post('/generate', 'ProjectController@getRecommendations');
 // Route::post('get', 'ProjectController@loadClient');
 // Route::get('zoom', 'ZoomMeetingController@getToken');
 // Route::get('comment', 'ProjectTaskController@commentStore');

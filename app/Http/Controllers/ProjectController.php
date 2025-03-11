@@ -2010,6 +2010,10 @@ class ProjectController extends Controller
 
         $progressPercentage = $totalTasks > 0 ? ($completedTasks / $totalTasks) * 100 : 0;
 
+        $startDate = Carbon::parse($project->start_date);
+        $today = Carbon::now();
+        $runningDays = $startDate->diffInDays($today);
+
         $teamActivity = [];
         $users = $project->users()->where('type', '!=', 'admin')->distinct()->get();
         foreach ($users as $user) {
@@ -2087,10 +2091,12 @@ class ProjectController extends Controller
             'progress_percentage' => $progressPercentage,
             'time_spent' => $timeSpent,
             'overtime_hours' => $overtimeHours,
+            'running_days' => $runningDays,
         ];
 
         return response()->json([
             'project_overview' => [
+                'running_days' => $runningDays,
                 'total_tasks' => $totalTasks,
                 'completed_tasks' => $completedTasks,
                 'pending_tasks' => $pendingTasks,

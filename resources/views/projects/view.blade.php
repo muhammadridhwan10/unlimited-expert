@@ -333,6 +333,7 @@
                 method: "GET",
                 success: function (data) {
 
+                    $('#running-days').text(data.project_overview.running_days);
                     $('#total-tasks').text(data.project_overview.total_tasks);
                     $('#completed-tasks').text(data.project_overview.completed_tasks);
                     $('#pending-tasks').text(data.project_overview.pending_tasks);
@@ -439,7 +440,7 @@
                 aiRecommendationsList.hide();
 
                 const prompt = `I have data,
-                    Total Tasks: ${projectData.total_tasks}, Completed Tasks: ${projectData.completed_tasks}, In Progress Tasks: ${projectData.pending_tasks}, Overdue Tasks: ${projectData.overdue_tasks}, Progress Percentage: ${projectData.progress_percentage}%, Time Spent: ${JSON.stringify(projectData.time_spent)}, Overtime Hours: ${JSON.stringify(projectData.overtime_hours)}, please provide suggestions to improve productivity from the data.
+                    Running Days: ${projectData.running_days}, Total Tasks: ${projectData.total_tasks}, Completed Tasks: ${projectData.completed_tasks}, In Progress Tasks: ${projectData.pending_tasks}, Overdue Tasks: ${projectData.overdue_tasks}, Progress Percentage: ${projectData.progress_percentage}%, Time Spent: ${JSON.stringify(projectData.time_spent)}, Overtime Hours: ${JSON.stringify(projectData.overtime_hours)}, please provide suggestions to improve productivity from the data.
                 `;
 
                 try {
@@ -1742,31 +1743,37 @@
                                                 </tr>
                                             </thead>
                                             <tbody> 
+                                            @if($el->count() > 0)
                                                 @foreach ($el as $els)
-                                                    <tr class="font-style">
-                                                        <td>{{ $els->el_number}}</td>
-                                                        <td>
-                                                            <img alt="Image placeholder" src="{{ asset('assets/images/gallery.png')}}" class="avatar view-images rounded-circle avatar-sm" data-bs-toggle="tooltip" title="{{__('View File')}}" data-original-title="{{__('View File')}}" style="height: 25px;width:24px;margin-right:10px;cursor: pointer;" data-id="{{$els->id}}" id="track-images-{{$els->id}}">
-                                                        </td>
-                                                        <td>
-                                                            @if ($els->status == 'Draft')
-                                                                <span
-                                                                    class="status_badge badge bg-secondary p-2 px-3 rounded">{{ __(\App\Models\El::$status[$els->status]) }}</span>
-                                                            @elseif($els->status == 'Revision')
-                                                                <span
-                                                                    class="status_badge badge bg-warning p-2 px-3 rounded">{{ __(\App\Models\El::$status[$els->status]) }}</span>
-                                                            @elseif($els->status == 'Latest')
-                                                                <span
-                                                                    class="status_badge badge bg-success p-2 px-3 rounded">{{ __(\App\Models\El::$status[$els->status]) }}</span>
-                                                            @endif
-                                                        </td>
-                                                        <td>
-                                                            <div class="action-btn bg-primary ms-2">
-                                                                <a href="#" data-url="{{ URL::to('el/'.$els->id.'/edit') }}" data-size="lg" data-ajax-popup="true" data-title="{{__('Edit Contract')}}" class="mx-3 btn btn-sm  align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-original-title="{{__('Edit')}}"><i class="ti ti-pencil text-white"></i></a>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
+                                                        <tr class="font-style">
+                                                            <td>{{ $els->el_number}}</td>
+                                                            <td>
+                                                                <img alt="Image placeholder" src="{{ asset('assets/images/gallery.png')}}" class="avatar view-images rounded-circle avatar-sm" data-bs-toggle="tooltip" title="{{__('View File')}}" data-original-title="{{__('View File')}}" style="height: 25px;width:24px;margin-right:10px;cursor: pointer;" data-id="{{$els->id}}" id="track-images-{{$els->id}}">
+                                                            </td>
+                                                            <td>
+                                                                @if ($els->status == 'Draft')
+                                                                    <span
+                                                                        class="status_badge badge bg-secondary p-2 px-3 rounded">{{ __(\App\Models\El::$status[$els->status]) }}</span>
+                                                                @elseif($els->status == 'Revision')
+                                                                    <span
+                                                                        class="status_badge badge bg-warning p-2 px-3 rounded">{{ __(\App\Models\El::$status[$els->status]) }}</span>
+                                                                @elseif($els->status == 'Latest')
+                                                                    <span
+                                                                        class="status_badge badge bg-success p-2 px-3 rounded">{{ __(\App\Models\El::$status[$els->status]) }}</span>
+                                                                @endif
+                                                            </td>
+                                                            <td>
+                                                                <div class="action-btn bg-primary ms-2">
+                                                                    <a href="#" data-url="{{ URL::to('el/'.$els->id.'/edit') }}" data-size="lg" data-ajax-popup="true" data-title="{{__('Edit Contract')}}" class="mx-3 btn btn-sm  align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-original-title="{{__('Edit')}}"><i class="ti ti-pencil text-white"></i></a>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
                                                 @endforeach
+                                            @else
+                                                <tr>
+                                                    <th scope="col" colspan="4"><h6 class="text-center">{{__('No Contract Data Found.')}}</h6></th>
+                                                </tr>
+                                            @endif
                                             </tbody>
                                         </table>
                                     </div>
@@ -1916,6 +1923,10 @@
                                 <div class="card-header text-black">Project Overview</div>
                                 <div class="card-body">
                                     <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            Running Days
+                                            <span id="running-days" class="badge bg-info rounded-pill">Loading...</span>
+                                        </li>
                                         <li class="list-group-item d-flex justify-content-between align-items-center">
                                             Total Tasks
                                             <span id="total-tasks" class="badge bg-primary rounded-pill">Loading...</span>

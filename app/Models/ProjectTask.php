@@ -284,6 +284,10 @@ class ProjectTask extends Model
             {
                 $percentage = 100;
             }
+            else if($this->stage_id == 3)
+            {
+                $percentage = 80;
+            }
             else
             {
                 $percentage = 0;
