@@ -573,7 +573,26 @@
 
         document.addEventListener("DOMContentLoaded", function () {
             const userFilterDropdown = document.getElementById("user-filter-dropdown");
+            const commentForm = document.getElementById("comment-form");
             const commentList = document.getElementById("comment-list");
+            const projectId = {{ $project->id }}; 
+
+            const fileInput = document.getElementById("comment-file");
+            const fileNamePreview = document.getElementById("file-name-preview");
+            const selectedFileName = document.getElementById("selected-file-name");
+
+            fileInput.addEventListener("change", function () {
+                if (fileInput.files.length > 0) {
+
+                    fileNamePreview.style.display = "block";
+                    selectedFileName.textContent = fileInput.files[0].name;
+                } else {
+
+                    fileNamePreview.style.display = "none";
+                    selectedFileName.textContent = "";
+                }
+            });
+
 
             function fetchUsers() {
                 fetch('{{ route('get.project.users', ['projectId' => $project->id]) }}')
@@ -608,17 +627,16 @@
 
                             userFilterDropdown.appendChild(userOption);
                         });
-                    });
+                     });
             }
 
             function fetchComments(selectedUserIds = []) {
                 fetch('{{ route('get.project.comment', ['projectId' => $project->id]) }}')
                     .then(response => response.json())
                     .then(comments => {
-                        commentList.innerHTML = "";
-
+                        commentList.innerHTML = ""; 
                         comments.forEach(comment => {
-
+                            
                             if (selectedUserIds.length === 0 || selectedUserIds.includes(comment.user.id.toString())) {
                                 const commentDiv = document.createElement("div");
                                 commentDiv.classList.add("comment-item");
@@ -653,7 +671,7 @@
                                 if (comment.file_path) {
                                     const fileLink = document.createElement("a");
                                     fileLink.classList.add("comment-file");
-                                    fileLink.href = comment.file_path;
+                                    fileLink.href = comment.file_path; 
                                     fileLink.target = "_blank";
                                     fileLink.textContent = "View File";
                                     commentDiv.appendChild(fileLink);
@@ -661,6 +679,7 @@
 
                                 commentList.appendChild(commentDiv);
                             }
+
                         });
                     });
             }
@@ -673,7 +692,37 @@
                     checkbox.checked = false;
                 });
 
-                fetchComments();
+                fetchComments(); 
+
+            });
+
+
+            commentForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                const formData = new FormData();
+                formData.append('project_id', projectId);
+                formData.append('text', document.getElementById("comment-text").value.trim());
+                const fileInput = document.getElementById("comment-file");
+                if (fileInput.files.length > 0) {
+                    formData.append('file', fileInput.files[0]);
+                }
+
+                fetch('{{ route('project.comment') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    },
+                    body: formData,
+                })
+                    .then(response => response.json())
+                    .then(() => {
+                        commentForm.reset();
+                        fileNamePreview.style.display = "none"; 
+                        selectedFileName.textContent = ""; 
+                        fetchComments(); 
+                        show_toastr('{{__('success')}}', '{{ __("Comment Added Successfully!")}}');
+                    });
             });
 
             fetchUsers();
@@ -685,6 +734,7 @@
 
             async function fetchPlannings() {
                 try {
+                    console.log("Fetching plannings...");
                     const response = await fetch('{{ route('get.project.planning', ['projectId' => $project->id]) }}');
                     if (!response.ok) {
                         throw new Error('Failed to fetch plannings');
@@ -739,7 +789,12 @@
 
                         const detailModal = new bootstrap.Modal(document.getElementById('planningDetailModal'));
                         detailModal.show();
-                    }
+                    },
+                    dateClick: function (info) {
+                        document.getElementById('planning-start-date').value = info.dateStr;
+                        const modal = new bootstrap.Modal(document.getElementById('planningModal'));
+                        modal.show();
+                    },
                 });
 
                 calendar.render();

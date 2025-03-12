@@ -25,6 +25,9 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->job(new CheckAnnouncementsStatus)->daily();
+        $schedule->command('queue:work --queue=reminder --tries=3 --delay=5 --once')
+             ->everyMinute()
+             ->withoutOverlapping();
     }
 
     /**
