@@ -577,7 +577,7 @@ class ProjectController extends Controller
 
         $project->save();
 
-        return redirect()->route('projects.show', $project)->with('success', __('Project Updated Successfully'));
+        return redirect()->route('projects.show', \Crypt::encrypt($project->id))->with('success', __('Project Updated Successfully'));
     }
 
     /**

@@ -51,39 +51,32 @@ class ProjectTaskController extends Controller
         $project_id = Crypt::decrypt($ids);
 
         if (\Auth::user()->can('manage project task')) {
-            // Ambil data milestone
+
             $milestone_id = Milestone::where('project_id', $project_id)->pluck('title', 'id');
             $milestone_id->prepend('All', '');
 
-            // Ambil data proyek
             $project = Project::find($project_id);
 
-            // Ambil data stage
             $taskstage = TaskStage::where('created_by', \Auth::user()->creatorId())->get();
 
-            // Query dasar untuk task
             $tasks = ProjectTask::where('project_id', '=', $project_id)
                 ->with('checklist');
 
-            // Filter berdasarkan milestone jika dipilih
             if ($request->has('milestone_id') && $request->input('milestone_id') != 'All') {
                 $tasks->where('milestone_id', '=', $request->input('milestone_id'));
             }
 
-            // Tambahkan filter berdasarkan view (all/assigned)
-            $view = $request->get('view', 'all'); // Default ke 'all' jika tidak ada parameter view
+            $view = $request->get('view', 'all');
             if ($view === 'assigned') {
-                // Filter task yang di-assign ke pengguna saat ini
                 $tasks->whereRaw("FIND_IN_SET(?, assign_to)", [$usr->id]);
             }
 
-            // Eksekusi query
-            $tasks = $tasks->get();
+            $tasks = $tasks->orderByDesc('id')->paginate(50)->appends([
+                'milestone_id' => $request->milestone_id,
+            ]);  
 
-            // Tentukan tampilan berdasarkan parameter display
-            $display = $request->get('display', 'list'); // Default ke 'list'
+            $display = $request->get('display', 'list');
 
-            // Kirim data ke view
             return view('project_task.index', compact('tasks', 'taskstage', 'milestone_id', 'project', 'view', 'display'));
         } else {
             return redirect()->back()->with('error', __('Permission Denied.'));

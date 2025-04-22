@@ -169,7 +169,7 @@ class Project extends Model
         $percentage = 0;
         $last_task      = TaskStage::orderBy('order', 'DESC')->where('created_by',\Auth::user()->creatorId())->first();
         $total_task     = $this->tasks->count();
-        $completed_task = $this->tasks()->where('stage_id', '=', $last_task->id)->where('is_complete', '=', 1)->count();
+        $completed_task = $this->tasks()->where('stage_id', '=', $last_task->id)->where('stage_id', '=', 4)->count();
 
         if($total_task > 0)
         {

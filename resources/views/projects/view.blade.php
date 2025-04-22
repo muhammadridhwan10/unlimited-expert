@@ -1517,7 +1517,7 @@
                                             <h5 class="mb-1"> {{$project->project_name}}</h5>
                                             <p class="mb-0 text-sm">
                                                 <div class="progress-wrapper">
-                                                    <span class="progress-percentage"><small class="font-weight-bold">{{__('Completed:')}} : </small>{{ $project->project_progress()['percentage'] }}</span>
+                                                    <span class="progress-percentage"><small class="font-weight-bold">{{__('Completed')}} : </small>{{ $project->project_progress()['percentage'] }}</span>
                                                     <div class="progress progress-xs mt-2">
                                                         <div class="progress-bar bg-info" role="progressbar" aria-valuenow="{{ $project->project_progress()['percentage'] }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ $project->project_progress()['percentage'] }};"></div>
                                                     </div>
@@ -1543,12 +1543,16 @@
                                                 <span class="text-white text-sm">{{__('End Date')}}</span>
                                                 <h5 class="text-white text-nowrap">{{ Utility::getDateFormated($project->end_date) }}</h5>
                                             </div>
-
                                         </div>
                                         <div class="row">
                                             <span class="text-white text-sm">{{__('Client')}}</span>
-                                            <h5 class="text-white text-nowrap">{{ (!empty($project->client)?$project->client->name: 'No Client') }}</h5>
+                                            <span class="text-white text-nowrap">{{ (!empty($project->client)?$project->client->name: 'No Client') }}</span>
                                         </div>
+                                        <div class="row">
+                                            <span class="text-white text-sm">{{__('Status')}}</span>
+                                            <span class="text-white text-nowrap">{{ $project->status }}</span>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>

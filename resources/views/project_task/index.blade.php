@@ -558,7 +558,7 @@
             <div class=" mt-2 " id="multiCollapseExample1">
                 <div class="card">
                     <div class="card-body">
-                        {{ Form::open(array('route' => array('projects.tasks.index',$project->id),'method' => 'GET','id'=>'frm_submit')) }}
+                        {{ Form::open(array('route' => array('projects.tasks.index',\Crypt::encrypt($project->id)),'method' => 'GET','id'=>'frm_submit')) }}
                         <div class="d-flex align-items-center justify-content-end">
                                 <div class="col-xl-3 col-lg-5 col-md-6 col-sm-6 col-6 me-2">
                                     <div class="btn-box">
@@ -571,7 +571,7 @@
                                 <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('frm_submit').submit(); return false;" data-bs-toggle="tooltip" data-original-title="{{__('apply')}}">
                                     <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
                                 </a>
-                                <a href="{{ route('projects.tasks.index',$project->id) }}" class="btn btn-sm btn-danger" data-bs-toggle="tooltip"
+                                <a href="{{ route('projects.tasks.index',\Crypt::encrypt($project->id)) }}" class="btn btn-sm btn-danger" data-bs-toggle="tooltip"
                                    title="{{ __('Reset') }}">
                                     <span class="btn-inner--icon"><i class="ti ti-trash-off text-white "></i></span>
                                 </a>
@@ -589,17 +589,17 @@
             <!-- Nav Tabs -->
             <ul class="nav nav-tabs" id="taskTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link {{ request()->get('view') == 'all' ? 'active' : '' }}" href="{{ route('projects.tasks.index', ['id' => $project->id, 'view' => 'all']) }}" role="tab">All Tasks</a>
+                    <a class="nav-link {{ request()->get('view') == 'all' ? 'active' : '' }}" href="{{ route('projects.tasks.index', ['id' => \Crypt::encrypt($project->id), 'view' => 'all']) }}" role="tab">All Tasks</a>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <a class="nav-link {{ request()->get('view') == 'assigned' ? 'active' : '' }}" href="{{ route('projects.tasks.index', ['id' => $project->id, 'view' => 'assigned']) }}" role="tab">Assigned Tasks</a>
+                    <a class="nav-link {{ request()->get('view') == 'assigned' ? 'active' : '' }}" href="{{ route('projects.tasks.index', ['id' => \Crypt::encrypt($project->id), 'view' => 'assigned']) }}" role="tab">Assigned Tasks</a>
                 </li>
             </ul>
             <div class="card">
                 <div class="col-12">
                     <div class="card-body table-border-style">
                         <div class="table-responsive">
-                            <table class="table datatabless">
+                            <table class="table bordered">
                                 <thead>
                                 <tr>
                                     <th scope="col"></th>
@@ -771,6 +771,9 @@
                                     @endif
                                 </tbody>
                             </table>
+                            <div class="d-flex justify-content-center mt-3">
+                                {{ $tasks->links() }}
+                            </div>
 
                             <script>
                                 function toggleSubtask(taskId) {
