@@ -14,8 +14,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 Route::post('login', 'ApiController@login');
-Route::post('/generate', 'ProjectController@getRecommendations');
-// Route::post('get', 'ProjectController@loadClient');
+Route::post('/project/{projectId}/expertai/response', 'ProjectController@getLastAI');
+Route::post('/project/{projectId}/expertai/regenerate', 'ProjectController@regenerateAI');
+
 // Route::get('zoom', 'ZoomMeetingController@getToken');
 // Route::get('comment', 'ProjectTaskController@commentStore');
 Route::group(['middleware' => ['auth:sanctum']], function () {

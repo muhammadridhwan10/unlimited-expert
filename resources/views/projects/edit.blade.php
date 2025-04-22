@@ -61,7 +61,7 @@
                 {{ Form::label('label', __('Type Of Service'), ['class' => 'form-label']) }}
                 <select name="label" id="label" class="form-control main-element select2" >
                     @foreach(\App\Models\Project::$label as $k => $v)
-                        <option value="{{$k}}" {{ ($project->status == $k) ? 'selected' : ''}}>{{__($v)}}</option>
+                        <option value="{{$k}}" {{ ($project->label == $k) ? 'selected' : ''}}>{{__($v)}}</option>
                     @endforeach
                 </select>
             </div>

@@ -36,6 +36,7 @@ use App\Models\AuditMemorandum;
 use App\Models\SummaryJournalData;
 use App\Models\SummaryIdentifiedMisstatements;
 use App\Models\NotesAnalysis;
+use App\Models\Notification;
 use Illuminate\Support\Facades\Crypt;
 use App\Mail\CommentNotification;
 use App\Models\Respons;
@@ -44,9 +45,10 @@ use App\Http\Library\ChatGPT\V1 as ChatGPT;
 
 class ProjectTaskController extends Controller
 {
-    public function index(Request $request, $project_id)
+    public function index(Request $request, $ids)
     {
         $usr = \Auth::user();
+        $project_id = Crypt::decrypt($ids);
 
         if (\Auth::user()->can('manage project task')) {
             // Ambil data milestone
@@ -193,7 +195,7 @@ class ProjectTaskController extends Controller
 
             // Create notification for the user assigned to the task
             $notificationData = [
-                'user_id' => $request->assign_to,
+                'user_id' => $request->assign_to ?? $usr->id,
                 'type' => 'create_task',
                 'data' => json_encode([
                     'updated_by' => $usr->id,

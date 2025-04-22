@@ -242,6 +242,7 @@
                                         ?>
                                         <td>{{ $total_work }}</td>
                                         <td>{{ $attendance->late }}</td>
+                                        <td>{{ $attendance->work_location }}</td>
                                         <td>{{ $attendance->early_leaving }}</td>
                                         <td>{{ $attendance->overtime }}</td>
                                         @if(Gate::check('edit attendance') || Gate::check('delete attendance'))

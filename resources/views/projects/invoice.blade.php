@@ -1,13 +1,4 @@
 @extends('layouts.admin')
-@section('page-title')
-    {{__('Manage Invoice')}}
-@endsection
-@section('breadcrumb')
-    <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('Invoice')}}</li>
-@endsection
-
-
 
 @push('css-page')
     <link rel="stylesheet" href="{{url('css/swiper.min.css')}}">
@@ -82,7 +73,7 @@
                                     <td>{{ $invoice->invoice->issue_date }}</td>
                                     <td>
                                         @if ($invoice->invoice->due_date < date('Y-m-d'))
-                                            <p class="text-danger"> {{$invoice->invoice->due_date }}</p>
+                                            <span class="text-danger"> {{$invoice->invoice->due_date }}</span>
                                         @else
                                             {{ $invoice->invoice->due_date }}
                                         @endif

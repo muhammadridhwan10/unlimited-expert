@@ -37,6 +37,8 @@ use Carbon\Carbon;
 use App\Mail\CustomerInvoiceSend;
 use App\Mail\CustomerInvoiceThanksSend;
 use App\Mail\ReminderInvoiceSend;
+use Illuminate\Support\Facades\Log;
+use GuzzleHttp\Client as GuzzleClient;
 
 class InvoiceController extends Controller
 {
@@ -516,42 +518,37 @@ class InvoiceController extends Controller
 
     public function show($ids)
     {
-
-        if(\Auth::user()->can('show invoice'))
-        {
+        if (\Auth::user()->can('show invoice')) {
             try {
-                $id       = Crypt::decrypt($ids);
+                $id = Crypt::decrypt($ids);
             } catch (\Throwable $th) {
                 return redirect()->back()->with('error', __('Invoice Not Found.'));
             }
+
             $invoice = Invoice::find($id);
 
-            if(!empty($invoice->created_by) == \Auth::user()->creatorId())
-            {
+            if (!empty($invoice->created_by) == \Auth::user()->creatorId()) {
                 $invoicePayment = InvoicePayment::where('invoice_id', $invoice->id)->first();
 
+                $client = $invoice->client;
+                $iteams = $invoice->items;
+                $user = \Auth::user();
 
-                $client               = $invoice->client;
-                $iteams               = $invoice->items;
-                $user                 = \Auth::user();
+                $openedInvoices = $this->getOpenedInvoices($invoice->client_id);
 
-                // start for storage limit note
-                $invoice_user = User::find($invoice->created_by);
-                // $user_plan = Plan::find($invoice_user->plan);
-                // end for storage limit note
+                $isOpened = false;
+                foreach ($openedInvoices as $event) {
+                    if (strpos($event['email'], $invoice->client->email) !== false) {
+                        $isOpened = true;
+                        break;
+                    }
+                }
 
-                $invoice->customField = CustomField::getData($invoice, 'invoice');
-                $customFields         = CustomField::where('created_by', '=', \Auth::user()->creatorId())->where('module', '=', 'invoice')->get();
-
-                return view('invoice.view', compact('invoice', 'client', 'iteams', 'invoicePayment', 'customFields', 'user','invoice_user'));
-            }
-            else
-            {
+                return view('invoice.view', compact('invoice', 'client', 'iteams', 'invoicePayment', 'isOpened'));
+            } else {
                 return redirect()->back()->with('error', __('Permission denied.'));
             }
-        }
-        else
-        {
+        } else {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
     }
@@ -1661,6 +1658,69 @@ class InvoiceController extends Controller
         }
 
         return redirect()->route('invoice.index')->with('success', __('Invoice successfully convert to Balance Partners.'));
+    }
+
+    public function getOpenedInvoices($clientId)
+    {
+
+        require_once base_path('vendor/autoload.php');
+
+        $apiKey = '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';
+
+        $client = new \GuzzleHttp\Client([
+            'base_uri' => 'https://api.brevo.com/v3/',
+            'headers' => [
+                'accept' => 'application/json',
+                'api-key' => $apiKey,
+            ],
+        ]);
+
+        $limit = 2500;
+        $offset = 0;
+
+        try {
+
+            $response = $client->get('smtp/statistics/events', [
+                'query' => [
+                    'limit' => $limit,
+                    'offset' => $offset,
+                    'event' => 'opened',
+                    'sort' => 'desc'
+                ],
+            ]);
+
+            $result = json_decode($response->getBody(), true);
+
+            if (!isset($result['events']) || empty($result['events'])) {
+                Log::info('No events found for the given criteria.');
+                return [];
+            }
+
+            $clientData = \App\Models\User::find($clientId);
+            if (!$clientData) {
+                return [];
+            }
+
+            $filteredEvents = array_filter($result['events'], function ($event) use ($clientData) {
+                return (
+                    strpos($event['subject'], 'Invoice') !== false &&
+                    $event['email'] === $clientData->email
+                );
+            });
+
+            $uniqueEvents = [];
+            foreach ($filteredEvents as $event) {
+                $uniqueKey = $event['email'];
+                if (!isset($uniqueEvents[$uniqueKey])) {
+                    $uniqueEvents[$uniqueKey] = $event;
+                }
+            }
+
+            return array_values($uniqueEvents);
+        } catch (\Exception $e) {
+            Log::error('Error fetching Brevo events: ' . $e->getMessage());
+            return [];
+        }
     }
 
 

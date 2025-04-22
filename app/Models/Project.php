@@ -91,6 +91,11 @@ class Project extends Model
         return $this->belongsTo(User::class, 'client_id');
     }
 
+    public function projectofferings()
+    {
+        return $this->hasOne(ProjectOfferings::class, 'project_id', 'id');
+    }
+
 
     public function projectUsers()
     {

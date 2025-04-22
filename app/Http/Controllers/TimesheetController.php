@@ -22,8 +22,9 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class TimesheetController extends Controller
 {
-    public function timesheetView(Request $request, $project_id)
+    public function timesheetView(Request $request, $ids)
     {
+        $project_id = Crypt::decrypt($ids);
         $authuser = Auth::user();
         
         if($authuser->can('manage timesheet'))

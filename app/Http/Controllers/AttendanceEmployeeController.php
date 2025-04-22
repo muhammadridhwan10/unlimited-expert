@@ -750,7 +750,6 @@ class AttendanceEmployeeController extends Controller
         {
             $employee = Employee::where('id', $employeeId)->first();
             
-            // Office location coordinates for branch
             $officeLatitudePusat = -6.2245196;
             $officeLongitudePusat = 106.8402893;
 
@@ -774,7 +773,6 @@ class AttendanceEmployeeController extends Controller
                 $endTime   = "17:00";
             }
 
-            // Other existing code to handle clock-in and out logic
             $attendance = AttendanceEmployee::orderBy('id', 'desc')->where('employee_id', '=', $employeeId)->where('clock_out', '=', '00:00:00')->first();
             if ($attendance != null) {
                 $attendance->clock_out = $endTime;
@@ -814,6 +812,7 @@ class AttendanceEmployeeController extends Controller
             $employeeAttendance->clock_out = '00:00:00';
             $employeeAttendance->latitude = $employeeLatitude;
             $employeeAttendance->longitude = $employeeLongitude;
+            $employeeAttendance->work_location = $request->work_location;
             $employeeAttendance->late = $late;
             $employeeAttendance->early_leaving = '00:00:00';
             $employeeAttendance->overtime = '00:00:00';

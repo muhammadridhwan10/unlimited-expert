@@ -5,7 +5,7 @@
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
     <li class="breadcrumb-item"><a href="{{route('projects.index')}}">{{__('Project')}}</a></li>
-    <li class="breadcrumb-item"><a href="{{ route('projects.show',$project->id) }}">{{ucwords($project->project_name)}}</a></li>
+    <li class="breadcrumb-item"><a href="{{ route('projects.show',\Crypt::encrypt($project->id)) }}">{{ucwords($project->project_name)}}</a></li>
     <li class="breadcrumb-item">{{__('Project Tracker')}}</li>
 @endsection
 

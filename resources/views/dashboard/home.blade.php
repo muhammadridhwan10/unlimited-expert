@@ -82,55 +82,6 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
         IntitalizeFireBaseMessaging();
     </script>
     <script>
-        function typeWriter(text, i, callback) {
-            if (i < text.length) {
-                document.getElementById("timer").innerHTML += text.charAt(i);
-                i++;
-                setTimeout(function() {
-                    typeWriter(text, i, callback);
-                }, 50);
-            } else {
-                callback();
-            }
-        }
-
-        @if(!empty($employeeAttendance) && $employeeAttendance->clock_out == '00:00:00')
-            var clockInTime = "{{ $employeeAttendance->clock_in }}";
-            var welcomeMessage = "Hai {{ \Auth::user()->name }}, Have a nice day!!! 😊💪. You are present at " + clockInTime;
-
-            typeWriter(welcomeMessage, 0, function() {
-            });
-       @else
-            @if (!empty($employeeAttendance) && is_object($employeeAttendance))
-                var currentDate = new Date();
-                var employeeAttendanceDate = new Date("{{ $employeeAttendance->date }}");
-
-                if (currentDate.toDateString() === employeeAttendanceDate.toDateString()) {
-                    var clockOutTime = new Date("{{ date('Y-m-d', strtotime($employeeAttendance->clock_out)) }}T{{ date('H:i:s', strtotime($employeeAttendance->clock_out)) }}");
-                    var clockInTime = new Date("{{ date('Y-m-d', strtotime($employeeAttendance->clock_in)) }}T{{ date('H:i:s', strtotime($employeeAttendance->clock_in)) }}");
-                    var timeDifference = clockOutTime - clockInTime;
-                    var hours = Math.floor(timeDifference / (1000 * 60 * 60));
-                    var minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
-                    var seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
-
-                    hours = hours - 1;
-
-                    var workedDurationMessage = "You have worked today for " + hours + " hours, " + minutes + " minutes, and " + seconds + " seconds.";
-                    typeWriter(workedDurationMessage, 0, function() {
-                    });
-                } else {
-                    var notAttendedMessage = "You have not attended today, please clock in";
-                    typeWriter(notAttendedMessage, 0, function() {
-                    });
-                }
-            @else
-                var notAttendedMessage = "You have not attended today, please clock in";
-                typeWriter(notAttendedMessage, 0, function() {
-                });
-            @endif
-        @endif
-    </script>
-    <script>
     @if(\Auth::user()->type == 'partners')
         (function () {
             
@@ -496,16 +447,20 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
     </script>
     <script>
        document.getElementById('clock_in').addEventListener('click', function(event) {
-        event.preventDefault();
+
+        const selectedLocation = document.querySelector('input[name="work_location"]:checked');
+        
+        if (!selectedLocation) {
+            event.preventDefault();
+            alert('Please select a work location before clocking in.');
+            return;
+        }
 
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 function(position) {
-                    // Isi input tersembunyi yang sudah ada
                     document.getElementById('latitude').value = position.coords.latitude;
                     document.getElementById('longitude').value = position.coords.longitude;
-
-                    // Kirim form setelah data diisi
                     document.getElementById('clock_in_form').submit();
                 },
                 function(error) {
@@ -520,6 +475,12 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
             alert('Geolocation is not supported by your browser.');
         }
     });
+
+    function updatePerPage(paramName, value) {
+        const url = new URL(window.location.href);
+        url.searchParams.set(paramName, value);
+        window.location.href = url.toString();
+    }
     </script>
 @endpush
 @push('css-page')
@@ -567,9 +528,44 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                     <div class="card-body dash-card-body">
                         <p class="text-muted pb-0-5">{{__('My Office Time: '.$officeTime['startTime'].' to '.$officeTime['endTime'])}}</p>
                         <center>
+                            {{Form::open(array('url'=>'attendanceemployee/attendance','method'=>'post', 'id' => 'clock_in_form'))}}
                             <div class="row">
-                                <div class="col-md-6">
-                                    {{Form::open(array('url'=>'attendanceemployee/attendance','method'=>'post', 'id' => 'clock_in_form'))}}
+                                <label class="font-weight-bold">Work Location:</label>
+                                <div class="d-flex align-items-center mt-3">
+                                    <div class="col-4 d-flex justify-content-center">
+                                        <div class="form-check form-check-inline">
+                                            <input type="radio" id="wfh" name="work_location" value="WFH" class="form-check-input"
+                                                {{ !empty($employeeAttendance) && $employeeAttendance->work_location == 'WFH' ? 'checked' : '' }}
+                                                {{ !empty($employeeAttendance) && $employeeAttendance->work_location != 'WFH' ? 'disabled' : '' }}>
+                                            <label for="wfh" class="form-check-label">
+                                                🏠 WFH
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 d-flex justify-content-center">
+                                        <div class="form-check form-check-inline">
+                                            <input type="radio" id="wfa" name="work_location" value="WFA" class="form-check-input"
+                                                {{ !empty($employeeAttendance) && $employeeAttendance->work_location == 'WFA' ? 'checked' : '' }}
+                                                {{ !empty($employeeAttendance) && $employeeAttendance->work_location != 'WFA' ? 'disabled' : '' }}>
+                                            <label for="wfa" class="form-check-label">
+                                                🌍 WFA
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-4 d-flex justify-content-center">
+                                        <div class="form-check form-check-inline">
+                                            <input type="radio" id="wfo" name="work_location" value="WFO" class="form-check-input"
+                                                {{ !empty($employeeAttendance) && $employeeAttendance->work_location == 'WFO' ? 'checked' : '' }}
+                                                {{ !empty($employeeAttendance) && $employeeAttendance->work_location != 'WFO' ? 'disabled' : '' }}>
+                                            <label for="wfo" class="form-check-label">
+                                                🏢 WFO
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-6 d-flex justify-content-center">
                                         <input type="hidden" name="latitude" id="latitude">
                                         <input type="hidden" name="longitude" id="longitude">
                                         @if(empty($employeeAttendance) || $employeeAttendance->clock_out != '00:00:00')
@@ -579,7 +575,7 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                                         @endif
                                     {{Form::close()}}
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-6 d-flex justify-content-center">
                                     @if(!empty($employeeAttendance) && $employeeAttendance->clock_out == '00:00:00')
                                         {{Form::model($employeeAttendance,array('route'=>array('attendanceemployee.update',$employeeAttendance->id),'method' => 'PUT')) }}
                                         <button type="submit" value="1" name="out" id="clock_out" class="btn btn-danger">{{__('CLOCK OUT')}}</button>
@@ -609,128 +605,6 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                 </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="card">
-                    <div class="card-body">
-                        {{ Form::open(array('route' => array('home'),'method'=>'get','id'=>'report_monthly_attendance_user')) }}
-                        <div class="row align-items-center justify-content-end">
-                            <div class="col-auto">
-                                <div class="row">
-                                    <div class="col-auto">
-                                        <div class="btn-box">
-                                            {{Form::label('month',__('Month'),['class'=>'form-label'])}}
-                                            {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-auto">
-                                <div class="row">
-                                    <div class="col-auto mt-4">
-                                        <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_monthly_attendance_user').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
-                                            <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
-                                        </a>
-                                        <a href="{{route('home')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
-                                            <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {{ Form::close() }}
-                </div>
-            </div>
-
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h6>{{ __("Total Overtime Hours") }}</h6>
-                        <h3 class="small-font">{{ $totalOvertimeHours }} hours</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h6>{{ __("Total Annual Leave Taken") }}</h6>
-                        <h3 class="small-font">{{ $totalLeaveDays . ' / ' . $totalAllocatedLeaveDays }} days</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h6>{{ __("Remaining Annual Leave Days") }}</h6>
-                        <h3 class="small-font">{{ $totalRemainingLeaveDays }} days</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-lg-6 col-md-6">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h6>{{ __("Total Sick") }}</h6>
-                        <h3 class="small-font">{{ $totalSickDays }} Days</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6 col-md-6">
-                <div class="card">
-                    <div class="card-body text-center">
-                        <h6>{{ __("Total Reimbursement") }}</h6>
-                        <h3 class="small-font">{{ 'Rp ' . number_format($totalReimbursement, 0, ',', '.') . ' / ' . number_format($totalReimbursementAmount, 0, ',', '.') }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-            <div class="col-lg-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>{{ __("Timesheet Hours Per Day in $curMonth") }}</h5>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="timesheetChart" width="400" height="200"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>{{__("Attendance Statistics")}}</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <canvas id="attendanceChart" width="400" height="200"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>{{__("Overtime Statistics")}}</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <canvas id="overtimeChart" width="400" height="200"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="row">
             <div class="col-lg-6 col-md-6">
                 <div class="card">
@@ -780,7 +654,7 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
             </div>
         </div>
 
-        <div class="row">
+        {{-- <div class="row">
             <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
@@ -828,6 +702,318 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                     </div>
                     <div class="card-body">
                         <canvas id="overdueTasksChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div> --}}
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{('Task Reminder')}}</h5>
+                    </div>
+                    <div class="card-body table-border-style">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Task Name</th>
+                                        <th>Project Name</th>
+                                        <th>Milestone</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($outstandingTasks as $index => $task)
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $task->name }}</td>
+                                        <td>{{ $task->project ? $task->project->project_name : 'Project Not Found' }}</td>
+                                        <td>{{ $task->milestone->title ?? 'No Milestone'  }}</td>
+                                        <td><span class="badge p-2 px-3 rounded badge-sm bg-{{__(\App\Models\ProjectTask::$priority_color[$task->priority])}}">{{ __(\App\Models\ProjectTask::$priority[$task->priority]) }}</span></td>
+                                        <td>
+                                            @if ($task->stage_id == 4)
+                                                <span class="text-success">Completed</span>
+                                            @else
+                                                <span class="text-danger">Outstanding</span>
+                                            @endif
+                                        </td>
+                                    
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center">No outstanding tasks found.</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xl-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{('10 List of Top Ranked Untouched Project')}}</h5>
+                    </div>
+                    <div class="card-body table-border-style">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Project Name</th>
+                                        <th>Start Date</th>
+                                        <th>Total Timesheet</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($untouchedProjects as $index => $project)
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $project->project_name }}</td>
+                                        <td>{{ $project->start_date }}</td>
+                                        <td>
+                                            @php
+                                                $totalTimesheet = $project->timesheets->sum('time');
+                                            @endphp
+                                            {{ gmdate('H:i:s', $totalTimesheet) }}
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="4" class="text-center">No untouched projects found.</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{('10 List of Project in Progress')}}</h5>
+                    </div>
+                    <div class="card-body table-border-style">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Project Name</th>
+                                        <th>Status</th>
+                                        <th>Start Date</th>
+                                        <th>Total Timesheet</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($inProgressProjects as $index => $project)
+                                    <tr>
+                                        <td>{{ $index + 1 }}</td>
+                                        <td>{{ $project->project_name }}</td>
+                                        <td>{{ $project->status }}</td>
+                                        <td>{{ $project->start_date }}</td>
+                                        <td>
+                                            @php
+                                                $totalSeconds = $project->timesheets->reduce(function ($carry, $item) {
+                                                    list($hours, $minutes, $seconds) = explode(':', $item->time);
+                                                    return $carry + ($hours * 3600) + ($minutes * 60) + $seconds;
+                                                }, 0);
+                                            @endphp
+                                            {{ gmdate('H:i:s', $totalSeconds) }}
+                                        </td>
+                                    </tr>
+                                    @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center">No projects in progress found.</td>
+                                    </tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{('Productivity Comparison')}}</h5>
+                    </div>
+                    <div class="card-body table-border-style">
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>Previous Month</th>
+                                        <th>Current Month</th>
+                                        <th>Trend</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Total Work Time</td>
+                                        <td>{{ $previousMonthWork }}</td>
+                                        <td>{{ $currentMonthWork }}</td>
+                                        <td>
+                                            @if ($currentMonthWorkInSeconds > $previousMonthWorkInSeconds)
+                                                <span class="text-success">↑ Increased</span>
+                                            @elseif ($currentMonthWorkInSeconds < $previousMonthWorkInSeconds)
+                                                <span class="text-danger">↓ Decreased</span>
+                                            @else
+                                                <span class="text-info">↔ No Change</span>
+                                            @endif
+
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tasks Completed</td>
+                                        <td>{{ $previousMonthTasksCompleted }}</td>
+                                        <td>{{ $currentMonthTasksCompleted }}</td>
+                                        <td>
+                                            @if ($currentMonthTasksCompleted > $previousMonthTasksCompleted)
+                                                <span class="text-success">↑ Increased</span>
+                                            @elseif ($currentMonthTasksCompleted < $previousMonthTasksCompleted)
+                                                <span class="text-danger">↓ Decreased</span>
+                                            @else
+                                                <span class="text-info">↔ No Change</span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+                    <div class="card-body">
+                        {{ Form::open(array('route' => array('home'),'method'=>'get','id'=>'report_monthly_attendance_user')) }}
+                        <div class="row align-items-center justify-content-end">
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col-auto">
+                                        <div class="btn-box">
+                                            {{Form::label('month',__('Month'),['class'=>'form-label'])}}
+                                            {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <div class="row">
+                                    <div class="col-auto mt-4">
+                                        <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_monthly_attendance_user').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
+                                            <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
+                                        </a>
+                                        <a href="{{route('home')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
+                                            <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {{ Form::close() }}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6>{{ __("Total Overtime Hours") }}</h6>
+                            <h3 class="small-font">{{ $totalOvertimeHours }} hours</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6>{{ __("Total Annual Leave Taken") }}</h6>
+                            <h3 class="small-font">{{ $totalLeaveDays . ' / ' . $totalAllocatedLeaveDays }} days</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6>{{ __("Remaining Annual Leave Days") }}</h6>
+                            <h3 class="small-font">{{ $totalRemainingLeaveDays }} days</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6 col-md-6">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6>{{ __("Total Sick") }}</h6>
+                            <h3 class="small-font">{{ $totalSickDays }} Days</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6">
+                    <div class="card">
+                        <div class="card-body text-center">
+                            <h6>{{ __("Total Reimbursement") }}</h6>
+                            <h3 class="small-font">{{ 'Rp ' . number_format($totalReimbursement, 0, ',', '.') . ' / ' . number_format($totalReimbursementAmount, 0, ',', '.') }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{__("Attendance Statistics")}}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <canvas id="attendanceChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{ __("Timesheet Hours Per Day in $curMonth") }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="timesheetChart" width="400" height="200"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>{{__("Overtime Statistics")}}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <canvas id="overtimeChart" width="400" height="200"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -997,6 +1183,348 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
             </div>
         </div>
     @elseif(\Auth::user()->type == 'partners')
+        <!-- Project Performance -->
+        <div class="section">
+            <div class="row">
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>{{('List of Top Ranked Untouched Project')}}</h5>
+                        </div>
+                        <div class="row">
+                            <div class="col-auto">
+                                <div class="btn-box mb-3 mt-3" style="margin-left:20px">
+                                    {{ Form::open(['method' => 'GET']) }}
+                                    {{ Form::label('untouched_per_page', __('Show Entries'), ['class' => 'form-label']) }}
+                                    {{ Form::select('untouched_per_page', [10 => '10', 25 => '25', 50 => '50', 100 => '100'], request('untouched_per_page', 10), ['class' => 'form-select', 'onchange' => 'this.form.submit()']) }}
+                                    {{ Form::close() }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Project Name</th>
+                                            <th>Budget</th>
+                                            <th>Start Date</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($untouchedProjects as $index => $project)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $project->project_name }}</td>
+                                            <td>{{ $project->budget ?? 0 }}</td>
+                                            <td>{{ $project->start_date }}</td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="4" class="text-center">No untouched projects found.</td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex mt-4">
+                                    {{ $untouchedProjects->appends(['untouched_per_page' => request('untouched_per_page')])->links() }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>{{('List of Project in Progress')}}</h5>
+                        </div>
+                        <div class="row">
+                            <div class="col-auto">
+                                <div class="btn-box mb-3 mt-3" style="margin-left:20px">
+                                    {{ Form::open(['method' => 'GET']) }}
+                                    {{ Form::label('in_progress_per_page', __('Show Entries'), ['class' => 'form-label']) }}
+                                    {{ Form::select('in_progress_per_page', [10 => '10', 25 => '25', 50 => '50', 100 => '100'], request('in_progress_per_page', 10), ['class' => 'form-select', 'onchange' => 'this.form.submit()']) }}
+                                    {{ Form::close() }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Project Name</th>
+                                            <th>Status</th>
+                                            <th>Start Date</th>
+                                            <th>Budget</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($inProgressProjects as $index => $project)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $project->project_name }}</td>
+                                            <td>{{ $project->status }}</td>
+                                            <td>{{ $project->start_date }}</td>
+                                            <td>{{ $project->budget ?? 0  }}</td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center">No projects in progress found.</td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex mt-4">
+                                {{ $inProgressProjects->appends(['in_progress_per_page' => request('in_progress_per_page')])->links() }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>{{('Percentage of Hours Spent vs Budget')}}</h5>
+                        </div>
+                        <div class="row">
+                            <div class="col-auto">
+                                <div class="btn-box mb-3 mt-3" style="margin-left:20px">
+                                    {{ Form::open(['method' => 'GET']) }}
+                                    {{ Form::label('percentage_project_page', __('Show Entries'), ['class' => 'form-label']) }}
+                                    {{ Form::select('percentage_project_page', [10 => '10', 25 => '25', 50 => '50', 100 => '100'], request('percentage_project_page', 10), ['class' => 'form-select', 'onchange' => 'this.form.submit()']) }}
+                                    {{ Form::close() }}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Project Name</th>
+                                            <th>Estimated Hours</th>
+                                            <th>Hours Spent</th>
+                                            <th>Budget</th>
+                                            <th>Percentage</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($projects as $index => $project)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $project->project_name }}</td>
+                                            <td>{{ $project->estimated_hrs }} Hours</td>
+                                            <td>{{ number_format($project->hours_spent, 2) }} Hours</td>
+                                            <td>{{ number_format($project->budget, 2) }}</td>
+                                             <td>{{ is_numeric($project->percentage_budget) ? $project->percentage_budget . '%' : $project->percentage_budget }}</td>
+                                            <td>
+                                                @if ($project->is_over_hours)
+                                                    <span class="text-danger">Over by {{ $project->over_percentage }}%</span>
+                                                @else
+                                                    <span class="text-success">On Track</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center">No projects found.</td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex mt-4">
+                                {{ $projects->appends(['percentage_project_page' => request('percentage_project_page')])->links() }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Performance -->
+        <div class="section">
+            <div class="row">
+                <div class="col-xl-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>{{('List of Top Ranked High Performer Personnel')}}</h5>
+                        </div>
+                        <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Name</th>
+                                            <th>Total Tasks Completed</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($highPerformers as $index => $user)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $user->name }}</td>
+                                            <td>{{ $user->completed_tasks }}</td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="3" class="text-center">No high performers found.</td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>{{('List of Low-Performer Personnel')}}</h5>
+                        </div>
+                        <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Name</th>
+                                            <th>Total Tasks In Progress</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($lowPerformers as $index => $user)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $user->name }}</td>
+                                            <td>{{ $user->in_progress_tasks }}</td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="3" class="text-center">No low performers found.</td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Performance -->
+        {{-- <div class="section">
+            <div class="row">
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>{{('Percentage of Hours Spent vs Budget')}}</h5>
+                        </div>
+                        <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Project Name</th>
+                                            <th>Running Cost</th>
+                                            <th>Fee</th>
+                                            <th>Profit/Loss</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($financialData as $index => $project)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $project->project->project_name }}</td>
+                                            <td>{{ $project->running_cost }}</td>
+                                            <td>{{ $project->fee }}</td>
+                                            <td>{{ $project->fee - $project->running_cost }}</td>
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center">No financial data found.</td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                {!! $financialData->links() !!}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> --}}
+
+        <!-- Task Reminder -->
+        <div class="section">
+            <div class="row">
+                <div class="col-xl-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5>{{('Task Reminder')}}</h5>
+                        </div>
+                        <div class="card-body table-border-style">
+                            <div class="table-responsive">
+                                <table class="table datatablesss">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Task Name</th>
+                                            <th>Project Name</th>
+                                            <th>Milestone</th>
+                                            <th>Priority</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse ($outstandingTasks as $index => $task)
+                                        <tr>
+                                            <td>{{ $index + 1 }}</td>
+                                            <td>{{ $task->name }}</td>
+                                            <td>{{ $task->project ? $task->project->project_name : 'Project Not Found' }}</td>
+                                            <td>{{ $task->milestone->title ?? 'No Milestone'  }}</td>
+                                            <td><span class="badge p-2 px-3 rounded badge-sm bg-{{__(\App\Models\ProjectTask::$priority_color[$task->priority])}}">{{ __(\App\Models\ProjectTask::$priority[$task->priority]) }}</span></td>
+                                            <td>
+                                                @if ($task->stage_id == 4)
+                                                    <span class="text-success">Completed</span>
+                                                @else
+                                                    <span class="text-danger">Outstanding</span>
+                                                @endif
+                                            </td>
+                                           
+                                        </tr>
+                                        @empty
+                                        <tr>
+                                            <td colspan="5" class="text-center">No outstanding tasks found.</td>
+                                        </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex justify-content-center">
+                                {!! $outstandingTasks->links() !!}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="row">
             <div class="col-lg-3 col-6">
                 <div class="card">
@@ -1294,290 +1822,6 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                 </div>
             </div>
         </div>
-        
-        {{-- <div class="row">
-            <div class="col-sm-12">
-                <div class="row">
-                    <div class="col-xxl-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h4>{{__('Mark Attendance')}}</h4>
-                            </div>
-                            <div class="card-body dash-card-body">
-                                <p class="text-muted pb-0-5">{{__('My Office Time: '.$officeTime['startTime'].' to '.$officeTime['endTime'])}}</p>
-                                <center>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            {{Form::open(array('url'=>'attendanceemployee/attendance','method'=>'post'))}}
-                                            @if(empty($employeeAttendance) || $employeeAttendance->clock_out != '00:00:00')
-                                                <button type="submit" value="0" name="in" id="clock_in" class="btn btn-success ">{{__('CLOCK IN')}}</button>
-                                            @else
-                                                <button type="submit" value="0" name="in" id="clock_in" class="btn btn-success disabled" disabled>{{__('CLOCK IN')}}</button>
-                                            @endif
-                                            {{Form::close()}}
-                                        </div>
-                                        <div class="col-md-6 ">
-                                            @if(!empty($employeeAttendance) && $employeeAttendance->clock_out == '00:00:00')
-                                                {{Form::model($employeeAttendance,array('route'=>array('attendanceemployee.update',$employeeAttendance->id),'method' => 'PUT')) }}
-                                                <button type="submit" value="1" name="out" id="clock_out" class="btn btn-danger">{{__('CLOCK OUT')}}</button>
-                                            @else
-                                                <button type="submit" value="1" name="out" id="clock_out" class="btn btn-danger disabled" disabled>{{__('CLOCK OUT')}}</button>
-                                            @endif
-                                            {{Form::close()}}
-                                        </div>
-                                    </div>
-                                </center>
-                                <br>
-                                <div class="container">
-                                    <div id="message"></div>
-                                    <br>
-                                    <div id="timer"></div> 
-                                </div>
-
-                            </div>
-                        </div>
-
-                         <div class="card">
-                            <div class="card-body">
-                                {{ Form::open(array('route' => array('home'),'method'=>'get','id'=>'report_monthly_attendance_user')) }}
-                                <div class="row align-items-center justify-content-end">
-                                    <div class="col-auto">
-                                        <div class="row">
-                                            <div class="col-auto">
-                                                <div class="btn-box">
-                                                    {{Form::label('month',__('Month'),['class'=>'form-label'])}}
-                                                    {{Form::month('month',isset($_GET['month'])?$_GET['month']:date('Y-m'),array('class'=>'month-btn form-control'))}}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-auto">
-                                        <div class="row">
-                                            <div class="col-auto mt-4">
-                                                <a href="#" class="btn btn-sm btn-primary" onclick="document.getElementById('report_monthly_attendance_user').submit(); return false;" data-bs-toggle="tooltip" title="{{__('Apply')}}" data-original-title="{{__('apply')}}">
-                                                    <span class="btn-inner--icon"><i class="ti ti-search"></i></span>
-                                                </a>
-                                                <a href="{{route('home')}}" class="btn btn-sm btn-danger " data-bs-toggle="tooltip"  title="{{ __('Reset') }}" data-original-title="{{__('Reset')}}">
-                                                    <span class="btn-inner--icon"><i class="ti ti-trash-off text-white-off "></i></span>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            {{ Form::close() }}
-                        </div>
-
-                        <div class="card">
-                            <div class="card-body table-border-style">
-                                <div class="table-responsive py-4 attendance-table-responsive">
-                                    <table class="table">
-                                        <thead>
-                                        <tr>
-                                            <th class="active">{{__('Name')}}</th>
-                                            @foreach($dates as $date)
-                                                <th>{{$date}}</th>
-                                            @endforeach
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-
-                                        @foreach($employeesAttendances as $attendance)
-
-                                            <tr>
-                                                <td>{{$attendance['name']}}</td>
-                                                @foreach($attendance['status'] as $status)
-                                                    <td>
-                                                        @if($status=='P')
-                                                            <i class="badge bg-success p-2 rounded">{{__('P')}}</i>
-                                                        @elseif($status=='A')
-                                                            <i class="badge bg-danger p-2 rounded">{{__('A')}}</i>
-                                                        @elseif($status=='W')
-                                                            <i class="badge bg-danger p-2 rounded">{{__('W')}}</i>
-                                                        @endif
-                                                    </td>
-                                                @endforeach
-                                            </tr>
-                                        @endforeach
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> --}}
-
-        {{-- <div class="row">
-            <div class="col-lg-6 col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row align-items-center justify-content-between">
-                            <div class="col-auto mb-3 mb-sm-0">
-                                <div class="d-flex align-items-center">
-                                    <div class="theme-avtar bg-primary">
-                                        <i class="ti ti-cast"></i>
-                                    </div>
-                                    <div class="ms-3">
-                                        <small class="text-muted">{{__('Total')}}</small>
-                                        <h6 class="m-0">{{__('Projects')}}</h6>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-auto text-end">
-                                <h4 class="m-0">{{ $home_data['total_project']['total'] }}</h4>
-                                <small class="text-muted"><span class="text-success">{{ $home_data['total_project']['percentage'] }}%</span> {{__('completd')}}</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6 col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row align-items-center justify-content-between">
-                            <div class="col-auto mb-3 mb-sm-0">
-                                <div class="d-flex align-items-center">
-                                    <div class="theme-avtar bg-info">
-                                        <i class="ti ti-activity"></i>
-                                    </div>
-                                    <div class="ms-3">
-                                        <small class="text-muted">{{__('Total')}}</small>
-                                        <h6 class="m-0">{{__('Tasks')}}</h6>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-auto text-end">
-                                <h4 class="m-0">{{ $home_data['total_task']['total'] }}</h4>
-                                <small class="text-muted"><span class="text-success">{{ $home_data['total_task']['percentage'] }}%</span> {{__('completd')}}</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>{{__('Top Due Projects')}}</h5>
-                    </div>
-                    <div class="card-body project_table">
-                        <div class="table-responsive ">
-                            <table class="table table-hover mb-0">
-                                <thead>
-                                <tr>
-                                    <th>{{__('Name')}}</th>
-                                    <th>{{__('End Date')}}</th>
-                                    <th class="text-end">{{__('Status')}}</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                @if($home_data['due_project']->count() > 0)
-                                    @foreach($home_data['due_project'] as $due_project)
-
-                                        <tr>
-                                            <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div>
-                                                        <h5 class="mb-0"><a class="text-blue" href="{{ route('projects.show',$due_project) }}">{{ $due_project->project_name }}</a></h5>
-                                                        <!-- <p class="mb-0"><span class="text-success">{{ \Auth::user()->priceFormat($due_project->budget) }}</p> -->
-
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td >{{  Utility::getDateFormated($due_project->end_date) }}</td>
-                                            <td class="text-end">
-                                                <span class="status_badge p-2 px-3 rounded badge bg-{{\App\Models\Project::$status_color[$due_project->status]}}">{{ __(\App\Models\Project::$project_status[$due_project->status]) }}</span>
-
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                @else
-                                    <div class="py-5">
-                                        <h5 class="text-center mb-0">{{__('No Due Projects Found.')}}</h5>
-                                    </div>
-                                @endif
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>{{__('Projects Remaining In 2 Weeks')}}</h5>
-                    </div>
-                    <div class="card-body project_table">
-                        <div class="table-responsive ">
-                            <table class="table table-hover mb-0">
-                                <thead>
-                                <tr>
-                                    <th>{{__('Name')}}</th>
-                                    <th>{{__('End Date')}}</th>
-                                    <th class="text-end">{{__('Status')}}</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                @if($home_data['project']->count() > 0)
-                                    @foreach($home_data['project'] as $project)
-                                        <?php
-                                            $harisekarang =   date('Y-m-d');
-                                        
-                                            $date_now = strtotime($harisekarang . "+1 days");
-                                            $date_end = strtotime($project->end_date);
-                        
-                                            $jarak = $date_end - $date_now;
-                                            $hari = $jarak / 60 / 60 / 24;
-                        
-                                            $jml_hari = array();
-                                            $sabtuminggu = array();
-                                            
-                                            for ($i = $date_now; $i <= $date_end; $i += (60 * 60 * 24)) {
-                                                if (date('w', $i) !== '0' && date('w', $i) !== '6') {
-                                                    $jml_hari[] = $i;
-                                                } else {
-                                                    $sabtuminggu[] = $i;
-                                                }
-                                            
-                                            }
-
-                                            $jumlah_hari = count($jml_hari);
-                                        ?>
-                                        @if ($jumlah_hari == 14)
-                                            <tr>
-                                                <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <div>
-                                                           <h5 class="mb-0"><a class="text-blue" href="{{ route('projects.show',$project) }}">{{ $project->project_name }}</a></h5>
-                                                            <!-- <p class="mb-0"><span class="text-success">{{ \Auth::user()->priceFormat($due_project->budget) }}</p> -->
-
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td >{{  Utility::getDateFormated($project->end_date) }}</td>
-                                                <td class="text-end">
-                                                    <span class="status_badge p-2 px-3 rounded badge bg-{{\App\Models\Project::$status_color[$project->status]}}">{{ __(\App\Models\Project::$project_status[$project->status]) }}</span>
-
-                                                </td>
-                                            </tr>
-                                        @endif
-                                    @endforeach
-                                @else
-                                    <div class="py-5">
-                                        <h5 class="text-center mb-0">{{__('No Project Remaining In 2 Weeks Found.')}}</h5>
-                                    </div>
-                                @endif
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div> --}}
     @else
         <div class="row">
             <div class="col-xxl-12">

@@ -35,10 +35,10 @@
         </div> --}}
         <div class="col-6">
             <div class="form-group">
-                {{ Form::label('priority', __('Priority'),['class' => 'form-label']) }}
+                {{ Form::label('priority', __('Priority'),['class' => 'form-label']) }}<span class="text-danger">*</span>
                 <small class="form-text text-muted mb-2 mt-0">{{__('Set Priority of your task')}}</small>
                 <select class="form-control select" name="priority" id="priority" required>
-                    <option value="0">{{'Select Priority'}}</option>
+                    <option value="low">{{'Select Priority'}}</option>
                     @foreach(\App\Models\ProjectTask::$priority as $key => $val)
                         <option value="{{ $key }}">{{ __($val) }}</option>
                     @endforeach

@@ -198,6 +198,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         const baseUrl = document.querySelector('meta[name="base-url"]').getAttribute('content');
+        const PROJECT_ID = {{ $project->id }};
         $('document').ready(function () {
             $('.toggleswitch').bootstrapToggle();
             $("fieldset[id^='demo'] .stars").click(function () {
@@ -327,11 +328,185 @@
         $(document).ready(function () {
             const projectId = {{ $project->id }};
             const apiUrl = `${baseUrl}/projects/${projectId}/report-data`;
+            let projectData;
+
+            function cleanAIResponse(text) {
+                return text
+                    .split("\n")
+                    .map(line => line.trim())
+                    .filter(line => line !== "")
+                    .map(line => {
+
+                        line = line.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+
+                        line = line.replace(/\*(.*?)\*/g, '<b>$1</b>');
+
+                        if (line.match(/^[*]*\s*([\w\s]+):\s*$/)) {
+                            const title = line.replace(/[*]+\s*([\w\s]+):\s*/, '$1');
+                            return `<h3><b>${title}</b></h3>`;
+                        }
+
+                        if (line.match(/^\d+\.\s+([\w\s-]+):$/)) {
+                            const subtitle = line.replace(/^\d+\.\s+([\w\s-]+):$/, '$1');
+                            return `<h4><b>${subtitle}</b></h4>`;
+                        }
+
+                        if (line.match(/^\*\s+(.+)/)) {
+                            const listItem = line.replace(/^\*\s+(.+)/, '$1');
+                            return `<li>${listItem}</li>`;
+                        }
+
+                        return `<p>${line}</p>`;
+                    })
+                    .join("")
+                    .replace(/<\/li>/g, "</li>\n")
+                    .replace(/<\/p>/g, "</p>\n");
+            }
+
+            function displayRecommendationsSequentially(container, recommendations, index = 0) {
+                if (index >= recommendations.length) {
+                    return;
+                }
+
+                const recommendation = recommendations[index];
+                const paragraph = $('<div>').addClass('mb-2');
+                container.append(paragraph);
+
+                typeWriterEffect(paragraph, recommendation, () => {
+                    displayRecommendationsSequentially(container, recommendations, index + 1);
+                }, 20);
+            }
+
+            function typeWriterEffect(element, text, callback, speed = 20) {
+                let i = 0;
+                const interval = setInterval(() => {
+                    if (i < text.length) {
+                        element.html(text.substring(0, i + 1)); 
+                        i++;
+                    } else {
+                        clearInterval(interval);
+                        if (callback) callback();
+                    }
+                }, speed);
+            }
+
+            async function fetchOrGenerateAI(projectId, projectData) {
+                const aiRecommendationsList = $('#ai-recommendations');
+                const aiLoading = $('#ai-loading');
+
+                const cacheKey = `ai_response_${projectId}`;
+
+                const cachedResponse = localStorage.getItem(cacheKey);
+                if (cachedResponse) {
+                    const recommendations = JSON.parse(cachedResponse);
+                    aiLoading.hide();
+                    aiRecommendationsList.empty().show();
+                    displayRecommendationsSequentially(aiRecommendationsList, recommendations);
+                    return;
+                }
+
+                aiLoading.show();
+                aiRecommendationsList.hide();
+
+                try {
+                    const response = await fetch(`${baseUrl}/api/project/${projectId}/expertai/response`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(projectData)
+                    });
+
+                    const result = await response.json();
+
+                    if (result.error) {
+                        throw new Error(result.message);
+                    }
+
+                    const raw = result.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                    const cleaned = raw.replace(/Kami memiliki data.*?tolong berikan rekomendasi untuk meningkatkan produktivitas.*?dari data tersebut\./s, '');
+                    const recommendations = cleaned.split("\n")
+                    .map(line => line.trim())
+                    .filter(line => line !== "")
+                    .map(cleanAIResponse);
+
+                    localStorage.setItem(cacheKey, JSON.stringify(recommendations));
+
+                    aiRecommendationsList.empty().show();
+                    displayRecommendationsSequentially(aiRecommendationsList, recommendations);
+                } catch (error) {
+                    console.error(error);
+                    aiRecommendationsList.append($('<p>').addClass('text-danger').text("Failed to generate AI recommendations."));
+                } finally {
+                    aiLoading.hide();
+                    aiRecommendationsList.show();
+                }
+            }
+
+            async function regenerateAIRecommendations(projectId, projectData) {
+                const aiRecommendationsList = $('#ai-recommendations');
+                const aiLoading = $('#ai-loading');
+
+                const cacheKey = `ai_response_${projectId}`;
+
+                aiLoading.show();
+                aiRecommendationsList.hide();
+
+                const prompt = `Kami memiliki data,
+                    Running Days: ${projectData.running_days}, Total Tasks: ${projectData.total_tasks}, Completed Tasks: ${projectData.completed_tasks}, In Progress Tasks: ${projectData.pending_tasks}, Overdue Tasks: ${projectData.overdue_tasks}, Progress Percentage: ${projectData.progress_percentage}%, Time Spent: ${JSON.stringify(projectData.time_spent)}, Overtime Hours: ${JSON.stringify(projectData.overtime_hours)}, tolong berikan rekomendasi untuk meningkatkan produktivitas dari data tersebut.`;
+
+                try {
+                    const response = await fetch(`${baseUrl}/api/project/${projectId}/expertai/regenerate`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        },
+                        body: JSON.stringify({ prompt }),
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+
+                    if (result.error) {
+                        throw new Error(result.message);
+                    }
+
+                    const rawRecommendations = result.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                    const cleaned = raw.replace(/Kami memiliki data.*?tolong berikan rekomendasi untuk meningkatkan produktivitas.*?dari data tersebut\./s, '');
+                    const recommendations = cleaned.split("\n")
+                        .map(line => line.trim())
+                        .filter(line => line !== "")
+                        .map(cleanAIResponse);
+
+                    if (recommendations.length > 0) {
+                        localStorage.setItem(cacheKey, JSON.stringify(recommendations));
+
+                        aiLoading.hide();
+                        aiRecommendationsList.empty().show();
+                        displayRecommendationsSequentially(aiRecommendationsList, recommendations);
+                    } else {
+                        aiRecommendationsList.append($('<p>').addClass('text-danger').text("No recommendations generated."));
+                    }
+                } catch (error) {
+                    console.error("Error generating AI recommendations:", error);
+                    aiRecommendationsList.append($('<p>').addClass('text-danger').text("Failed to generate recommendations."));
+                } finally {
+                    aiLoading.hide();
+                    aiRecommendationsList.show();
+                }
+            }
+
 
             $.ajax({
                 url: apiUrl,
                 method: "GET",
                 success: function (data) {
+
+                    projectData = data.project_data;
 
                     $('#running-days').text(data.project_overview.running_days);
                     $('#total-tasks').text(data.project_overview.total_tasks);
@@ -419,7 +594,7 @@
                         options: { responsive: true },
                     });
 
-                    generateAIRecommendations(data.project_data);
+                    fetchOrGenerateAI(projectId,projectData);
                     populateTaskDetails(data.task_details);
                 },
                 error: function (error) {
@@ -428,67 +603,15 @@
                 },
             });
 
-            function cleanAIResponse(text) {
-                return text.replace(/[\[\]{}"]/g, '').replace(/:/g, ': ').trim();
-            }
-
-            async function generateAIRecommendations(projectData) {
-                const aiRecommendationsList = $('#ai-recommendations');
-                const aiLoading = $('#ai-loading');
-
-                aiLoading.show();
-                aiRecommendationsList.hide();
-
-                const prompt = `I have data,
-                    Running Days: ${projectData.running_days}, Total Tasks: ${projectData.total_tasks}, Completed Tasks: ${projectData.completed_tasks}, In Progress Tasks: ${projectData.pending_tasks}, Overdue Tasks: ${projectData.overdue_tasks}, Progress Percentage: ${projectData.progress_percentage}%, Time Spent: ${JSON.stringify(projectData.time_spent)}, Overtime Hours: ${JSON.stringify(projectData.overtime_hours)}, please provide suggestions to improve productivity from the data.
-                `;
-
-                try {
-                    const response = await fetch(`${baseUrl}/api/generate`, {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({ prompt }),
-                    });
-
-                    const result = await response.json();
-
-                    if (result.error) {
-                        console.error("AI API Error:", result.error);
-                        aiRecommendationsList.append($('<li>').addClass('list-group-item text-danger').text("Error generating recommendations."));
-                        return;
-                    }
-
-                    let rawRecommendations = result[0]?.generated_text || "";
-
-                    rawRecommendations = rawRecommendations.replace(
-                        /I have data.*?please provide suggestions to improve productivity from the data\./s,
-                        ''
-                    );
-
-                    const recommendations = rawRecommendations.split("\n")
-                    .map(line => line.trim())
-                    .filter(line => line !== "")
-                    .map(cleanAIResponse);
-
-                    if (recommendations.length > 0) {
-                        aiLoading.hide();
-                        aiRecommendationsList.empty().show();
-                        displayRecommendationsSequentially(aiRecommendationsList, recommendations);
-                    } else {
-                        aiRecommendationsList.append($('<li>').addClass('list-group-item text-danger').text("No recommendations generated."));
-                    }
-                } catch (error) {
-                    console.error("Error generating AI recommendations:", error);
-                    aiRecommendationsList.append($('<li>').addClass('list-group-item text-danger').text("Failed to generate recommendations. Please try again later."));
+            $('#regenerate-button').on('click', function () {
+                if (!projectData) {
+                    alert("Project data is not available. Please wait for data to load.");
+                    return;
                 }
-                finally {
-                    aiLoading.hide();
-                    aiRecommendationsList.show();
-            }
-            }
+                regenerateAIRecommendations(projectId, projectData);
+            });
         });
+
 
         function timeToSeconds(time) {
             const [hours, minutes, seconds] = time.split(':').map(Number);
@@ -541,34 +664,6 @@
                 default:
                     return 'bg-secondary';
             }
-        }
-
-        function displayRecommendationsSequentially(container, recommendations, index = 0) {
-            if (index >= recommendations.length) {
-                return;
-            }
-
-            const recommendation = recommendations[index];
-            const listItem = $('<li>').addClass('list-group-item');
-            container.append(listItem);
-
-            typeWriterEffect(listItem, recommendation, () => {
-
-                displayRecommendationsSequentially(container, recommendations, index + 1);
-            }, 20);
-        }
-
-        function typeWriterEffect(element, text, callback, speed = 20) {
-            let i = 0;
-            const interval = setInterval(() => {
-                if (i < text.length) {
-                    element.text(text.substring(0, i + 1));
-                    i++;
-                } else {
-                    clearInterval(interval);
-                    if (callback) callback();
-                }
-            }, speed);
         }
 
         document.addEventListener("DOMContentLoaded", function () {
@@ -1256,19 +1351,19 @@
     </script>
 @endpush
 @section('breadcrumb')
-    <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item"><a href="{{route('projects.index')}}">{{__('Project')}}</a></li>
-    <li class="breadcrumb-item">{{ucwords($project->project_name)}}</li>
+    <li class="breadcrumb-item mt-2"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
+    <li class="breadcrumb-item mt-2"><a href="{{route('projects.index')}}">{{__('Project')}}</a></li>
+    <li class="breadcrumb-item mt-2">{{ucwords($project->project_name)}}</li>
 @endsection
 @section('action-btn')
-    <div class="float-end">
+    <div class="float-end mt-3">
         {{-- @can('view grant chart')
             <a href="{{ route('projects.gantt',$project->id) }}" class="btn btn-sm btn-primary">
                 {{__('Gantt Chart')}}
             </a>
         @endcan --}}
         @if(\Auth::user()->type!='client' || (\Auth::user()->type=='client' ))
-            <a href="{{ route('projecttime.tracker',$project->id) }}" class="btn btn-sm btn-primary">
+            <a href="{{ route('projecttime.tracker', \Crypt::encrypt($project->id)) }}" class="btn btn-sm btn-primary">
                 {{__('Tracker')}}
             </a>
         @endif
@@ -1278,13 +1373,13 @@
             </a>
         @endcan --}}
         @can('manage invoice')
-            <a href="{{ route('projects.invoice',$project->id) }}" class="btn btn-sm btn-primary">
+            <a href="{{ route('projects.invoice', \Crypt::encrypt($project->id)) }}" class="btn btn-sm btn-primary">
                 {{__('Invoice')}}
             </a>
         @endcan
         @if(\Auth::user()->type != 'client')
             @can('view timesheet')
-                <a href="{{ route('project.timesheet',$project->id) }}" class="btn btn-sm btn-primary">
+                <a href="{{ route('project.timesheet', \Crypt::encrypt($project->id)) }}" class="btn btn-sm btn-primary">
                     {{__('Timesheet')}}
                 </a>
             @endcan
@@ -1296,7 +1391,7 @@
         @endcan -->
         @if (\Auth::user()->type != 'client' && \Auth::user()->type != 'staff_client')
             @can('edit project task')
-                <a href="{{ route('projects.tasks.index',$project->id) }}" class="btn btn-sm btn-primary">
+                <a href="{{ route('projects.tasks.index', \Crypt::encrypt($project->id)) }}" class="btn btn-sm btn-primary">
                     {{__('Task')}}
                 </a>
             @endcan
@@ -1695,8 +1790,8 @@
                                                 </tr>
                                                 <tr>
                                                     <td><strong>{{ __('Total') }}</strong></td>
-                                                    <td><strong>{{ ($project_offerings->als_partners + $project_offerings->als_manager + $project_offerings->als_senior_associate + $project_offerings->als_associate + $project_offerings->als_intern) ? 
-                                                        ($project_offerings->als_partners + $project_offerings->als_manager + $project_offerings->als_senior_associate + $project_offerings->als_associate + $project_offerings->als_intern) . ' H' : __('No Data Available') }}
+                                                    <td><strong>{{ ($project_offerings->als_partners + $project_offerings->als_manager + $project_offerings->als_leader + $project_offerings->als_senior_associate + $project_offerings->als_associate + $project_offerings->als_intern) ? 
+                                                        ($project_offerings->als_partners + $project_offerings->als_manager + $project_offerings->als_leader + $project_offerings->als_senior_associate + $project_offerings->als_associate + $project_offerings->als_intern) . ' H' : __('No Data Available') }}
                                                     </strong></td>
                                                     <td><strong>{{ ($project_offerings->als_partners * $project_offerings->rate_partners + 
                                                         $project_offerings->als_manager * $project_offerings->rate_manager + 
@@ -2050,21 +2145,21 @@
                     <div class="row mb-4">
                         <div class="col-md-12">
                             <div class="card">
-                                <div class="card-header">SmartAI Recommendations</div>
-                                    <div class="card-body">
-                                        <!-- Loading Indicator -->
-                                        <div id="ai-loading" class="text-center">
-                                            <div class="spinner-border text-primary" role="status">
-                                                <span class="visually-hidden">Loading...</span>
-                                            </div>
-                                            <p class="mt-2">Generating recommendations...</p>
+                                <div class="card-header">ExpertAI Recommendations
+                                    <button id="regenerate-button" class="float-end btn btn-sm btn-primary">
+                                        Regenerate
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div id="ai-loading" class="text-center">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
                                         </div>
-
-                                        <!-- Recommendations List -->
-                                        <ul class="list-group list-group-flush" id="ai-recommendations" style="display: none;">
-                                            <!-- Recommendations will be dynamically populated here -->
-                                        </ul>
+                                        <p class="mt-2">Generating recommendations...</p>
                                     </div>
+
+                                    <div id="ai-recommendations" style="display: none;"></div>
+                                </div>
                             </div>
                         </div>
                     </div>

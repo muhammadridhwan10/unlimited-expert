@@ -226,11 +226,12 @@
 
     @can('send invoice')
 
-        @if($invoice->status!=5)
+        @if($invoice->status != 5)
             <div class="row">
                 <div class="card ">
                     <div class="card-body">
                         <div class="row timeline-wrapper">
+
                             <div class="col-md-6 col-lg-4 col-xl-4">
                                 <div class="timeline-icons"><span class="timeline-dots"></span>
                                     <i class="ti ti-plus text-primary"></i>
@@ -241,13 +242,14 @@
                                     <a href="{{ route('invoice.edit',\Crypt::encrypt($invoice->id)) }}" class="btn btn-sm btn-primary" data-bs-toggle="tooltip" data-original-title="{{__('Edit')}}"><i class="ti ti-pencil mr-2"></i>{{__('Edit')}}</a>
                                 @endcan
                             </div>
+
                             <div class="col-md-6 col-lg-4 col-xl-4">
                                 <div class="timeline-icons"><span class="timeline-dots"></span>
                                     <i class="ti ti-mail text-warning"></i>
                                 </div>
                                 <h6 class="text-warning my-3">{{__('Send Invoice')}}</h6>
                                 <p class="text-muted text-sm mb-3">
-                                    @if($invoice->status!=1)
+                                    @if($invoice->status != 1)
                                         <i class="ti ti-clock mr-2"></i>{{__('Sent on')}} {{\Auth::user()->dateFormat($invoice->send_date)}}
                                     @else
                                         @can('send invoice')
@@ -256,27 +258,37 @@
                                     @endif
                                 </p>
 
-                                @if($invoice->status==1)
+                                @if($invoice->status == 1)
                                     @can('send bill')
                                         <a href="#" data-size="lg" data-url="{{ route('invoice.languages',$invoice->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Select Languages')}}" class="btn btn-sm btn-primary">
                                             <i class="ti ti-send mr-2"></i>{{__('Send')}}
                                         </a>
-                                        {{-- <a href="{{ route('invoice.sent',$invoice->id) }}" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" data-original-title="{{__('Mark Sent')}}"><i class="ti ti-send mr-2"></i>{{__('Send')}}</a> --}}
                                     @endcan
                                 @endif
                             </div>
+
+                            <!-- Timeline: Invoice Opened -->
+                            <div class="col-md-6 col-lg-4 col-xl-4">
+                                <div class="timeline-icons"><span class="timeline-dots"></span>
+                                    <i class="ti ti-eye text-success"></i>
+                                </div>
+                                <h6 class="text-success my-3">{{__('Invoice Opened')}}</h6>
+                                <p class="text-muted text-sm mb-3">
+                                    @if(isset($isOpened) && $isOpened)
+                                        <i class="ti ti-check mr-2"></i>{{__('Invoice has been opened by the client')}}
+                                    @else
+                                        <i class="ti ti-x mr-2"></i>{{__('Invoice not yet opened by the client')}}
+                                    @endif
+                                </p>
+                            </div>
+
+                            <!-- Timeline: Get Paid -->
                             <div class="col-md-6 col-lg-4 col-xl-4">
                                 <div class="timeline-icons"><span class="timeline-dots"></span>
                                     <i class="ti ti-report-money text-info"></i>
                                 </div>
                                 <h6 class="text-info my-3">{{__('Get Paid')}}</h6>
-                                <p class="text-muted text-sm mb-3">{{__('Status')}} : {{__('Awaiting payment')}} </p>
-                                {{-- @if($invoice->status!=0)
-                                    @can('create payment invoice')
-                                        <a href="#" data-url="{{ route('invoice.payment',$invoice->id) }}" data-ajax-popup="true" data-title="{{__('Add Payment')}}" class="btn btn-sm btn-info" data-original-title="{{__('Add Payment')}}"><i class="ti ti-report-money mr-2"></i>{{__('Add Payment')}}</a> <br>
-                                    @endcan
-                                @endif --}}
-
+                                <p class="text-muted text-sm mb-3">{{__('Status')}} : {{__('Awaiting payment')}}</p>
                             </div>
                         </div>
                     </div>

@@ -24,6 +24,7 @@ use App\Models\ProductServiceCategory;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ProjectNotification;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Crypt;
 use App\Models\ActivityLog;
 use DateTime;
 use DatePeriod;
@@ -39,6 +40,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Mail\InviteMemberNotification;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use GuzzleHttp\Client;
 
 class ProjectController extends Controller
@@ -266,11 +268,15 @@ class ProjectController extends Controller
      * @param  \App\Poject  $poject
      * @return \Illuminate\Http\Response
      */
-    public function show(Project $project)
+    public function show($ids)
     {
 
         if(\Auth::user()->can('view project'))
         {
+
+            $id = Crypt::decrypt($ids);
+
+            $project = Project::find($id);
 
             $usr           = Auth::user();
             if(\Auth::user()->type == 'client')
@@ -1629,8 +1635,11 @@ class ProjectController extends Controller
         return "true";
     }
 
-    public function tracker($id, Request $request)
+    public function tracker($ids, Request $request)
     {
+
+        $id = Crypt::decrypt($ids);
+
         $treckers = TimeTracker::with('user')->where('project_id',$id);
 
         if (!empty($request->month)) {
@@ -1652,8 +1661,9 @@ class ProjectController extends Controller
         return view('time_trackers.time_tracker_table',compact('treckers', 'project'));
     }
 
-    public function invoice($id)
+    public function invoice($ids)
     {
+        $id = Crypt::decrypt($ids);
         $invoices = InvoiceProduct::with('invoice')->where('product_id',$id)->get();
         return view('projects.invoice',compact('invoices'));
     }
@@ -1957,41 +1967,100 @@ class ProjectController extends Controller
         return response()->json($users);
     }
 
-    public function getRecommendations(Request $request)
+    public function getLastAI($projectId, Request $request)
     {
+        $googleApiKey = env('GOOGLE_AI_API_KEY');
 
+        $projectData = $request->only([
+            'running_days', 'total_tasks', 'completed_tasks',
+            'pending_tasks', 'overdue_tasks', 'progress_percentage',
+            'time_spent', 'overtime_hours'
+        ]);
+
+        $prompt = "I have data,
+            Running Days: {$projectData['running_days']}, Total Tasks: {$projectData['total_tasks']},
+            Completed Tasks: {$projectData['completed_tasks']}, In Progress Tasks: {$projectData['pending_tasks']},
+            Overdue Tasks: {$projectData['overdue_tasks']}, Progress Percentage: {$projectData['progress_percentage']}%,
+            Time Spent: " . json_encode($projectData['time_spent']) . ",
+            Overtime Hours: " . json_encode($projectData['overtime_hours']) . ",
+            please provide suggestions to improve productivity from the data.";
+
+        try {
+            // Kirim permintaan ke Google AI API
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$googleApiKey", [
+                'contents' => [
+                    [
+                        'parts' => [
+                            ['text' => $prompt],
+                        ]
+                    ]
+                ]
+            ]);
+
+            if ($response->failed()) {
+                return response()->json([
+                    'error' => 'Failed to fetch from Google AI API',
+                    'message' => $response->body(),
+                ], $response->status());
+            }
+
+            // Ambil data JSON dari respons API
+            $data = $response->json();
+
+            // Kirim data ke frontend
+            return response()->json([
+                'cached' => false,
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to fetch from Google AI API',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function regenerateAI(Request $request, $projectId)
+    {
         $request->validate([
             'prompt' => 'required|string',
         ]);
 
-        $huggingFaceToken = env('HUGGINGFACE_API_KEY');
-
+        $googleApiKey = env('GOOGLE_AI_API_KEY');
         $prompt = $request->input('prompt');
 
-        $client = new Client();
-
         try {
-
-            // $response = $client->post('https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta', [
-            // $response = $client->post('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', [
-            $response = $client->post('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', [
-                'headers' => [
-                    'Authorization' => "Bearer $huggingFaceToken",
-                    'Content-Type' => 'application/json',
-                ],
-                'json' => [
-                    'inputs' => $prompt,
-                ],
+            // Kirim permintaan ke Google AI API
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+            ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$googleApiKey", [
+                'contents' => [
+                    [
+                        'parts' => [
+                            ['text' => $prompt],
+                        ]
+                    ]
+                ]
             ]);
 
-            $body = $response->getBody()->getContents();
-            $data = json_decode($body, true);
+            if ($response->failed()) {
+                return response()->json([
+                    'error' => 'Failed to fetch from Google AI API',
+                    'message' => $response->body(),
+                ], $response->status());
+            }
 
-            return response()->json($data);
-        } catch (\Exception $e) {
+            $data = $response->json();
 
             return response()->json([
-                'error' => 'Failed to fetch from Hugging Face API',
+                'cached' => false,
+                'data' => $data
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to fetch from Google AI API',
                 'message' => $e->getMessage(),
             ], 500);
         }

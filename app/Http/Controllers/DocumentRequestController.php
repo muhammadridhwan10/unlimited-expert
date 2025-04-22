@@ -22,7 +22,7 @@ class DocumentRequestController extends Controller
             $perPage = $request->get('show_entries', 10);
             $search = $request->get('search');
 
-            if(Auth::user()->type == 'admin' || Auth::user()->type == 'company')
+            if(Auth::user()->type == 'admin' || Auth::user()->type == 'company' || Auth::user()->type == 'partners')
             {
                 $documents = DocumentRequest::orderByDesc('id');
 

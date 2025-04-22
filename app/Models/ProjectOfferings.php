@@ -27,6 +27,6 @@ class ProjectOfferings extends Model
 
     public function project()
     {
-        return $this->hasOne('App\Models\Project', 'id', 'project_id');
+        return $this->belongsTo(Project::class, 'project_id', 'id');
     }
 }
