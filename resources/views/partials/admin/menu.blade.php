@@ -19,7 +19,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
         @endif
         <div class="navbar-wrapper">
             <div class="m-header main-logo">
-                <a href="home" class="b-brand">
+                <a href="#" class="b-brand">
                     @if($mode_setting['cust_darklayout'] && $mode_setting['cust_darklayout'] == 'on' )
                     <img src="{{ $logo . '/' . (isset($company_logos) && !empty($company_logos) ? $company_logos : 'logo-dark.png') }}" alt="{{ config('app.name', 'Unlimited Expert') }}" class="logo logo-lg">
                     @else
@@ -184,7 +184,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                         <!--------------------- End Dashboard ----------------------------------->
 
                             @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
-                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'absence-request' || Request::segment(1) == 'overtime' || Request::segment(1) == 'leave' || Request::segment(1) == 'report-hrm')?'active dash-trigger':''}}">
+                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'leave' || Request::segment(1) == 'overtime' || Request::segment(1) == 'leave' || Request::segment(1) == 'report-hrm')?'active dash-trigger':''}}">
                                 <a href="#!" class="dash-link "><span class="dash-micon"><i class="ti ti-user"></i></span><span class="dash-mtext">{{__('HRM Module')}}</span><span class="dash-arrow">
                                         <i data-feather="chevron-right"></i></span>
                                 </a>
@@ -199,9 +199,14 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             </span><span class="dash-mtext">{{__('Overtime')}}</span>
                                         </a>
                                     </li>
-                                    <li class="dash-item {{ request()->is('absence-request') ? 'active' : '' }}">
-                                        <a href="{{route('absence-request.index')}}" class="dash-link">
-                                           <span class="dash-mtext">{{__('Absence Request')}}</span>
+                                    <li class="dash-item {{ request()->is('leave') ? 'active' : '' }}">
+                                        <a href="{{route('leave.index')}}" class="dash-link">
+                                           <span class="dash-mtext">{{__('Leave Request')}}</span>
+                                        </a>
+                                    </li>
+                                    <li class="dash-item {{ request()->is('sick-letter') ? 'active' : '' }}">
+                                        <a href="{{route('sick-letter.index')}}" class="dash-link">
+                                           <span class="dash-mtext">{{__('Sick Letter')}}</span>
                                         </a>
                                     </li>
                                     {{-- <li class="dash-item {{ request()->is('form-response') ? 'active' : '' }}">
@@ -297,8 +302,13 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                            <span class="dash-mtext">{{__('Meeting Time')}}</span><sup style="color: red;">Beta</sup>
                                         </a>
                                     </li> --}}
-                                    <li class="dash-item {{ request()->is('absence-request') ? 'active' : '' }}">
-                                        <a class="dash-link" href="{{route('absence-request.index')}}">{{__('Absence Request')}}</a>
+                                    <li class="dash-item {{ request()->is('leave') ? 'active' : '' }}">
+                                        <a class="dash-link" href="{{route('leave.index')}}">{{__('Leave Request')}}</a>
+                                    </li>
+                                     <li class="dash-item {{ request()->is('sick-letter') ? 'active' : '' }}">
+                                        <a href="{{route('sick-letter.index')}}" class="dash-link">
+                                           <span class="dash-mtext">{{__('Sick Letter')}}</span>
+                                        </a>
                                     </li>
                                     <li class="dash-item {{ request()->is('overtime') ? 'active' : '' }}">
                                         <a class="dash-link" href="{{ route('overtime.index') }}">{{__('Overtime')}}</a>

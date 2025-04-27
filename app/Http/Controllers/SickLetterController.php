@@ -15,7 +15,7 @@ use App\Mail\LeaveApprovalNotification;
 use App\Mail\LeaveRejectNotification;
 use Illuminate\Support\Facades\Mail;
 
-class LeaveController extends Controller
+class SickLetterController extends Controller
 {
     public function index()
     {
@@ -27,13 +27,13 @@ class LeaveController extends Controller
             {
                 $user     = \Auth::user();
                 $employee = Employee::where('user_id', '=', $user->id)->first();
-                $absence_leave  = Leave::where('employee_id', '=', $employee->id)->where('absence_type', '=', 'leave')->orderByDesc('id')->paginate(10);
+                $absence_sick   = Leave::where('employee_id', '=', $employee->id)->where('absence_type', '=', 'sick')->orderByDesc('id')->paginate(10);
                 $approval      = Leave::where('approval', '=', $user->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
             }
             elseif(\Auth::user()->type == 'admin')
             {
                 $employee      = Employee::all();
-                $absence_leave = Leave::where('absence_type', '=', 'leave')->orderByDesc('id')->paginate(10);
+                $absence_sick  = Leave::where('absence_type', '=', 'sick')->orderByDesc('id')->paginate(10);
                 $users         = \Auth::user();
                 $approval      = Leave::where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
                 
@@ -41,7 +41,7 @@ class LeaveController extends Controller
             elseif(\Auth::user()->type == 'company')
             {
                 $employee      = Employee::all();
-                $absence_leave = Leave::where('absence_type', '=', 'leave')->orderByDesc('id')->paginate(10);
+                $absence_sick  = Leave::where('absence_type', '=', 'sick')->orderByDesc('id')->paginate(10);
                 $users         = \Auth::user();  
                 $approval      = Leave::where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
             }
@@ -62,19 +62,19 @@ class LeaveController extends Controller
                 }
                 $employee = $employee->pluck('id');
 
-                $absence_leave  = Leave::whereIn('employee_id', $employee)->where('absence_type', '=', 'leave')->orderByDesc('id')->paginate(10);
+                $absence_sick   = Leave::whereIn('employee_id', $employee)->where('absence_type', '=', 'sick')->orderByDesc('id')->paginate(10);
                 $users         = \Auth::user();  
                 $approval      = Leave::where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
             }
             else
             {
                 $employee      = Employee::where('created_by', '=', \Auth::user()->creatorId())->get();
-                $absence_leave = Leave::where('absence_type', '=', 'leave')->where('created_by', '=', \Auth::user()->creatorId())->orderByDesc('id')->paginate(10);
+                $absence_sick  = Leave::where('absence_type', '=', 'sick')->where('created_by', '=', \Auth::user()->creatorId())->orderByDesc('id')->paginate(10);
                 $approval      = Leave::where('approval', '=', \Auth::user()->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
 
             }
 
-            return view('leave.index', compact('absence_leave', 'employee', 'approval'));
+            return view('sick-letter.index', compact('absence_sick', 'employee', 'approval'));
 
         }
         else
@@ -90,48 +90,21 @@ class LeaveController extends Controller
             if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern' || \Auth::user()->type == 'support' ||  \Auth::user()->type == 'staff')
             {
                 $employees         = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
-                $leavetypes        = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
-                $approval = User::where(function($query) {
-                    $query->where('type', 'admin')
-                          ->orWhere('type', 'company');
-                })
-                ->get()
-                ->pluck('name', 'id');                
-                $leavetypes_days   = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
             }
             elseif(Auth::user()->type == 'admin')
             {
                 $employees       = Employee::all()->pluck('name', 'id');
-                $leavetypes      = LeaveType::all();
-                $approval = User::where(function($query) {
-                    $query->where('type', 'admin')
-                          ->orWhere('type', 'company');
-                })
-                ->get()
-                ->pluck('name', 'id');  
-                $leavetypes_days = LeaveType::all();
             }
             elseif(Auth::user()->type == 'company')
             {
                 $employees       = Employee::all()->pluck('name', 'id');
-                $leavetypes      = LeaveType::all();
-                $approval = User::where(function($query) {
-                    $query->where('type', 'admin')
-                          ->orWhere('type', 'company');
-                })
-                ->get()
-                ->pluck('name', 'id');  
-                $leavetypes_days = LeaveType::all();
             }
             else
             {
                 $employees = Employee::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
-                $leavetypes      = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
-                $leavetypes_days = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
-                $approval        = User::where('created_by', '=', \Auth::user()->creatorId())->get()->pluck('name', 'id');
             }
 
-            return view('leave.create', compact('employees', 'leavetypes', 'leavetypes_days', 'approval'));
+            return view('sick-letter.create', compact('employees'));
         }
         else
         {
@@ -145,11 +118,8 @@ class LeaveController extends Controller
         {
             $validator = \Validator::make(
                 $request->all(), [
-                    'approval' => $request->type == 'leave' ? 'required' : '',
-                    'leave_type_id' => $request->type == 'leave' ? 'required' : '',
-                    'start_date' => $request->type == 'leave' ? 'required' : '',
-                    'end_date' => $request->type == 'leave' ? 'required' : '',
-                    'leave_reason' => $request->type == 'leave' ? 'required' : '',
+                    'total_sick_days' => $request->type == 'sick' ? 'required' : '',
+                    'date_sick_letter' => $request->type == 'sick' ? 'required' : '',
                 ]
             );
 
@@ -162,57 +132,61 @@ class LeaveController extends Controller
             $employee = Employee::where('user_id', '=', Auth::user()->id)->first();
             $leave = new Leave();
 
-            $leave->employee_id = $request->employee_id;
+            if(\Auth::user()->type == "employee")
+            {
+                $leave->employee_id = $employee->id;
+            }
+            else
+            {
+                $leave->employee_id = $request->employee_id;
+            }
 
-            $leave->applied_on = date('Y-m-d');
-            $leave->approval = !empty($request->approval) ? $request->approval : 0;
-            $leave->start_date = $request->start_date;
-            $leave->end_date = $request->end_date;
-            $leave->total_leave_days = 0;
-            $leave->leave_reason = $request->leave_reason;
-            $leave->absence_type = 'leave';
+            if(!empty($request->sick_letter))
+            {
+                $filenameWithExt = $request->file('sick_letter')->getClientOriginalName();
+                $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+                $extension = $request->file('sick_letter')->getClientOriginalExtension();
+                $fileNameToStore = $filename . '_' . time() . '.' . $extension;
+                $dir = storage_path('uploads/sick_letter/' . \Auth::user()->name . '/');
+
+                if(!file_exists($dir))
+                {
+                    mkdir($dir, 0777, true);
+                }
+
+                $path = $request->file('sick_letter')->storeAs('uploads/sick_letter/' . \Auth::user()->name . '/', $fileNameToStore, 's3');
+            }
+
+            $leave->sick_letter = !empty($fileNameToStore) ? 'uploads/sick_letter/' . \Auth::user()->name . '/' . $fileNameToStore : '';
+            $leave->total_sick_days = $request->total_sick_days;
+            $leave->absence_type = 'sick';
             $leave->status = 'Pending';
+            $leave->date_sick_letter = $request->date_sick_letter;
             $leave->created_by = \Auth::user()->creatorId();
-            $leave->leave_type_id = $request->leave_type_id;
+
+            if($leave->absence_type == 'sick')
+            {
+                if($leave->sick_letter == NULL)
+                {
+                    $leave->leave_type_id = 1;
+                }
+                else
+                {
+                    $leave->leave_type_id = $request->leave_type_id;
+                }
+            }
+            else
+            {
+                $leave->leave_type_id = $request->leave_type_id;
+            }
+
             $leave->save();
 
-            $user = User::where('id', $leave->approval)->first();
-            $email = $user->employee->email;
-            Mail::to($email)->send(new LeaveNotification($leave));
-
-            return redirect()->route('leave.index')->with('success', __('Leave Request successfully created.'));
+            return redirect()->route('sick-letter.index')->with('success', __('Absence Request successfully created.'));
         }
         else
         {
             return redirect()->back()->with('error', __('Permission denied.'));
-        }
-    }
-
-
-    public function show(Leave $leave)
-    {
-        return redirect()->route('leave.index');
-    }
-
-    public function edit($id)
-    {
-        if(\Auth::user()->can('edit leave'))
-        {
-            $leave = Leave::find($id);
-            $employees = Employee::get()->pluck('name', 'id');
-            $leavetypes      = LeaveType::where('created_by', '=', \Auth::user()->creatorId())->get();
-            $approval = User::where(function($query) {
-                $query->where('type', 'admin')
-                        ->orWhere('type', 'company');
-            })
-            ->get()
-            ->pluck('name', 'id');   
-
-            return view('leave.edit', compact('leave', 'employees', 'leavetypes', 'approval'));
-        }
-        else
-        {
-            return response()->json(['error' => __('Permission denied.')], 401);
         }
     }
 
@@ -230,6 +204,8 @@ class LeaveController extends Controller
                     'start_date' => $request->type == 'leave' ? 'required' : '',
                     'end_date' => $request->type == 'leave' ? 'required' : '',
                     'leave_reason' => $request->type == 'leave' ? 'required' : '',
+                    'total_sick_days' => $request->type == 'sick' ? 'required' : '',
+                    'date_sick_letter' => $request->type == 'sick' ? 'required' : '',
                 ]
             );
 
@@ -241,7 +217,30 @@ class LeaveController extends Controller
             }
 
             $employee = Employee::where('user_id', '=', Auth::user()->id)->first();
-            $leave->employee_id = $request->employee_id;
+
+            if(\Auth::user()->type == "employee")
+            {
+                $leave->employee_id = $employee->id;
+            }
+            else
+            {
+                $leave->employee_id = $request->employee_id;
+            }
+
+            if(!empty($request->sick_letter))
+            {
+                $filenameWithExt = $request->file('sick_letter')->getClientOriginalName();
+                $filename        = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+                $extension       = $request->file('sick_letter')->getClientOriginalExtension();
+                $fileNameToStore = $filename . '_' . time() . '.' . $extension;
+                $dir             = storage_path('uploads/sick_letter/' . \Auth::user()->name . '/');
+
+                if(!file_exists($dir))
+                {
+                    mkdir($dir, 0777, true);
+                }
+                $path = $request->file('sick_letter')->storeAs('uploads/sick_letter/' . \Auth::user()->name . '/', $fileNameToStore, 's3');
+            }
             
             $leave->applied_on       = date('Y-m-d');
             $leave->approval         = !empty($request->approval) ? $request->approval : 0;
@@ -249,13 +248,31 @@ class LeaveController extends Controller
             $leave->end_date         = $request->end_date;
             $leave->total_leave_days = 0;
             $leave->leave_reason     = $request->leave_reason;
-            $leave->absence_type     = 'leave';
+            $leave->sick_letter      = !empty('uploads/sick_letter/' .\Auth::user()->name . '/' . $request->sick_letter) ? 'uploads/sick_letter/' .\Auth::user()->name . '/' . $fileNameToStore : '';
+            $leave->total_sick_days  = $request->total_sick_days;
+            $leave->absence_type     = $request->type;
+            $leave->date_sick_letter = $request->date_sick_letter;
             $leave->created_by       = \Auth::user()->creatorId();
-            $leave->leave_type_id    = $request->leave_type_id;
+
+            if($leave->absence_type  == 'sick')
+            {
+                if($leave->sick_letter == NULL)
+                {
+                    $leave->leave_type_id    = 1;
+                }
+                else
+                {
+                    $leave->leave_type_id    = $request->leave_type_id;
+                }
+            }
+            else
+            {
+                $leave->leave_type_id    = $request->leave_type_id;
+            }
 
             $leave->save();
 
-            return redirect()->route('leave.index')->with('success', __('Absence Request successfully updated.'));
+            return redirect()->route('sick-letter.index')->with('success', __('Absence Request successfully updated.'));
         }
         else
         {
@@ -263,38 +280,38 @@ class LeaveController extends Controller
         }
     }
 
-    // public function destroy(Leave $leave)
-    // {
-    //     if(\Auth::user()->can('delete leave'))
-    //     {
-    //         if(Auth::user()->type !=='admin' || Auth::user()->type !=='company')
-    //         {
-    //             $leave->delete();
+    public function destroy(Leave $leave)
+    {
+        if(\Auth::user()->can('delete leave'))
+        {
+            if(Auth::user()->type !=='admin' || Auth::user()->type !=='company')
+            {
+                $leave->delete();
 
-    //             return redirect()->route('leave.index')->with('success', __('Leave successfully deleted.'));
-    //         }
-    //         elseif(\Auth::user()->type == 'admin')
-    //         {
-    //             $leave->delete();
+                return redirect()->route('sick-letter.index')->with('success', __('Leave successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'admin')
+            {
+                $leave->delete();
 
-    //             return redirect()->route('leave.index')->with('success', __('Leave successfully deleted.'));
-    //         }
-    //         elseif(\Auth::user()->type == 'company')
-    //         {
-    //             $leave->delete();
+                return redirect()->route('sick-letter.index')->with('success', __('Leave successfully deleted.'));
+            }
+            elseif(\Auth::user()->type == 'company')
+            {
+                $leave->delete();
 
-    //             return redirect()->route('leave.index')->with('success', __('Leave successfully deleted.'));
-    //         }
-    //         else
-    //         {
-    //             return redirect()->back()->with('error', __('Permission denied.'));
-    //         }
-    //     }
-    //     else
-    //     {
-    //         return redirect()->back()->with('error', __('Permission denied.'));
-    //     }
-    // }
+                return redirect()->route('sick-letter.index')->with('success', __('Leave successfully deleted.'));
+            }
+            else
+            {
+                return redirect()->back()->with('error', __('Permission denied.'));
+            }
+        }
+        else
+        {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+    }
 
     public function action($id)
     {
@@ -302,7 +319,7 @@ class LeaveController extends Controller
         $employee  = Employee::find($leave->employee_id);
         $leavetype = LeaveType::find($leave->leave_type_id);
 
-        return view('leave.action', compact('employee', 'leavetype', 'leave'));
+        return view('sick-letter.action', compact('employee', 'leavetype', 'leave'));
     }
 
     public function changeaction(Request $request)
@@ -318,10 +335,10 @@ class LeaveController extends Controller
             $total_leave_days = 0;
 
             while ($startDate <= $endDate) {
-                if ($startDate->format('N') <= 5) {
+                if ($startDate->format('N') <= 5) { // Memeriksa apakah hari adalah Senin hingga Jumat
                     $total_leave_days++;
                 }
-                $startDate->add(new \DateInterval('P1D'));
+                $startDate->add(new \DateInterval('P1D')); // Menambahkan 1 hari ke tanggal start_date
             }
             $leave->total_leave_days = $total_leave_days;
             $leave->status           = 'Approved';
@@ -348,12 +365,46 @@ class LeaveController extends Controller
             Mail::to($email)->send(new LeaveRejectNotification($leave));
         }
 
-        return redirect()->route('leave.index')->with('success', __('Leave status successfully updated.'));
+        //Send Email
+//         $setings = Utility::settings();
+//         if($setings['leave_status'] == 1)
+//         {
+
+//             $employee     = Employee::where('id', $leave->employee_id)->where('created_by', '=', \Auth::user()->creatorId())->first();
+//             $leave->name  = !empty($employee->name) ? $employee->name : '';
+//             $leave->email = !empty($employee->email) ? $employee->email : '';
+// //            dd($leave);
+
+//             $actionArr = [
+
+//                 'leave_name'=> $employee->name,
+//                 'leave_status' => $leave->status,
+//                 'leave_reason' =>  $leave->leave_reason,
+//                 'leave_start_date' => $leave->start_date,
+//                 'leave_end_date' => $leave->end_date,
+//                 'total_leave_days' => $leave->total_leave_days,
+
+//             ];
+// //            dd($actionArr);
+//             $resp = Utility::sendEmailTemplate('leave_action_send', [$employee->id => $employee->email], $actionArr);
+
+
+//             return redirect()->route('leave.index')->with('success', __('Leave status successfully updated.') .(($resp['is_success'] == false && !empty($resp['error'])) ? '<br> <span class="text-danger">' . $resp['error'] . '</span>' : ''));
+
+//         }
+
+        return redirect()->route('sick-letter.index')->with('success', __('Leave status successfully updated.'));
     }
 
     public function jsoncount(Request $request)
     {
 
+        // $leave_counts = LeaveType::select(\DB::raw('COALESCE(SUM(leaves.total_leave_days),0) AS total_leave, leave_types.title, leave_types.days,leave_types.id'))
+        //                          ->leftjoin('leaves', function ($join) use ($request){
+        //     $join->on('leaves.leave_type_id', '=', 'leave_types.id');
+        //     $join->where('leaves.employee_id', '=', $request->employee_id);
+        // }
+        // )->groupBy('leaves.leave_type_id')->get();
 
         $leave_counts = [];
         $leave_types = LeaveType::where('created_by', \Auth::user()->creatorId())->get();
@@ -372,6 +423,7 @@ class LeaveController extends Controller
                 ->groupBy('leaves.leave_type_id')
                 ->first();
 
+            // Menyimpan hasil ke dalam array
             $leave_count['total_leave'] = !empty($counts) ? $counts['total_leave'] : 0;
             $leave_count['title'] = $type->title;
             $leave_count['days'] = $type->days;
@@ -383,6 +435,13 @@ class LeaveController extends Controller
         return $leave_counts;
 
 
+    }
+
+    public function getSickLetter(Request $request)
+    {
+        $absence_sick   = Leave::find($request->id);
+        $images         = Leave::where('id',$request->id)->get();
+        return view('sick-letter.images',compact('images','absence_sick'));
     }
 
 }

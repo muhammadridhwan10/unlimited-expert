@@ -37,6 +37,11 @@ class Employee extends Model
         return $this->belongsTo(Meeting::class, 'id', 'employee_id');
     }
 
+    public function detail()
+    {
+        return $this->hasOne(EmployeeDetail::class, 'employee_id');
+    }
+
 
     public function documents()
     {

@@ -2060,6 +2060,27 @@
                 </div>
             </div>
             <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">Expert.ai Recommendations
+                                <button id="regenerate-button" class="float-end btn btn-sm btn-primary">
+                                    Regenerate
+                                </button>
+                            </div>
+                            <div class="card-body">
+                                <div id="ai-loading" class="text-center">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                    <p class="mt-2">Generating recommendations...</p>
+                                </div>
+
+                                <div id="ai-recommendations" style="display: none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div class="container-fluid mt-4">
 
                     <div class="row mb-4">
@@ -2141,28 +2162,6 @@
                                 <div class="card-header">Overtime Hours (per User)</div>
                                 <div class="card-body">
                                     <canvas id="overtimeHoursChart" width="400" height="200"></canvas>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row mb-4">
-                        <div class="col-md-12">
-                            <div class="card">
-                                <div class="card-header">ExpertAI Recommendations
-                                    <button id="regenerate-button" class="float-end btn btn-sm btn-primary">
-                                        Regenerate
-                                    </button>
-                                </div>
-                                <div class="card-body">
-                                    <div id="ai-loading" class="text-center">
-                                        <div class="spinner-border text-primary" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
-                                        <p class="mt-2">Generating recommendations...</p>
-                                    </div>
-
-                                    <div id="ai-recommendations" style="display: none;"></div>
                                 </div>
                             </div>
                         </div>

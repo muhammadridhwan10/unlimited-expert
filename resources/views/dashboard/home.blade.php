@@ -13,6 +13,126 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
     <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        $(document).ready(function () {
+
+            $('#filter_range').on('change', function () {
+                const filterRange = $(this).val();
+
+                $.ajax({
+                    url: "{{ route('home') }}",
+                    method: "GET",
+                    data: { filter_range: filterRange },
+                    success: function (response) {
+
+                        let projects = response.projects;
+                        let tbody = $('#project-reminder-table tbody');
+                        tbody.empty();
+
+                        if (projects.length > 0) {
+                            projects.forEach((project, index) => {
+                                let row = `
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td>${project.project_name}</td>
+                                        <td>${project.end_date}</td>
+                                        <td>${project.status}</td>
+                                    </tr>
+                                `;
+                                tbody.append(row);
+                            });
+                        } else {
+                            tbody.append(`
+                                <tr>
+                                    <td colspan="4" class="text-center">No projects approaching the deadline.</td>
+                                </tr>
+                            `);
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while fetching data.');
+                    }
+                });
+            });
+
+            $('#top_n_filter').on('change', function () {
+                const topNunproject = $(this).val();
+
+                $.ajax({
+                    url: "{{ route('home') }}",
+                    method: "GET",
+                    data: { top_nunproject: topNunproject },
+                    success: function (response) {
+                        let projects = response.untouchedProjects;
+                        let tbody = $('#untouched-projects-table tbody');
+                        tbody.empty();
+
+                        if (projects.length > 0) {
+                            projects.forEach((project, index) => {
+                                let row = `
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td>${project.project_name}</td>
+                                        <td>${new Date(project.total_time_in_seconds * 1000).toISOString().substr(11, 8)}</td>
+                                        <td>${project.status}</td>
+                                    </tr>
+                                `;
+                                tbody.append(row);
+                            });
+                        } else {
+                            tbody.append(`
+                                <tr>
+                                    <td colspan="4" class="text-center">No untouched projects found.</td>
+                                </tr>
+                            `);
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while fetching data.');
+                    }
+                });
+            });
+
+            $('#top_n_filter_in_progress').on('change', function () {
+                const topNinproject = $(this).val();
+
+                $.ajax({
+                    url: "{{ route('home') }}",
+                    method: "GET",
+                    data: { top_ninproject: topNinproject },
+                    success: function (response) {
+                        let projects = response.inprogressProjects;
+                        let tbody = $('#in-progress-projects-table tbody');
+                        tbody.empty();
+
+                        if (projects.length > 0) {
+                            projects.forEach((project, index) => {
+                                let row = `
+                                    <tr>
+                                        <td>${index + 1}</td>
+                                        <td>${project.project_name}</td>
+                                        <td>${new Date(project.total_time_in_seconds * 1000).toISOString().substr(11, 8)}</td>
+                                        <td>${project.status}</td>
+                                        <td>${project.updated_at}</td>
+                                    </tr>
+                                `;
+                                tbody.append(row);
+                            });
+                        } else {
+                            tbody.append(`
+                                <tr>
+                                    <td colspan="5" class="text-center">No in-progress projects found.</td>
+                                </tr>
+                            `);
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while fetching data.');
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
 
 
         var firebaseConfig = {
@@ -532,7 +652,7 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                             <div class="row">
                                 <label class="font-weight-bold">Work Location:</label>
                                 <div class="d-flex align-items-center mt-3">
-                                    <div class="col-4 d-flex justify-content-center">
+                                    <div class="col-3 d-flex justify-content-center">
                                         <div class="form-check form-check-inline">
                                             <input type="radio" id="wfh" name="work_location" value="WFH" class="form-check-input"
                                                 {{ !empty($employeeAttendance) && $employeeAttendance->work_location == 'WFH' ? 'checked' : '' }}
@@ -542,7 +662,7 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                                             </label>
                                         </div>
                                     </div>
-                                    <div class="col-4 d-flex justify-content-center">
+                                    <div class="col-3 d-flex justify-content-center">
                                         <div class="form-check form-check-inline">
                                             <input type="radio" id="wfa" name="work_location" value="WFA" class="form-check-input"
                                                 {{ !empty($employeeAttendance) && $employeeAttendance->work_location == 'WFA' ? 'checked' : '' }}
@@ -552,13 +672,23 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                                             </label>
                                         </div>
                                     </div>
-                                    <div class="col-4 d-flex justify-content-center">
+                                    <div class="col-3 d-flex justify-content-center">
                                         <div class="form-check form-check-inline">
                                             <input type="radio" id="wfo" name="work_location" value="WFO" class="form-check-input"
                                                 {{ !empty($employeeAttendance) && $employeeAttendance->work_location == 'WFO' ? 'checked' : '' }}
                                                 {{ !empty($employeeAttendance) && $employeeAttendance->work_location != 'WFO' ? 'disabled' : '' }}>
                                             <label for="wfo" class="form-check-label">
                                                 🏢 WFO
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-3 d-flex justify-content-center">
+                                        <div class="form-check form-check-inline">
+                                            <input type="radio" id="client" name="work_location" value="CLIENT" class="form-check-input"
+                                                {{ !empty($employeeAttendance) && $employeeAttendance->work_location == 'CLIENT' ? 'checked' : '' }}
+                                                {{ !empty($employeeAttendance) && $employeeAttendance->work_location != 'CLIENT' ? 'disabled' : '' }}>
+                                            <label for="wfo" class="form-check-label">
+                                                🏢 Client
                                             </label>
                                         </div>
                                     </div>
@@ -601,57 +731,92 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                         <h6>{{ __("Total Attendance in $curMonth") }}</h6>
                         <br>
                         <h3 class="small-font">{{ $data['totalPresent']}} Days</h3>
+
+                        <!-- Konten tambahan -->
+                        <p class="text-muted mt-3">This is the number of days you were present this month.</p>
+                        <i class="fas fa-calendar-check fa-2x text-success"></i>
                     </div>
                 </div>
             </div>
         </div>
         <div class="row">
-            <div class="col-lg-6 col-md-6">
+            <div class="col-lg-3 col-md-6">
                 <div class="card">
                     <div class="card-body">
                         <div class="row align-items-center justify-content-between">
                             <div class="col-auto mb-3 mb-sm-0">
                                 <div class="d-flex align-items-center">
-                                    <div class="theme-avtar bg-primary">
-                                        <i class="ti ti-cast"></i>
+                                    <div class="theme-avtar bg-success">
+                                        <i class="ti ti-checks"></i>
                                     </div>
                                     <div class="ms-3">
-                                        <small class="text-muted">{{__('Total')}}</small>
-                                        <h6 class="m-0">{{__('Projects')}}</h6>
+                                        <small class="text-muted h7">{{__('All Project')}}</small>
+                                        <h6 class="m-0">{{$home_data['total_project']['all_project'] }}</h6>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-auto text-end">
-                                <h4 class="m-0">{{ $home_data['total_project']['total'] }}</h4>
-                                <small class="text-muted"><span class="text-success">{{ $home_data['total_project']['percentage'] }}%</span> {{__('completd')}}</small>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6 col-md-6">
+            <div class="col-lg-3 col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row align-items-center justify-content-between">
+                            <div class="col-auto mb-3 mb-sm-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="theme-avtar bg-danger">
+                                        <i class="ti ti-alert-triangle"></i>
+                                    </div>
+                                    <div class="ms-3">
+                                        <small class="text-muted h7">{{__('Project In Progress')}}</small>
+                                        <h6 class="m-0">{{$home_data['total_project']['in_progress_project'] }}</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
                 <div class="card">
                     <div class="card-body">
                         <div class="row align-items-center justify-content-between">
                             <div class="col-auto mb-3 mb-sm-0">
                                 <div class="d-flex align-items-center">
                                     <div class="theme-avtar bg-info">
-                                        <i class="ti ti-activity"></i>
+                                        <i class="ti ti-clipboard-check"></i>
                                     </div>
                                     <div class="ms-3">
-                                        <small class="text-muted">{{__('Total')}}</small>
-                                        <h6 class="m-0">{{__('Tasks')}}</h6>
+                                        <small class="text-muted h7">{{__(' Project Completed')}}</small>
+                                        <h6 class="m-0">{{$home_data['total_project']['complete_project'] }}</h6>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-auto text-end">
-                                <h4 class="m-0">{{ $home_data['total_task']['total'] }}</h4>
-                                <small class="text-muted"><span class="text-success">{{ $home_data['total_task']['percentage'] }}%</span> {{__('completd')}}</small>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row align-items-center justify-content-between">
+                            <div class="col-auto mb-3 mb-sm-0">
+                                <div class="d-flex align-items-center">
+                                    <div class="theme-avtar bg-success">
+                                        <i class="ti ti-check"></i>
+                                    </div>
+                                    <div class="ms-3">
+                                        <small class="text-muted h7">{{__('Done Project')}}</small>
+                                        <h6 class="m-0">{{$home_data['total_project']['percentage'] . '%'}}</h6>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         {{-- <div class="row">
@@ -710,41 +875,38 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
             <div class="col-xl-12">
                 <div class="card">
                     <div class="card-header">
-                        <h5>{{('Task Reminder')}}</h5>
+                        <h5>{{('Project Reminder')}}</h5>
+                        <div class="float-end">
+                            <select id="filter_range" class="form-select">
+                                <option value="7_days">7 Days Ahead</option>
+                                <option value="1_week">1 Week Ahead</option>
+                                <option value="1_month">1 Month Ahead</option>
+                                <option value="2_months">2 Months Ahead</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="card-body table-border-style">
                         <div class="table-responsive">
-                            <table class="table table-bordered">
+                            <table class="table table-bordered" id="project-reminder-table">
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>Task Name</th>
                                         <th>Project Name</th>
-                                        <th>Milestone</th>
-                                        <th>Priority</th>
+                                        <th>End Date</th>
                                         <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse ($outstandingTasks as $index => $task)
+                                    @forelse ($projectReminder as $index => $project)
                                     <tr>
                                         <td>{{ $index + 1 }}</td>
-                                        <td>{{ $task->name }}</td>
-                                        <td>{{ $task->project ? $task->project->project_name : 'Project Not Found' }}</td>
-                                        <td>{{ $task->milestone->title ?? 'No Milestone'  }}</td>
-                                        <td><span class="badge p-2 px-3 rounded badge-sm bg-{{__(\App\Models\ProjectTask::$priority_color[$task->priority])}}">{{ __(\App\Models\ProjectTask::$priority[$task->priority]) }}</span></td>
-                                        <td>
-                                            @if ($task->stage_id == 4)
-                                                <span class="text-success">Completed</span>
-                                            @else
-                                                <span class="text-danger">Outstanding</span>
-                                            @endif
-                                        </td>
-                                    
+                                        <td>{{ $project->project_name }}</td>
+                                        <td>{{ $project->end_date }}</td>
+                                        <td>{{ $project->status }}</td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="5" class="text-center">No outstanding tasks found.</td>
+                                        <td colspan="4" class="text-center">No projects approaching the deadline.</td>
                                     </tr>
                                     @endforelse
                                 </tbody>
@@ -759,11 +921,20 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
             <div class="col-xl-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5>{{('10 List of Top Ranked Untouched Project')}}</h5>
+                        <h5>{{('Untouched Project')}}</h5>
+                        <div class="float-end">
+                            <select id="top_n_filter" class="form-select" style="width:100px;">
+                                <option value="5">Top 5</option>
+                                <option value="10">Top 10</option>
+                                <option value="20">Top 20</option>
+                                <option value="30">Top 30</option>
+                                <option value="50">Top 50</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="card-body table-border-style">
                         <div class="table-responsive">
-                            <table class="table table-bordered">
+                            <table class="table table-bordered" id="untouched-projects-table">
                                 <thead>
                                     <tr>
                                         <th>#</th>
@@ -799,11 +970,21 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
             <div class="col-xl-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5>{{('10 List of Project in Progress')}}</h5>
+                        <h5>{{('Project in Progress')}}</h5>
+                        <div class="float-end">
+                            <select id="top_n_filter_in_progress" class="form-select" style="width:100px;">
+                                <option value="1">Top 1</option>
+                                <option value="5">Top 5</option>
+                                <option value="10">Top 10</option>
+                                <option value="20">Top 20</option>
+                                <option value="30">Top 30</option>
+                                <option value="50">Top 50</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="card-body table-border-style">
                         <div class="table-responsive">
-                            <table class="table table-bordered">
+                            <table class="table table-bordered" id="in-progress-projects-table">
                                 <thead>
                                     <tr>
                                         <th>#</th>

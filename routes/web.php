@@ -2314,25 +2314,31 @@ Route::get('employee/{id}/leave/{status}/{type}/{month}/{year}', 'ReportControll
         'XSS',
     ]
 );
-Route::get('absence-request/{id}/action', 'LeaveController@action')->name('absence-request.action')->middleware(
+Route::get('leave/{id}/action', 'LeaveController@action')->name('leave.action')->middleware(
     [
         'auth',
         'XSS',
     ]
 );
-Route::post('absence-request/changeaction', 'LeaveController@changeaction')->name('absence-request.changeaction')->middleware(
+Route::post('leave/changeaction', 'LeaveController@changeaction')->name('leave.changeaction')->middleware(
     [
         'auth',
         'XSS',
     ]
 );
-Route::post('absence-request/jsoncount', 'LeaveController@jsoncount')->name('absence-request.jsoncount')->middleware(
+Route::post('leave/jsoncount', 'LeaveController@jsoncount')->name('leave.jsoncount')->middleware(
     [
         'auth',
         'XSS',
     ]
 );
-Route::resource('absence-request', 'LeaveController')->middleware(
+Route::resource('leave', 'LeaveController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::resource('sick-letter', 'SickLetterController')->middleware(
     [
         'auth',
         'XSS',
@@ -4484,7 +4490,7 @@ Route::post('tracker/search_json', 'TimeTrackerController@search_json')->name('t
         'XSS',
     ]
 );
-Route::post('absence-request/sick-letter', ['as' => 'sick-letter.image.view','uses' => 'LeaveController@getSickLetter']);
+Route::post('sick-letter/image', ['as' => 'sick-letter.image.view','uses' => 'SickLetterController@getSickLetter']);
 Route::post('report-sick/sick-letter', ['as' => 'sick.letter.image.view','uses' => 'ReportController@getSickLetter']);
 Route::resource('document-request', 'DocumentRequestController')->middleware(
     [

@@ -147,7 +147,7 @@ class Notification extends Model
             // end Leads
 
             if ($this->type == 'create_project') {
-                $link = route('projects.show',$data->project_id);
+                $link = route('projects.show', \Crypt::encrypt($data->project_id));
                 $text = $usr->name . " " . __('created a new project') . " <b class='font-weight-bold'>" . $data->name . "</b> ";
             }
 

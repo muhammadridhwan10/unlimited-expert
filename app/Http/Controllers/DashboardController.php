@@ -1446,8 +1446,11 @@ class DashboardController extends Controller
 
                         // Total Projects
                         $complete_project           = $user->projects()->where('status', 'LIKE', 'complete')->count();
+                        $in_progress_project        = $user->projects()->where('status', 'LIKE', 'in_progress')->count();
                         $home_data['total_project'] = [
-                            'total' => count($user_projects),
+                            'all_project' => count($user_projects),
+                            'complete_project' => $complete_project,
+                            'in_progress_project' => $in_progress_project,
                             'percentage' => Utility::getPercentage($complete_project, count($user_projects)),
                         ];
 
@@ -1480,34 +1483,92 @@ class DashboardController extends Controller
 
                         $user = auth()->user();
 
-                        $outstandingTasks = ProjectTask::where('assign_to', 'like', "%{$user->id}%")
-                            ->where('is_complete', 0)
+                        $projectIds = ProjectUser::where('user_id', $user->id)->pluck('project_id');
+
+                        $filterRange = $request->input('filter_range', '7_days');
+                        $topNunproject = $request->input('top_nunproject', 10);
+                        $topNinproject = $request->input('top_ninproject', 10);
+
+                        $minTotalTimeInSeconds = 3600;
+
+                        $startDate = Carbon::now();
+                        switch ($filterRange) {
+                            case '7_days':
+                                $endDate = Carbon::now()->addDays(7);
+                                break;
+                            case '1_month':
+                                $endDate = Carbon::now()->addMonth();
+                                break;
+                            case '2_months':
+                                $endDate = Carbon::now()->addMonths(2);
+                                break;
+                            case '1_week':
+                                $endDate = Carbon::now()->addWeek();
+                                break;
+                            default:
+                                $endDate = Carbon::now()->addDays(7);
+                        }
+
+                        $projectReminder = Project::whereIn('id', $projectIds)
+                            ->where('end_date', '>=', $startDate)
+                            ->where('end_date', '<=', $endDate)
                             ->orderBy('end_date', 'asc')
                             ->take(10)
                             ->get();
-
-                        $projectIds = ProjectUser::where('user_id', $user->id)->pluck('project_id');
 
                         $untouchedProjects = Project::whereIn('id', $projectIds)
                             ->with(['timesheets' => function ($query) use ($user) {
                                 $query->where('created_by', $user->id);
                             }])
-                            ->whereDoesntHave('timesheets')
-                            ->orderBy('created_at', 'desc')
-                            ->take(10)
-                            ->get();
+                            ->where('status', 'in_progress') 
+                            ->get()
+                            ->map(function ($project) {
+
+                                $totalTimeInSeconds = $project->timesheets->sum(function ($timesheet) {
+                                    list($h, $m, $s) = explode(':', $timesheet->time);
+                                    return ((int) $h * 3600) + ((int) $m * 60) + (int) $s;
+                                });
+
+                                $project->total_time_in_seconds = $totalTimeInSeconds;
+                                return $project;
+                            })
+                            ->filter(function ($project) {
+
+                                return $project->total_time_in_seconds < 3600;
+                            })
+                            ->sortBy('total_time_in_seconds')
+                            ->take($topNunproject);
+
 
                         $inProgressProjects = Project::whereIn('id', $projectIds)
                             ->with(['timesheets' => function ($query) use ($user) {
                                 $query->where('created_by', $user->id);
                             }])
-                            ->where(function ($query) {
-                                $query->whereHas('timesheets');
+                            ->where('status', 'in_progress')
+                            ->get()
+                            ->map(function ($project) {
+
+                                $totalTimeInSeconds = $project->timesheets->sum(function ($timesheet) {
+                                    list($h, $m, $s) = explode(':', $timesheet->time);
+                                    return ((int) $h * 3600) + ((int) $m * 60) + (int) $s;
+                                });
+                
+                                $project->total_time_in_seconds = $totalTimeInSeconds;
+                                return $project;
                             })
-                            ->where('status', '!=', 'complete')
-                            ->orderBy('updated_at', 'desc')
-                            ->take(10)
-                            ->get();
+                            ->filter(function ($project) use ($minTotalTimeInSeconds) {
+                                return $project->total_time_in_seconds >= $minTotalTimeInSeconds;
+                            })
+                            ->sortByDesc('updated_at')
+                            ->take($topNinproject);
+
+                            if ($request->ajax()) {
+                                return response()->json([
+                                    'projects' => $projectReminder,
+                                    'untouchedProjects' => $untouchedProjects->values()->toArray(),
+                                    'inprogressProjects' => $inProgressProjects->values()->toArray(),
+                                ]);
+                            }
 
                         $currentMonthStart = Carbon::now()->startOfMonth();
                         $currentMonthEnd = Carbon::now()->endOfMonth();
@@ -1570,7 +1631,7 @@ class DashboardController extends Controller
                         $meetings = Meeting::where('created_by', '=', \Auth::user()->creatorId())->limit(5)->get();
 
                         return view('dashboard.home', compact(
-                            'outstandingTasks',
+                            'projectReminder',
                             'untouchedProjects',
                             'inProgressProjects',
                             'currentMonthWork',
@@ -1579,6 +1640,9 @@ class DashboardController extends Controller
                             'previousMonthWork',
                             'currentMonthTasksCompleted',
                             'previousMonthTasksCompleted',
+                            'filterRange',
+                            'topNunproject',
+                            'topNinproject',
                             'employeesAttendances', 'dates', 'data', 'profile', 'employees', 'employeeAttendance', 'officeTime', 'home_data', 'approval', 'data_absen', 'data_late', 'overtimePerDay', 'totalOvertimeHours', 'totalLeaveDays', 'totalRemainingLeaveDays', 'totalAllocatedLeaveDays','totalSickDays','totalReimbursement','totalReimbursementAmount','timesheetData','curMonth','projectStatusCounts','overdueTasksPerProject','tasksStatusPerProject','tasksPerProject','tasksPriorityPerProject','completedTasks','incompleteTasks'
                         ));
 

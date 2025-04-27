@@ -60,7 +60,7 @@ class ElController extends Controller
 
         $el->save();
 
-        return redirect()->route('projects.show',$request->project_id)->with('success', 'EL created successfully');
+        return redirect()->route('projects.show',\Crypt::encrypt($request->project_id))->with('success', 'EL created successfully');
     }
 
     public function edit($id)
@@ -112,7 +112,7 @@ class ElController extends Controller
 
         $el->save();
 
-        return redirect()->route('projects.show', $el->project_id)->with('success', 'EL updated successfully');
+        return redirect()->route('projects.show', \Crypt::encrypt($el->project_id))->with('success', 'EL updated successfully');
     }
 
 

@@ -1,17 +1,17 @@
 @extends('layouts.admin')
 
 @section('page-title')
-    {{__('Manage Absence Request')}}
+    {{__('Manage Leave Request')}}
 @endsection
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
-    <li class="breadcrumb-item">{{__('Manage Absence Request')}}</li>
+    <li class="breadcrumb-item">{{__('Manage Leave Request')}}</li>
 @endsection
 
 @section('action-btn')
     <div class="float-end">
         @can('create leave')
-        <a href="#" data-size="lg" data-url="{{ route('absence-request.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create')}}" data-title="{{__('Create Absence Request')}}" class="btn btn-sm btn-primary">
+        <a href="#" data-size="lg" data-url="{{ route('leave.create') }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Create')}}" data-title="{{__('Create Leave Request')}}" class="btn btn-sm btn-primary">
             <i class="ti ti-plus"></i>
         </a>
         @endcan
@@ -82,7 +82,7 @@
                                             @if($leave->status == "Pending")
                                                 @can('edit leave')
                                                 <div class="action-btn bg-primary ms-2">
-                                                    <a href="#" data-url="{{ URL::to('absence-request/'.$leave->id.'/edit') }}" data-size="lg" data-ajax-popup="true" data-title="{{__('Edit Attendance Request')}}" class="mx-3 btn btn-sm  align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-original-title="{{__('Edit')}}"><i class="ti ti-pencil text-white"></i></a>
+                                                    <a href="#" data-url="{{ URL::to('leave/'.$leave->id.'/edit') }}" data-size="lg" data-ajax-popup="true" data-title="{{__('Edit Leave Request')}}" class="mx-3 btn btn-sm  align-items-center" data-bs-toggle="tooltip" title="{{__('Edit')}}" data-original-title="{{__('Edit')}}"><i class="ti ti-pencil text-white"></i></a>
                                                 </div>
                                                 @endcan
                                             @endif
@@ -101,7 +101,7 @@
                     </div>
                 </div>
                 @endif
-                <div class="card-header"><h6 class="mb-0" style="font-size: 15px;">{{__('Sick Request')}}</h6></div>
+                {{-- <div class="card-header"><h6 class="mb-0" style="font-size: 15px;">{{__('Sick Request')}}</h6></div>
                 <div class="card-body table-border-style">
                     <div class="table-responsive">
                         <table class="table">
@@ -131,7 +131,7 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </div> --}}
             </div>
         </div>
     </div>
@@ -205,7 +205,7 @@
                                         </td>
                                         <td>
                                            <div class="action-btn bg-warning ms-2">
-                                            <a href="#" data-url="{{ URL::to('absence-request/'.$approvals->id.'/action') }}" data-size="lg" data-ajax-popup="true" data-title="{{__('Leave Action')}}" class="mx-3 btn btn-sm  align-items-center" data-bs-toggle="tooltip" title="{{__('Leave Action')}}" data-original-title="{{__('Leave Action')}}">
+                                            <a href="#" data-url="{{ URL::to('leave/'.$approvals->id.'/action') }}" data-size="lg" data-ajax-popup="true" data-title="{{__('Leave Action')}}" class="mx-3 btn btn-sm  align-items-center" data-bs-toggle="tooltip" title="{{__('Leave Action')}}" data-original-title="{{__('Leave Action')}}">
                                                 <i class="ti ti-caret-right text-white"></i> </a>
                                         </div>
                                         </td>
@@ -225,23 +225,11 @@
     <script src="{{url('js/swiper.min.js')}}"></script>
     <script>
 
-        $(document).on('click', '.view-images', function () {
-
-                var p_url = "{{route('sick-letter.image.view')}}";
-                var data = {
-                    'id': $(this).attr('data-id')
-                };
-                    postAjax(p_url, data, function (res) {
-                        $('.image_sider_div').html(res);
-                        $('#exampleModalCenter').modal('show');
-                    });
-        });
-
         $(document).on('change', '#employee_id', function () {
                     var employee_id = $(this).val();
 
                     $.ajax({
-                        url: '{{route('absence-request.jsoncount')}}',
+                        url: '{{route('leave.jsoncount')}}',
                         type: 'POST',
                         data: {
                             "employee_id": employee_id, "_token": "{{ csrf_token() }}",

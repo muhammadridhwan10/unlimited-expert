@@ -1,4 +1,4 @@
-{{ Form::model($leave, ['route' => ['absence-request.update', $leave->id], 'method' => 'PUT', 'enctype' => 'multipart/form-data']) }}
+{{ Form::model($leave, ['route' => ['sick-letter.update', $leave->id], 'method' => 'PUT', 'enctype' => 'multipart/form-data']) }}
 <div class="modal-body">
 
     @if(\Auth::user()->type !='admin' || \Auth::user()->type !='company')

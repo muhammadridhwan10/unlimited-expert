@@ -487,7 +487,7 @@
                                 <td>{{ Auth::user()->dateFormat($project->end_date) }}</td>
                                 <td>
                                     <div class="action-btn bg-primary ms-2">
-                                        <a href="{{ route('projects.show',$project->id) }}" class="mx-3 btn btn-sm align-items-center"><i class="ti ti-eye text-white"></i></a>
+                                        <a href="{{ route('projects.show', \Crypt::encrypt($project->id)) }}" class="mx-3 btn btn-sm align-items-center"><i class="ti ti-eye text-white"></i></a>
                                     </div>
                                 </td>
                             </tr>

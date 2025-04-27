@@ -9,7 +9,7 @@
 
     <li class="breadcrumb-item"><a href="{{route('dashboard')}}">{{__('Dashboard')}}</a></li>
     <li class="breadcrumb-item"><a href="{{route('projects.index')}}">{{__('Project')}}</a></li>
-    <li class="breadcrumb-item"><a href="{{route('projects.show',$project->id)}}">    {{ucwords($project->project_name)}}</a></li>
+    <li class="breadcrumb-item"><a href="{{route('projects.show',\Crypt::encrypt($project->id))}}">    {{ucwords($project->project_name)}}</a></li>
     <li class="breadcrumb-item">{{ucwords($project->project_name).__("'s Expenses")}}</li>
 
 @endsection
@@ -21,7 +21,7 @@
                 <span class="btn-inner--icon"><i class="ti ti-plus"></i></span>
             </a>
         @endcan
-        <a href="{{ route('projects.show',$project->id) }}" class="btn btn-primary btn-sm" data-bs-toggle="tooltip" title="{{__('Back')}}">
+        <a href="{{ route('projects.show',\Crypt::encrypt($project->id)) }}" class="btn btn-primary btn-sm" data-bs-toggle="tooltip" title="{{__('Back')}}">
             <span class="btn-inner--icon"><i class="ti ti-arrow-left"></i></span>
         </a>
     </div>

@@ -274,7 +274,11 @@ class ProjectController extends Controller
         if(\Auth::user()->can('view project'))
         {
 
-            $id = Crypt::decrypt($ids);
+            try {
+                $id = Crypt::decrypt($ids);
+            } catch (\Throwable $th) {
+                return redirect()->back()->with('error', __('Project Not Found.'));
+            }
 
             $project = Project::find($id);
 
@@ -559,9 +563,6 @@ class ProjectController extends Controller
                     }
                 }
             }
-        } else {
-
-            ProjectTask::where('project_id', $project->id)->delete();
         }
 
         $project->template_task_id = $newTemplateTaskId;
@@ -1977,16 +1978,16 @@ class ProjectController extends Controller
             'time_spent', 'overtime_hours'
         ]);
 
-        $prompt = "I have data,
+        $prompt = "Kami memiliki data,
             Running Days: {$projectData['running_days']}, Total Tasks: {$projectData['total_tasks']},
             Completed Tasks: {$projectData['completed_tasks']}, In Progress Tasks: {$projectData['pending_tasks']},
             Overdue Tasks: {$projectData['overdue_tasks']}, Progress Percentage: {$projectData['progress_percentage']}%,
             Time Spent: " . json_encode($projectData['time_spent']) . ",
             Overtime Hours: " . json_encode($projectData['overtime_hours']) . ",
-            please provide suggestions to improve productivity from the data.";
+            tolong berikan rekomendasi untuk meningkatkan produktivitas dari data tersebut.";
 
         try {
-            // Kirim permintaan ke Google AI API
+
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
             ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$googleApiKey", [
@@ -2006,10 +2007,8 @@ class ProjectController extends Controller
                 ], $response->status());
             }
 
-            // Ambil data JSON dari respons API
             $data = $response->json();
 
-            // Kirim data ke frontend
             return response()->json([
                 'cached' => false,
                 'data' => $data
@@ -2032,7 +2031,6 @@ class ProjectController extends Controller
         $prompt = $request->input('prompt');
 
         try {
-            // Kirim permintaan ke Google AI API
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
             ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=$googleApiKey", [
