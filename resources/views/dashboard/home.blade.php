@@ -23,19 +23,21 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                     method: "GET",
                     data: { filter_range: filterRange },
                     success: function (response) {
-
                         let projects = response.projects;
                         let tbody = $('#project-reminder-table tbody');
                         tbody.empty();
 
                         if (projects.length > 0) {
                             projects.forEach((project, index) => {
+                                // Determine the badge class based on the status
+                                let badgeClass = project.status.includes('Overdue') ? 'bg-danger' : 'bg-success';
+                                
+                                // Create the table row with the appropriate badge
                                 let row = `
                                     <tr>
-                                        <td>${index + 1}</td>
                                         <td>${project.project_name}</td>
                                         <td>${project.end_date}</td>
-                                        <td>${project.status}</td>
+                                        <td><span class="badge ${badgeClass}">${project.status}</span></td>
                                     </tr>
                                 `;
                                 tbody.append(row);
@@ -43,7 +45,7 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                         } else {
                             tbody.append(`
                                 <tr>
-                                    <td colspan="4" class="text-center">No projects approaching the deadline.</td>
+                                    <td colspan="3" class="text-center">No projects approaching the deadline.</td>
                                 </tr>
                             `);
                         }
@@ -70,10 +72,10 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                             projects.forEach((project, index) => {
                                 let row = `
                                     <tr>
-                                        <td>${index + 1}</td>
                                         <td>${project.project_name}</td>
-                                        <td>${new Date(project.total_time_in_seconds * 1000).toISOString().substr(11, 8)}</td>
                                         <td>${project.status}</td>
+                                        <td>${project.start_date}</td>
+                                        <td>${new Date(project.total_time_in_seconds * 1000).toISOString().substr(11, 8)}</td>
                                     </tr>
                                 `;
                                 tbody.append(row);
@@ -81,7 +83,7 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                         } else {
                             tbody.append(`
                                 <tr>
-                                    <td colspan="4" class="text-center">No untouched projects found.</td>
+                                    <td colspan="3" class="text-center">No untouched projects found.</td>
                                 </tr>
                             `);
                         }
@@ -108,11 +110,10 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                             projects.forEach((project, index) => {
                                 let row = `
                                     <tr>
-                                        <td>${index + 1}</td>
                                         <td>${project.project_name}</td>
-                                        <td>${new Date(project.total_time_in_seconds * 1000).toISOString().substr(11, 8)}</td>
                                         <td>${project.status}</td>
-                                        <td>${project.updated_at}</td>
+                                        <td>${project.start_date}</td>
+                                        <td>${new Date(project.total_time_in_seconds * 1000).toISOString().substr(11, 8)}</td>
                                     </tr>
                                 `;
                                 tbody.append(row);
@@ -120,7 +121,7 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                         } else {
                             tbody.append(`
                                 <tr>
-                                    <td colspan="5" class="text-center">No in-progress projects found.</td>
+                                    <td colspan="4" class="text-center">No in-progress projects found.</td>
                                 </tr>
                             `);
                         }
@@ -875,13 +876,13 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
             <div class="col-xl-12">
                 <div class="card">
                     <div class="card-header">
-                        <h5>{{('Project Reminder')}}</h5>
+                        <h5>{{ __('Project Reminder') }}</h5>
                         <div class="float-end">
                             <select id="filter_range" class="form-select">
-                                <option value="7_days">7 Days Ahead</option>
-                                <option value="1_week">1 Week Ahead</option>
-                                <option value="1_month">1 Month Ahead</option>
-                                <option value="2_months">2 Months Ahead</option>
+                                <option value="7_days">7 Days</option>
+                                <option value="1_week">1 Week</option>
+                                <option value="1_month">1 Month</option>
+                                <option value="2_months">2 Months</option>
                             </select>
                         </div>
                     </div>
@@ -890,7 +891,6 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                             <table class="table table-bordered" id="project-reminder-table">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
                                         <th>Project Name</th>
                                         <th>End Date</th>
                                         <th>Status</th>
@@ -899,14 +899,19 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                                 <tbody>
                                     @forelse ($projectReminder as $index => $project)
                                     <tr>
-                                        <td>{{ $index + 1 }}</td>
                                         <td>{{ $project->project_name }}</td>
-                                        <td>{{ $project->end_date }}</td>
-                                        <td>{{ $project->status }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($project->end_date)->format('Y-m-d') }}</td>
+                                        <td>
+                                            @if (str_contains($project->status, 'Overdue'))
+                                                <span class="badge bg-danger">{{ $project->status }}</span>
+                                            @else
+                                                <span class="badge bg-success">{{ $project->status }}</span>
+                                            @endif
+                                        </td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="4" class="text-center">No projects approaching the deadline.</td>
+                                        <td colspan="3" class="text-center">No projects approaching the deadline.</td>
                                     </tr>
                                     @endforelse
                                 </tbody>
@@ -937,8 +942,8 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                             <table class="table table-bordered" id="untouched-projects-table">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
                                         <th>Project Name</th>
+                                        <th>Status</th>
                                         <th>Start Date</th>
                                         <th>Total Timesheet</th>
                                     </tr>
@@ -946,19 +951,22 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                                 <tbody>
                                     @forelse ($untouchedProjects as $index => $project)
                                     <tr>
-                                        <td>{{ $index + 1 }}</td>
                                         <td>{{ $project->project_name }}</td>
+                                        <td>{{ $project->status }}</td>
                                         <td>{{ $project->start_date }}</td>
                                         <td>
                                             @php
-                                                $totalTimesheet = $project->timesheets->sum('time');
+                                                $totalSeconds = $project->timesheets->reduce(function ($carry, $item) {
+                                                    list($hours, $minutes, $seconds) = explode(':', $item->time);
+                                                    return $carry + ($hours * 3600) + ($minutes * 60) + $seconds;
+                                                }, 0);
                                             @endphp
-                                            {{ gmdate('H:i:s', $totalTimesheet) }}
+                                            {{ gmdate('H:i:s', $totalSeconds) }}
                                         </td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="4" class="text-center">No untouched projects found.</td>
+                                        <td colspan="3" class="text-center">No untouched projects found.</td>
                                     </tr>
                                     @endforelse
                                 </tbody>
@@ -987,7 +995,6 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                             <table class="table table-bordered" id="in-progress-projects-table">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
                                         <th>Project Name</th>
                                         <th>Status</th>
                                         <th>Start Date</th>
@@ -997,7 +1004,6 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                                 <tbody>
                                     @forelse ($inProgressProjects as $index => $project)
                                     <tr>
-                                        <td>{{ $index + 1 }}</td>
                                         <td>{{ $project->project_name }}</td>
                                         <td>{{ $project->status }}</td>
                                         <td>{{ $project->start_date }}</td>
@@ -1013,7 +1019,7 @@ $shortenedOverdueTasksLabels = array_map(fn($name) => substr($name, 0,10) . '...
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="5" class="text-center">No projects in progress found.</td>
+                                        <td colspan="4" class="text-center">No projects in progress found.</td>
                                     </tr>
                                     @endforelse
                                 </tbody>

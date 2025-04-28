@@ -636,11 +636,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
 
                          <!--------------------- Start Account ----------------------------------->
 
-                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'marketing-files')?'active':''}}">
+                            {{-- <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'marketing-files')?'active':''}}">
                                 <a href="{{route('marketing-files.index')}}" class="dash-link">
                                     <span class="dash-micon"><i class="ti ti-files"></i></span><span class="dash-mtext">{{__('Marketing Files')}}</span>
                                 </a>
-                            </li>
+                            </li> --}}
                             
                             @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting')
                                 <li class="dash-item dash-hasmenu {{ ( Request::segment(1) == 'project-orders')?' active dash-trigger':''}}">

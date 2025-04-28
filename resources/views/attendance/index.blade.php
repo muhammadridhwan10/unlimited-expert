@@ -204,6 +204,7 @@
                                     <!-- <th>{{__('Location')}}</th> -->
                                     <th>{{__('Total Work')}}</th>
                                     <th>{{__('Late')}}</th>
+                                    <th>{{__('Work Location')}}</th>
                                     <th>{{__('Early Leaving')}}</th>
                                     <th>{{__('Overtime')}}</th>
                                     @if(Gate::check('edit attendance') || Gate::check('delete attendance'))

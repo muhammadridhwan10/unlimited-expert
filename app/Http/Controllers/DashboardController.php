@@ -1308,6 +1308,7 @@ class DashboardController extends Controller
                         $overtimeData = UserOvertime::where('user_id', $emp->id)
                             ->whereMonth('start_date', $month)
                             ->whereYear('start_date', $year)
+                            ->where('status', 'Approved')
                             ->get();
 
                         // Inisialisasi variabel untuk statistik
@@ -1315,27 +1316,23 @@ class DashboardController extends Controller
                         $totalOvertimeHours = 0;
                         $approvedOvertimeCount = 0;
 
+
                         foreach ($overtimeData as $overtime) {
-                            // Hitung total jam lembur
-                            $startTime = strtotime($overtime->start_time);
-                            $endTime = strtotime($overtime->end_time);
-
-                            if($overtime->end_time == '00:00:00' && $overtime->total_time !== null) {
-                                $endTime = strtotime('24:00:00');
-                            }
-
-                            $hoursWorked = ($endTime - $startTime) / 3600; // Konversi detik ke jam
+                            $start_time = $overtime->start_time;
+                            $end_time = $overtime->end_time;
+                        
+                            $time_difference = $this->calculateTimeDifference($start_time, $end_time);
+                        
+                            $hoursWorked = $time_difference / 3600;
                             $totalOvertimeHours += $hoursWorked;
-
-                            // Hitung lembur per hari
+                        
                             $date = date('Y-m-d', strtotime($overtime->start_date));
-                            if(!isset($overtimePerDay[$date])) {
+                            if (!isset($overtimePerDay[$date])) {
                                 $overtimePerDay[$date] = 0;
                             }
                             $overtimePerDay[$date] += $hoursWorked;
-
-                            // Hitung jumlah lembur yang disetujui
-                            if($overtime->status == 'Approved') {
+                        
+                            if ($overtime->status == 'Approved') {
                                 $approvedOvertimeCount++;
                             }
                         }
@@ -1494,27 +1491,42 @@ class DashboardController extends Controller
                         $startDate = Carbon::now();
                         switch ($filterRange) {
                             case '7_days':
-                                $endDate = Carbon::now()->addDays(7);
+                                $forwardEndDate = $startDate->copy()->addDays(7);
+                                $backwardStartDate = $startDate->copy()->subDays(7);
                                 break;
                             case '1_month':
-                                $endDate = Carbon::now()->addMonth();
+                                $forwardEndDate = $startDate->copy()->addMonth();
+                                $backwardStartDate = $startDate->copy()->subMonth();
                                 break;
                             case '2_months':
-                                $endDate = Carbon::now()->addMonths(2);
+                                $forwardEndDate = $startDate->copy()->addMonths(2);
+                                $backwardStartDate = $startDate->copy()->subMonths(2);
                                 break;
                             case '1_week':
-                                $endDate = Carbon::now()->addWeek();
+                                $forwardEndDate = $startDate->copy()->addWeek();
+                                $backwardStartDate = $startDate->copy()->subWeek();
                                 break;
                             default:
-                                $endDate = Carbon::now()->addDays(7);
+                                $forwardEndDate = $startDate->copy()->addDays(7);
+                                $backwardStartDate = $startDate->copy()->subDays(7);
                         }
-
+                        
                         $projectReminder = Project::whereIn('id', $projectIds)
-                            ->where('end_date', '>=', $startDate)
-                            ->where('end_date', '<=', $endDate)
-                            ->orderBy('end_date', 'asc')
-                            ->take(10)
-                            ->get();
+                        ->where(function ($query) use ($backwardStartDate, $forwardEndDate) {
+                            $query->whereBetween('end_date', [$backwardStartDate, $forwardEndDate]);
+                        })
+                        ->orderBy('end_date', 'asc')
+                        ->take(10)
+                        ->get()
+                        ->map(function ($project) {
+                            if ($project->end_date < Carbon::now()) {
+                                $project->status = 'Overdue';
+                            } else {
+                                $daysLeft = Carbon::now()->diffInDays($project->end_date);
+                                $project->status = "On Time ({$daysLeft} day" . ($daysLeft > 1 ? 's' : '') . " left)";
+                            }
+                            return $project;
+                        });
 
                         $untouchedProjects = Project::whereIn('id', $projectIds)
                             ->with(['timesheets' => function ($query) use ($user) {
@@ -1645,6 +1657,7 @@ class DashboardController extends Controller
                             'topNinproject',
                             'employeesAttendances', 'dates', 'data', 'profile', 'employees', 'employeeAttendance', 'officeTime', 'home_data', 'approval', 'data_absen', 'data_late', 'overtimePerDay', 'totalOvertimeHours', 'totalLeaveDays', 'totalRemainingLeaveDays', 'totalAllocatedLeaveDays','totalSickDays','totalReimbursement','totalReimbursementAmount','timesheetData','curMonth','projectStatusCounts','overdueTasksPerProject','tasksStatusPerProject','tasksPerProject','tasksPriorityPerProject','completedTasks','incompleteTasks'
                         ));
+                        
 
                     }
                     elseif($user->type == 'partners')
@@ -2552,6 +2565,21 @@ class DashboardController extends Controller
         });
 
         return $upcomingTasks;
+    }
+
+    private function calculateTimeDifference($start_time, $end_time)
+    {
+        // Konversi waktu ke timestamp Unix
+        $start = strtotime($start_time);
+        $end = strtotime($end_time);
+
+        // Handle jika waktu melewati tengah malam
+        if ($end < $start) {
+            $end += 86400; // Tambahkan 1 hari (86400 detik)
+        }
+
+        // Hitung selisih dalam detik
+        return ($end - $start);
     }
 
 }
