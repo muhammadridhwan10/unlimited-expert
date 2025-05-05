@@ -26,6 +26,7 @@ use App\Models\Payment;
 use App\Models\ProductServiceCategory;
 use App\Models\ProductServiceUnit;
 use App\Models\Project;
+use App\Models\Planning;
 use App\Models\ProjectUser;
 use App\Models\ProjectTask;
 use App\Models\Revenue;
@@ -1482,180 +1483,80 @@ class DashboardController extends Controller
 
                         $projectIds = ProjectUser::where('user_id', $user->id)->pluck('project_id');
 
-                        $filterRange = $request->input('filter_range', '7_days');
-                        $topNunproject = $request->input('top_nunproject', 10);
-                        $topNinproject = $request->input('top_ninproject', 10);
+                        // Ambil planning dari user saat ini
+                            $plans = Planning::with('project')
+                            ->where('user_id', $user->id)
+                            ->where('start_date', '>=', now()->subMonths(3))
+                            ->orderBy('start_date')
+                            ->get();
 
-                        $minTotalTimeInSeconds = 3600;
-
-                        $startDate = Carbon::now();
-                        switch ($filterRange) {
-                            case '7_days':
-                                $forwardEndDate = $startDate->copy()->addDays(7);
-                                $backwardStartDate = $startDate->copy()->subDays(7);
-                                break;
-                            case '1_month':
-                                $forwardEndDate = $startDate->copy()->addMonth();
-                                $backwardStartDate = $startDate->copy()->subMonth();
-                                break;
-                            case '2_months':
-                                $forwardEndDate = $startDate->copy()->addMonths(2);
-                                $backwardStartDate = $startDate->copy()->subMonths(2);
-                                break;
-                            case '1_week':
-                                $forwardEndDate = $startDate->copy()->addWeek();
-                                $backwardStartDate = $startDate->copy()->subWeek();
-                                break;
-                            default:
-                                $forwardEndDate = $startDate->copy()->addDays(7);
-                                $backwardStartDate = $startDate->copy()->subDays(7);
-                        }
-                        
-                        $projectReminder = Project::whereIn('id', $projectIds)
-                        ->where(function ($query) use ($backwardStartDate, $forwardEndDate) {
-                            $query->whereBetween('end_date', [$backwardStartDate, $forwardEndDate]);
-                        })
-                        ->orderBy('end_date', 'asc')
-                        ->take(10)
-                        ->get()
-                        ->map(function ($project) {
-                            if ($project->end_date < Carbon::now()) {
-                                $project->status = 'Overdue';
-                            } else {
-                                $daysLeft = Carbon::now()->diffInDays($project->end_date);
-                                $project->status = "On Time ({$daysLeft} day" . ($daysLeft > 1 ? 's' : '') . " left)";
-                            }
-                            return $project;
+                        // Kalender events
+                        $events = $plans->map(function ($plan) {
+                            return [
+                                'title' => $plan->title . ' - ' . optional($plan->project)->project_name,
+                                'start' => $plan->start_date,
+                                'end' => $plan->end_date,
+                                'url' => route('projects.show', $plan->project_id),
+                            ];
                         });
 
-                        $untouchedProjects = Project::whereIn('id', $projectIds)
-                            ->with(['timesheets' => function ($query) use ($user) {
-                                $query->where('created_by', $user->id);
-                            }])
-                            ->where('status', 'in_progress') 
-                            ->get()
-                            ->map(function ($project) {
+                        // Untouched project (tidak ada timesheet atau planning baru)
+                        $untouchedProjectsQuery = Project::where('status','in_progress')->whereIn('id', $projectIds)
+                            ->whereDoesntHave('timesheets', function ($q) {
+                                $q->where('date', '>=', now()->subMonth());
+                            });
 
-                                $totalTimeInSeconds = $project->timesheets->sum(function ($timesheet) {
-                                    list($h, $m, $s) = explode(':', $timesheet->time);
-                                    return ((int) $h * 3600) + ((int) $m * 60) + (int) $s;
-                                });
+                        $untouchedProjects = $untouchedProjectsQuery->paginate(5, ['*'], 'untouched_page');
 
-                                $project->total_time_in_seconds = $totalTimeInSeconds;
-                                return $project;
-                            })
-                            ->filter(function ($project) {
+                        // In Progress Projects
+                        $inProgressQuery = Project::whereIn('id', $projectIds)
+                            ->where('status', '=', 'in_progress');
 
-                                return $project->total_time_in_seconds < 3600;
-                            })
-                            ->sortBy('total_time_in_seconds')
-                            ->take($topNunproject);
+                        if ($request->filled('project_name_filter')) {
+                            $inProgressQuery->where('project_name', 'like', '%' . $request->input('project_name_filter') . '%');
+                        }
 
+                        $inProgressProjects = $inProgressQuery->paginate(5, ['*'], 'inprogress_page');
 
-                        $inProgressProjects = Project::whereIn('id', $projectIds)
-                            ->with(['timesheets' => function ($query) use ($user) {
-                                $query->where('created_by', $user->id);
-                            }])
-                            ->where('status', 'in_progress')
-                            ->get()
-                            ->map(function ($project) {
+                        // Analytical Reports
+                        $lastWeek = Timesheet::whereIn('project_id', $projectIds)
+                            ->whereBetween('date', [now()->startOfWeek()->subWeek(), now()->endOfWeek()->subWeek()])
+                            ->sum('time');
 
-                                $totalTimeInSeconds = $project->timesheets->sum(function ($timesheet) {
-                                    list($h, $m, $s) = explode(':', $timesheet->time);
-                                    return ((int) $h * 3600) + ((int) $m * 60) + (int) $s;
-                                });
-                
-                                $project->total_time_in_seconds = $totalTimeInSeconds;
-                                return $project;
-                            })
-                            ->filter(function ($project) use ($minTotalTimeInSeconds) {
-                                return $project->total_time_in_seconds >= $minTotalTimeInSeconds;
-                            })
-                            ->sortByDesc('updated_at')
-                            ->take($topNinproject);
+                        $currentMonth = Timesheet::whereIn('project_id', $projectIds)
+                            ->whereMonth('date', now()->month)
+                            ->sum('time');
 
-                            if ($request->ajax()) {
-                                return response()->json([
-                                    'projects' => $projectReminder,
-                                    'untouchedProjects' => $untouchedProjects->values()->toArray(),
-                                    'inprogressProjects' => $inProgressProjects->values()->toArray(),
-                                ]);
-                            }
+                        $previousMonth = Timesheet::whereIn('project_id', $projectIds)
+                            ->whereMonth('date', now()->subMonth()->month)
+                            ->sum('time');
 
-                        $currentMonthStart = Carbon::now()->startOfMonth();
-                        $currentMonthEnd = Carbon::now()->endOfMonth();
-                        $previousMonthStart = Carbon::now()->subMonth()->startOfMonth();
-                        $previousMonthEnd = Carbon::now()->subMonth()->endOfMonth();
+                        // Chart Data
+                        $chartData = [];
 
-                        $calculateTotalTime = function ($timesheets) {
-                            $totalHours = 0;
-                            $totalMinutes = 0;
-                            $totalSeconds = 0;
-                        
-                            foreach ($timesheets as $t) {
-                                if ($t->time) {
-                                    list($h, $m, $s) = explode(':', $t->time);
-                                    $totalHours += (int) $h;
-                                    $totalMinutes += (int) $m;
-                                    $totalSeconds += (int) $s;
-                                }
-                            }
-                        
-                            $totalMinutes += intdiv($totalSeconds, 60);
-                            $totalSeconds = $totalSeconds % 60;
-                        
-                            $totalHours += intdiv($totalMinutes, 60);
-                            $totalMinutes = $totalMinutes % 60;
-                        
-                            return sprintf('%02d:%02d:%02d', $totalHours, $totalMinutes, $totalSeconds);
-                        };
+                        foreach ([now()->startOfMonth()->subMonth()->toDateString() => 'Last Month', now()->startOfMonth()->toDateString() => 'This Month'] as $date => $label) {
+                            $start = $date;
+                            $end = Carbon::parse($start)->endOfMonth();
 
-                        $convertTimeToSeconds = function ($timeString) {
-                            list($h, $m, $s) = explode(':', $timeString);
-                            return ((int) $h * 3600) + ((int) $m * 60) + (int) $s;
-                        };                        
-                        
-                        $currentMonthTimesheets = Timesheet::where('created_by', $user->id)
-                            ->whereBetween('date', [$currentMonthStart, $currentMonthEnd])
-                            ->get();
+                            $totalHours = Timesheet::whereIn('project_id', $projectIds)
+                                ->whereBetween('date', [$start, $end])
+                                ->sum('time');
 
-                        $currentMonthWork = $calculateTotalTime($currentMonthTimesheets);
+                            $chartData[$label] = $totalHours;
+                        }
 
-                        $previousMonthTimesheets = Timesheet::where('created_by', $user->id)
-                            ->whereBetween('date', [$previousMonthStart, $previousMonthEnd])
-                            ->get();
+                        $projects = Project::whereIn('id', $projectIds)->get();
 
-                        $previousMonthWork = $calculateTotalTime($previousMonthTimesheets);
-
-                        $currentMonthTasksCompleted = ProjectTask::where('assign_to', 'like', "%{$user->id}%")
-                            ->where('stage_id', 4)
-                            ->whereBetween('marked_at', [$currentMonthStart, $currentMonthEnd])
-                            ->count();
-                        $previousMonthTasksCompleted = ProjectTask::where('assign_to', 'like', "%{$user->id}%")
-                            ->where('stage_id', 4)
-                            ->whereBetween('marked_at', [$previousMonthStart, $previousMonthEnd])
-                            ->count();
-
-                        $currentMonthWorkInSeconds = $convertTimeToSeconds($currentMonthWork);
-                        $previousMonthWorkInSeconds = $convertTimeToSeconds($previousMonthWork);
-                            
-                    
-                        $meetings = Meeting::where('created_by', '=', \Auth::user()->creatorId())->limit(5)->get();
-
-                        return view('dashboard.home', compact(
-                            'projectReminder',
-                            'untouchedProjects',
+                        return view('dashboard.personnel', compact(
+                            'events',
+                            'projects',
                             'inProgressProjects',
-                            'currentMonthWork',
-                            'currentMonthWorkInSeconds',
-                            'previousMonthWorkInSeconds',
-                            'previousMonthWork',
-                            'currentMonthTasksCompleted',
-                            'previousMonthTasksCompleted',
-                            'filterRange',
-                            'topNunproject',
-                            'topNinproject',
-                            'employeesAttendances', 'dates', 'data', 'profile', 'employees', 'employeeAttendance', 'officeTime', 'home_data', 'approval', 'data_absen', 'data_late', 'overtimePerDay', 'totalOvertimeHours', 'totalLeaveDays', 'totalRemainingLeaveDays', 'totalAllocatedLeaveDays','totalSickDays','totalReimbursement','totalReimbursementAmount','timesheetData','curMonth','projectStatusCounts','overdueTasksPerProject','tasksStatusPerProject','tasksPerProject','tasksPriorityPerProject','completedTasks','incompleteTasks'
+                            'untouchedProjects',
+                            'lastWeek',
+                            'currentMonth',
+                            'previousMonth',
+                            'chartData',
+                            'employeesAttendances', 'dates', 'data', 'profile', 'employees', 'employeeAttendance', 'officeTime', 'home_data', 'approval', 'data_absen', 'data_late', 'overtimePerDay', 'totalOvertimeHours', 'totalLeaveDays', 'totalRemainingLeaveDays', 'totalAllocatedLeaveDays','totalSickDays','totalReimbursement','totalReimbursementAmount','timesheetData','curMonth','projectStatusCounts','overdueTasksPerProject','tasksStatusPerProject','tasksPerProject','tasksPriorityPerProject','completedTasks','incompleteTasks',
                         ));
                         
 
@@ -1663,25 +1564,127 @@ class DashboardController extends Controller
                     elseif($user->type == 'partners')
                     {
 
+                        $user = \Auth::user();
+                        $users = User::where('type', '!=', 'client')->where('is_active', 1)->get();
+
                         // Existing Code: Employee and Attendance Data
                         $absentData = [];
-                        $defaultPerPage = 10;
-                        $branch = Employee::where('user_id', \Auth::user()->id)->first();
+                        $home_data = [];
 
-                        $perPageUntouched = $request->input('untouched_per_page', $defaultPerPage);
-                        $perPageInProgress = $request->input('in_progress_per_page', $defaultPerPage);
-                        $perPageHighPerformers = $request->input('high_performers_per_page', $defaultPerPage);
-                        $perPageLowPerformers = $request->input('low_performers_per_page', $defaultPerPage);
-                        $perPageTasks = $request->input('tasks_per_page', $defaultPerPage);
-                        $perPageProjects = $request->input('percentage_project_page', $defaultPerPage);
+                        $complete_project           = $user->projects()->where('status', 'LIKE', 'complete')->count();
+
+                        if($user->employee->branch_id == 1)
+                        {
+                            $all_project        = Project::where('tags','PUSAT')->count();
+                            $complete_project   = Project::where('tags','PUSAT')->where('status', 'LIKE', 'complete')->count();
+                            $in_progress_project   = Project::where('tags','PUSAT')->where('status', 'LIKE', 'in_progress')->count();
+                        }
+                        elseif($user->employee->branch_id == 2)
+                        {
+                            $all_project        = Project::where('tags','BEKASI')->count();
+                            $complete_project   = Project::where('tags','BEKASI')->where('status', 'LIKE', 'complete')->count();
+                            $in_progress_project   = Project::where('tags','BEKASI')->where('status', 'LIKE', 'in_progress')->count();
+                        }
+                        elseif($user->employee->branch_id == 3)
+                        {
+                            $all_project        = Project::where('tags','MALANG')->count();
+                            $complete_project   = Project::where('tags','MALANG')->where('status', 'LIKE', 'complete')->count();
+                            $in_progress_project   = Project::where('tags','MALANG')->where('status', 'LIKE', 'in_progress')->count();
+                        }
+
+                        $home_data['total_project'] = [
+                            'all_project' => $all_project,
+                            'complete_project' => $complete_project,
+                            'in_progress_project' => $in_progress_project,
+                            'percentage' => Utility::getPercentage($complete_project, $all_project),
+                        ];
+
+                        $user = auth()->user();
+
+                        $projectIds = ProjectUser::where('user_id', $user->id)->pluck('project_id');
+
+                        $plans = Planning::with('project')
+                            ->where('start_date', '>=', now()->subMonths(3))
+                            ->orderBy('start_date')
+                            ->get();
+
+                        // Kalender events
+                        $events = $plans->map(function ($plan) {
+                            return [
+                                'title' => $plan->title . ' - ' . optional($plan->project)->project_name,
+                                'start' => $plan->start_date,
+                                'end' => $plan->end_date,
+                                'url' => route('projects.show', $plan->project_id),
+                            ];
+                        });
+
+                        if($user->employee->branch_id == 1)
+                        {
+                            $untouchedProjectsQuery = Project::where('tags','PUSAT')->where('status','in_progress')
+                            ->whereDoesntHave('timesheets', function ($q) {
+                                $q->where('date', '>=', now()->subMonth());
+                            });
+
+                            $inProgressQuery = Project::where('tags','PUSAT')
+                            ->where('status', '=', 'in_progress');
+
+                        }
+                        elseif($user->employee->branch_id == 2)
+                        {
+                            $untouchedProjectsQuery = Project::where('tags','BEKASI')->where('status','in_progress')
+                            ->whereDoesntHave('timesheets', function ($q) {
+                                $q->where('date', '>=', now()->subMonth());
+                            });
+
+                            $inProgressQuery = Project::where('tags','BEKASI')
+                            ->where('status', '=', 'in_progress');
+                        }
+                        elseif($user->employee->branch_id == 3)
+                        {
+                            $untouchedProjectsQuery = Project::where('tags','MALANG')->where('status','in_progress')
+                            ->whereDoesntHave('timesheets', function ($q) {
+                                $q->where('date', '>=', now()->subMonth());
+                            });
+
+                            $inProgressQuery = Project::where('tags','MALANG')
+                            ->where('status', '=', 'in_progress');
+                        }
+
                         
+                        $untouchedProjects = $untouchedProjectsQuery->paginate(15, ['*'], 'untouched_page');
+                        $inProgressProjects = $inProgressQuery->paginate(15, ['*'], 'inprogress_page');
 
-                        $untouchedPage = $request->input('untouched_page', 1);
-                        $inProgressPage = $request->input('in_progress_page', 1);
-                        $highPerformersPage = $request->input('high_performers_page', 1);
-                        $lowPerformersPage = $request->input('low_performers_page', 1);
-                        $tasksPage = $request->input('tasks_page', 1);
-                        $projectsPage = $request->input('percentage_project_page', 1);
+                        // Analytical Reports
+                        $lastWeek = Timesheet::whereIn('project_id', $projectIds)
+                            ->whereBetween('date', [now()->startOfWeek()->subWeek(), now()->endOfWeek()->subWeek()])
+                            ->sum('time');
+
+                        $currentMonth = Timesheet::whereIn('project_id', $projectIds)
+                            ->whereMonth('date', now()->month)
+                            ->sum('time');
+
+                        $previousMonth = Timesheet::whereIn('project_id', $projectIds)
+                            ->whereMonth('date', now()->subMonth()->month)
+                            ->sum('time');
+
+                        // Chart Data
+                        $chartData = [];
+
+                        foreach ([now()->startOfMonth()->subMonth()->toDateString() => 'Last Month', now()->startOfMonth()->toDateString() => 'This Month'] as $date => $label) {
+                            $start = $date;
+                            $end = Carbon::parse($start)->endOfMonth();
+
+                            $totalHours = Timesheet::whereIn('project_id', $projectIds)
+                                ->whereBetween('date', [$start, $end])
+                                ->sum('time');
+
+                            $chartData[$label] = $totalHours;
+                        }
+
+                        $projects = Project::whereIn('id', $projectIds)->get();
+
+                        $branch = Employee::where('user_id', \Auth::user()->id)->first();
+                    
 
                         $employees = Employee::select('id', 'name');
 
@@ -1786,105 +1789,21 @@ class DashboardController extends Controller
                         $data['currentYear']  = date('Y');
                         $data['currentMonth'] = date('M');
 
-                        $untouchedProjects = Project::whereDoesntHave('timesheets')
-                            ->paginate($perPageUntouched, ['*'], 'untouched_page', $untouchedPage);
-
-                        $inProgressProjects = Project::where('status', 'in_progress')
-                            ->paginate($perPageInProgress, ['*'], 'in_progress_page', $inProgressPage);
-
-                        $projects = Project::with(['timesheets' => function ($query) {
-                            $query->selectRaw('project_id, SUM(TIME_TO_SEC(time)) as total_seconds')
-                                ->groupBy('project_id');
-                        }, 'projectOfferings'])
-                            ->paginate($perPageProjects, ['*'], 'percentage_project_page', $projectsPage);
-                
-                        foreach ($projects as $project) {
-
-                            $hoursSpent = $project->timesheets->sum('total_seconds') / 3600;
-                
-                            $estimatedHrs = $project->estimated_hrs ?? 0;
-                
-                            $budget = 0;
-                            if ($project->projectOfferings) {
-                                $budget += ($project->projectOfferings->als_partners * $project->projectOfferings->rate_partners);
-                                $budget += ($project->projectOfferings->als_manager * $project->projectOfferings->rate_manager);
-                                $budget += ($project->projectOfferings->als_leader * $project->projectOfferings->rate_leader);
-                                $budget += ($project->projectOfferings->als_associate * $project->projectOfferings->rate_associate);
-                                $budget += ($project->projectOfferings->als_senior_associate * $project->projectOfferings->rate_senior_associate);
-                                $budget += ($project->projectOfferings->als_intern * $project->projectOfferings->rate_intern);
-                            }
-                
-                            $totalRate = 0;
-                            $totalAllocation = 0;
-                            if ($project->projectOfferings) {
-                                $totalRate += $project->projectOfferings->rate_partners * $project->projectOfferings->als_partners;
-                                $totalRate += $project->projectOfferings->rate_manager * $project->projectOfferings->als_manager;
-                                $totalRate += $project->projectOfferings->rate_leader * $project->projectOfferings->als_leader;
-                                $totalRate += $project->projectOfferings->rate_associate * $project->projectOfferings->als_associate;
-                                $totalRate += $project->projectOfferings->rate_senior_associate * $project->projectOfferings->als_senior_associate;
-                                $totalRate += $project->projectOfferings->rate_intern * $project->projectOfferings->als_intern;
-                
-                                $totalAllocation += $project->projectOfferings->als_partners;
-                                $totalAllocation += $project->projectOfferings->als_manager;
-                                $totalAllocation += $project->projectOfferings->als_leader;
-                                $totalAllocation += $project->projectOfferings->als_associate;
-                                $totalAllocation += $project->projectOfferings->als_senior_associate;
-                                $totalAllocation += $project->projectOfferings->als_intern;
-                            }
-                
-                            $averageHourlyRate = $totalAllocation > 0 ? $totalRate / $totalAllocation : 0;
-                
-                            $spentAmount = $hoursSpent * $averageHourlyRate;
-                            $percentageBudget = $budget > 0 ? round(($spentAmount / $budget) * 100, 2) : 'N/A';
-                
-                            $isOverHours = false;
-                            $overPercentage = null;
-                            if ($hoursSpent > $estimatedHrs && $estimatedHrs > 0) {
-                                $isOverHours = true;
-                                $overPercentage = round((($hoursSpent - $estimatedHrs) / $estimatedHrs) * 100, 2);
-                            }
-                
-                            $project->hours_spent = $hoursSpent;
-                            $project->estimated_hrs = $estimatedHrs;
-                            $project->budget = $budget;
-                            $project->percentage_budget = $percentageBudget;
-                            $project->is_over_hours = $isOverHours;
-                            $project->over_percentage = $overPercentage;
-                        }
-
-                        $highPerformers = User::where('type', '!=', 'client')->where('type', '!=', 'admin')->where('type', '!=', 'company')
-                            ->select('users.*')
-                            ->addSelect(DB::raw("(SELECT COUNT(*) FROM project_tasks 
-                                                WHERE FIND_IN_SET(users.id, project_tasks.assign_to) 
-                                                AND project_tasks.stage_id = 4) as completed_tasks"))
-                            ->orderByDesc('completed_tasks')
-                            ->paginate($perPageHighPerformers, ['*'], 'high_performers_page', $highPerformersPage);
-
-                        $lowPerformers =  User::where('type', '!=', 'client')->where('type', '!=', 'admin')->where('type', '!=', 'company')
-                            ->select('users.*')
-                            ->addSelect(DB::raw("(SELECT COUNT(*) FROM project_tasks 
-                                                WHERE FIND_IN_SET(users.id, project_tasks.assign_to) 
-                                                AND project_tasks.stage_id = 2) as in_progress_tasks"))
-                            ->orderByDesc('in_progress_tasks')
-                            ->paginate($perPageHighPerformers, ['*'], 'in_progress_tasks', $highPerformersPage);
-
                         $financialData = ProjectOrders::with(['project' => function ($query) {
                             $query->withSum('timesheets as running_cost', 'time');
                         }])->paginate(10);
 
-                        $outstandingTasks = ProjectTask::where('stage_id', '!=', 4)->whereRaw("find_in_set('" . \Auth::user()->id . "',assign_to)")
-                            ->paginate($perPageTasks, ['*'], 'tasks_page', $tasksPage);
 
                         return view('dashboard.home', array_merge($data, compact(
                             'employeesAttendances',
-                            'dates',
                             'untouchedProjects',
                             'inProgressProjects',
+                            'dates',
+                            'users',
+                            'events',
                             'projects',
-                            'highPerformers',
-                            'lowPerformers',
                             'financialData',
-                            'outstandingTasks'
+                            'home_data'
                         )));
     
                     }
@@ -2580,6 +2499,402 @@ class DashboardController extends Controller
 
         // Hitung selisih dalam detik
         return ($end - $start);
+    }
+
+    public function getPerformanceReport(Request $request)
+    {
+        $user = auth()->user();
+        $projectIds = ProjectUser::where('user_id', $user->id)->pluck('project_id');
+
+        if ($request->filled('project_id')) {
+            $projectIds = collect([$request->project_id]);
+        }
+
+        $timeframe = $request->input('timeframe', 'month');
+        $chartData = [];
+
+        switch ($timeframe) {
+            case 'day':
+                for ($i = 6; $i >= 0; $i--) {
+                    $date = now()->subDays($i)->toDateString();
+
+                    // Ambil semua timesheet di tanggal tsb
+                    $records = Timesheet::whereIn('project_id', $projectIds)
+                        ->where('created_by', $user->id)
+                        ->whereDate('date', $date)
+                        ->get();
+
+                    $totalSeconds = 0;
+                    foreach ($records as $record) {
+                        $parts = explode(':', $record->time);
+                        if (count($parts) === 3) {
+                            list($h, $m, $s) = $parts;
+                            $totalSeconds += (int)$h * 3600 + (int)$m * 60 + (int)$s;
+                        }
+                    }
+
+                    $chartData[$date] = round($totalSeconds / 3600, 2);
+                }
+                break;
+
+            case 'week':
+                for ($i = 3; $i >= 0; $i--) {
+                    $start = now()->subWeeks($i)->startOfWeek();
+                    $end = $start->copy()->endOfWeek();
+                    $label = $start->format('d M') . ' - ' . $end->format('d M');
+
+                    $records = Timesheet::whereIn('project_id', $projectIds)
+                        ->where('created_by', $user->id)
+                        ->whereBetween('date', [$start, $end])
+                        ->get();
+
+                    $totalSeconds = 0;
+                    foreach ($records as $record) {
+                        $parts = explode(':', $record->time);
+                        if (count($parts) === 3) {
+                            list($h, $m, $s) = $parts;
+                            $totalSeconds += (int)$h * 3600 + (int)$m * 60 + (int)$s;
+                        }
+                    }
+
+                    $chartData[$label] = round($totalSeconds / 3600, 2);
+                }
+                break;
+
+            default:
+            case 'month':
+                for ($i = 5; $i >= 0; $i--) {
+                    $month = now()->subMonths($i)->format('Y-m');
+
+                    $records = Timesheet::whereIn('project_id', $projectIds)
+                        ->where('created_by', $user->id)
+                        ->whereRaw("DATE_FORMAT(date, '%Y-%m') = '$month'")
+                        ->get();
+
+                    $totalSeconds = 0;
+                    foreach ($records as $record) {
+                        $parts = explode(':', $record->time);
+                        if (count($parts) === 3) {
+                            list($h, $m, $s) = $parts;
+                            $totalSeconds += (int)$h * 3600 + (int)$m * 60 + (int)$s;
+                        }
+                    }
+
+                    $chartData[$month] = round($totalSeconds / 3600, 2);
+                }
+                break;
+        }
+
+        return response()->json([
+            'labels' => array_keys($chartData),
+            'data' => array_values($chartData),
+        ]);
+    }
+
+    public function getReminders(Request $request)
+    {
+        $user = Auth::user();
+
+        if($user->type == 'partners')
+        {
+
+            if($user->employee->branch_id == 1)
+            {
+                // Query dasar project
+                $query = Project::where('tags', 'PUSAT')
+                ->where('status', 'in_progress')
+                ->whereNotNull('end_date');
+            }
+            elseif($user->employee->branch_id == 2)
+            {
+                // Query dasar project
+                $query = Project::where('tags', 'BEKASI')
+                ->where('status', 'in_progress')
+                ->whereNotNull('end_date');
+            }
+            elseif($user->employee->branch_id == 3)
+            {
+                // Query dasar project
+                $query = Project::where('tags', 'MALANG')
+                ->where('status', 'in_progress')
+                ->whereNotNull('end_date');
+            }
+
+            // Filter berdasarkan waktu deadline
+            if ($request->filled('reminder_filter')) {
+                $range = $request->input('reminder_filter');
+
+                if ($range === '7days') {
+                    // Hanya proyek dengan end_date antara hari ini s/d 7 hari mendatang
+                    $startDate = now()->startOfDay();
+                    $endDate = now()->addDays(7)->endOfDay();
+                    $query->whereBetween('end_date', [$startDate, $endDate]);
+                } elseif ($range === '3days') {
+                    $startDate = now()->startOfDay();
+                    $endDate = now()->addDays(3)->endOfDay();
+                    $query->whereBetween('end_date', [$startDate, $endDate]);
+                } elseif ($range === '14days') {
+                    $startDate = now()->startOfDay();
+                    $endDate = now()->addDays(14)->endOfDay();
+                    $query->whereBetween('end_date', [$startDate, $endDate]);
+                } elseif ($range === '1month') {
+                    $startDate = now()->startOfDay();
+                    $endDate = now()->addMonth()->endOfDay();
+                    $query->whereBetween('end_date', [$startDate, $endDate]);
+                }
+            }
+
+            // Urutkan berdasarkan end_date
+            $projects = $query->orderBy('end_date', 'asc')->get()->map(function ($p) {
+                $endDate = Carbon::parse($p->end_date)->startOfDay();
+                $today = Carbon::now()->startOfDay();
+            
+                // Hitung hari tersisa
+                $p->days_left = max(0, $endDate->diffInDays($today));
+            
+                return $p;
+            });
+        }
+        else
+        {
+            // Ambil semua project_id yang terkait dengan user ini
+            $projectIds = ProjectUser::where('user_id', $user->id)->pluck('project_id');
+
+            // Query dasar project
+            $query = Project::whereIn('id', $projectIds)
+                ->where('status', 'in_progress')
+                ->whereNotNull('end_date');
+
+            // Filter berdasarkan waktu deadline
+            if ($request->filled('reminder_filter')) {
+                $range = $request->input('reminder_filter');
+
+                if ($range === '7days') {
+                    // Hanya proyek dengan end_date antara hari ini s/d 7 hari mendatang
+                    $startDate = now()->startOfDay();
+                    $endDate = now()->addDays(7)->endOfDay();
+                    $query->whereBetween('end_date', [$startDate, $endDate]);
+                } elseif ($range === '3days') {
+                    $startDate = now()->startOfDay();
+                    $endDate = now()->addDays(3)->endOfDay();
+                    $query->whereBetween('end_date', [$startDate, $endDate]);
+                } elseif ($range === '14days') {
+                    $startDate = now()->startOfDay();
+                    $endDate = now()->addDays(14)->endOfDay();
+                    $query->whereBetween('end_date', [$startDate, $endDate]);
+                } elseif ($range === '1month') {
+                    $startDate = now()->startOfDay();
+                    $endDate = now()->addMonth()->endOfDay();
+                    $query->whereBetween('end_date', [$startDate, $endDate]);
+                }
+            }
+
+            // Urutkan berdasarkan end_date
+            $projects = $query->orderBy('end_date', 'asc')->get()->map(function ($p) {
+                $endDate = Carbon::parse($p->end_date)->startOfDay();
+                $today = Carbon::now()->startOfDay();
+            
+                // Hitung hari tersisa
+                $p->days_left = max(0, $endDate->diffInDays($today));
+            
+                return $p;
+            });   
+        }
+
+        return response()->json([
+            'html' => view('dashboard.partials.reminders-list', compact('projects'))->render()
+        ]);
+    }
+
+    public function getUntouchedProjects(Request $request)
+    {
+        $user = Auth::user();
+
+        if($user->type == 'partners')
+        {
+
+            if($user->employee->branch_id == 1)
+            {
+                $untouchedProjectsQuery = Project::where('tags','PUSAT')->where('status', 'in_progress')
+                ->whereDoesntHave('timesheets', function ($q) {
+                    $q->where('date', '>=', now()->subMonth());
+                });
+            }
+            elseif($user->employee->branch_id == 2)
+            {
+                $untouchedProjectsQuery = Project::where('tags','BEKASI')->where('status', 'in_progress')
+                ->whereDoesntHave('timesheets', function ($q) {
+                    $q->where('date', '>=', now()->subMonth());
+                });
+            }
+            elseif($user->employee->branch_id == 3)
+            {
+                $untouchedProjectsQuery = Project::where('tags','MALANG')->where('status', 'in_progress')
+                ->whereDoesntHave('timesheets', function ($q) {
+                    $q->where('date', '>=', now()->subMonth());
+                });
+            }
+        }
+        else
+        {
+            $projectIds = ProjectUser::where('user_id', $user->id)->pluck('project_id');
+
+            $untouchedProjectsQuery = Project::where('status', 'in_progress')
+                ->whereIn('id', $projectIds)
+                ->whereDoesntHave('timesheets', function ($q) {
+                    $q->where('date', '>=', now()->subMonth());
+                });
+        }
+
+        $untouchedProjects = $untouchedProjectsQuery->paginate(15, ['*'], 'untouched_page');
+
+        return response()->json([
+            'html' => view('dashboard.partials.untouched-projects-table', compact('untouchedProjects'))->render(),
+            'hasMorePages' => $untouchedProjects->hasMorePages(),
+            'nextPageUrl' => $untouchedProjects->nextPageUrl()
+        ]);
+    }
+
+    public function getInProgressProjects(Request $request)
+    {
+        $user = Auth::user();
+        $projectIds = ProjectUser::where('user_id', $user->id)->pluck('project_id');
+
+        if($user->type == 'partners')
+        {
+
+            if($user->employee->branch_id == 1)
+            {
+                $inProgressQuery = Project::where('tags','PUSAT')
+                ->where('status', 'in_progress');
+            }
+            elseif($user->employee->branch_id == 2)
+            {
+                $inProgressQuery = Project::where('tags','BEKASI')
+                ->where('status', 'in_progress');
+            }
+            elseif($user->employee->branch_id == 3)
+            {
+                $inProgressQuery = Project::where('tags','MALANG')
+                ->where('status', 'in_progress');
+            }
+
+        }
+        else
+        {
+            $inProgressQuery = Project::whereIn('id', $projectIds)
+            ->where('status', 'in_progress');
+        }
+
+
+        $inProgressProjects = $inProgressQuery->paginate(15, ['*'], 'inprogress_page');
+
+        return response()->json([
+            'html' => view('dashboard.partials.inprogress-projects-table', compact('inProgressProjects'))->render(),
+            'hasMorePages' => $inProgressProjects->hasMorePages(),
+            'nextPageUrl' => $inProgressProjects->nextPageUrl()
+        ]);
+    }
+
+    public function getProjectTimeDistribution(Request $request)
+    {
+        $user = auth()->user();
+        $userId = $user->id;
+
+        // Ambil semua project user
+        $projectIds = ProjectUser::where('user_id', $user->id)->pluck('project_id');
+
+        // Validasi input
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        if (!$startDate || !$endDate) {
+            return response()->json(['labels' => [], 'data' => []]);
+        }
+
+        // Query timesheet dengan sum time per project
+        $results = Timesheet::whereIn('project_id', $projectIds)
+        ->whereBetween('date', [$startDate, $endDate])
+        ->where('timesheets.created_by', $userId)
+        ->join('projects', 'timesheets.project_id', '=', 'projects.id')
+        ->select(
+            'projects.project_name',
+            \DB::raw('SUBSTRING_INDEX(projects.project_name, " - ", 2) as short_name'),
+            \DB::raw('SUM(TIME_TO_SEC(timesheets.time)) as total_seconds')
+        )
+        ->groupBy('projects.id', 'projects.project_name')
+        ->get();
+
+        $labels = [];
+        $data = [];
+
+        foreach ($results as $result) {
+            $labels[] = mb_strlen($result->project_name, 'UTF-8') > 30 
+                ? substr($result->project_name, 0, 30) . '...' 
+                : $result->project_name;
+        
+            $data[] = round($result->total_seconds / 3600, 2);
+        }
+
+        return response()->json([
+            'labels' => $labels,
+            'data' => $data,
+            'total_hours' => array_sum($data),
+        ]);
+    }
+
+    public function getProjectTimeDistributionPartner(Request $request)
+    {
+
+        $userId = $request->input('user_id');
+
+        if (!$userId) {
+            $userId = Auth::id();
+        }
+
+        $user = \App\Models\User::find($userId);
+        if (!$user) {
+            return response()->json(['labels' => [], 'data' => []]);
+        }
+
+        $projectIds = ProjectUser::where('user_id', $userId)->pluck('project_id');
+
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        if (!$startDate || !$endDate) {
+            return response()->json(['labels' => [], 'data' => []]);
+        }
+
+        $results = DB::table('timesheets')
+            ->whereIn('project_id', $projectIds)
+            ->whereBetween('date', [$startDate, $endDate])
+            ->where('timesheets.created_by', $userId)
+            ->join('projects', 'timesheets.project_id', '=', 'projects.id')
+            ->select(
+                'projects.project_name',
+                DB::raw('SUBSTRING_INDEX(projects.project_name, " - ", 2) as short_name'),
+                DB::raw('SUM(TIME_TO_SEC(timesheets.time)) as total_seconds')
+            )
+            ->groupBy('projects.id', 'projects.project_name')
+            ->get();
+
+        $labels = [];
+        $data = [];
+
+        foreach ($results as $result) {
+            $labels[] = mb_strlen($result->project_name, 'UTF-8') > 30 
+                ? substr($result->project_name, 0, 30) . '...' 
+                : $result->project_name;
+
+            $data[] = round($result->total_seconds / 3600, 2);
+        }
+
+        return response()->json([
+            'labels' => $labels,
+            'data' => $data,
+            'total_hours' => array_sum($data),
+        ]);
     }
 
 }

@@ -139,6 +139,7 @@ class ProjectTaskController extends Controller
             $post = $request->all();
             $post['project_id'] = $project->id;
             $post['stage_id'] = 1;
+            $post['priority'] = $request->priority ?? 'medium';
             $post['assign_to'] = $request->assign_to;
             $post['estimated_hrs'] = 0;
             $post['created_by'] = \Auth::user()->creatorId();

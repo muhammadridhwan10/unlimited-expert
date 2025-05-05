@@ -70,6 +70,12 @@ Route::get('/home', 'DashboardController@home')->name('home')->middleware(
         'revalidate',
     ]
 );
+Route::get('/dashboard/report-data', 'DashboardController@getPerformanceReport')->name('dashboard.report.data');
+Route::get('/dashboard/reminders', 'DashboardController@getReminders')->name('dashboard.reminders.data');
+Route::get('/dashboard/untouched-projects', 'DashboardController@getUntouchedProjects')->name('dashboard.untouched.projects');
+Route::get('/dashboard/in-progress-projects', 'DashboardController@getInProgressProjects')->name('dashboard.inprogress.projects');
+Route::get('/dashboard/project-time-distribution-personnel', 'DashboardController@getProjectTimeDistribution')->name('dashboard.project.distribution');
+Route::get('/dashboard/project-time-distribution-partner', 'DashboardController@getProjectTimeDistributionPartner')->name('dashboard.project.distribution.partner');
 Route::get('/admin-dashboard', 'DashboardController@dashboard')->name('admin.dashboard')->middleware(
     [
         'auth',

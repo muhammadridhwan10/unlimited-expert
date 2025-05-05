@@ -28001,3 +28001,64 @@ table.dataTable tbody > tr.selected th.select-checkbox:after {
     width: 150px;
     height: 49px;
 }
+
+.user-card {
+    height: 100% !important;
+    margin-bottom: 0 !important;
+}
+
+.user-card .user-image {
+    height: 55px;
+    width: 55px;
+    overflow: hidden;
+}
+
+.user-card .user-image img {
+    object-fit: cover;
+}
+
+.user-card .user-img-wrp {
+    gap: 15px;
+}
+
+.user-card .user-content {
+    flex: 1;
+}
+
+.user-card .user-content h4 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.user-card .user-content span {
+    word-break: break-word;
+}
+
+.user-card .bottom-icons {
+    gap: 10px;
+}
+
+.user-card .bottom-icons .edit-btn-wrp {
+    gap: 10px;
+}
+
+.user-card .bottom-icons .edit-btn-wrp .btn {
+    background-color: #fff;
+    padding: 7px;
+}
+
+.user-card .bottom-icons .edit-btn-wrp .btn svg {
+    height: 14px;
+    width: 14px;
+    display: block;
+}
+
+.user-card .bottom-icons .badge {
+    min-width: 55px;
+}
+
+.row-gap-2{
+    row-gap: 1.5rem !important;
+}

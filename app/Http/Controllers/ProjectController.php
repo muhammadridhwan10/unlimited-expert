@@ -120,7 +120,7 @@ class ProjectController extends Controller
                 $project->start_date = date("Y-m-d H:i:s", strtotime($request->start_date));
             }   
 
-            $project->end_date = date("Y-m-d H:i:s", strtotime($request->start_date));
+            $project->end_date = date("Y-m-d H:i:s", strtotime($request->end_date));
 
             if($request->hasFile('project_image'))
             {
@@ -616,25 +616,34 @@ class ProjectController extends Controller
 
     public function inviteMemberView(Request $request, $project_id)
     {
-        $usr          = Auth::user();
-        $project      = Project::find($project_id);
+        $usr = Auth::user();
+        $project = Project::find($project_id);
 
         $user_project = $project->users->pluck('id')->toArray();
 
-        if(\Auth::user()->type = 'admin')
-        {
-            $user_contact = User::where('type','!=','client')->whereNOTIn('id', $user_project)->pluck('id')->toArray();
+        if (\Auth::user()->type == 'admin') {
+            $user_contact = User::where('type', '!=', 'client')
+                                ->where('is_active', 1)
+                                ->whereNotIn('id', $user_project)
+                                ->pluck('id')
+                                ->toArray();
+        } elseif (\Auth::user()->type == 'company') {
+            $user_contact = User::where('type', '!=', 'client')
+                                ->where('is_active', 1)
+                                ->whereNotIn('id', $user_project)
+                                ->pluck('id')
+                                ->toArray();
+        } else {
+            $user_contact = User::where('created_by', \Auth::user()->creatorId())
+                                ->where('type', '!=', 'client')
+                                ->where('is_active', 1)
+                                ->whereNotIn('id', $user_project)
+                                ->pluck('id')
+                                ->toArray();
         }
-        elseif(\Auth::user()->type = 'company')
-        {
-            $user_contact = User::where('type','!=','client')->whereNOTIn('id', $user_project)->pluck('id')->toArray();
-        }
-        else
-        {
-            $user_contact = User::where('created_by', \Auth::user()->creatorId())->where('type','!=','client')->whereNOTIn('id', $user_project)->pluck('id')->toArray();
-        }
-        $arrUser      = array_unique($user_contact);
-        $users        = User::whereIn('id', $arrUser)->get();
+
+        $arrUser = array_unique($user_contact);
+        $users = User::whereIn('id', $arrUser)->get();
 
         return view('projects.invite', compact('project_id', 'users'));
     }

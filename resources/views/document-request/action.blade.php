@@ -150,11 +150,11 @@
     @endif
     @if($document->document_type == 'Invoice')
         @if($document->status == 'Completed')
-        {{-- <div class="row">
+        <div class="row">
             <div class="col-sm-12">
                 <button type="button" class="btn btn-primary" onclick="openPrintDialog()">Print</button>
             </div>
-        </div> --}}
+        </div>
         <div id="printArea" style="display:none;">
             <div class="print-content">
                 <p>{{ !empty($document->sender_or_receiver) ? $document->sender_or_receiver . ' :' : '' }}</p>

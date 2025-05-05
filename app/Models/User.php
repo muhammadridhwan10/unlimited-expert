@@ -75,6 +75,11 @@ class User extends Authenticatable
         'standard_profesional_akuntan_publik' => 'Standard Profesional Akuntan Publik',
     ];
 
+    public function plans()
+    {
+        return $this->hasMany(Planning::class, 'user_id');
+    }
+
     public function business_sector()
     {
         return $this->belongsTo('App\Models\ClientBusinessSector', 'client_business_sector_id', 'id');

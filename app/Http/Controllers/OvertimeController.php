@@ -201,6 +201,7 @@ class OvertimeController extends Controller
 
     public function create()
     {
+            $user = \Auth::user();
             if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'company')
             {
                 $employees         = Employee::get()->pluck('name', 'id');
@@ -209,9 +210,9 @@ class OvertimeController extends Controller
             }
             else
             {
-                $employees    = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name', 'id');
+                $employees    = Employee::where('user_id', '=', $user->id)->get()->pluck('name', 'id');
                 $approval     = Employee::get()->pluck('name', 'id');
-                $project      = Project::get()->pluck('project_name', 'id');
+                $project      = $user->projects()->pluck('project_name', 'project_id');
             }
 
             return view('overtime.create', compact('employees', 'project', 'approval'));

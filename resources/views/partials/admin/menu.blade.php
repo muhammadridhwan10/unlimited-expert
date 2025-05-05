@@ -184,8 +184,8 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                         <!--------------------- End Dashboard ----------------------------------->
 
                             @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
-                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'leave' || Request::segment(1) == 'overtime' || Request::segment(1) == 'leave' || Request::segment(1) == 'report-hrm')?'active dash-trigger':''}}">
-                                <a href="#!" class="dash-link "><span class="dash-micon"><i class="ti ti-user"></i></span><span class="dash-mtext">{{__('HRM Module')}}</span><span class="dash-arrow">
+                            <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'leave' || Request::segment(1) == 'overtime' || Request::segment(1) == 'leave' || Request::segment(1) == 'report-hrm' || Request::segment(1) == 'medical-allowance' || Request::segment(1) == 'reimbursment-personal' || Request::segment(1) == 'reimbursment-client')?'active dash-trigger':''}}">
+                                <a href="#!" class="dash-link "><span class="dash-micon"><i class="ti ti-user"></i></span><span class="dash-mtext">{{__('HRM')}}</span><span class="dash-arrow">
                                         <i data-feather="chevron-right"></i></span>
                                 </a>
                                 <ul class="dash-submenu">
@@ -208,6 +208,19 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                         <a href="{{route('sick-letter.index')}}" class="dash-link">
                                            <span class="dash-mtext">{{__('Sick Letter')}}</span>
                                         </a>
+                                    </li>
+                                    @if(Auth::user()->type !== 'intern')
+                                        @if($employee->branch_id == 1)
+                                        <li class="dash-item {{ (Request::route()->getName() == 'medical-allowance.index' || Request::route()->getName() == 'medical-allowance.create' || Request::route()->getName() == 'medical-allowance.edit') ? ' active' : '' }}">
+                                            <a class="dash-link" href="{{ route('medical-allowance.index') }}">{{__('Medical Allowance')}}</a>
+                                        </li>
+                                        @endif
+                                    @endif
+                                    <li class="dash-item {{ (Request::route()->getName() == 'reimbursment-personal.index' || Request::route()->getName() == 'reimbursment-personal.create' || Request::route()->getName() == 'reimbursment-personal.edit') ? ' active' : '' }} ">
+                                        <a class="dash-link" href="{{route('reimbursment-personal.index')}}">{{__('Reimbursement Personal')}}</a>
+                                    </li>
+                                    <li class="dash-item {{ (Request::route()->getName() == 'reimbursment-client.index' || Request::segment(1) == 'reimbursment-client.create' || Request::route()->getName() == 'reimbursment-client.edit') ? ' active' : '' }}">
+                                        <a class="dash-link" href="{{ route('reimbursment-client.index') }}">{{__('Reimbursement Client')}}</a>
                                     </li>
                                     {{-- <li class="dash-item {{ request()->is('form-response') ? 'active' : '' }}">
                                         <a href="{{route('form-response.index')}}" class="dash-link">
@@ -237,9 +250,9 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                             </li>
                             @endif
 
-                            @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
+                            {{-- @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
                                 <li class="dash-item dash-hasmenu">
-                                    <a href="#!" class="dash-link {{ (Request::segment(1) == 'medical-allowance' || Request::segment(1) == 'reimbursment-personal' || Request::segment(1) == 'reimbursment-client')?' active dash-trigger':''}}"><span class="dash-micon"><i class="ti ti-file-invoice"></i></span><span class="dash-mtext">{{__('Finance Module')}}</span><span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
+                                    <a href="#!" class="dash-link {{ (Request::segment(1) == 'medical-allowance' || Request::segment(1) == 'reimbursment-personal' || Request::segment(1) == 'reimbursment-client')?' active dash-trigger':''}}"><span class="dash-micon"><i class="ti ti-file-invoice"></i></span><span class="dash-mtext">{{__('Finance')}}</span><span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
                                     <ul class="dash-submenu">
                                         @if(Auth::user()->type !== 'intern')
                                             @if($employee->branch_id == 1)
@@ -256,7 +269,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             </li>
                                     </ul>
                                 </li>
-                            @endif
+                            @endif --}}
 
                         <!--------------------- Start HRM ----------------------------------->
 
@@ -276,7 +289,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             || Request::segment(1) == 'job-category' || Request::segment(1) == 'terminationtype' || Request::segment(1) == 'awardtype' || Request::segment(1) == 'trainingtype' ||
                                             Request::segment(1) == 'goaltype' || Request::segment(1) == 'paysliptype' || Request::segment(1) == 'allowanceoption' || Request::segment(1) == 'competencies' || Request::segment(1) == 'loanoption'
                                             || Request::segment(1) == 'deductionoption')?'active dash-trigger':''}}">
-                                <a href="#!" class="dash-link "><span class="dash-micon"><i class="ti ti-user"></i></span><span class="dash-mtext">{{__('HRM Module')}}</span><span class="dash-arrow">
+                                <a href="#!" class="dash-link "><span class="dash-micon"><i class="ti ti-user"></i></span><span class="dash-mtext">{{__('HRM')}}</span><span class="dash-arrow">
                                         <i data-feather="chevron-right"></i></span>
                                 </a>
                                 <ul class="dash-submenu">
@@ -642,7 +655,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                 </a>
                             </li> --}}
                             
-                            @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting')
+                            {{-- @if(\Auth::user()->type == 'admin' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'company' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'senior accounting')
                                 <li class="dash-item dash-hasmenu {{ ( Request::segment(1) == 'project-orders')?' active dash-trigger':''}}">
                                     <a href="#!" class="dash-link"><span class="dash-micon"><i class="ti ti-shopping-cart"></i></span><span class="dash-mtext">{{__('Sales Order ')}}
                                         </span><span class="dash-arrow"><i data-feather="chevron-right"></i></span>
@@ -656,7 +669,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             </li>
                                     </ul>
                                 </li>
-                            @endif
+                            @endif --}}
 
                         <!--------------------- Start Account ----------------------------------->
 
@@ -669,7 +682,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                             <li class="dash-item dash-hasmenu {{ (Request::route()->getName() == 'print-setting' || Request::segment(1) == 'customer' || Request::segment(1) == 'vender' || Request::segment(1) == 'proposal' || Request::segment(1) == 'bank-account' || Request::segment(1) == 'bank-transfer' || Request::segment(1) == 'invoice' || Request::segment(1) == 'revenue' || Request::segment(1) == 'credit-note' || Request::segment(1) == 'taxes' || Request::segment(1) == 'product-category' ||
                                             Request::segment(1) == 'product-unit' || Request::segment(1) == 'payment-method' || Request::segment(1) == 'custom-field' || Request::segment(1) == 'chart-of-account-type' || (Request::segment(1) == 'transaction') &&  Request::segment(2) != 'ledger' &&  Request::segment(2) != 'balance-sheet' &&  Request::segment(2) != 'trial-balance' || Request::segment(1) == 'goal' || Request::segment(1) == 'budget'|| Request::segment(1) ==
                                             'chart-of-account' || Request::segment(1) == 'journal-entry' || Request::segment(2) == 'ledger' ||  Request::segment(2) == 'balance-sheet' ||  Request::segment(2) == 'trial-balance' || Request::segment(1) == 'bill' || Request::segment(1) == 'payment' || Request::segment(1) == 'debit-note')?' active dash-trigger':''}}">
-                                <a href="#!" class="dash-link"><span class="dash-micon"><i class="ti ti-file-invoice"></i></span><span class="dash-mtext">{{__('Finance Module')}}
+                                <a href="#!" class="dash-link"><span class="dash-micon"><i class="ti ti-file-invoice"></i></span><span class="dash-mtext">{{__('Finance')}}
                                     </span><span class="dash-arrow"><i data-feather="chevron-right"></i></span>
                                 </a>
                                 <ul class="dash-submenu">
@@ -753,6 +766,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             </ul>
                                         </li> --}}
                                     @endif
+                                    @if(\Auth::user()->type != 'partners')
                                     <li class="dash-item {{ (Request::route()->getName() == 'medical-allowance.index' || Request::route()->getName() == 'medical-allowance.create' || Request::route()->getName() == 'medical-allowance.edit') ? ' active' : '' }}">
                                         <a class="dash-link" href="{{ route('medical-allowance.index') }}">{{__('Medical Allowance')}}</a>
                                     </li>
@@ -762,6 +776,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                     <li class="dash-item {{ (Request::route()->getName() == 'reimbursment-client.index' || Request::segment(1) == 'reimbursment-client.create' || Request::route()->getName() == 'reimbursment-client.edit') ? ' active' : '' }}">
                                         <a class="dash-link" href="{{ route('reimbursment-client.index') }}">{{__('Reimbursement Client')}}</a>
                                     </li>
+                                    @endif
 
                                     {{-- @if( Gate::check('manage chart of account') || Gate::check('manage journal entry') || Gate::check('balance sheet report') || Gate::check('ledger report') || Gate::check('trial balance report'))
                                     <li class="dash-item dash-hasmenu {{(Request::segment(1) == 'chart-of-account' || Request::segment(1) == 'journal-entry' || Request::segment(2) == 'ledger' ||  Request::segment(2) == 'balance-sheet' ||  Request::segment(2) == 'trial-balance')? 'active dash-trigger' :''}}">
@@ -1208,17 +1223,23 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                             </li>
                         @endif --}}
 
-                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'document-request')?'active':''}}">
-                            <a href="{{route('document-request.index')}}" class="dash-link">
-                                <span class="dash-micon"><i class="ti ti-file"></i></span><span class="dash-mtext">{{__('Document Request')}}</span>
-                            </a>
-                        </li>
+                            <li class="dash-item dash-hasmenu {{ ( Request::segment(1) == 'document-request' || Request::segment(1) == 'print-labels')
+                                    ? 'active dash-trigger' : ''}}">
+                                <a href="#!" class="dash-link"><span class="dash-micon"><i class="ti ti-tool"></i></span><span class="dash-mtext">{{__('Tools')}}</span><span class="dash-arrow"><i data-feather="chevron-right"></i></span></a>
+                                <ul class="dash-submenu">
+                                    <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'document-request')?'active':''}}">
+                                        <a href="{{route('document-request.index')}}" class="dash-link">
+                                            </span><span class="dash-mtext">{{__('Document Request')}}</span>
+                                        </a>
+                                    </li>
 
-                        <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'print-labels')?'active':''}}">
-                            <a href="{{route('print-labels.index')}}" class="dash-link">
-                                <span class="dash-micon"><i class="ti ti-files"></i></span><span class="dash-mtext">{{__('Print Labels')}}</span>
-                            </a>
-                        </li>
+                                    {{-- <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'print-labels')?'active':''}}">
+                                        <a href="{{route('print-labels.index')}}" class="dash-link">
+                                            </span><span class="dash-mtext">{{__('Print Labels')}}</span>
+                                        </a>
+                                    </li> --}}
+                                </ul>
+                            </li>
 
                         <li class="dash-item dash-hasmenu">
                             <a href="{{route('support.index')}}" class="dash-link {{ (Request::segment(1) == 'support')?'active':''}}">
