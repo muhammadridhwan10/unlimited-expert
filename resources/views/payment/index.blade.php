@@ -140,6 +140,7 @@
                             @php
                                $totalAmountRp = 0;
                                $totalAmountEuro = 0;
+                               $totalAmountSgd = 0;
                             @endphp
 
                             @foreach ($payments as $payment)

@@ -39,6 +39,9 @@ class Utility extends Model
             "site_currency_3" => "EUR",
             "site_currency_symbol_3" => "€",
             "site_currency_symbol_position_3" => "pre",
+            "site_currency_4" => "SGD",
+            "site_currency_symbol_4" => "S$",
+            "site_currency_symbol_position_4" => "pre",
             "site_date_format" => "M j, Y",
             "site_time_format" => "g:i A",
             "company_name" => "",
@@ -79,6 +82,7 @@ class Utility extends Model
             "decimal_number" => "0",
             "decimal_number_2" => "2",
             "decimal_number_3" => "2",
+            "decimal_number_4" => "2",
             "tax_type" => "",
             "shipping_display" => "on",
             "journal_prefix" => "#JUR",
@@ -416,6 +420,11 @@ class Utility extends Model
         return (($settings['site_currency_symbol_position_3'] == "pre") ? $settings['site_currency_symbol_3'] : '') . number_format($price, $settings['decimal_number_3']) . (($settings['site_currency_symbol_position_3'] == "post") ? $settings['site_currency_symbol_3'] : '');
     }
 
+    public static function priceFormat4($settings, $price)
+    {
+        return (($settings['site_currency_symbol_position_4'] == "pre") ? $settings['site_currency_symbol_4'] : '') . number_format($price, $settings['decimal_number_4']) . (($settings['site_currency_symbol_position_4'] == "post") ? $settings['site_currency_symbol_4'] : '');
+    }
+
     public static function currencySymbol($settings)
     {
         return $settings['site_currency_symbol'];
@@ -429,6 +438,11 @@ class Utility extends Model
     public static function currencySymbol3($settings)
     {
         return $settings['site_currency_symbol_3'];
+    }
+
+    public static function currencySymbol4($settings)
+    {
+        return $settings['site_currency_symbol_4'];
     }
 
     public static function dateFormat($settings, $date)

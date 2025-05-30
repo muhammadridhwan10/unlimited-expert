@@ -179,6 +179,7 @@
                                             <option value="{{ $siteCurrencySymbol }}">{{ $siteCurrencySymbol }}</option>
                                             <option value="{{ $siteCurrencySymbol2 }}">{{ $siteCurrencySymbol2 }}</option>
                                             <option value="{{ $siteCurrencySymbol3 }}">{{ $siteCurrencySymbol3 }}</option>
+                                            <option value="{{ $siteCurrencySymbol4 }}">{{ $siteCurrencySymbol4 }}</option>
                                             <!-- Tambahkan opsi lain jika diperlukan -->
                                         </select>
                                     </div>

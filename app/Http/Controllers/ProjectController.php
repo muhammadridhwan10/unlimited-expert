@@ -578,6 +578,23 @@ class ProjectController extends Controller
 
         $project->save();
 
+        $projectOfferingData = $request->only([
+        'als_partners', 'rate_partners',
+        'als_manager', 'rate_manager',
+        'als_leader', 'rate_leader',
+        'als_senior_associate', 'rate_senior_associate',
+        'als_associate', 'rate_associate',
+        'als_intern', 'rate_intern'
+        ]);
+
+        $projectOffering = ProjectOfferings::firstOrNew(['project_id' => $project->id]);
+
+        foreach ($projectOfferingData as $key => $value) {
+            $projectOffering->{$key} = $value;
+        }
+
+        $projectOffering->save();
+
         return redirect()->route('projects.show', \Crypt::encrypt($project->id))->with('success', __('Project Updated Successfully'));
     }
 

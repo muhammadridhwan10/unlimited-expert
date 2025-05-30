@@ -94,6 +94,8 @@ $settings = \App\Models\Utility::settings();
                                                                     {{\App\Models\Utility::priceFormat2($settings,$totalAmount)}}
                                                                 @elseif($invoice->currency == '€')
                                                                     {{\App\Models\Utility::priceFormat3($settings,$totalAmount)}}
+                                                                @elseif($invoice->currency == 'S$')
+                                                                    {{\App\Models\Utility::priceFormat4($settings,$totalAmount)}}
                                                                 @else
                                                                     {{\App\Models\Utility::priceFormat($settings,$totalAmount)}}
                                                                 @endif 

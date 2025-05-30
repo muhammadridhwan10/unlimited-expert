@@ -192,6 +192,13 @@ class User extends Authenticatable
         return (($settings['site_currency_symbol_position_3'] == "pre") ? $settings['site_currency_symbol_3'] : '') . number_format($price, $settings['decimal_number_3']) . (($settings['site_currency_symbol_position_3'] == "post") ? $settings['site_currency_symbol_3'] : '');
     }
 
+    public function priceFormat4($price)
+    {
+        $settings = Utility::settings();
+
+        return (($settings['site_currency_symbol_position_4'] == "pre") ? $settings['site_currency_symbol_4'] : '') . number_format($price, $settings['decimal_number_4']) . (($settings['site_currency_symbol_position_4'] == "post") ? $settings['site_currency_symbol_4'] : '');
+    }
+
     public static function priceFormats($price)
     {
         $settings = Utility::settings();
@@ -218,6 +225,13 @@ class User extends Authenticatable
         $settings = Utility::settings();
 
         return $settings['site_currency_symbol_3'];
+    }
+
+    public function currencySymbol4()
+    {
+        $settings = Utility::settings();
+
+        return $settings['site_currency_symbol_4'];
     }
 
     public function dateFormat($date)

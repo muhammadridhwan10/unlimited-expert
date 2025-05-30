@@ -157,7 +157,6 @@
         </div>
         <div id="printArea" style="display:none;">
             <div class="print-content">
-                <p>{{ !empty($document->sender_or_receiver) ? $document->sender_or_receiver . ' :' : '' }}</p>
                 <p>{{ !empty($document->client_name)?$document->client_name:'' }}</p>
                 <p>{{ !empty($document->address)?$document->address:'' }}</p>
                 <p>{{ !empty($document->name_attention) && !empty($document->no_pic) ? $document->name_attention . ' (' . $document->no_pic . ')' : (!empty($document->name_attention) ? $document->name_attention : (!empty($document->no_pic) ? $document->no_pic : '')) }}</p>

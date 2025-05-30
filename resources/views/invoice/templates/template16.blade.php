@@ -692,6 +692,8 @@
                                                                     {{Utility::priceFormat2($settings,$item->price)}}
                                                                 @elseif($invoice->currency == '€')
                                                                     {{Utility::priceFormat3($settings,$item->price)}}
+                                                                @elseif($invoice->currency == 'S$')
+                                                                    {{Utility::priceFormat4($settings,$item->price)}}
                                                                 @else
                                                                     {{Utility::priceFormat($settings,$item->price)}}
                                                                 @endif 
@@ -752,6 +754,8 @@
                                                                 {{Utility::priceFormat2($settings,$invoice->getSubTotal())}}
                                                             @elseif($invoice->currency == '€')
                                                                 {{Utility::priceFormat3($settings,$invoice->getSubTotal())}}
+                                                             @elseif($invoice->currency == 'S$')
+                                                                {{Utility::priceFormat4($settings,$invoice->getSubTotal())}}
                                                             @else
                                                                 {{Utility::priceFormat($settings,$invoice->getSubTotal())}}
                                                             @endif 
@@ -777,6 +781,8 @@
                                                                     {{Utility::priceFormat2($settings,$invoice->getTotalTax())}}
                                                                 @elseif($invoice->currency == '€')
                                                                     {{Utility::priceFormat3($settings,$invoice->getTotalTax())}}
+                                                                @elseif($invoice->currency == 'S$')
+                                                                    {{Utility::priceFormat4($settings,$invoice->getTotalTax())}}
                                                                 @else
                                                                     {{Utility::priceFormat($settings,$invoice->getTotalTax())}}
                                                                 @endif 
@@ -790,6 +796,8 @@
                                                                     {{Utility::priceFormat2($settings,$invoice->getTotal())}}
                                                                 @elseif($invoice->currency == '€')
                                                                     {{Utility::priceFormat3($settings, $invoice->getTotal())}}
+                                                                @elseif($invoice->currency == 'S$')
+                                                                    {{Utility::priceFormat4($settings, $invoice->getTotal())}}
                                                                 @else
                                                                     {{Utility::priceFormat($settings,$invoice->getTotal())}}
                                                                 @endif

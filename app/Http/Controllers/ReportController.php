@@ -292,12 +292,15 @@ class ReportController extends Controller
             for ($i = 1; $i <= 12; $i++) {
                 $expenseTotal[$i]['Rp'] = $expenseArr[$i]['Rp'] ?? 0;
                 $expenseTotal[$i]['€'] = $expenseArr[$i]['€'] ?? 0;
+                $expenseTotal[$i]['S$'] = $expenseArr[$i]['S$'] ?? 0;
             }
 
             $billTotalArrayRp = [];
-                    $billTotalArrayEuro = [];
+            $billTotalArrayEuro = [];
+            $billTotalArraySgd = [];
             $totalBillRp = 0;
             $totalBillEuro = 0;
+            $totalBillSgd = 0;
 
             foreach ($expensesData as $bill) {
                 if($bill->currency == 'Rp') {
@@ -306,17 +309,22 @@ class ReportController extends Controller
                 } elseif($bill->currency == '€') {
                     $billTotalArrayEuro[$bill->month][] = $bill->amount;
                     $totalBillEuro += $bill->amount;
-                }
+                } elseif($bill->currency == 'S$') {
+                    $billTotalArraySgd[$bill->month][] = $bill->amount;
+                    $totalBillSgd += $bill->amount;
+                } 
             }
 
 
             $billTotalRp = [];
             $billTotalEuro = [];
+            $billTotalSgd = [];
 
             for($i = 1; $i <= 12; $i++)
             {
                 $billTotalRp[] = array_key_exists($i, $billTotalArrayRp) ? array_sum($billTotalArrayRp[$i]) : 0;
                 $billTotalEuro[] = array_key_exists($i, $billTotalArrayEuro) ? array_sum($billTotalArrayEuro[$i]) : 0;
+                $billTotalSgd[] = array_key_exists($i, $billTotalArraySgd) ? array_sum($billTotalArraySgd[$i]) : 0;
             }
 
             $chartExpenseArrRp = array_map(
@@ -331,11 +339,19 @@ class ReportController extends Controller
                 }, $billTotalEuro
             );
 
+            $chartExpenseArrSgd = array_map(
+                function (){
+                    return array_sum(func_get_args());
+                }, $billTotalSgd
+            );
+
 
             $data['chartExpenseArrRp'] = $chartExpenseArrRp;
             $data['chartExpenseArrEuro'] = $chartExpenseArrEuro;
+            $data['chartExpenseArrSgd'] = $chartExpenseArrSgd;
             $data['totalBillRp'] = $totalBillRp;
             $data['totalBillEuro'] = $totalBillEuro;
+            $data['totalBillSgd'] = $totalBillSgd;
             $data['account']         = $account;
             $data['vender']          = $vender;
             $data['category']        = $category;
@@ -5091,7 +5107,7 @@ class ReportController extends Controller
                     if($dateFormat <= date('Y-m-d'))
                     {
                         $employeeAttendance = AttendanceEmployee::where('employee_id', $id)->where('date', $dateFormat)->first();
-                        $overtimes = UserOvertime::where('user_id', '=', $id)->where('status', '=', 'Approved')->where('created_date', $dateFormat)->get();
+                        $overtimes = UserOvertime::where('user_id', $id)->where('status', 'Approved')->whereYear('updated_at', $year)->whereMonth('updated_at', $month)->get();
 
                         if(!empty($employeeAttendance) && $employeeAttendance->status == 'Present')
                         {
@@ -5136,14 +5152,17 @@ class ReportController extends Controller
                         // Hitung jumlah hari lembur berdasarkan start_date
 
                         foreach ($overtimes as $overtime) {
-                            if ($overtime->created_date == $dateFormat) {
-                                $totalOvertimeDays += 1;
-                                $totalOverTime += strtotime($overtime->total_time) - strtotime('00:00:00');
-                                $overtimeHours += (int)date('H', strtotime($overtime->total_time));
-                                $overtimeMins  += (int)date('i', strtotime($overtime->total_time));
-                            }
+                            // Format updated_at menjadi Y-m-d
+                            $updatedAtDate = $overtime->updated_at->format('Y-m-d');
 
-                            
+                            if ($updatedAtDate == $dateFormat) {
+                                $totalOvertimeDays += 1;
+
+                                // Hitung total_time
+                                $totalOverTime += strtotime($overtime->total_time) - strtotime('00:00:00');
+                                $overtimeHours += (int) date('H', strtotime($overtime->total_time));
+                                $overtimeMins  += (int) date('i', strtotime($overtime->total_time));
+                            }
                         }
 
                         
@@ -5337,13 +5356,16 @@ class ReportController extends Controller
     {
         if(\Auth::user()->can('manage report'))
         {
-            $employee_overtime       = UserOvertime::where('user_id', $employee_id)->where('status', '=', 'Approved');
+            $employee_overtime = UserOvertime::where('user_id', $employee_id)
+                ->where('status', '=', 'Approved');
+
             $m = date('m', strtotime($month));
             $y = date('Y', strtotime($month));
 
-            $employee_overtime->whereMonth('created_date', $m)->whereYear('created_date', $y);
-            $employee_overtime = $employee_overtime->get();
+            $employee_overtime->whereMonth('updated_at', $m)
+                ->whereYear('updated_at', $y);
 
+            $employee_overtime = $employee_overtime->get();
 
             return view('report.overtimeShow', compact('employee_overtime'));
         }

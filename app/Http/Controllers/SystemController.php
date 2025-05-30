@@ -270,6 +270,7 @@ class SystemController extends Controller
                     'site_currency' => 'required',
                     'site_currency_2' => 'required',
                     'site_currency_3' => 'required',
+                    'site_currency_4' => 'required',
                 ]
             );
             $post = $request->all();

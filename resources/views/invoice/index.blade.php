@@ -23,6 +23,7 @@
         const amountRp = invoices.filter(invoice => invoice.currency === 'Rp').map(invoice => invoice.total_amount);
         const amountUsd = invoices.filter(invoice => invoice.currency === '$').map(invoice => invoice.total_amount);
         const amountEur = invoices.filter(invoice => invoice.currency === '€').map(invoice => invoice.total_amount);
+        const amountSgd = invoices.filter(invoice => invoice.currency === 'S$').map(invoice => invoice.total_amount);
 
         var ctx = document.getElementById('lineChart').getContext('2d');
         var myChart = new Chart(ctx, {
@@ -47,6 +48,13 @@
                     {
                         label: 'Total Amount (€)',
                         data: amountEur,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1
+                    }
+                    {
+                        label: 'Total Amount (S$)',
+                        data: amountSgd,
                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
                         borderColor: 'rgba(255, 99, 132, 1)',
                         borderWidth: 1
@@ -222,7 +230,7 @@
     </div>
 
     <div class="row">
-        <div class="col-lg-4 col-md-6">
+        <div class="col-lg-3 col-md-6">
             <div class="card" id="income-card">
                 <div class="card-body">
                     <div class="row align-items-center justify-content-between">
@@ -241,7 +249,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-4 col-md-6">
+        <div class="col-lg-3 col-md-6">
             <div class="card" id="expense-card">
                 <div class="card-body">
                     <div class="row align-items-center justify-content-between">
@@ -260,7 +268,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-lg-4 col-md-6">
+        <div class="col-lg-3 col-md-6">
             <div class="card">
                 <div class="card-body">
                     <div class="row align-items-center justify-content-between">
@@ -271,7 +279,26 @@
                                 </div>
                                 <div class="ms-3">
                                     <small class="text-muted h6">{{__('Total Amount (€)')}}</small>
-                                    <h6 class="m-0">{{ \Auth::user()->priceFormat2($totalAmountEuro) }} </h6>
+                                    <h6 class="m-0">{{ \Auth::user()->priceFormat3($totalAmountEuro) }} </h6>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center justify-content-between">
+                        <div class="col-auto mb-3 mb-sm-0">
+                            <div class="d-flex align-items-center">
+                                <div class="theme-avtar bg-info">
+                                    <i class="ti ti-report-money"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <small class="text-muted h6">{{__('Total Amount (S$)')}}</small>
+                                    <h6 class="m-0">{{ \Auth::user()->priceFormat4($totalAmountSgd) }} </h6>
                                 </div>
                             </div>
                         </div>
@@ -357,6 +384,8 @@
                                             {{ \Auth::user()->priceFormat2($invoice->getTotalTax()) }}
                                         @elseif($invoice->currency == '€')
                                             {{ \Auth::user()->priceFormat3($invoice->getTotalTax()) }}
+                                        @elseif($invoice->currency == 'S$')
+                                            {{ \Auth::user()->priceFormat4($invoice->getTotalTax()) }}
                                         @else
                                             {{ \Auth::user()->priceFormat($invoice->getTotalTax()) }}
                                         @endif
@@ -366,6 +395,8 @@
                                             {{ \Auth::user()->priceFormat2($invoice->getTotal()) }}
                                         @elseif($invoice->currency == '€')
                                             {{ \Auth::user()->priceFormat3($invoice->getTotal()) }}
+                                         @elseif($invoice->currency == 'S$')
+                                            {{ \Auth::user()->priceFormat4($invoice->getTotal()) }}
                                         @else
                                             {{ \Auth::user()->priceFormat($invoice->getTotal()) }}
                                         @endif
@@ -500,14 +531,14 @@
                                             @endif
                                         </td>
                                        <td>
-                                        @if ($invoice->currency == '$' || $invoice->currency == '€')
+                                        @if ($invoice->currency == '$' || $invoice->currency == '€' || $invoice->currency == 'S$')
                                             {{ \Auth::user()->priceFormat2($invoice->getTotalTax()) }}
                                         @else
                                             {{ \Auth::user()->priceFormat($invoice->getTotalTax()) }}
                                         @endif
                                         </td>
                                         <td>
-                                            @if ($invoice->currency == '$' || $invoice->currency == '€')
+                                            @if ($invoice->currency == '$' || $invoice->currency == '€' || $invoice->currency == 'S$')
                                                 {{ \Auth::user()->priceFormat2($invoice->getDue()) }}
                                             @else
                                                 {{ \Auth::user()->priceFormat($invoice->getDue()) }}

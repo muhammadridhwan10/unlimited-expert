@@ -36,6 +36,7 @@ class Payment extends Model
     public static $currency =[
         'Rp' => 'Rp',
         '€' => '€',
+        'S$' => 'S$',
     ];
 
     public static $operator =[

@@ -108,6 +108,7 @@ class InvoiceController extends Controller
                 $totalAmountRp = 0;
                 $totalAmountDollar = 0;
                 $totalAmountEuro = 0;
+                $totalAmountSgd = 0;
 
                 foreach($totalInvoices as $invoice)
                 {
@@ -117,6 +118,8 @@ class InvoiceController extends Controller
                         $totalAmountDollar += $invoice->getDue();
                     } elseif ($invoice->currency == '€') {
                         $totalAmountEuro += $invoice->getDue();
+                    } elseif ($invoice->currency == 'S$') {
+                        $totalAmountSgd += $invoice->getDue();
                     }
 
                 }
@@ -184,6 +187,7 @@ class InvoiceController extends Controller
                 $totalAmountRp = 0;
                 $totalAmountDollar = 0;
                 $totalAmountEuro = 0;
+                $totalAmountSgd = 0;
 
                 foreach($totalInvoices as $invoice)
                 {
@@ -193,6 +197,8 @@ class InvoiceController extends Controller
                         $totalAmountDollar += $invoice->getDue();
                     } elseif ($invoice->currency == '€') {
                         $totalAmountEuro += $invoice->getDue();
+                    } elseif ($invoice->currency == 'S$') {
+                        $totalAmountSgd += $invoice->getDue();
                     }
 
                 }
@@ -211,7 +217,7 @@ class InvoiceController extends Controller
        
 
             }
-            return view('invoice.index', compact('invoices', 'client','companies','partner', 'status','category_invoice','totalAmountRp','totalAmountDollar','totalAmountEuro'));
+            return view('invoice.index', compact('invoices', 'client','companies','partner', 'status','category_invoice','totalAmountRp','totalAmountDollar','totalAmountEuro', 'totalAmountSgd'));
         }
         else
         {
@@ -240,8 +246,9 @@ class InvoiceController extends Controller
             $siteCurrencySymbol = Settings::where('name', 'site_currency_symbol')->value('value');
             $siteCurrencySymbol2 = Settings::where('name', 'site_currency_symbol_2')->value('value');
             $siteCurrencySymbol3 = Settings::where('name', 'site_currency_symbol_3')->value('value');
+            $siteCurrencySymbol4 = Settings::where('name', 'site_currency_symbol_4')->value('value');
 
-            return view('invoice.create', compact('customers','partners','account', 'projects', 'category', 'customFields', 'customerId','siteCurrencySymbol', 'siteCurrencySymbol2','siteCurrencySymbol3'));
+            return view('invoice.create', compact('customers','partners','account', 'projects', 'category', 'customFields', 'customerId','siteCurrencySymbol', 'siteCurrencySymbol2','siteCurrencySymbol3','siteCurrencySymbol4'));
         }
         else
         {
@@ -412,8 +419,9 @@ class InvoiceController extends Controller
             $siteCurrencySymbol = Settings::where('name', 'site_currency_symbol')->value('value');
             $siteCurrencySymbol2 = Settings::where('name', 'site_currency_symbol_2')->value('value');
             $siteCurrencySymbol3 = Settings::where('name', 'site_currency_symbol_3')->value('value');
+            $siteCurrencySymbol4 = Settings::where('name', 'site_currency_symbol_4')->value('value');
 
-            return view('invoice.edit', compact('customers','partners','account', 'projects', 'invoice', 'invoice_number', 'category', 'customFields','siteCurrencySymbol','siteCurrencySymbol2','siteCurrencySymbol3'));
+            return view('invoice.edit', compact('customers','partners','account', 'projects', 'invoice', 'invoice_number', 'category', 'customFields','siteCurrencySymbol','siteCurrencySymbol2','siteCurrencySymbol3','siteCurrencySymbol4'));
         }
         else
         {
