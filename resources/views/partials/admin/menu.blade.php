@@ -194,6 +194,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             </span><span class="dash-mtext">{{__('Employee Profile')}}</span>
                                         </a>
                                     </li>
+                                    <li class="dash-item {{ request()->is('evaluation') ? 'active' : '' }}">
+                                        <a href="{{route('evaluation.index')}}" class="dash-link">
+                                            </span><span class="dash-mtext">{{__('Evaluation')}}</span>
+                                        </a>
+                                    </li>
                                     <li class="dash-item {{ request()->is('overtime') ? 'active' : '' }}">
                                         <a href="{{route('overtime.index')}}" class="dash-link">
                                             </span><span class="dash-mtext">{{__('Overtime')}}</span>
@@ -222,11 +227,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                     <li class="dash-item {{ (Request::route()->getName() == 'reimbursment-client.index' || Request::segment(1) == 'reimbursment-client.create' || Request::route()->getName() == 'reimbursment-client.edit') ? ' active' : '' }}">
                                         <a class="dash-link" href="{{ route('reimbursment-client.index') }}">{{__('Reimbursement Client')}}</a>
                                     </li>
-                                    {{-- <li class="dash-item {{ request()->is('form-response') ? 'active' : '' }}">
+                                    <li class="dash-item {{ request()->is('form-response') ? 'active' : '' }}">
                                         <a href="{{route('form-response.index')}}" class="dash-link">
                                            <span class="dash-mtext">{{__('Personel Assessment')}}</span><sup style="color: red;">Beta</sup>
                                         </a>
-                                    </li> --}}
+                                    </li>
                                     {{-- <li class="dash-item {{ request()->is('meeting') ? 'active' : '' }}">
                                         <a href="{{route('meeting.index')}}" class="dash-link">
                                            <span class="dash-mtext">{{__('Meeting Time')}}</span><sup style="color: red;">Beta</sup>

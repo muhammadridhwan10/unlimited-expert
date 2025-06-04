@@ -181,7 +181,7 @@ class ReportController extends Controller
                 if($invoice->currency == 'Rp') {
                     $invoiceTotalArrayRp[$invoice->month][] = $invoice->getTotal();
                     $totalInvoiceRp += $invoice->getTotal();
-                } elseif($invoice->currency == '$') {
+                } elseif($invoice->currency == '$' || $invoice->currency == 'S$') {
                     $invoiceTotalArrayUsd[$invoice->month][] = $invoice->getTotal();
                     $totalInvoiceDollar += $invoice->getTotal();
                 }

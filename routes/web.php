@@ -1724,6 +1724,13 @@ Route::resource('overtime', 'OvertimeController')->middleware(
     ]
 );
 
+Route::resource('evaluation', 'EvaluationController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
 Route::post('overtime/approve-multiple', 'OvertimeController@approveMultiple')->name('approve-overtime-multiple')->middleware(
     [
         'auth',
