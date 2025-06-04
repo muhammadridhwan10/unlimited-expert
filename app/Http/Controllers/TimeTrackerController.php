@@ -51,12 +51,16 @@ class TimeTrackerController extends Controller
             
             $employeeTimeTracker = TimeTracker::whereIn('created_by', $employee);
 
+            // Filter start_date (hanya tanggal)
             if (isset($request->start_date) && !empty($request->start_date)) {
-                $employeeTimeTracker->where('start_time', '>=', $request->start_date);
+                $startDate = $request->start_date; // Input sudah dalam format Y-m-d
+                $employeeTimeTracker->whereDate('start_time', '>=', $startDate);
             }
 
+            // Filter end_date (hanya tanggal)
             if (isset($request->end_date) && !empty($request->end_date)) {
-                $employeeTimeTracker->where('start_time', '>=', $request->end_date);
+                $endDate = $request->end_date; // Input sudah dalam format Y-m-d
+                $employeeTimeTracker->whereDate('start_time', '<=', $endDate);
             }
 
             if (!empty($request->user_ids)) {
@@ -122,12 +126,16 @@ class TimeTrackerController extends Controller
             $projectStatus = $request->status;
             $projectLabel = $request->label;
 
+            // Filter start_date (hanya tanggal)
             if (isset($request->start_date) && !empty($request->start_date)) {
-                $employeeTimeTracker->where('start_time', '>=', $request->start_date);
+                $startDate = $request->start_date; // Input sudah dalam format Y-m-d
+                $employeeTimeTracker->whereDate('start_time', '>=', $startDate);
             }
 
+            // Filter end_date (hanya tanggal)
             if (isset($request->end_date) && !empty($request->end_date)) {
-                $employeeTimeTracker->where('start_time', '>=', $request->end_date);
+                $endDate = $request->end_date; // Input sudah dalam format Y-m-d
+                $employeeTimeTracker->whereDate('start_time', '<=', $endDate);
             }
 
             if (!empty($request->user_ids)) {
@@ -217,12 +225,16 @@ class TimeTrackerController extends Controller
             $projectStatus = $request->status;
             $projectLabel = $request->label;
 
+            // Filter start_date (hanya tanggal)
             if (isset($request->start_date) && !empty($request->start_date)) {
-                $employeeTimeTracker->where('start_time', '>=', $request->start_date);
+                $startDate = $request->start_date; // Input sudah dalam format Y-m-d
+                $employeeTimeTracker->whereDate('start_time', '>=', $startDate);
             }
 
+            // Filter end_date (hanya tanggal)
             if (isset($request->end_date) && !empty($request->end_date)) {
-                $employeeTimeTracker->where('start_time', '>=', $request->end_date);
+                $endDate = $request->end_date; // Input sudah dalam format Y-m-d
+                $employeeTimeTracker->whereDate('start_time', '<=', $endDate);
             }
 
             if (!empty($request->user_ids)) {
