@@ -263,22 +263,28 @@
                         <div class="info-section">
                             <h6 class="mb-3">Informasi Penilaian</h6>
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="info-item">
                                         <label class="info-label">Nama Karyawan:</label>
                                         <p class="info-value">{{ $evaluations->first()->evaluatee->name ?? 'Tidak tersedia' }}</p>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="info-item">
                                         <label class="info-label">Penilai:</label>
                                         <p class="info-value">{{ $evaluations->first()->evaluator->name ?? 'Tidak tersedia' }}</p>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="info-item">
                                         <label class="info-label">Periode:</label>
                                         <p class="info-value">{{ $evaluations->first()->quarter ?? 'Tidak tersedia' }}</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="info-item">
+                                        <label class="info-label">Waktu:</label>
+                                        <p class="info-value">{{ $evaluations->first()->created_at ?? 'Tidak tersedia' }}</p>
                                     </div>
                                 </div>
                             </div>

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Crypt;
 use App\Mail\ReimbursmentClientNotification;
 use App\Mail\ReimbursmentClientApprovalNotification;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class ReimbursmentClientController extends Controller
 {
@@ -317,8 +318,14 @@ class ReimbursmentClientController extends Controller
             {
                 mkdir($dir, 0777, true);
             }
+
+            Storage::disk('minio')->put(
+                'uploads/reimbursment/' . $fileNameToStore,
+                file_get_contents($request->file('reimbursment_image'))
+            );
+
             // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
-            $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
+            // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
         }
 
         $date            = Carbon::now()->format('Y-m-d');
@@ -447,8 +454,14 @@ class ReimbursmentClientController extends Controller
             {
                 mkdir($dir, 0777, true);
             }
+
+            Storage::disk('minio')->put(
+                'uploads/reimbursment/' . $fileNameToStore,
+                file_get_contents($request->file('reimbursment_image'))
+            );
+
             // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
-            $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
+            // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
         }
 
         $date            = Carbon::now()->format('Y-m-d');

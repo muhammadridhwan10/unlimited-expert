@@ -34,6 +34,7 @@ use App\Mail\ReimbursmentClientNotification;
 use App\Mail\ReimbursmentPersonalNotification;
 use App\Mail\OvertimeNotification;
 use App\Mail\DocumentRequestNotification;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
 use DateTime;
 use DatePeriod;
@@ -279,53 +280,37 @@ class ApiController extends Controller
     }
     public function uploadImage(Request $request)
     {
-        // Validasi untuk memastikan file yang diupload adalah gambar
         $request->validate([
-            'img' => 'required', // Validasi custom base64 image
+            'img' => 'required', // base64 image
             'imgName' => 'required|string',
         ]);
-    
-        // Ekstensi gambar yang diizinkan
+
         $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif'];
-    
-        // Ambil nama file
         $file = $request->imgName;
-    
-        // Cek apakah ekstensi file adalah salah satu dari yang diizinkan
+
         $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
         if (!in_array($extension, $allowedExtensions)) {
             return response()->json(['error' => 'Only images with the following extensions are allowed: jpg, jpeg, png, gif'], 400);
         }
-    
-        // Dekode gambar base64
+
         $image_base64 = base64_decode($request->img);
-    
+
         // Tentukan path penyimpanan berdasarkan tracker_id
-        if($request->has('tracker_id') && !empty($request->tracker_id)){
-            $app_path = storage_path('uploads/traker_images/').$request->tracker_id.'/';
-            if (!file_exists($app_path)) {
-                mkdir($app_path, 0777, true);
-            }
-        } else {
-            $app_path = storage_path('uploads/traker_images/');
-            if (!file_exists($app_path)) {
-                mkdir($app_path, 0777, true);
-            }
-        }
-    
-        // Simpan file
-        $file_name = $app_path . $file;
-        file_put_contents($file_name, $image_base64);
-    
-        // Simpan informasi ke database
+        $trackerId = $request->tracker_id ?? 'default';
+        $path = 'uploads/traker_images/' . $trackerId . '/' . $file;
+
+        // Simpan ke MinIO
+        Storage::disk('minio')->put($path, $image_base64, 'public');
+
+        // Simpan ke database
         $new = new TrackPhoto();
         $new->track_id = $request->tracker_id;
         $new->user_id  = auth()->user()->id;
-        $new->img_path  = 'uploads/traker_images/'.$request->tracker_id.'/'.$file;
-        $new->time  = $request->time;
-        $new->status  = 1;
+        $new->img_path = $path; // hanya path relatif
+        $new->time     = $request->time;
+        $new->status   = 1;
         $new->save();
-    
+
         return response()->json(['success' => 'Uploaded successfully.']);
     }
     
@@ -785,8 +770,13 @@ class ApiController extends Controller
                 mkdir($dir, 0777, true);
             }
 
+            Storage::disk('minio')->put(
+                'uploads/reimbursment/' . $fileNameToStore,
+                file_get_contents($request->file('reimbursment_image'))
+            );
+
             // Simpan file ke dalam direktori penyimpanan
-            $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
+            // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
             
             // Simpan path file reimbursment_image ke dalam input
             $input['reimbursment_image'] = 'uploads/reimbursment/' . $fileNameToStore;
@@ -844,8 +834,13 @@ class ApiController extends Controller
                 mkdir($dir, 0777, true);
             }
 
+            Storage::disk('minio')->put(
+                'uploads/reimbursment/' . $fileNameToStore,
+                file_get_contents($request->file('reimbursment_image'))
+            );
+
             // Simpan file ke dalam direktori penyimpanan
-            $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
+            // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore, 's3');
             
             // Simpan path file reimbursment_image ke dalam input
             $input['reimbursment_image'] = 'uploads/reimbursment/' . $fileNameToStore;
@@ -977,8 +972,13 @@ class ApiController extends Controller
                 mkdir($dir, 0777, true);
             }
 
+            Storage::disk('minio')->put(
+                'uploads/sick_letter/' . \Auth::user()->name . '/' . $fileNameToStore,
+                file_get_contents($request->file('sick_letter'))
+            );
+
             // Simpan file ke dalam direktori penyimpanan
-            $path = $request->file('sick_letter')->storeAs('uploads/sick_letter/' . \Auth::user()->name . '/', $fileNameToStore, 's3');
+            // $path = $request->file('sick_letter')->storeAs('uploads/sick_letter/' . \Auth::user()->name . '/', $fileNameToStore, 's3');
             
             // Simpan path file sick_letter ke dalam input
             $input['sick_letter'] = 'uploads/sick_letter/' . \Auth::user()->name . '/' . $fileNameToStore;

@@ -14,9 +14,9 @@
                 <div class="swiper-wrapper">
                     @foreach ($images as $image)
                         <div class="swiper-slide" id="slide-{{ $image->id }}">
-                            <img src="{{ Storage::disk('s3')->url($image->reimbursment_image) }}" alt="..." class="img-fluid">
+                            <img src="{{ Storage::disk('minio')->url($image->reimbursment_image) }}" alt="..." class="img-fluid">
                             <div class="text-center mt-2">
-                                <a href="{{ Storage::disk('s3')->temporaryUrl($image->reimbursment_image, now()->addMinutes(5), ['ResponseContentDisposition' => 'attachment']) }}" class="btn btn-primary mt-2">
+                                <a href="{{ Storage::disk('minio')->temporaryUrl($image->reimbursment_image, now()->addMinutes(5), ['ResponseContentDisposition' => 'attachment']) }}" class="btn btn-primary mt-2">
                                     Download Image
                                 </a>
                             </div>

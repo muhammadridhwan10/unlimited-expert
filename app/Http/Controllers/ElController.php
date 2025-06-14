@@ -6,6 +6,7 @@ use App\Models\El;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ElController extends Controller
 {
@@ -47,7 +48,13 @@ class ElController extends Controller
             {
                 mkdir($dir, 0777, true);
             }
-            $path = $request->file('file')->storeAs('uploads/el/' . $client->name . '/', $fileNameToStore, 's3');
+
+            Storage::disk('minio')->put(
+                'uploads/el/' . $client->name . '/' . $fileNameToStore,
+                file_get_contents($request->file('file'))
+            );
+            
+            // $path = $request->file('file')->storeAs('uploads/el/' . $client->name . '/', $fileNameToStore, 's3');
         }
 
         $el                       = new El();
@@ -100,7 +107,12 @@ class ElController extends Controller
                 mkdir($dir, 0777, true);
             }
 
-            $path = $request->file('file')->storeAs('uploads/el/' . $client->name . '/', $fileNameToStore, 'public');
+            Storage::disk('minio')->put(
+                'uploads/el/' . $client->name . '/' . $fileNameToStore,
+                file_get_contents($request->file('file'))
+            );
+
+            // $path = $request->file('file')->storeAs('uploads/el/' . $client->name . '/', $fileNameToStore, 'public');
             $el->file = 'uploads/el/' . $client->name . '/' . $fileNameToStore;
         }
 

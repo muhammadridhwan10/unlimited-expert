@@ -14,7 +14,19 @@
                 <div class="swiper-wrapper">
                     @foreach ($images as $image)
                         <div class="swiper-slide" id="slide-{{$image->id}}">
-                            <img src="{{ asset(Storage::url($image->img_path))}}" alt="..."  class="img-fluid">
+                            {{-- <img src="{{ asset(Storage::url($image->img_path))}}" alt="..."  class="img-fluid"> --}}
+                            {{-- <img src="{{ Storage::disk('minio')->url($image->img_path) }}" alt="..." class="img-fluid"> --}}
+                            
+                            @if($image->img_path == NULL)
+                            {
+                                <img src="{{ asset(Storage::url($image->img_path))}}" alt="..."  class="img-fluid">
+                            }
+                            @else
+                            {
+                                <img src="{{ Storage::disk('minio')->url($image->img_path) }}" alt="..." class="img-fluid">
+                            }
+                            @endif
+
                             <div class="time_in_slider">{{date('H:i:s, d M ',strtotime($image->time))}} |
 
                                     <!-- <a href="#" class="delete-icon"  data-confirm="{{__('Are You Sure?').'|'.__('This action can not be undone. Do you want to continue?')}}" data-confirm-yes="document.getElementById('delete-form-{{$image->id}}').submit();">
@@ -37,7 +49,17 @@
                 <div class="swiper-wrapper">
                     @foreach ($images as $image)
                     <div class="swiper-slide" id="slide-thum-{{$image->id}}">
-                        <img src="{{ asset(Storage::url($image->img_path))}}" alt="..." class="img-fluid">
+                        {{-- <img src="{{ asset(Storage::url($image->img_path))}}" alt="..." class="img-fluid"> --}}
+                        {{-- <img src="{{ Storage::disk('minio')->url($image->img_path) }}" alt="..." class="img-fluid"> --}}
+                        @if($image->img_path == NULL)
+                        {
+                            <img src="{{ asset(Storage::url($image->img_path))}}" alt="..."  class="img-fluid">
+                        }
+                        @else
+                        {
+                            <img src="{{ Storage::disk('minio')->url($image->img_path) }}" alt="..." class="img-fluid">
+                        }
+                        @endif
                     </div>
                     @endforeach
 

@@ -154,7 +154,12 @@ class SickLetterController extends Controller
                     mkdir($dir, 0777, true);
                 }
 
-                $path = $request->file('sick_letter')->storeAs('uploads/sick_letter/' . \Auth::user()->name . '/', $fileNameToStore, 's3');
+                Storage::disk('minio')->put(
+                    'uploads/sick_letter/' . \Auth::user()->name . '/' . $fileNameToStore,
+                    file_get_contents($request->file('sick_letter'))
+                );
+
+                // $path = $request->file('sick_letter')->storeAs('uploads/sick_letter/' . \Auth::user()->name . '/', $fileNameToStore, 's3');
             }
 
             $leave->sick_letter = !empty($fileNameToStore) ? 'uploads/sick_letter/' . \Auth::user()->name . '/' . $fileNameToStore : '';
@@ -239,7 +244,14 @@ class SickLetterController extends Controller
                 {
                     mkdir($dir, 0777, true);
                 }
-                $path = $request->file('sick_letter')->storeAs('uploads/sick_letter/' . \Auth::user()->name . '/', $fileNameToStore, 's3');
+
+                Storage::disk('minio')->put(
+                    'uploads/sick_letter/' . \Auth::user()->name . '/' . $fileNameToStore,
+                    file_get_contents($request->file('sick_letter'))
+                );
+
+
+                // $path = $request->file('sick_letter')->storeAs('uploads/sick_letter/' . \Auth::user()->name . '/', $fileNameToStore, 's3');
             }
             
             $leave->applied_on       = date('Y-m-d');

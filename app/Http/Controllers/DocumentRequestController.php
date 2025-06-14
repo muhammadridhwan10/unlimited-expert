@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Mail\DocumentRequestNotification;
 use App\Mail\DocumentCompletedNotification;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class DocumentRequestController extends Controller
 {
@@ -325,8 +326,15 @@ class DocumentRequestController extends Controller
                 if (!file_exists($dir)) {
                     mkdir($dir, 0777, true);
                 }
+
+                Storage::disk('minio')->put(
+                'uploads/documentRequest/' . $fileNameToStore,
+                file_get_contents($request->file('file_feedback'))
+                );
+
+
                 // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
-                $path = $request->file('file_feedback')->storeAs('uploads/documentRequest/', $fileNameToStore, 's3');
+                // $path = $request->file('file_feedback')->storeAs('uploads/documentRequest/', $fileNameToStore, 's3');
     
                 $document->file_feedback = 'uploads/documentRequest/' . $fileNameToStore;
             } else {
@@ -345,8 +353,14 @@ class DocumentRequestController extends Controller
                 if (!file_exists($dir)) {
                     mkdir($dir, 0777, true);
                 }
+
+                Storage::disk('minio')->put(
+                'uploads/documentRequest/' . $fileNameToStore,
+                    file_get_contents($request->file('file'))
+                );
+
                 // $path = $request->file('reimbursment_image')->storeAs('uploads/reimbursment/', $fileNameToStore);
-                $path = $request->file('file')->storeAs('uploads/documentRequest/', $fileNameToStore, 's3');
+                // $path = $request->file('file')->storeAs('uploads/documentRequest/', $fileNameToStore, 's3');
     
                 $document->file = 'uploads/documentRequest/' . $fileNameToStore;
             } else {

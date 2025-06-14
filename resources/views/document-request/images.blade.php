@@ -13,11 +13,11 @@
                         <div class="swiper-wrapper">
                             @if(in_array(pathinfo($image->file, PATHINFO_EXTENSION), ['jpg', 'jpeg', 'png']))
                                 <div class="swiper-slide" id="slide-{{ $image->id }}">
-                                    <img src="{{ Storage::disk('s3')->url($image->file) }}" alt="..." class="img-fluid">
+                                    <img src="{{ Storage::disk('minio')->url($image->file) }}" alt="..." class="img-fluid">
                                 </div>
                             @else
                                 <div class="swiper-slide" id="slide-{{ $image->id }}">
-                                    <iframe src="{{ Storage::disk('s3')->url($image->file) }}" width="100%" height="500px" style="border: none;"></iframe>
+                                    <iframe src="{{ Storage::disk('minio')->url($image->file) }}" width="100%" height="500px" style="border: none;"></iframe>
                                 </div>
                             @endif
                         </div>
