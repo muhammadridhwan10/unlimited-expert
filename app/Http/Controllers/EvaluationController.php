@@ -14,18 +14,56 @@ class EvaluationController extends Controller
     {
         $user = auth()->user();
 
-        $query = Evaluation::with(['details', 'evaluator', 'evaluatee'])
-            ->where('evaluatee_id', $user->id)
-            ->orderBy('quarter', 'desc');
+        if(\Auth::user()->type == 'company')
+        {
+            // Query untuk admin - bisa melihat semua evaluasi
+            $query = Evaluation::with(['details', 'evaluator', 'evaluatee']);
 
-        // Filter berdasarkan caturwulan jika ada request
-        if ($request->has('cw') && in_array($request->cw, ['CW 1', 'CW 2', 'CW 3'])) {
-            $query->where('quarter', $request->cw);
+            // Filter berdasarkan user yang dipilih
+            if ($request->has('user_id') && $request->user_id != '') {
+                $query->where('evaluatee_id', $request->user_id);
+            }
+
+            // Filter berdasarkan caturwulan jika ada request
+            if ($request->has('cw') && in_array($request->cw, ['CW 1', 'CW 2', 'CW 3'])) {
+                $query->where('quarter', $request->cw);
+            }
+
+            // Filter berdasarkan evaluator jika ada request
+            if ($request->has('evaluator_id') && $request->evaluator_id != '') {
+                $query->where('evaluator_id', $request->evaluator_id);
+            }
+
+            $evaluations = $query->orderBy('created_at', 'desc')->get();
+
+            // Ambil daftar user untuk filter dropdown
+            $users = User::where('type', '!=', 'client')
+                        ->where('is_active', 1)
+                        ->orderBy('name', 'asc')
+                        ->get();
+
+            // Ambil daftar evaluator untuk filter dropdown
+            $evaluators = User::whereHas('evaluationsAsEvaluator')
+                            ->orderBy('name', 'asc')
+                            ->get();
+
+            return view('evaluation.admin.index', compact('evaluations', 'users', 'evaluators'));
         }
+        else
+        {
+            $query = Evaluation::with(['details', 'evaluator', 'evaluatee'])
+                ->where('evaluatee_id', $user->id)
+                ->orderBy('quarter', 'desc');
 
-        $evaluations = $query->get();
+            // Filter berdasarkan caturwulan jika ada request
+            if ($request->has('cw') && in_array($request->cw, ['CW 1', 'CW 2', 'CW 3'])) {
+                $query->where('quarter', $request->cw);
+            }
 
-        return view('evaluation.index', compact('evaluations'));
+            $evaluations = $query->get();
+            
+            return view('evaluation.index', compact('evaluations'));
+        }
     }
 
     public function create(Request $request)

@@ -209,6 +209,21 @@
         color: #ccc;
         font-size: 1.2em;
     }
+    
+    .star-half {
+        position: relative;
+        color: #ccc;
+        font-size: 1.2em;
+    }
+    
+    .star-half::before {
+        content: "★";
+        position: absolute;
+        left: 0;
+        width: 50%;
+        overflow: hidden;
+        color: gold;
+    }
 
     .score-total {
         text-align: center;
@@ -220,7 +235,6 @@
         vertical-align: middle;
     }
 </style>
-
 @endpush
 
 @section('content')
@@ -354,7 +368,7 @@
                                                 {{ $score ?? '—' }}
                                             </td>
                                             <td class="comment-cell">
-                                                {{ $comment ?: 'Tidak ada keterangan' }}
+                                                {{ $comment ?: '-' }}
                                             </td>
                                         </tr>
                                     @endforeach
@@ -406,24 +420,25 @@
                                     <td colspan="1" class="category-cell text-center fw-bold">Rating</td>
                                     <td class="score-total">
                                         @php
-                                            // Hitung rating keseluruhan berdasarkan total skor
-                                            $rating = 0;
-                                            if ($totalWeightedScore >= 4.5) {
-                                                $rating = 5;
-                                            } elseif ($totalWeightedScore >= 3.5) {
-                                                $rating = 4;
-                                            } elseif ($totalWeightedScore >= 2.5) {
-                                                $rating = 3;
-                                            } elseif ($totalWeightedScore >= 1.5) {
-                                                $rating = 2;
-                                            } elseif ($totalWeightedScore >= 1.0) {
-                                                $rating = 1;
-                                            } else {
-                                                $rating = 0;
-                                            }
+                                            // Logika rating yang lebih akurat dengan setengah bintang
+                                            $fullStars = floor($totalWeightedScore);
+                                            $hasHalfStar = ($totalWeightedScore - $fullStars) >= 0.5;
+                                            $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
                                         @endphp
-                                        @for($i = 1; $i <= 5; $i++)
-                                            <span class="{{ $i <= $rating ? 'star-filled' : 'star-empty' }}">★</span>
+                                        
+                                        {{-- Tampilkan bintang penuh --}}
+                                        @for($i = 1; $i <= $fullStars; $i++)
+                                            <span class="star-filled">★</span>
+                                        @endfor
+                                        
+                                        {{-- Tampilkan setengah bintang jika ada --}}
+                                        @if($hasHalfStar)
+                                            <span class="star-half">★</span>
+                                        @endif
+                                        
+                                        {{-- Tampilkan bintang kosong --}}
+                                        @for($i = 1; $i <= $emptyStars; $i++)
+                                            <span class="star-empty">★</span>
                                         @endfor
                                     </td>
                                 </tr>
@@ -433,11 +448,15 @@
                                         <div class="mt-3">
                                             <p class="mb-1"><strong>Keterangan Rating:</strong></p>
                                             <ul style="list-style-type: none; padding-left: 0;">
-                                                <li><span class="star-filled">★ ★ ★ ★ ★</span> (5): Excellent (4.5–5.0)</li>
-                                                <li><span class="star-filled">★ ★ ★ ★</span><span class="star-empty">★</span> (4): Very Good (3.5–4.4)</li>
-                                                <li><span class="star-filled">★ ★ ★</span><span class="star-empty">★ ★</span> (3): Good (2.5–3.4)</li>
-                                                <li><span class="star-filled">★ ★</span><span class="star-empty">★ ★ ★</span> (2): Fair (1.5–2.4)</li>
-                                                <li><span class="star-filled">★</span><span class="star-empty">★ ★ ★ ★</span> (1): Poor (0.0–1.4)</li>
+                                                <li><span class="star-filled">★ ★ ★ ★ ★</span> (5.0): Excellent</li>
+                                                <li><span class="star-filled">★ ★ ★ ★</span><span class="star-half">★</span> (4.5): Excellent</li>
+                                                <li><span class="star-filled">★ ★ ★ ★</span><span class="star-empty">★</span> (4.0): Very Good</li>
+                                                <li><span class="star-filled">★ ★ ★</span><span class="star-half">★</span><span class="star-empty">★</span> (3.5): Very Good</li>
+                                                <li><span class="star-filled">★ ★ ★</span><span class="star-empty">★ ★</span> (3.0): Good</li>
+                                                <li><span class="star-filled">★ ★</span><span class="star-half">★</span><span class="star-empty">★ ★</span> (2.5): Good</li>
+                                                <li><span class="star-filled">★ ★</span><span class="star-empty">★ ★ ★</span> (2.0): Fair</li>
+                                                <li><span class="star-filled">★</span><span class="star-half">★</span><span class="star-empty">★ ★ ★</span> (1.5): Fair</li>
+                                                <li><span class="star-filled">★</span><span class="star-empty">★ ★ ★ ★</span> (1.0): Poor</li>
                                             </ul>
                                         </div>
                                     </td>

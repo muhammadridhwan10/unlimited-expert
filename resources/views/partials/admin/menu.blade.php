@@ -632,8 +632,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             <li class="dash-item {{ request()->is('reports-overtime') ? 'active' : '' }}">
                                                 <a class="dash-link" href="{{ route('report.overtime') }}">{{__('Overtime Report')}}</a>
                                             </li>
-                                            <li class="dash-item {{ request()->is('reports-performance') ? 'active' : '' }}">
+                                            {{-- <li class="dash-item {{ request()->is('reports-performance') ? 'active' : '' }}">
                                                 <a class="dash-link" href="{{ route('report.performance') }}">{{__('Perfomance Report')}}</a>
+                                            </li> --}}
+                                            <li class="dash-item {{ request()->is('reports-evaluation') ? 'active' : '' }}">
+                                                <a class="dash-link" href="{{ route('evaluation.index') }}">{{__('Evaluation Report')}}</a>
                                             </li>
                                         </ul>
                                     </li>
@@ -1006,6 +1009,10 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                         <a class="dash-link" href="{{route('projects.index')}}">{{__('Projects')}}</a>
                                     </li>
                                     @endcan
+
+                                    <li class="dash-item  {{Request::segment(1) == 'audit-tools' ? 'active' : ''}}">
+                                        <a class="dash-link" href="{{route('projects.index')}}">{{__('Audit Tools')}}</a>
+                                    </li>
                                     {{-- @if (\Auth::user()->type !== 'client' || \Auth::user()->type !== 'staff_client')
                                         @can('manage project task')
                                         <li class="dash-item {{ (Request::route()->getName() == 'project.listUsers') ? ' active' : '' }}">

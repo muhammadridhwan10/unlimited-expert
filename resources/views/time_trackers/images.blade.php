@@ -18,13 +18,9 @@
                             {{-- <img src="{{ Storage::disk('minio')->url($image->img_path) }}" alt="..." class="img-fluid"> --}}
                             
                             @if($image->img_path == NULL)
-                            {
                                 <img src="{{ asset(Storage::url($image->img_path))}}" alt="..."  class="img-fluid">
-                            }
                             @else
-                            {
                                 <img src="{{ Storage::disk('minio')->url($image->img_path) }}" alt="..." class="img-fluid">
-                            }
                             @endif
 
                             <div class="time_in_slider">{{date('H:i:s, d M ',strtotime($image->time))}} |
@@ -52,13 +48,9 @@
                         {{-- <img src="{{ asset(Storage::url($image->img_path))}}" alt="..." class="img-fluid"> --}}
                         {{-- <img src="{{ Storage::disk('minio')->url($image->img_path) }}" alt="..." class="img-fluid"> --}}
                         @if($image->img_path == NULL)
-                        {
                             <img src="{{ asset(Storage::url($image->img_path))}}" alt="..."  class="img-fluid">
-                        }
                         @else
-                        {
                             <img src="{{ Storage::disk('minio')->url($image->img_path) }}" alt="..." class="img-fluid">
-                        }
                         @endif
                     </div>
                     @endforeach

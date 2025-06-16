@@ -90,6 +90,22 @@ class User extends Authenticatable
         return $this->hasMany(ProjectNote::class);
     }
 
+    /**
+     * Relasi ke evaluasi sebagai evaluator (yang menilai)
+     */
+    public function evaluationsAsEvaluator()
+    {
+        return $this->hasMany(Evaluation::class, 'evaluator_id');
+    }
+
+    /**
+     * Relasi ke evaluasi sebagai evaluatee (yang dinilai)
+     */
+    public function evaluationsAsEvaluatee()
+    {
+        return $this->hasMany(Evaluation::class, 'evaluatee_id');
+    }
+
     public function comments()
     {
         return $this->hasMany(Comment::class);
