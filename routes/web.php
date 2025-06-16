@@ -1731,6 +1731,13 @@ Route::resource('evaluation', 'EvaluationController')->middleware(
     ]
 );
 
+Route::get('/export', 'EvaluationController@export')->name('evaluation.export')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
 Route::post('overtime/approve-multiple', 'OvertimeController@approveMultiple')->name('approve-overtime-multiple')->middleware(
     [
         'auth',
@@ -2747,7 +2754,6 @@ Route::delete(
 
 
 
-
 Route::get(
     'project/{view?}', [
     'as' => 'projects.grid',
@@ -3623,20 +3629,20 @@ Route::resource('users', 'UserController')->middleware(
         'revalidate',
     ]
 );
-Route::resource('plans', 'PlanController')->middleware(
-    [
-        'auth',
-        'XSS',
-        'revalidate',
-    ]
-);
-Route::resource('coupons', 'CouponController')->middleware(
-    [
-        'auth',
-        'XSS',
-        'revalidate',
-    ]
-);
+// Route::resource('plans', 'PlanController')->middleware(
+//     [
+//         'auth',
+//         'XSS',
+//         'revalidate',
+//     ]
+// );
+// Route::resource('coupons', 'CouponController')->middleware(
+//     [
+//         'auth',
+//         'XSS',
+//         'revalidate',
+//     ]
+// );
 // Orders
 
 Route::group(
@@ -3654,18 +3660,18 @@ Route::group(
 
 }
 );
-Route::get(
-    '/apply-coupon', [
-                       'as' => 'apply.coupon',
-                       'uses' => 'CouponController@applyCoupon',
-                   ]
-)->middleware(
-    [
-        'auth',
-        'XSS',
-        'revalidate',
-    ]
-);
+// Route::get(
+//     '/apply-coupon', [
+//                        'as' => 'apply.coupon',
+//                        'uses' => 'CouponController@applyCoupon',
+//                    ]
+// )->middleware(
+//     [
+//         'auth',
+//         'XSS',
+//         'revalidate',
+//     ]
+// );
 
 
 //================================= Form Builder ====================================//
@@ -3986,11 +3992,11 @@ Route::group(
 
 
 // Plan Request Module
-Route::get('plan_request', 'PlanRequestController@index')->name('plan_request.index')->middleware(['auth','XSS',]);
-Route::get('request_frequency/{id}', 'PlanRequestController@requestView')->name('request.view')->middleware(['auth','XSS',]);
-Route::get('request_send/{id}', 'PlanRequestController@userRequest')->name('send.request')->middleware(['auth','XSS',]);
-Route::get('request_response/{id}/{response}', 'PlanRequestController@acceptRequest')->name('response.request')->middleware(['auth','XSS',]);
-Route::get('request_cancel/{id}', 'PlanRequestController@cancelRequest')->name('request.cancel')->middleware(['auth','XSS',]);
+// Route::get('plan_request', 'PlanRequestController@index')->name('plan_request.index')->middleware(['auth','XSS',]);
+// Route::get('request_frequency/{id}', 'PlanRequestController@requestView')->name('request.view')->middleware(['auth','XSS',]);
+// Route::get('request_send/{id}', 'PlanRequestController@userRequest')->name('send.request')->middleware(['auth','XSS',]);
+// Route::get('request_response/{id}/{response}', 'PlanRequestController@acceptRequest')->name('response.request')->middleware(['auth','XSS',]);
+// Route::get('request_cancel/{id}', 'PlanRequestController@cancelRequest')->name('request.cancel')->middleware(['auth','XSS',]);
 
 
 //QR Code Module
