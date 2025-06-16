@@ -65,6 +65,43 @@ class EvaluationController extends Controller
         }
         else
         {
+            // Cek apakah user ini pernah menjadi evaluator
+            $hasEvaluatedOthers = Evaluation::where('evaluator_id', $user->id)->exists();
+            
+            if ($hasEvaluatedOthers) {
+                // Jika user pernah menilai orang lain, tampilkan view evaluator
+                return $this->evaluatorIndex($request);
+            } else {
+                // Jika user belum pernah menilai, tampilkan view evaluatee biasa
+                $query = Evaluation::with(['details', 'evaluator', 'evaluatee'])
+                    ->where('evaluatee_id', $user->id)
+                    ->orderBy('quarter', 'desc');
+
+                // Filter berdasarkan caturwulan jika ada request
+                if ($request->has('cw') && in_array($request->cw, ['CW 1', 'CW 2', 'CW 3'])) {
+                    $query->where('quarter', $request->cw);
+                }
+
+                $evaluations = $query->get();
+                
+                return view('evaluation.index', compact('evaluations'));
+            }
+        }
+    }
+
+    private function evaluatorIndex(Request $request)
+    {
+        $user = auth()->user();
+        
+        // Tentukan mode view berdasarkan request
+        $viewMode = $request->get('view', 'evaluated'); // 'evaluated' atau 'my_results'
+        
+        // Inisialisasi variabel default
+        $users = collect();
+        $branches = collect();
+        
+        if ($viewMode === 'my_results') {
+            // Tampilkan hasil evaluasi user sendiri
             $query = Evaluation::with(['details', 'evaluator', 'evaluatee'])
                 ->where('evaluatee_id', $user->id)
                 ->orderBy('quarter', 'desc');
@@ -75,9 +112,47 @@ class EvaluationController extends Controller
             }
 
             $evaluations = $query->get();
-            
-            return view('evaluation.index', compact('evaluations'));
+            $pageTitle = 'Hasil Evaluasi Saya';
+            $showFilters = false;
+        } else {
+            // Tampilkan evaluasi yang telah dinilai oleh user
+            $query = Evaluation::with(['details', 'evaluator', 'evaluatee', 'evaluatee.employee'])
+                ->where('evaluator_id', $user->id);
+
+            // Filter berdasarkan user yang dipilih
+            if ($request->has('user_id') && $request->user_id != '') {
+                $query->where('evaluatee_id', $request->user_id);
+            }
+
+            // Filter berdasarkan branch
+            if ($request->has('branch_id') && $request->branch_id != '') {
+                $query->whereHas('evaluatee.employee', function($q) use ($request) {
+                    $q->where('branch_id', $request->branch_id);
+                });
+            }
+
+            // Filter berdasarkan caturwulan
+            if ($request->has('cw') && in_array($request->cw, ['CW 1', 'CW 2', 'CW 3'])) {
+                $query->where('quarter', $request->cw);
+            }
+
+            $evaluations = $query->orderBy('created_at', 'desc')->get();
+
+            // Ambil daftar user yang pernah dinilai oleh evaluator ini
+            $users = User::whereHas('evaluationsAsEvaluatee', function($q) use ($user) {
+                $q->where('evaluator_id', $user->id);
+            })->orderBy('name', 'asc')->get();
+
+            // Ambil daftar branch untuk filter
+            $branches = Branch::whereHas('employees.user.evaluationsAsEvaluatee', function($q) use ($user) {
+                $q->where('evaluator_id', $user->id);
+            })->orderBy('name', 'asc')->get();
+
+            $pageTitle = 'Evaluasi yang Saya Nilai';
+            $showFilters = true;
         }
+
+        return view('evaluation.evaluator-index', compact('evaluations', 'users', 'branches', 'pageTitle', 'showFilters', 'viewMode'));
     }
 
     public function create(Request $request)
