@@ -4,6 +4,32 @@
     {{ __('Manage Evaluation - Admin') }}
 @endsection
 
+@push('script-page')
+<script>
+    function exportToExcel() {
+        // Ambil nilai filter saat ini
+        const user_id = document.getElementById('user_id').value;
+        const branch_id = document.getElementById('branch_id').value;
+        const evaluator_id = document.getElementById('evaluator_id').value;
+        const cw = document.getElementById('cw').value;
+        
+        // Buat URL dengan parameter filter
+        let exportUrl = '{{ route("evaluation.export") }}?';
+        const params = [];
+        
+        if (user_id) params.push('user_id=' + user_id);
+        if (branch_id) params.push('branch_id=' + branch_id);
+        if (evaluator_id) params.push('evaluator_id=' + evaluator_id);
+        if (cw) params.push('cw=' + encodeURIComponent(cw));
+        
+        exportUrl += params.join('&');
+        
+        // Redirect ke URL export
+        window.location.href = exportUrl;
+    }
+</script>
+@endpush
+
 @section('breadcrumb')
     <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">{{ __('Dashboard') }}</a></li>
     <li class="breadcrumb-item">{{ __('Manage Evaluation') }}</li>
@@ -31,17 +57,113 @@
     
     .filter-section {
         background: #f8f9fa;
-        padding: 1.5rem;
-        border-radius: 8px;
+        padding: 2rem;
+        border-radius: 12px;
         margin-bottom: 2rem;
         border: 1px solid #e9ecef;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     
-    .info-section {
-        background: #fff;
-        padding: 1.5rem;
+    .filter-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: end;
+    }
+    
+    .filter-col {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .filter-col.filter-buttons {
+        flex: 0 0 auto;
+        min-width: auto;
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+    }
+    
+    .form-select {
+        border: 2px solid #ced4da;
         border-radius: 8px;
-        border: 1px solid #e9ecef;
+        padding: 0.875rem 1rem;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+        height: 50px;
+        background-color: #fff;
+    }
+    
+    .form-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.25rem rgba(13,110,253,.15);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        display: block;
+    }
+    
+    .btn-filter, .btn-reset, .btn-export {
+        height: 50px;
+        padding: 0 1.5rem;
+        font-weight: 600;
+        border-radius: 8px;
+        border: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 110px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-filter {
+        background: linear-gradient(135deg, #6f42c1 0%, #8e24aa 100%);
+        color: #fff;
+    }
+    
+    .btn-filter:hover {
+        background: linear-gradient(135deg, #5a2d8c 0%, #7b1fa2 100%);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+    
+    .btn-reset {
+        background: #6c757d;
+        color: #fff;
+    }
+    
+    .btn-reset:hover {
+        background: #545b62;
+        color: #fff;
+        transform: translateY(-1px);
+    }
+    
+    .btn-export {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: #fff;
+    }
+    
+    .btn-export:hover {
+        background: linear-gradient(135deg, #218838 0%, #1ea97c 100%);
+        color: #fff;
+        transform: translateY(-1px);
+    }
+    
+    @media (max-width: 1200px) {
+        .filter-col {
+            min-width: 180px;
+        }
+        
+        .filter-col.filter-buttons {
+            flex: 1 1 100%;
+            justify-content: flex-start;
+            margin-top: 0.5rem;
+        }
     }
     
     .evaluation-card {
@@ -100,25 +222,6 @@
         color: #6c757d;
     }
     
-    .form-select {
-        border: 2px solid #ced4da;
-        border-radius: 8px;
-        padding: 0.75rem 1rem;
-        font-size: 0.9rem;
-        transition: all 0.3s ease;
-    }
-    
-    .form-select:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 0 0.25rem rgba(13,110,253,.15);
-    }
-    
-    .form-label {
-        font-weight: 600;
-        color: #495057;
-        margin-bottom: 0.5rem;
-    }
-    
     .checkmark {
         color: #28a745;
         font-size: 1.1rem;
@@ -155,36 +258,6 @@
         padding: 3rem;
         color: #6c757d;
     }
-    
-    .btn-filter {
-        background: linear-gradient(135deg, #6f42c1 0%, #8e24aa 100%);
-        border: none;
-        color: #fff;
-        font-weight: 600;
-        padding: 0.75rem 1.5rem;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-filter:hover {
-        background: linear-gradient(135deg, #5a2d8c 0%, #7b1fa2 100%);
-        color: #fff;
-    }
-    
-    .btn-reset {
-        background: #6c757d;
-        border: none;
-        color: #fff;
-        font-weight: 600;
-        padding: 0.75rem 1.5rem;
-        border-radius: 8px;
-        transition: all 0.3s ease;
-    }
-    
-    .btn-reset:hover {
-        background: #545b62;
-        color: #fff;
-    }
 </style>
 @endpush
 
@@ -208,11 +281,11 @@
             <div class="card-body">
                 <!-- Filter Section -->
                 <div class="filter-section">
-                    <h6 class="mb-3">Filter Evaluasi</h6>
+                    <h6 class="mb-3"><i class="fas fa-filter me-2"></i>Filter Evaluasi</h6>
                     <form method="GET" action="{{ route('evaluation.index') }}">
-                        <div class="row">
-                            <div class="col-md-3 mb-3">
-                                <label for="user_id" class="form-label">Pilih Karyawan:</label>
+                        <div class="filter-row">
+                            <div class="filter-col">
+                                <label for="user_id" class="form-label">Pilih Karyawan</label>
                                 <select name="user_id" id="user_id" class="form-select">
                                     <option value="">Semua Karyawan</option>
                                     @foreach($users as $user)
@@ -222,8 +295,21 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="evaluator_id" class="form-label">Pilih Penilai:</label>
+                            
+                            <div class="filter-col">
+                                <label for="branch_id" class="form-label">Pilih Branch</label>
+                                <select name="branch_id" id="branch_id" class="form-select">
+                                    <option value="">Semua Branch</option>
+                                    @foreach($branches as $branch)
+                                        <option value="{{ $branch->id }}" {{ request('branch_id') == $branch->id ? 'selected' : '' }}>
+                                            {{ $branch->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            
+                            <div class="filter-col">
+                                <label for="evaluator_id" class="form-label">Pilih Penilai</label>
                                 <select name="evaluator_id" id="evaluator_id" class="form-select">
                                     <option value="">Semua Penilai</option>
                                     @foreach($evaluators as $evaluator)
@@ -233,22 +319,27 @@
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-3 mb-3">
-                                <label for="cw" class="form-label">Pilih Caturwulan:</label>
+                            
+                            <div class="filter-col">
+                                <label for="cw" class="form-label">Pilih Caturwulan</label>
                                 <select name="cw" id="cw" class="form-select">
                                     <option value="">Semua Periode</option>
-                                    <option value="CW 1" {{ request('cw') == 'CW 1' ? 'selected' : '' }}>CW 1 (Januari–April)</option>
-                                    <option value="CW 2" {{ request('cw') == 'CW 2' ? 'selected' : '' }}>CW 2 (Mei–Agustus)</option>
-                                    <option value="CW 3" {{ request('cw') == 'CW 3' ? 'selected' : '' }}>CW 3 (September–Desember)</option>
+                                    <option value="CW 1" {{ request('cw') == 'CW 1' ? 'selected' : '' }}>CW 1 (Jan–Apr)</option>
+                                    <option value="CW 2" {{ request('cw') == 'CW 2' ? 'selected' : '' }}>CW 2 (Mei–Ags)</option>
+                                    <option value="CW 3" {{ request('cw') == 'CW 3' ? 'selected' : '' }}>CW 3 (Sep–Des)</option>
                                 </select>
                             </div>
-                            <div class="col-md-3 mb-3 d-flex align-items-end">
-                                <button type="submit" class="btn btn-filter me-2">
-                                    <i class="fas fa-filter me-2"></i>Filter
+                            
+                            <div class="filter-col filter-buttons">
+                                <button type="submit" class="btn-filter">
+                                    <i class="fas fa-search me-2"></i>Filter
                                 </button>
-                                <a href="{{ route('evaluation.index') }}" class="btn btn-reset">
+                                <a href="{{ route('evaluation.index') }}" class="btn-reset">
                                     <i class="fas fa-undo me-2"></i>Reset
                                 </a>
+                                <button type="button" class="btn-export" onclick="exportToExcel()">
+                                    <i class="fas fa-file-excel me-2"></i>Export
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -272,8 +363,8 @@
                                         <i class="fas fa-calendar me-2"></i>{{ $evaluation->quarter }}
                                     </div>
                                     <div class="col-md-3">
-                                        <strong>Tanggal:</strong><br>
-                                        <i class="fas fa-clock me-2"></i>{{ $evaluation->created_at->format('d/m/Y H:i') }}
+                                        <strong>Tanggal Evaluasi:</strong><br>
+                                        <i class="fas fa-calendar me-2"></i>{{ $evaluation->created_at }}
                                     </div>
                                 </div>
                             </div>
@@ -358,7 +449,7 @@
                                 </div>
 
                                 <!-- Summary Table -->
-                                <div class="table-container mt-5">
+                                <div class="table-container">
                                     <div class="table-responsive">
                                         <table class="table table-bordered table-sm">
                                             <thead>
@@ -395,8 +486,10 @@
                                                     <td class="score-total">
                                                         @php
                                                             // Logika rating yang lebih akurat dengan setengah bintang
-                                                            $fullStars = floor($totalWeightedScore);
-                                                            $hasHalfStar = ($totalWeightedScore - $fullStars) >= 0.5;
+                                                            // Gunakan pembulatan ke 0.5 terdekat
+                                                            $rating = round($totalWeightedScore * 2) / 2; // Membulatkan ke 0.5 terdekat
+                                                            $fullStars = floor($rating);
+                                                            $hasHalfStar = ($rating - $fullStars) >= 0.5;
                                                             $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
                                                         @endphp
                                                         
@@ -428,22 +521,25 @@
                     <div class="card mt-4">
                         <div class="card-body">
                             <h6 class="mb-3">Keterangan Rating:</h6>
+                            <p class="mb-2 text-muted"><small>Rating dibulatkan ke 0.5 terdekat</small></p>
                             <div class="row">
                                 <div class="col-md-6">
                                     <ul style="list-style-type: none; padding-left: 0;">
-                                        <li class="mb-2"><span class="star-filled">★ ★ ★ ★ ★</span> (5.0): Excellent</li>
-                                        <li class="mb-2"><span class="star-filled">★ ★ ★ ★</span><span class="star-half">★</span> (4.5): Excellent</li>
-                                        <li class="mb-2"><span class="star-filled">★ ★ ★ ★</span><span class="star-empty">★</span> (4.0): Very Good</li>
-                                        <li class="mb-2"><span class="star-filled">★ ★ ★</span><span class="star-half">★</span><span class="star-empty">★</span> (3.5): Very Good</li>
+                                        <li class="mb-2"><span class="star-filled">★ ★ ★ ★ ★</span> (4.75-5.0): Excellent</li>
+                                        <li class="mb-2"><span class="star-filled">★ ★ ★ ★</span><span class="star-half">★</span> (4.25-4.74): Excellent</li>
+                                        <li class="mb-2"><span class="star-filled">★ ★ ★ ★</span><span class="star-empty">★</span> (3.75-4.24): Very Good</li>
+                                        <li class="mb-2"><span class="star-filled">★ ★ ★</span><span class="star-half">★</span><span class="star-empty">★</span> (3.25-3.74): Very Good</li>
+                                        <li class="mb-2"><span class="star-filled">★ ★ ★</span><span class="star-empty">★ ★</span> (2.75-3.24): Good</li>
+                                        <li class="mb-2"><span class="star-filled">★ ★</span><span class="star-half">★</span><span class="star-empty">★ ★</span> (2.25-2.74): Good</li>
                                     </ul>
                                 </div>
                                 <div class="col-md-6">
                                     <ul style="list-style-type: none; padding-left: 0;">
-                                        <li class="mb-2"><span class="star-filled">★ ★ ★</span><span class="star-empty">★ ★</span> (3.0): Good</li>
-                                        <li class="mb-2"><span class="star-filled">★ ★</span><span class="star-half">★</span><span class="star-empty">★ ★</span> (2.5): Good</li>
-                                        <li class="mb-2"><span class="star-filled">★ ★</span><span class="star-empty">★ ★ ★</span> (2.0): Fair</li>
-                                        <li class="mb-2"><span class="star-filled">★</span><span class="star-half">★</span><span class="star-empty">★ ★ ★</span> (1.5): Fair</li>
-                                        <li class="mb-2"><span class="star-filled">★</span><span class="star-empty">★ ★ ★ ★</span> (1.0): Poor</li>
+                                        <li class="mb-2"><span class="star-filled">★ ★</span><span class="star-empty">★ ★ ★</span> (1.75-2.24): Fair</li>
+                                        <li class="mb-2"><span class="star-filled">★</span><span class="star-half">★</span><span class="star-empty">★ ★ ★</span> (1.25-1.74): Fair</li>
+                                        <li class="mb-2"><span class="star-filled">★</span><span class="star-empty">★ ★ ★ ★</span> (0.75-1.24): Poor</li>
+                                        <li class="mb-2"><span class="star-half">★</span><span class="star-empty">★ ★ ★ ★</span> (0.25-0.74): Poor</li>
+                                        <li class="mb-2"><span class="star-empty">★ ★ ★ ★ ★</span> (0.0-0.24): Poor</li>
                                     </ul>
                                 </div>
                             </div>

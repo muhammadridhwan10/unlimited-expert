@@ -7,6 +7,10 @@ use App\Models\EvaluationDetail;
 use App\Models\User;
 use App\Models\Attribute;
 use Illuminate\Http\Request;
+use App\Models\Employee;
+use App\Models\Branch;
+use App\Exports\EvaluationExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EvaluationController extends Controller
 {
@@ -17,11 +21,18 @@ class EvaluationController extends Controller
         if(\Auth::user()->type == 'company')
         {
             // Query untuk admin - bisa melihat semua evaluasi
-            $query = Evaluation::with(['details', 'evaluator', 'evaluatee']);
+            $query = Evaluation::with(['details', 'evaluator', 'evaluatee', 'evaluatee.employee']);
 
             // Filter berdasarkan user yang dipilih
             if ($request->has('user_id') && $request->user_id != '') {
                 $query->where('evaluatee_id', $request->user_id);
+            }
+
+            // Filter berdasarkan branch
+            if ($request->has('branch_id') && $request->branch_id != '') {
+                $query->whereHas('evaluatee.employee', function($q) use ($request) {
+                    $q->where('branch_id', $request->branch_id);
+                });
             }
 
             // Filter berdasarkan caturwulan jika ada request
@@ -47,7 +58,10 @@ class EvaluationController extends Controller
                             ->orderBy('name', 'asc')
                             ->get();
 
-            return view('evaluation.admin.index', compact('evaluations', 'users', 'evaluators'));
+            // Ambil daftar branch untuk filter dropdown
+            $branches = Branch::orderBy('name', 'asc')->get();
+
+            return view('evaluation.admin.index', compact('evaluations', 'users', 'evaluators', 'branches'));
         }
         else
         {
@@ -250,4 +264,58 @@ class EvaluationController extends Controller
                 ->with('error', 'Terjadi kesalahan saat menghapus penilaian: ' . $e->getMessage());
         }
     }
+
+    public function export(Request $request)
+    {
+        // Validasi bahwa hanya admin yang bisa export
+        if(auth()->user()->type != 'company') {
+            return redirect()->back()->with('error', 'Unauthorized access');
+        }
+
+        // Query yang sama dengan index tapi untuk export
+        $query = Evaluation::with(['details', 'evaluator', 'evaluatee', 'evaluatee.employee', 'evaluatee.employee.branch']);
+
+        // Filter berdasarkan user yang dipilih
+        if ($request->has('user_id') && $request->user_id != '') {
+            $query->where('evaluatee_id', $request->user_id);
+        }
+
+        // Filter berdasarkan branch
+        if ($request->has('branch_id') && $request->branch_id != '') {
+            $query->whereHas('evaluatee.employee', function($q) use ($request) {
+                $q->where('branch_id', $request->branch_id);
+            });
+        }
+
+        // Filter berdasarkan caturwulan
+        if ($request->has('cw') && in_array($request->cw, ['CW 1', 'CW 2', 'CW 3'])) {
+            $query->where('quarter', $request->cw);
+        }
+
+        // Filter berdasarkan evaluator
+        if ($request->has('evaluator_id') && $request->evaluator_id != '') {
+            $query->where('evaluator_id', $request->evaluator_id);
+        }
+
+        $evaluations = $query->orderBy('created_at', 'desc')->get();
+
+        // Generate filename dengan timestamp dan filter info
+        $filename = 'evaluation_report_' . date('Y-m-d_H-i-s');
+        
+        if ($request->cw) {
+            $filename .= '_' . str_replace(' ', '', $request->cw);
+        }
+        
+        if ($request->branch_id) {
+            $branch = Branch::find($request->branch_id);
+            if ($branch) {
+                $filename .= '_' . str_replace(' ', '_', $branch->name);
+            }
+        }
+        
+        $filename .= '.xlsx';
+
+        return Excel::download(new EvaluationExport($evaluations, $request->all()), $filename);
+    }
+
 }

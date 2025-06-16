@@ -421,8 +421,10 @@
                                     <td class="score-total">
                                         @php
                                             // Logika rating yang lebih akurat dengan setengah bintang
-                                            $fullStars = floor($totalWeightedScore);
-                                            $hasHalfStar = ($totalWeightedScore - $fullStars) >= 0.5;
+                                            // Gunakan pembulatan ke 0.5 terdekat
+                                            $rating = round($totalWeightedScore * 2) / 2; // Membulatkan ke 0.5 terdekat
+                                            $fullStars = floor($rating);
+                                            $hasHalfStar = ($rating - $fullStars) >= 0.5;
                                             $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0);
                                         @endphp
                                         
@@ -447,16 +449,19 @@
                                     <td colspan="2" class="text-start">
                                         <div class="mt-3">
                                             <p class="mb-1"><strong>Keterangan Rating:</strong></p>
+                                            <p class="mb-2 text-muted"><small>Rating dibulatkan ke 0.5 terdekat</small></p>
                                             <ul style="list-style-type: none; padding-left: 0;">
-                                                <li><span class="star-filled">★ ★ ★ ★ ★</span> (5.0): Excellent</li>
-                                                <li><span class="star-filled">★ ★ ★ ★</span><span class="star-half">★</span> (4.5): Excellent</li>
-                                                <li><span class="star-filled">★ ★ ★ ★</span><span class="star-empty">★</span> (4.0): Very Good</li>
-                                                <li><span class="star-filled">★ ★ ★</span><span class="star-half">★</span><span class="star-empty">★</span> (3.5): Very Good</li>
-                                                <li><span class="star-filled">★ ★ ★</span><span class="star-empty">★ ★</span> (3.0): Good</li>
-                                                <li><span class="star-filled">★ ★</span><span class="star-half">★</span><span class="star-empty">★ ★</span> (2.5): Good</li>
-                                                <li><span class="star-filled">★ ★</span><span class="star-empty">★ ★ ★</span> (2.0): Fair</li>
-                                                <li><span class="star-filled">★</span><span class="star-half">★</span><span class="star-empty">★ ★ ★</span> (1.5): Fair</li>
-                                                <li><span class="star-filled">★</span><span class="star-empty">★ ★ ★ ★</span> (1.0): Poor</li>
+                                                <li><span class="star-filled">★ ★ ★ ★ ★</span> (4.75-5.0): Excellent</li>
+                                                <li><span class="star-filled">★ ★ ★ ★</span><span class="star-half">★</span> (4.25-4.74): Excellent</li>
+                                                <li><span class="star-filled">★ ★ ★ ★</span><span class="star-empty">★</span> (3.75-4.24): Very Good</li>
+                                                <li><span class="star-filled">★ ★ ★</span><span class="star-half">★</span><span class="star-empty">★</span> (3.25-3.74): Very Good</li>
+                                                <li><span class="star-filled">★ ★ ★</span><span class="star-empty">★ ★</span> (2.75-3.24): Good</li>
+                                                <li><span class="star-filled">★ ★</span><span class="star-half">★</span><span class="star-empty">★ ★</span> (2.25-2.74): Good</li>
+                                                <li><span class="star-filled">★ ★</span><span class="star-empty">★ ★ ★</span> (1.75-2.24): Fair</li>
+                                                <li><span class="star-filled">★</span><span class="star-half">★</span><span class="star-empty">★ ★ ★</span> (1.25-1.74): Fair</li>
+                                                <li><span class="star-filled">★</span><span class="star-empty">★ ★ ★ ★</span> (0.75-1.24): Poor</li>
+                                                <li><span class="star-half">★</span><span class="star-empty">★ ★ ★ ★</span> (0.25-0.74): Poor</li>
+                                                <li><span class="star-empty">★ ★ ★ ★ ★</span> (0.0-0.24): Poor</li>
                                             </ul>
                                         </div>
                                     </td>
