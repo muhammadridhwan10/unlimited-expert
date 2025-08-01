@@ -30,4 +30,9 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'n8n' => [
+        'webhook_url' => env('N8N_WEBHOOK_URL', 'https://dev.au-partners.com/webhook-test/document-processing'),
+        'api_key' => env('N8N_API_KEY', ''),
+    ],
+
 ];

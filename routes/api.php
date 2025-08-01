@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\DocumentCallbackController;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,4 +52,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 
 	
+});
+
+Route::middleware('api')->group(function () {
+    Route::post('/ai-accounting/{id}/callback', [DocumentCallbackController::class, 'callback'])
+         ->name('api.ai-accounting.callback');
 });
