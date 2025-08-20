@@ -12,6 +12,43 @@
 
     <link rel="stylesheet" href="{{ asset('css/site.css') }}" id="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    
+    <!-- Minimal additional styles for better feedback -->
+    <style>
+        .alert-enhanced {
+            border: none;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .alert-success-enhanced {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border-left: 5px solid #28a745;
+        }
+        
+        .alert-error-enhanced {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border-left: 5px solid #dc3545;
+        }
+        
+        .btn-submit {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-submit:disabled {
+            background: #6c757d !important;
+            cursor: not-allowed;
+        }
+        
+        .loading-text {
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
@@ -80,18 +117,52 @@
                 <div class="col-lg-8 justify-content-center">
                     <div class="card">
                         <div class="card-body">
-                            {{Form::open(array('route'=>array('job.apply.data',$job->code),'method'=>'post', 'enctype' => "multipart/form-data"))}}
+                            {{Form::open(array('route'=>array('job.apply.data',$job->code),'method'=>'post', 'enctype' => "multipart/form-data", 'id' => 'applicationForm'))}}
+                            
+                            <!-- Enhanced Success Message -->
                             @if (session('success'))
-                                <div class="alert alert-success">
-                                    {{ session('success') }}
+                                <div class="alert alert-success-enhanced alert-enhanced">
+                                    <div style="display: flex; align-items: center;">
+                                        <i class="ti ti-check-circle" style="font-size: 24px; margin-right: 15px;"></i>
+                                        <div>
+                                            <h5 style="margin: 0 0 5px 0;"><strong>Aplikasi Berhasil Dikirim!</strong></h5>
+                                            <p style="margin: 0;">{{ session('success') }}</p>
+                                            <p style="margin: 5px 0 0 0; font-size: 14px;">Tim rekrutmen kami akan menghubungi Anda dalam 1-2 minggu ke depan.</p>
+                                        </div>
+                                    </div>
                                 </div>
                             @endif
 
+                            <!-- Enhanced Error Message -->
                             @if (session('error'))
-                                <div class="alert alert-danger">
-                                    {{ session('error') }}
+                                <div class="alert alert-error-enhanced alert-enhanced">
+                                    <div style="display: flex; align-items: center;">
+                                        <i class="ti ti-alert-circle" style="font-size: 24px; margin-right: 15px;"></i>
+                                        <div>
+                                            <h5 style="margin: 0 0 5px 0;"><strong>Terjadi Kesalahan!</strong></h5>
+                                            <p style="margin: 0;">{{ session('error') }}</p>
+                                        </div>
+                                    </div>
                                 </div>
                             @endif
+
+                            <!-- Validation Errors -->
+                            @if ($errors->any())
+                                <div class="alert alert-error-enhanced alert-enhanced">
+                                    <div style="display: flex; align-items: flex-start;">
+                                        <i class="ti ti-alert-triangle" style="font-size: 24px; margin-right: 15px; margin-top: 2px;"></i>
+                                        <div>
+                                            <h5 style="margin: 0 0 10px 0;"><strong>Mohon Periksa Data Anda</strong></h5>
+                                            <ul style="margin: 0; padding-left: 20px;">
+                                                @foreach ($errors->all() as $error)
+                                                    <li>{{ $error }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                            
                             <div class="row">
                                 <div class="form-group col-md-6">
                                     {{Form::label('name',__('Name'),['class'=>'form-label'])}}<span class="text-danger">*</span>
@@ -297,7 +368,12 @@
                                 {{Form::hidden('selected_city', '', array('id' => 'selected_city'))}}
                                 <div class="col-12">
                                     <div class="text-center mt-4">
-                                        <button type="submit" class="btn btn-primary">{{__('Submit your application')}}</button>
+                                        <button type="submit" class="btn btn-primary btn-submit" id="submitBtn">
+                                            <span class="normal-text">{{__('Submit your application')}}</span>
+                                            <span class="loading-text">
+                                                <i class="ti ti-loader"></i> Mengirim Aplikasi...
+                                            </span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -387,6 +463,24 @@
             template: '<div class="alert alert-{0} alert-icon alert-group alert-notify" data-notify="container" role="alert"><div class="alert-group-prepend alert-content"><span class="alert-group-icon"><i data-notify="icon"></i></span></div><div class="alert-content"><strong data-notify="title">{1}</strong><div data-notify="message">{2}</div></div><button type="button" class="close" data-notify="dismiss" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>'
         });
     }
+    
+    // Minimal form submission enhancement
+    $(document).ready(function() {
+        $('#applicationForm').on('submit', function(e) {
+            var submitBtn = $('#submitBtn');
+            var normalText = submitBtn.find('.normal-text');
+            var loadingText = submitBtn.find('.loading-text');
+            
+            // Show loading state
+            submitBtn.prop('disabled', true);
+            normalText.hide();
+            loadingText.show();
+            
+            // Show immediate feedback
+            show_toastr('Info', 'Sedang mengirim aplikasi Anda...', 'info');
+        });
+    });
+    
     if ($(".datepicker").length) {
         $('.datepicker').daterangepicker({
             singleDatePicker: true,
