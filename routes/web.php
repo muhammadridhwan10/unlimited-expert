@@ -4,8 +4,11 @@ use App\Models\Utility;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectReportController;
 use App\Http\Controllers\ProjectOrdersController;
+use App\Http\Controllers\AuditToolsController;
 use Illuminate\Http\Request;
 use App\Models\ProjectTask;
+use App\Services\GoogleDriveWorkspaceService;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -352,6 +355,17 @@ Route::resource('product-category', 'ProductServiceCategoryController')->middlew
         'revalidate',
     ]
 );
+
+Route::resource('project-service', 'ProjectServiceController')->middleware(
+    [
+        'auth',
+        'XSS',
+        'revalidate',
+    ]
+);
+
+Route::get('project-service/{serviceType}/toggle-status', [App\Http\Controllers\ProjectServiceController::class, 'toggleStatus'])
+         ->name('project-service.toggle-status');
 
 Route::resource('product-unit', 'ProductServiceUnitController')->middleware(
     [
@@ -2751,6 +2765,176 @@ Route::delete(
 // );
 
 
+Route::get('audit-tools', 'AuditToolsController@index')->name('audit-tools.index')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get(
+    'audit-tools/project/{project}', [
+                                 'as' => 'audit-tools.project',
+                                 'uses' => 'AuditToolsController@show',
+                             ]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::get(
+    'audit-tools/project/{project}/folders/tree', [
+                                 'as' => 'audit-tools.folders.tree',
+                                 'uses' => 'AuditToolsController@getFolderTree',
+                             ]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post(
+    'audit-tools/project/{project}/files/upload', [
+                                 'as' => 'audit-tools.files.upload',
+                                 'uses' => 'AuditToolsController@uploadFiles',
+                             ]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post(
+    'audit-tools/project/{project}/folders', [
+                                 'as' => 'audit-tools.folders.create',
+                                 'uses' => 'AuditToolsController@createFolder',
+                             ]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::put(
+    'audit-tools/project/{project}/folders/{folder}', [
+                                 'as' => 'audit-tools.folders.update',
+                                 'uses' => 'AuditToolsController@updateFolder',
+                             ]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::delete(
+    'audit-tools/project/{project}/folders/{folder}', [
+                                 'as' => 'audit-tools.folders.delete',
+                                 'uses' => 'AuditToolsController@deleteFolder',
+                             ]
+)->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+
+// File operations
+Route::put('audit-tools/project/{project}/files/{file}', 'AuditToolsController@updateFile')->name('audit-tools.files.update')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::delete('audit-tools/project/{project}/files/{file}', 'AuditToolsController@deleteFile')->name('audit-tools.files.delete')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('audit-tools/project/{project}/files/{file}/preview', 'AuditToolsController@previewFile')->name('audit-tools.files.preview')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::get('audit-tools/project/{project}/files/{file}/download', 'AuditToolsController@downloadFile')->name('audit-tools.files.download')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+
+Route::post(
+    'audit-tools/project/{project}/move', [
+        'as' => 'audit-tools.move',
+        'uses' => 'AuditToolsController@moveItem',
+    ]
+)->middleware(['auth', 'XSS']);
+
+Route::prefix('audit-tools')->name('audit-tools.')->middleware(['auth'])->group(function () {
+    Route::get('/', [AuditToolsController::class, 'index'])->name('index');
+    Route::get('/{project}', [AuditToolsController::class, 'show'])->name('project');
+    
+    // Folder management
+    Route::post('/{project}/folders', [AuditToolsController::class, 'createFolder'])->name('folders.create');
+    Route::put('/{project}/folders/{folder}', [AuditToolsController::class, 'updateFolder'])->name('folders.update');
+    Route::delete('/{project}/folders/{folder}', [AuditToolsController::class, 'deleteFolder'])->name('folders.delete');
+    Route::get('/{project}/folders/tree', [AuditToolsController::class, 'getFolderTree'])->name('folders.tree');
+    
+    // File management
+    Route::post('/{project}/files/upload', [AuditToolsController::class, 'uploadFiles'])->name('files.upload');
+    Route::put('/{project}/files/{file}', [AuditToolsController::class, 'updateFile'])->name('files.update');
+    Route::delete('/{project}/files/{file}', [AuditToolsController::class, 'deleteFile'])->name('files.delete');
+    Route::get('/{project}/files/{file}/preview', [AuditToolsController::class, 'previewFile'])->name('files.preview');
+    Route::get('/{project}/files/{file}/download', [AuditToolsController::class, 'downloadFile'])->name('files.download');
+    
+    // Google Drive integration
+    Route::get('/{project}/open/{itemType}/{itemId}', [AuditToolsController::class, 'openInGoogleDrive'])->name('google-drive.open');
+    Route::get('/{project}/info/{itemType}/{itemId}', [AuditToolsController::class, 'getItemInfo'])->name('item.info');
+    
+    // Move items
+    Route::post('/{project}/move', [AuditToolsController::class, 'moveItem'])->name('item.move');
+    
+    // Templates
+    Route::get('/{project}/templates', [AuditToolsController::class, 'getTemplates'])->name('templates.list');
+    Route::post('/{project}/template/apply', [AuditToolsController::class, 'createFromTemplate'])->name('templates.apply');
+    
+    // Activity
+    Route::get('/{project}/activity', [AuditToolsController::class, 'getActivityLog'])->name('activity.log');
+    
+    // Google Drive sync
+    Route::post('/{project}/sync-with-google-drive', [AuditToolsController::class, 'syncWithGoogleDrive'])->name('sync.manual');
+    Route::get('/{project}/sync-status', [AuditToolsController::class, 'getSyncStatus'])->name('sync.status');
+    Route::post('/{project}/files/{file}/retry-sync', [AuditToolsController::class, 'retrySyncFile'])->name('files.retry-sync');
+});
+
+Route::prefix('projects')->name('projects.')->middleware(['auth'])->group(function () {
+    Route::post('/{project}/refresh-folder-sheet', [ProjectController::class, 'refreshFolderSheet'])->name('refresh-folder-sheet');
+    Route::post('/{project}/sync-google-drive-to-audit-tools', [ProjectController::class, 'syncGoogleDriveToAuditTools'])->name('sync-to-audit-tools');
+});
+
+Route::post(
+    'audit-tools/project/{project}/template/apply', [
+        'as' => 'audit-tools.template.apply',
+        'uses' => 'AuditToolsController@createFromTemplate',
+    ]
+)->middleware(['auth', 'XSS']);
+
+Route::get(
+    'audit-tools/project/{project}/activity', [
+        'as' => 'audit-tools.activity',
+        'uses' => 'AuditToolsController@getActivityLog',
+    ]
+)->middleware(['auth', 'XSS']);
+
+
+
 
 
 
@@ -2850,6 +3034,9 @@ Route::post(
         'XSS',
     ]
 );
+Route::get('/projects/activity', 'ProjectController@filterProjectActivity')->name('projects.activity.filter');
+Route::get('/projects/activity/export', 'ProjectController@exportProjectActivity')->name('projects.activity.export');
+Route::get('projects/activity/clear-cache', 'ProjectController::class@clearActivityCache')->name('projects.activity.clear_cache');
 Route::resource('projects', 'ProjectController')->middleware(
     [
         'auth',
@@ -4684,3 +4871,121 @@ Route::post('reminders', 'ReminderController@store')->middleware(
 )->name('planning.reminders');
 Route::get('/project/{projectId}/users', 'ProjectController@getProjectUsers')->name('get.project.users');
 Route::get('/projects/{id}/report-data', 'ProjectController@reportData')->name('project.report.data');
+
+// Routes untuk Psychotest System
+Route::middleware(['auth'])->group(function () {
+    // Test Categories Management
+    Route::resource('psychotest-category', 'PsychotestCategoryController');
+    Route::get('psychotest-category/{id}/toggle-status', 'PsychotestCategoryController@toggleStatus')->name('psychotest-category.toggle-status');
+    Route::get('psychotest-category-seed-defaults', 'PsychotestCategoryController@seedDefaults')->name('psychotest-category.seed-defaults');
+
+    Route::get('/psychotest-result', 'PsychotestResultController@index')->name('psychotest-result.index');
+    Route::get('/psychotest-result/{id}', 'PsychotestResultController@show')->name('psychotest-result.show');
+    Route::get('/psychotest-result/{scheduleId}/category/{categoryId}', 'PsychotestResultController@showByCategory')->name('psychotest-result.category');
+    Route::get('/psychotest-result/{id}/export/{format?}', 'PsychotestResultController@export')->name('psychotest-result.export');
+    Route::post('/psychotest-result/compare', 'PsychotestResultController@compare')->name('psychotest-result.compare');
+    
+    // Psychotest Schedule Management
+    Route::resource('psychotest-schedule', 'PsychotestScheduleController');
+    Route::get('psychotest-schedule/{id}/cancel', 'PsychotestScheduleController@cancel')->name('psychotest-schedule.cancel');
+    Route::get('psychotest-schedule/{id}/resend-email', 'PsychotestScheduleController@resendEmail')->name('psychotest-schedule.resend-email');
+   Route::get('psychotest-categories/by-candidate/{candidateId}', 'PsychotestScheduleController@getCategoriesForCandidate')->name('psychotest.categories-by-candidate');
+    
+    // Psychotest Question Management
+    Route::resource('psychotest-question', 'PsychotestQuestionController');
+    Route::get('psychotest-question/{id}/toggle-status', 'PsychotestQuestionController@toggleStatus')->name('psychotest-question.toggle-status');
+    Route::get('psychotest-question/category/{categoryId}', 'PsychotestQuestionController@getByCategory')->name('psychotest-question.by-category');
+    Route::post('psychotest-question-import', 'PsychotestQuestionController@import')->name('psychotest-question.import');
+    Route::get('psychotest-question-sample', 'PsychotestQuestionController@downloadSample')->name('psychotest-question.sample');
+    Route::post('psychotest-question-preview', 'PsychotestQuestionController@preview')->name('psychotest-question.preview');
+    Route::post('psychotest-question-cleanup', 'PsychotestQuestionController@cleanupTemp')->name('psychotest-question.cleanup');
+    
+    // Add Psychotest Schedule from Job Application
+    Route::get('job-application/{id}/psychotest-schedule', 'PsychotestScheduleController@create')->name('job-application.psychotest-schedule.create');
+});
+
+// Public Test Routes (No authentication required)
+Route::prefix('psychotest')->name('psychotest.test.')->group(function () {
+    // Authentication
+    Route::get('login', 'PsychotestTestController@login')->name('login');
+    Route::post('authenticate', 'PsychotestTestController@authenticate')->name('authenticate');
+    
+    // Test Flow
+    Route::get('start', 'PsychotestTestController@start')->name('start');
+    Route::post('start-test', 'PsychotestTestController@startTest')->name('start-test');
+    Route::get('overview', 'PsychotestTestController@overview')->name('overview');
+    
+    // Instructions before each category
+    Route::get('instructions/{categoryCode}', 'PsychotestTestController@showInstructions')->name('instructions');
+    
+    // Test Categories - This will check for 'start' parameter
+    Route::get('category/{categoryCode}', 'PsychotestTestController@startCategory')->name('category');
+    
+    // Direct test start (bypassing instructions) - for continuing tests
+    Route::get('test/{categoryCode}', 'PsychotestTestController@directStartCategory')->name('direct-category');
+    
+    // Answer Management
+    Route::post('save-answer', 'PsychotestTestController@saveAnswer')->name('save-answer');
+    Route::post('save-kraeplin-answer', 'PsychotestTestController@saveKraeplinAnswer')->name('save-kraeplin-answer');
+    
+    // Test Submission
+    Route::post('submit', 'PsychotestTestController@submitTest')->name('submit');
+    
+    // Completion & Logout
+    Route::get('completed', 'PsychotestTestController@completed')->name('completed');
+    Route::get('logout', 'PsychotestTestController@logout')->name('logout');
+});
+
+    Route::post('save-answer', 'PsychotestTestController@saveAnswer')->name('psychotest.test.save-answer');
+    Route::post('save-kraeplin-answer', 'PsychotestTestController@saveKraeplinAnswer')->name('psychotest.test.save-kraeplin-answer');
+
+
+// Shortcut aliases untuk backward compatibility (jika diperlukan)
+Route::post('psychotest/save-answer', 'PsychotestTestController@saveAnswer')->name('psychotest.save-answer');
+Route::post('psychotest/save-kraeplin-answer', 'PsychotestTestController@saveKraeplinAnswer')->name('psychotest.save-kraeplin-answer');
+
+Route::resource('ai-accounting', 'AiAccountingController');
+Route::post('/{id}/generate', 'AiAccountingController@generate')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+)->name('ai-accounting.generate');
+Route::get('/{id}/status', 'AiAccountingController@status')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+)->name('ai-accounting.status');
+Route::get('/ai-accounting/{id}/download', 'AiAccountingController@downloadExcel')
+    ->middleware(['auth', 'XSS'])
+    ->name('ai-accounting.download');
+
+Route::resource('accounting-journals', 'AccountingJournalController');
+
+Route::post('/coa/upload', 'AccountingJournalController@uploadCoa')->name('coa.upload');
+
+// Journal Routes
+Route::post('/journal/{document}/generate', 'AccountingJournalController@generateJournals')
+     ->name('journal.generate');
+Route::get('/journal/{document}/export', 'AccountingJournalController@exportJournals')
+     ->name('journal.export');
+Route::get('/journal/{document}/show', 'AccountingJournalController@show')
+     ->name('journal.show');
+
+// Route untuk refresh FOLDER sheet
+Route::post('/projects/{id}/refresh-folder-sheet', 'ProjectController@refreshFolderSheet')
+    ->name('projects.refresh-folder-sheet');
+
+// Route untuk update Google Drive files (existing UpdateFiles equivalent)
+Route::post('/projects/{id}/update-google-drive-files', 'ProjectController@updateGoogleDriveFiles')
+    ->name('projects.update-google-drive-files');
+
+Route::post('audit-tools/project/{project}/sync-with-google-drive', 'AuditToolsController@syncWithGoogleDrive')
+    ->name('audit-tools.sync-with-google-drive')->middleware(['auth', 'XSS']);
+
+Route::get('audit-tools/project/{project}/sync-status', 'AuditToolsController@getSyncStatus')
+    ->name('audit-tools.sync-status')->middleware(['auth', 'XSS']);
+
+Route::post('audit-tools/project/{project}/files/{file}/retry-sync', 'AuditToolsController@retrySyncFile')
+    ->name('audit-tools.files.retry-sync')->middleware(['auth', 'XSS']);
