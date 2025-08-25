@@ -1643,7 +1643,8 @@ class PsychotestTestController extends Controller
         if ($score >= 75 && $speed >= 150 && $accuracy >= 80) return 'B'; 
         if ($score >= 65 && $speed >= 100 && $accuracy >= 70) return 'C';
         if ($score >= 55 && $speed >= 50 && $accuracy >= 60) return 'D';
-        return 'E';
+        if ($score >= 45 && $speed >= 20 && $accuracy >= 50) return 'E';
+        return 'F';
     }
 
     private function getKraeplinInterpretation($score, $speed, $accuracy, $consistency)
@@ -2120,10 +2121,11 @@ class PsychotestTestController extends Controller
 
     private function calculateGrade($percentage)
     {
-        if ($percentage >= 90) return 'A';
-        if ($percentage >= 80) return 'B';
-        if ($percentage >= 70) return 'C';
-        if ($percentage >= 60) return 'D';
+        if ($percentage >= 85) return 'A';
+        if ($percentage >= 75) return 'B';
+        if ($percentage >= 65) return 'C';
+        if ($percentage >= 55) return 'D';
+        if ($percentage >= 45) return 'E';
         return 'F';
     }
 }

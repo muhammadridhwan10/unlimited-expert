@@ -75,43 +75,104 @@
                 </div>
             </div>
 
+            {{-- Overall Performance --}}
             @if($performanceMetrics)
-                <!-- Overall Performance -->
-                <div class="card">
+                <div class="card mt-4">
                     <div class="card-header">
-                        <h5>{{ __('Overall Performance') }}</h5>
+                        <h5 class="mb-0">{{ __('Overall Performance') }}</h5>
                     </div>
                     <div class="card-body">
+                        <!-- Circular Score -->
                         <div class="text-center mb-4">
                             <div class="position-relative d-inline-block">
-                                <svg width="120" height="120" class="circular-progress">
-                                    <circle cx="60" cy="60" r="50" stroke="#e9ecef" stroke-width="8" fill="none"></circle>
-                                    <circle cx="60" cy="60" r="50" stroke="#28a745" stroke-width="8" fill="none"
-                                            stroke-dasharray="{{ 2 * 3.14159 * 50 }}"
-                                            stroke-dashoffset="{{ 2 * 3.14159 * 50 * (1 - $performanceMetrics['overall_score'] / 100) }}"
-                                            style="transition: stroke-dashoffset 1s ease-in-out;"></circle>
+                                <svg width="140" height="140" class="circular-progress shadow-sm rounded-circle">
+                                    <circle cx="70" cy="70" r="60" stroke="#e9ecef" stroke-width="10" fill="none"></circle>
+                                    <circle cx="70" cy="70" r="60" stroke="#28a745" stroke-width="10" fill="none"
+                                            stroke-dasharray="{{ 2 * 3.14159 * 60 }}"
+                                            stroke-dashoffset="{{ 2 * 3.14159 * 60 * (1 - $performanceMetrics['overall_score'] / 100) }}">
+                                    </circle>
                                 </svg>
                                 <div class="position-absolute top-50 start-50 translate-middle text-center">
-                                    <h3 class="mb-0">{{ $performanceMetrics['overall_score'] }}%</h3>
-                                    <small class="text-muted">Overall Score</small>
+                                    <h2 class="fw-bold mb-0">{{ $performanceMetrics['overall_score'] }}%</h2>
+                                    <small class="text-muted">{{ __('Overall Score') }}</small>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="text-center mb-3">
-                            <span class="badge badge-lg 
+                        <!-- Grade -->
+                        <div class="text-center mb-4">
+                            <span class="badge px-3 py-2 fs-6
                                 @if($performanceMetrics['grade'] == 'A') bg-success
                                 @elseif($performanceMetrics['grade'] == 'B') bg-info
                                 @elseif($performanceMetrics['grade'] == 'C') bg-warning
                                 @else bg-danger
                                 @endif">
-                                Grade {{ $performanceMetrics['grade'] }}
+                                {{ __('Grade') }} {{ $performanceMetrics['grade'] }}
                             </span>
                         </div>
 
-                        <div class="recommendation-box p-3 bg-light rounded">
-                            <h6 class="text-primary">{{ __('Recommendation') }}</h6>
-                            <p class="mb-0 text-sm">{{ $performanceMetrics['recommendation'] }}</p>
+                        <!-- Decision -->
+                        @if(isset($performanceMetrics['decision_status']))
+                            <div class="mb-4 p-3 border rounded bg-light">
+                                <h6 class="fw-bold mb-2">{{ __('Decision') }}</h6>
+                                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                                    <span class="badge decision-badge 
+                                        @if(str_contains($performanceMetrics['decision_status'], 'SANGAT DIREKOMENDASIKAN')) bg-success
+                                        @elseif(str_contains($performanceMetrics['decision_status'], 'DIREKOMENDASIKAN')) bg-info  
+                                        @elseif(str_contains($performanceMetrics['decision_status'], 'PERTIMBANGAN')) bg-warning
+                                        @elseif(str_contains($performanceMetrics['decision_status'], 'KURANG')) bg-danger
+                                        @elseif(str_contains($performanceMetrics['decision_status'], 'TIDAK')) bg-dark
+                                        @else bg-secondary
+                                        @endif">
+                                        {{ $performanceMetrics['decision_status'] }}
+                                    </span>
+                                    @if(isset($performanceMetrics['decision_confidence']))
+                                        <small class="text-muted">
+                                            ({{ $performanceMetrics['decision_confidence'] }}% {{ __('confidence') }})
+                                        </small>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Risk -->
+                        @if(isset($performanceMetrics['risk_level']))
+                            <div class="mb-4 p-3 border rounded">
+                                <h6 class="fw-bold mb-2">{{ __('Risk Level') }}</h6>
+                                <div class="d-flex align-items-center flex-wrap">
+                                    <span class="badge me-2 
+                                        @if($performanceMetrics['risk_level'] == 'RENDAH') bg-success
+                                        @elseif($performanceMetrics['risk_level'] == 'SEDANG') bg-warning
+                                        @else bg-danger
+                                        @endif">
+                                        {{ $performanceMetrics['risk_level'] }}
+                                    </span>
+                                    @if(isset($performanceMetrics['risk_details']['score']))
+                                        <small class="text-muted">
+                                            ({{ __('Score') }}: {{ $performanceMetrics['risk_details']['score'] }})
+                                        </small>
+                                    @endif
+                                </div>
+
+                                @if(isset($performanceMetrics['risk_details']['factors']) && count($performanceMetrics['risk_details']['factors']) > 0)
+                                    <div class="mt-2">
+                                        <small class="text-muted d-block mb-1">{{ __('Risk Factors') }}:</small>
+                                        <div class="d-flex flex-wrap gap-1">
+                                            @foreach($performanceMetrics['risk_details']['factors'] as $factor)
+                                                <span class="badge bg-light text-dark">{{ $factor }}</span>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+
+                        <!-- Recommendation -->
+                        <div class="p-3 border rounded bg-light">
+                            <h6 class="fw-bold mb-2">{{ __('Recommendation') }}</h6>
+                            <div class="recommendation-content">
+                                {!! nl2br(e($performanceMetrics['recommendation'])) !!}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -275,55 +336,36 @@
     </div>
 @endsection
 
-@push('script-page')
+@push('css-page')
 <style>
-.circular-progress {
-    transform: rotate(-90deg);
-}
-
-.circular-progress circle {
-    transition: stroke-dashoffset 1s ease-in-out;
-}
-
-.category-result-item {
-    transition: all 0.3s ease;
-}
-
-.category-result-item:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
-}
-
-.info-list .info-item {
-    border-bottom: 1px solid #f1f3f4;
-}
-
-.info-list .info-item:last-child {
-    border-bottom: none;
-}
-
-.recommendation-box {
-    border-left: 4px solid #007bff;
-}
-
-.badge-lg {
-    padding: 0.5rem 1rem;
-    font-size: 1rem;
+.circular-progress { transform: rotate(-90deg); }
+.circular-progress circle { transition: stroke-dashoffset 1s ease-in-out; }
+.info-list .info-item { border-bottom: 1px solid #f1f3f4; }
+.info-list .info-item:last-child { border-bottom: none; }
+.decision-badge { font-size: 0.95rem; padding: 0.45rem 0.9rem; }
+.recommendation-content { line-height: 1.6; color: #495057; font-size: 0.95rem; }
+.category-result-item { transition: all 0.3s ease; }
+.category-result-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform: translateY(-2px); }
+/* Responsive */
+@media (max-width: 768px) {
+    .card-body { padding: 1rem; }
+    .category-result-item { padding: 1rem; }
 }
 </style>
+@endpush
 
+@push('script-page')
 <script>
-    // Animate progress bars on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        const progressBars = document.querySelectorAll('.progress-bar');
-        progressBars.forEach(bar => {
-            const width = bar.style.width;
-            bar.style.width = '0%';
-            setTimeout(() => {
-                bar.style.transition = 'width 1s ease-in-out';
-                bar.style.width = width;
-            }, 100);
-        });
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.transition = 'width 1s ease-in-out';
+            bar.style.width = width;
+        }, 100);
     });
+});
 </script>
 @endpush

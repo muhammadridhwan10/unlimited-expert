@@ -35,10 +35,11 @@ class PsychotestResult extends Model
 
     public function calculateGrade()
     {
-        if ($this->percentage >= 90) return 'A';
-        if ($this->percentage >= 80) return 'B';
-        if ($this->percentage >= 70) return 'C';
-        if ($this->percentage >= 60) return 'D';
+        if ($this->percentage >= 85) return 'A';
+        if ($this->percentage >= 75) return 'B';
+        if ($this->percentage >= 65) return 'C';
+        if ($this->percentage >= 55) return 'D';
+        if ($this->percentage >= 45) return 'E';
         return 'F';
     }
 }

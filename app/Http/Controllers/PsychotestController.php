@@ -749,7 +749,8 @@ class PsychotestController extends Controller
         if ($score >= 75) return 'B';
         if ($score >= 65) return 'C';
         if ($score >= 55) return 'D';
-        return 'E';
+        if ($score >= 45) return 'E';
+        return 'F';
     }
 
     private function getKraeplinInterpretation($score, $accuracy)
@@ -824,10 +825,11 @@ class PsychotestController extends Controller
 
     private function getStandardGrade($accuracy)
     {
-        if ($accuracy >= 90) return 'A';
-        if ($accuracy >= 80) return 'B';
-        if ($accuracy >= 70) return 'C';
-        if ($accuracy >= 60) return 'D';
+        if ($accuracy >= 85) return 'A';
+        if ($accuracy >= 75) return 'B';
+        if ($accuracy >= 65) return 'C';
+        if ($accuracy >= 55) return 'D';
+        if ($accuracy >= 45) return 'E';
         return 'F';
     }
 
@@ -854,10 +856,11 @@ class PsychotestController extends Controller
 
     private function getOverallGrade($percentage)
     {
-        if ($percentage >= 90) return 'A';
-        if ($percentage >= 80) return 'B';
-        if ($percentage >= 70) return 'C';
-        if ($percentage >= 60) return 'D';
+        if ($percentage >= 85) return 'A';
+        if ($percentage >= 75) return 'B';
+        if ($percentage >= 65) return 'C';
+        if ($percentage >= 55) return 'D';
+        if ($percentage >= 45) return 'E';
         return 'F';
     }
 }

@@ -302,69 +302,67 @@ class PsychotestResultController extends Controller
             return null;
         }
 
-        // Parse notes for additional insights
         $notes = json_decode($result->notes, true) ?? [];
         
-        $categoryScores = $result->category_scores ?? [];
+        // Get session results and recalculate overall score
+        $sessionResults = $this->getDetailedSessionResults($schedule);
+        $newOverallScore = $this->calculateOverallWeightedScore($sessionResults);
+        $newGrade = $this->calculateGradeFromScore($newOverallScore);
+        
+        // Update result in database to ensure consistency
+        $result->update([
+            'percentage' => round($newOverallScore, 2),
+            'grade' => $newGrade
+        ]);
+        
         $strengths = [];
         $weaknesses = [];
-        $insights = [];
 
-        foreach ($categoryScores as $categoryId => $categoryData) {
-            $categoryName = $this->getCategoryName($categoryId);
-            $results = $categoryData['results'] ?? [];
-            $percentage = $results['percentage'] ?? 0;
+        foreach ($sessionResults as $sessionResult) {
+            $categoryName = $sessionResult['category']->name;
+            $percentage = $sessionResult['percentage'];
+            $categoryType = $sessionResult['category_type'];
             
-            if ($percentage >= 80) {
+            // Adjust thresholds based on category difficulty
+            $strengthThreshold = $categoryType === 'kraeplin' || $categoryType === 'field_test' ? 70 : 80;
+            $weaknessThreshold = $categoryType === 'kraeplin' || $categoryType === 'field_test' ? 50 : 60;
+            
+            if ($percentage >= $strengthThreshold) {
                 $strengths[] = [
                     'category' => $categoryName,
                     'score' => $percentage,
-                    'type' => $this->getCategoryType($categoryId)
+                    'type' => $categoryType
                 ];
-            } elseif ($percentage < 60) {
+            } elseif ($percentage < $weaknessThreshold) {
                 $weaknesses[] = [
                     'category' => $categoryName,
                     'score' => $percentage,
-                    'type' => $this->getCategoryType($categoryId)
+                    'type' => $categoryType
                 ];
             }
         }
 
-        // Generate specific insights
-        if (isset($notes['kraeplin_analysis'])) {
-            $kraeplin = $notes['kraeplin_analysis'];
-            $insights[] = "Kraeplin Grade: " . ($kraeplin['grade'] ?? 'N/A');
-            if (isset($kraeplin['interpretation'])) {
-                $insights = array_merge($insights, array_slice($kraeplin['interpretation'], 0, 2));
-            }
-        }
-
-        if (isset($notes['field_recommendations'])) {
-            $field = $notes['field_recommendations'];
-            if (isset($field['division_recommendation']['primary'])) {
-                $insights[] = "Rekomendasi: " . $field['division_recommendation']['primary'];
-            }
-        }
-
-        if (isset($notes['personality_insights'])) {
-            $personality = $notes['personality_insights'];
-            if (isset($personality['dominant_traits'])) {
-                $traits = array_slice($personality['dominant_traits'], 0, 3);
-                $insights[] = "Trait Dominan: " . implode(', ', $traits);
-            }
-        }
-
+        // Generate detailed decision and recommendation
+        $decisionData = $this->generateDetailedDecisionRecommendation($newOverallScore, $strengths, $weaknesses, $sessionResults, $schedule);
+        
         return [
-            'overall_score' => $result->percentage,
-            'grade' => $result->grade,
+            'overall_score' => round($newOverallScore, 2),
+            'grade' => $newGrade,
             'total_time' => $this->getTotalTestTime($schedule),
             'strengths' => $strengths,
             'weaknesses' => $weaknesses,
-            'insights' => $insights,
-            'recommendation' => $this->generateRecommendation($result->percentage, $strengths, $weaknesses, $notes),
+            'insights' => $this->generateImprovedInsights($sessionResults, $notes),
+            'recommendation' => $decisionData['detailed_recommendation'],
+            'decision_status' => $decisionData['decision']['status'],
+            'decision_confidence' => $decisionData['decision']['confidence'],
+            'risk_level' => isset($decisionData['risk_assessment']['level']) 
+                ? $decisionData['risk_assessment']['level'] 
+                : 'SEDANG',
+            'risk_details' => $decisionData['risk_assessment'] ?? null,
             'final_assessment' => $notes['final_assessment'] ?? null
         ];
     }
+
 
     /**
      * Get answers for a specific category with proper analysis
@@ -1120,7 +1118,8 @@ class PsychotestResultController extends Controller
         if ($score >= 75) return 'B';
         if ($score >= 65) return 'C';
         if ($score >= 55) return 'D';
-        return 'E';
+        if ($score >= 45) return 'E';
+        return 'F';
     }
 
     private function getKraeplinInterpretationFromScore($score, $accuracy, $speed)
@@ -1180,5 +1179,1538 @@ class PsychotestResultController extends Controller
         }
         
         return $recommendations;
+    }
+
+    private function calculateWeightedCategoryScore($categoryType, $score, $accuracy, $completionRate)
+    {
+        $weights = [
+            'visual_sequence' => ['difficulty' => 1.0, 'time_weight' => 0.3],
+            'basic_math' => ['difficulty' => 1.2, 'time_weight' => 0.4],
+            'synonym_antonym' => ['difficulty' => 1.1, 'time_weight' => 0.3],
+            'kraeplin' => ['difficulty' => 1.5, 'time_weight' => 0.5],
+            'field_test' => ['difficulty' => 1.8, 'time_weight' => 0.6],
+            'epps_test' => ['difficulty' => 1.0, 'time_weight' => 0.0], // No time pressure
+        ];
+        
+        $categoryWeight = $weights[$categoryType] ?? ['difficulty' => 1.0, 'time_weight' => 0.3];
+        
+        // Base score calculation
+        $baseScore = $score;
+        
+        // Apply completion penalty if not fully completed
+        if ($completionRate < 100) {
+            $baseScore *= ($completionRate / 100);
+        }
+        
+        // Apply difficulty multiplier
+        $weightedScore = $baseScore * $categoryWeight['difficulty'];
+        
+        // Normalize to 0-100 scale
+        return min(100, $weightedScore);
+    }
+
+    /**
+     * Calculate field test score with proper 5-point system
+     */
+    private function calculateFieldTestScore($answers)
+    {
+        $scores = [
+            'audit' => ['correct' => 0, 'total' => 0],
+            'accounting' => ['correct' => 0, 'total' => 0],
+            'tax' => ['correct' => 0, 'total' => 0]
+        ];
+        
+        $totalPoints = 0;
+        $earnedPoints = 0;
+        
+        foreach ($answers as $answer) {
+            $questionOrder = $answer->question->order ?? 0;
+            $field = $this->getFieldFromOrder($questionOrder);
+            
+            // Each field question worth 5 points
+            $questionPoints = 5;
+            $totalPoints += $questionPoints;
+            
+            if ($answer->answer === $answer->question->correct_answer) {
+                $scores[$field]['correct']++;
+                $earnedPoints += $questionPoints;
+            }
+            
+            $scores[$field]['total']++;
+        }
+        
+        return [
+            'field_scores' => $scores,
+            'total_points' => $totalPoints,
+            'earned_points' => $earnedPoints,
+            'percentage' => $totalPoints > 0 ? ($earnedPoints / $totalPoints) * 100 : 0,
+            'field_percentages' => [
+                'audit' => $scores['audit']['total'] > 0 ? ($scores['audit']['correct'] / $scores['audit']['total']) * 100 : 0,
+                'accounting' => $scores['accounting']['total'] > 0 ? ($scores['accounting']['correct'] / $scores['accounting']['total']) * 100 : 0,
+                'tax' => $scores['tax']['total'] > 0 ? ($scores['tax']['correct'] / $scores['tax']['total']) * 100 : 0,
+            ]
+        ];
+    }
+
+    /**
+     * Get field from question order
+     */
+    private function getFieldFromOrder($order)
+    {
+        if ($order <= 10) return 'audit';
+        if ($order <= 20) return 'accounting';
+        return 'tax';
+    }
+
+    /**
+     * Calculate EPPS personality score (no right/wrong answers)
+     */
+    private function calculateEPPSScore($answers)
+    {
+        $dimensions = [
+            'achievement', 'deference', 'order', 'exhibition', 'autonomy',
+            'affiliation', 'intraception', 'succorance', 'dominance',
+            'abasement', 'nurturance', 'change', 'endurance', 'heterosexuality', 'aggression'
+        ];
+        
+        $dimensionScores = [];
+        $totalAnswers = $answers->count();
+        
+        foreach ($dimensions as $dimension) {
+            $dimensionScores[$dimension] = 0;
+        }
+        
+        // Process forced-choice answers
+        foreach ($answers as $answer) {
+            $question = $answer->question;
+            if ($question->personality_dimension && isset($dimensionScores[$question->personality_dimension])) {
+                // EPPS uses forced choice - each selection adds to dimension score
+                if ($answer->answer === $question->id) { // User chose this statement
+                    $dimensionScores[$question->personality_dimension]++;
+                }
+            }
+        }
+        
+        // Convert to percentiles (simplified version)
+        $maxPossiblePerDimension = max(1, $totalAnswers / count($dimensions));
+        foreach ($dimensionScores as $dimension => $score) {
+            $dimensionScores[$dimension] = min(100, ($score / $maxPossiblePerDimension) * 100);
+        }
+        
+        // Find dominant traits (top 5)
+        arsort($dimensionScores);
+        $dominantTraits = array_slice(array_keys($dimensionScores), 0, 5);
+        
+        return [
+            'dimension_scores' => $dimensionScores,
+            'dominant_traits' => $dominantTraits,
+            'completion_rate' => 100, // EPPS completion is always 100% if finished
+            'total_answered' => $totalAnswers,
+            'personality_profile' => $this->generatePersonalityProfile($dominantTraits, $dimensionScores)
+        ];
+    }
+
+    /**
+     * Generate personality profile from EPPS results
+     */
+    private function generatePersonalityProfile($dominantTraits, $dimensionScores)
+    {
+        $profiles = [
+            'achievement' => 'Berorientasi pada pencapaian dan kesuksesan',
+            'deference' => 'Cenderung menghormati otoritas dan mengikuti aturan',
+            'order' => 'Menyukai keteraturan dan sistematis',
+            'exhibition' => 'Senang menjadi pusat perhatian',
+            'autonomy' => 'Menghargai kemandirian dan kebebasan',
+            'affiliation' => 'Berorientasi pada hubungan sosial',
+            'intraception' => 'Memiliki kemampuan analisis psikologis',
+            'succorance' => 'Mencari dukungan dan bantuan orang lain',
+            'dominance' => 'Memiliki potensi kepemimpinan',
+            'abasement' => 'Cenderung merendahkan diri',
+            'nurturance' => 'Senang membantu dan merawat orang lain',
+            'change' => 'Menyukai variasi dan perubahan',
+            'endurance' => 'Memiliki daya tahan dan ketekunan tinggi',
+            'heterosexuality' => 'Tertarik pada lawan jenis',
+            'aggression' => 'Memiliki sifat kompetitif dan asertif'
+        ];
+        
+        $profile = [];
+        foreach ($dominantTraits as $trait) {
+            if (isset($profiles[$trait]) && $dimensionScores[$trait] > 50) {
+                $profile[] = $profiles[$trait];
+            }
+        }
+        
+        return $profile;
+    }
+
+    /**
+     * Calculate improved Kraeplin score
+     */
+    private function calculateImprovedKraeplinScore($sessionData)
+    {
+        $statistics = $sessionData['statistics'] ?? [];
+        $allAnswers = $sessionData['all_answers'] ?? [];
+        
+        if (empty($statistics) && !empty($allAnswers)) {
+            $statistics = $this->recalculateKraeplinStatistics($allAnswers);
+        }
+        
+        $totalAnswers = $statistics['total_answers'] ?? 0;
+        $correctAnswers = $statistics['correct_answers'] ?? 0;
+        $completedColumns = $statistics['completed_columns'] ?? 0;
+        
+        // Accuracy component (40%)
+        $accuracy = $totalAnswers > 0 ? ($correctAnswers / $totalAnswers) * 100 : 0;
+        $accuracyScore = $accuracy * 0.4;
+        
+        // Speed component (35%) - based on questions per minute
+        $timeSpent = 600; // 10 minutes default for Kraeplin
+        $questionsPerMinute = $timeSpent > 0 ? ($totalAnswers / ($timeSpent / 60)) : 0;
+        $optimalQuestionsPerMinute = 30; // Expected rate
+        $speedScore = min(100, ($questionsPerMinute / $optimalQuestionsPerMinute) * 100) * 0.35;
+        
+        // Consistency component (25%) - variation between columns
+        $consistencyScore = $this->calculateKraeplinConsistency($allAnswers) * 0.25;
+        
+        $totalScore = $accuracyScore + $speedScore + $consistencyScore;
+        
+        return [
+            'kraeplin_score' => round($totalScore, 2),
+            'accuracy' => round($accuracy, 2),
+            'speed_score' => round(($speedScore / 0.35), 2),
+            'consistency_score' => round(($consistencyScore / 0.25), 2),
+            'grade' => $this->getKraeplinGrade($totalScore),
+            'completed_columns' => $completedColumns
+        ];
+    }
+
+    /**
+     * Calculate Kraeplin consistency score
+     */
+    private function calculateKraeplinConsistency($allAnswers)
+    {
+        if (empty($allAnswers) || count($allAnswers) < 2) {
+            return 75; // Default consistency if insufficient data
+        }
+        
+        $columnAccuracies = [];
+        
+        foreach ($allAnswers as $columnIndex => $columnData) {
+            if (empty($columnData) || !is_array($columnData)) continue;
+            
+            $columnCorrect = 0;
+            $columnTotal = 0;
+            
+            for ($i = 0; $i < count($columnData) - 2; $i += 3) {
+                if (!isset($columnData[$i]) || !isset($columnData[$i + 1]) || !isset($columnData[$i + 2])) {
+                    continue;
+                }
+                
+                $num1 = intval($columnData[$i]);
+                $num2 = intval($columnData[$i + 1]);
+                $userAnswer = intval($columnData[$i + 2]);
+                $correctAnswer = $num1 + $num2;
+                
+                $columnTotal++;
+                if ($userAnswer === $correctAnswer) {
+                    $columnCorrect++;
+                }
+            }
+            
+            if ($columnTotal > 0) {
+                $columnAccuracies[] = ($columnCorrect / $columnTotal) * 100;
+            }
+        }
+        
+        if (empty($columnAccuracies)) {
+            return 75;
+        }
+        
+        // Calculate standard deviation to measure consistency
+        $mean = array_sum($columnAccuracies) / count($columnAccuracies);
+        $variance = 0;
+        
+        foreach ($columnAccuracies as $accuracy) {
+            $variance += pow($accuracy - $mean, 2);
+        }
+        
+        $stdDev = sqrt($variance / count($columnAccuracies));
+        
+        // Convert to consistency score (lower std dev = higher consistency)
+        $consistencyScore = max(0, 100 - ($stdDev * 2));
+        
+        return $consistencyScore;
+    }
+
+    /**
+     * Calculate overall weighted score
+     */
+    private function calculateOverallWeightedScore($sessionResults)
+    {
+        $totalWeightedScore = 0;
+        $totalWeight = 0;
+        
+        // Category weights based on importance and difficulty
+        $categoryWeights = [
+            'visual_sequence' => 1.0,
+            'basic_math' => 1.2,
+            'synonym_antonym' => 1.1,
+            'kraeplin' => 1.5,
+            'field_test' => 2.0,  // Highest weight for job-specific skills
+            'epps_test' => 0.8,   // Lower weight for personality (different scoring)
+        ];
+        
+        foreach ($sessionResults as $result) {
+            $categoryType = $result['category_type'];
+            $categoryWeight = $categoryWeights[$categoryType] ?? 1.0;
+            
+            $score = $result['percentage'];
+            
+            // Special handling for EPPS (use completion rate instead of accuracy)
+            if ($categoryType === 'epps_test') {
+                $score = 85; // Fixed score for completed EPPS test
+            }
+            
+            $weightedScore = $score * $categoryWeight;
+            $totalWeightedScore += $weightedScore;
+            $totalWeight += $categoryWeight;
+        }
+        
+        return $totalWeight > 0 ? $totalWeightedScore / $totalWeight : 0;
+    }
+
+    private function calculateGradeFromScore($score)
+    {
+        if ($score >= 85) return 'A';
+        if ($score >= 75) return 'B';
+        if ($score >= 65) return 'C';
+        if ($score >= 55) return 'D';
+        if ($score >= 45) return 'E';
+        return 'F';
+    }
+
+    private function generateImprovedInsights($sessionResults, $notes)
+    {
+        $insights = [];
+        
+        foreach ($sessionResults as $result) {
+            $categoryType = $result['category_type'];
+            $percentage = $result['percentage'];
+            
+            switch ($categoryType) {
+                case 'field_test':
+                    if (isset($result['field_analysis']['field_percentages'])) {
+                        $fieldPercentages = $result['field_analysis']['field_percentages'];
+                        $bestField = array_keys($fieldPercentages, max($fieldPercentages))[0];
+                        $insights[] = "Bidang terkuat: " . ucfirst($bestField) . " (" . $fieldPercentages[$bestField] . "%)";
+                    }
+                    break;
+                    
+                case 'kraeplin':
+                    if (isset($result['kraeplin_analysis']['accuracy'])) {
+                        $accuracy = $result['kraeplin_analysis']['accuracy'];
+                        $speed = $result['kraeplin_analysis']['speed_score'];
+                        $insights[] = "Kraeplin: Akurasi {$accuracy}%, Kecepatan {$speed}%";
+                    }
+                    break;
+                    
+                case 'epps_test':
+                    if (isset($result['epps_analysis']['dominant_traits'])) {
+                        $traits = array_slice($result['epps_analysis']['dominant_traits'], 0, 3);
+                        $insights[] = "Trait dominan: " . implode(', ', $traits);
+                    }
+                    break;
+            }
+        }
+        
+        return $insights;
+    }
+
+    private function generateImprovedRecommendation($overallScore, $strengths, $weaknesses, $sessionResults)
+    {
+        $recommendation = [];
+        
+        // Overall assessment
+        if ($overallScore >= 80) {
+            $recommendation[] = 'Kandidat sangat berkualitas dengan kemampuan di atas rata-rata.';
+        } elseif ($overallScore >= 70) {
+            $recommendation[] = 'Kandidat berkualitas baik dengan potensi yang dapat dikembangkan.';
+        } elseif ($overallScore >= 60) {
+            $recommendation[] = 'Kandidat cukup memenuhi syarat dengan beberapa area yang perlu diperkuat.';
+        } else {
+            $recommendation[] = 'Kandidat memerlukan pengembangan intensif sebelum dapat ditempatkan.';
+        }
+        
+        // Field-specific recommendations
+        foreach ($sessionResults as $result) {
+            if ($result['category_type'] === 'field_test' && isset($result['field_analysis']['recommended_field'])) {
+                $recommendedField = $result['field_analysis']['recommended_field'];
+                $recommendation[] = "Paling cocok untuk divisi: " . ucfirst($recommendedField);
+                break;
+            }
+        }
+        
+        // Strength-based recommendations
+        if (!empty($strengths)) {
+            $topStrengths = array_slice($strengths, 0, 2);
+            $strengthAreas = array_column($topStrengths, 'category');
+            $recommendation[] = "Keunggulan utama pada: " . implode(' dan ', $strengthAreas);
+        }
+        
+        return implode(' ', $recommendation);
+    }
+
+    /**
+     * Generate detailed decision and recommendation
+     */
+    private function generateDetailedDecisionRecommendation($overallScore, $strengths, $weaknesses, $sessionResults, $schedule)
+    {
+        $decision = $this->makeHiringDecision($overallScore, $strengths, $weaknesses, $sessionResults);
+        $detailedRecommendation = $this->generateDetailedRecommendation($overallScore, $strengths, $weaknesses, $sessionResults, $decision, $schedule);
+        
+        return [
+            'decision' => $decision,
+            'detailed_recommendation' => $detailedRecommendation,
+            'priority_level' => $this->getPriorityLevel($decision['status']),
+            'next_steps' => $this->getNextSteps($decision['status'], $weaknesses),
+            'risk_assessment' => $this->getRiskAssessment($overallScore, $weaknesses),
+            'development_plan' => $this->getDevelopmentPlan($weaknesses)
+        ];
+    }
+
+    /**
+     * Make hiring decision based on comprehensive analysis
+     */
+    private function makeHiringDecision($overallScore, $strengths, $weaknesses, $sessionResults)
+    {
+        $decision = [
+            'status' => '',
+            'confidence' => 0,
+            'reasoning' => [],
+            'conditions' => []
+        ];
+        
+        // Check critical failures
+        $criticalFailures = $this->checkCriticalFailures($sessionResults);
+        
+        if (!empty($criticalFailures)) {
+            $decision['status'] = 'TIDAK LOLOS';
+            $decision['confidence'] = 95;
+            $decision['reasoning'] = array_merge(['Gagal dalam aspek kritis:'], $criticalFailures);
+            return $decision;
+        }
+        
+        // Evaluate based on overall score and specific criteria
+        if ($overallScore >= 85) {
+            $decision['status'] = 'SANGAT DIREKOMENDASIKAN';
+            $decision['confidence'] = 95;
+            $decision['reasoning'] = [
+                'Skor keseluruhan sangat tinggi (' . $overallScore . '%)',
+                'Menunjukkan kompetensi unggul di berbagai aspek'
+            ];
+        } elseif ($overallScore >= 75) {
+            $decision['status'] = 'DIREKOMENDASIKAN';
+            $decision['confidence'] = 85;
+            $decision['reasoning'] = [
+                'Skor keseluruhan baik (' . $overallScore . '%)',
+                'Memiliki potensi yang solid untuk dikembangkan'
+            ];
+            
+            if (count($weaknesses) > 0) {
+                $decision['conditions'][] = 'Memerlukan pelatihan pada area yang lemah';
+            }
+        } elseif ($overallScore >= 65) {
+            $decision['status'] = 'PERLU PERTIMBANGAN';
+            $decision['confidence'] = 70;
+            $decision['reasoning'] = [
+                'Skor keseluruhan cukup (' . $overallScore . '%)',
+                'Ada potensi tapi memerlukan evaluasi lebih lanjut'
+            ];
+            $decision['conditions'] = [
+                'Interview mendalam untuk menilai motivasi',
+                'Rencana pengembangan intensif perlu disiapkan'
+            ];
+        } elseif ($overallScore >= 55) {
+            $decision['status'] = 'KURANG DIREKOMENDASIKAN';
+            $decision['confidence'] = 80;
+            $decision['reasoning'] = [
+                'Skor keseluruhan di bawah standar (' . $overallScore . '%)',
+                'Banyak area yang memerlukan perbaikan signifikan'
+            ];
+            $decision['conditions'] = [
+                'Hanya dipertimbangkan jika kandidat langka',
+                'Memerlukan program training ekstensif'
+            ];
+        } else {
+            $decision['status'] = 'TIDAK DIREKOMENDASIKAN';
+            $decision['confidence'] = 90;
+            $decision['reasoning'] = [
+                'Skor keseluruhan sangat rendah (' . $overallScore . '%)',
+                'Tidak memenuhi standar minimum kompetensi'
+            ];
+        }
+        
+        // Additional evaluation based on field test performance
+        $fieldTestResult = $this->getFieldTestResult($sessionResults);
+        if ($fieldTestResult) {
+            $decision = $this->adjustDecisionBasedOnFieldTest($decision, $fieldTestResult);
+        }
+        
+        return $decision;
+    }
+
+    /**
+     * Check for critical failures that would disqualify candidate
+     */
+    private function checkCriticalFailures($sessionResults)
+    {
+        $failures = [];
+        
+        foreach ($sessionResults as $result) {
+            $categoryType = $result['category_type'];
+            $percentage = $result['percentage'];
+            
+            // Critical thresholds
+            switch ($categoryType) {
+                case 'field_test':
+                    if ($percentage < 40) {
+                        $failures[] = 'Skor tes bidang terlalu rendah (< 40%)';
+                    }
+                    break;
+                    
+                case 'basic_math':
+                    if ($percentage < 35) {
+                        $failures[] = 'Kemampuan matematika dasar sangat kurang (< 35%)';
+                    }
+                    break;
+                    
+                case 'kraeplin':
+                    if (isset($result['kraeplin_analysis']['accuracy']) && $result['kraeplin_analysis']['accuracy'] < 30) {
+                        $failures[] = 'Akurasi Kraeplin sangat rendah (< 30%)';
+                    }
+                    break;
+            }
+        }
+        
+        return $failures;
+    }
+
+    /**
+     * Get category status based on score and type
+     */
+    private function getCategoryStatus($percentage, $categoryType)
+    {
+        // Different thresholds for different category types
+        $thresholds = [
+            'kraeplin' => ['excellent' => 80, 'good' => 65, 'fair' => 50, 'poor' => 35],
+            'field_test' => ['excellent' => 85, 'good' => 70, 'fair' => 55, 'poor' => 40],
+            'epps_test' => ['excellent' => 90, 'good' => 75, 'fair' => 60, 'poor' => 45],
+            'default' => ['excellent' => 85, 'good' => 70, 'fair' => 55, 'poor' => 40]
+        ];
+        
+        $threshold = $thresholds[$categoryType] ?? $thresholds['default'];
+        
+        if ($percentage >= $threshold['excellent']) return 'Sangat Baik';
+        if ($percentage >= $threshold['good']) return 'Baik';
+        if ($percentage >= $threshold['fair']) return 'Cukup';
+        if ($percentage >= $threshold['poor']) return 'Kurang';
+        return 'Sangat Kurang';
+    }
+
+    /**
+     * Calculate risk level
+     */
+    private function calculateRiskLevel($overallScore, $weaknesses)
+    {
+        if ($overallScore >= 80 && count($weaknesses) <= 1) return 'RENDAH';
+        if ($overallScore >= 65 && count($weaknesses) <= 3) return 'SEDANG';
+        return 'TINGGI';
+    }
+
+    /**
+     * Get field test result
+     */
+    private function getFieldTestResult($sessionResults)
+    {
+        foreach ($sessionResults as $result) {
+            if ($result['category_type'] === 'field_test') {
+                return $result;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Adjust decision based on field test performance
+     */
+    private function adjustDecisionBasedOnFieldTest($decision, $fieldTestResult)
+    {
+        $fieldScore = $fieldTestResult['percentage'];
+        
+        // If field test score is significantly higher/lower, adjust decision
+        if ($fieldScore >= 85 && in_array($decision['status'], ['PERLU PERTIMBANGAN', 'KURANG DIREKOMENDASIKAN'])) {
+            $decision['status'] = 'DIREKOMENDASIKAN';
+            $decision['reasoning'][] = 'Skor tes bidang yang sangat baik mengkompensasi kelemahan lain';
+            $decision['conditions'][] = 'Fokus pengembangan pada soft skills dan kemampuan umum';
+        } elseif ($fieldScore < 50 && in_array($decision['status'], ['SANGAT DIREKOMENDASIKAN', 'DIREKOMENDASIKAN'])) {
+            $decision['status'] = 'PERLU PERTIMBANGAN';
+            $decision['reasoning'][] = 'Skor tes bidang yang rendah memerlukan perhatian khusus';
+            $decision['conditions'][] = 'Training intensif untuk kompetensi teknis diperlukan';
+        }
+        
+        return $decision;
+    }
+
+    /**
+     * Get priority level based on decision status
+     */
+    private function getPriorityLevel($decisionStatus)
+    {
+        switch ($decisionStatus) {
+            case 'SANGAT DIREKOMENDASIKAN':
+                return 'URGENT';
+            case 'DIREKOMENDASIKAN':
+                return 'HIGH';
+            case 'PERLU PERTIMBANGAN':
+                return 'MEDIUM';
+            case 'KURANG DIREKOMENDASIKAN':
+                return 'LOW';
+            case 'TIDAK DIREKOMENDASIKAN':
+            case 'TIDAK LOLOS':
+                return 'REJECTED';
+            default:
+                return 'MEDIUM';
+        }
+    }
+
+    /**
+     * Get next steps based on decision status
+     */
+    private function getNextSteps($decisionStatus, $weaknesses = [])
+    {
+        $steps = [];
+        
+        switch ($decisionStatus) {
+            case 'SANGAT DIREKOMENDASIKAN':
+                $steps = [
+                    'Segera jadwalkan interview final dengan decision maker',
+                    'Siapkan job offer dengan paket kompensasi kompetitif',
+                    'Lakukan background check dan verifikasi dokumen',
+                    'Pertimbangkan untuk fast-track process',
+                    'Siapkan onboarding plan yang accelerated'
+                ];
+                break;
+                
+            case 'DIREKOMENDASIKAN':
+                $steps = [
+                    'Lakukan interview panel dengan tim langsung',
+                    'Asesmen cultural fit dengan tim kerja',
+                    'Negosiasi paket kompensasi',
+                    'Reference check dari employer sebelumnya',
+                    'Siapkan mentoring program untuk onboarding'
+                ];
+                break;
+                
+            case 'PERLU PERTIMBANGAN':
+                $steps = [
+                    'Interview mendalam dengan multiple stakeholder',
+                    'Berikan case study atau practical test',
+                    'Evaluasi motivasi dan commitment terhadap learning',
+                    'Diskusikan expectation dan development plan',
+                    'Pertimbangkan probation period yang extended',
+                    'Asesmen tambahan untuk area weakness',
+                    'Konsultasi dengan department head'
+                ];
+                break;
+                
+            case 'KURANG DIREKOMENDASIKAN':
+                $steps = [
+                    'Evaluasi ulang job requirement vs candidate profile',
+                    'Pertimbangkan role alternative yang lebih sesuai',
+                    'Diskusikan dengan hiring manager tentang flexibility',
+                    'Jika tetap dipertimbangkan, siapkan intensive training plan',
+                    'Set clear milestone dan KPI untuk probation period',
+                    'Consider hanya jika candidate pool sangat terbatas'
+                ];
+                break;
+                
+            case 'TIDAK DIREKOMENDASIKAN':
+            case 'TIDAK LOLOS':
+                $steps = [
+                    'Berikan feedback yang konstruktif kepada kandidat',
+                    'Dokumentasikan hasil untuk database candidate',
+                    'Update recruitment status menjadi rejected',
+                    'Lanjutkan search untuk kandidat lain',
+                    'Review kembali job posting jika banyak kandidat tidak lolos',
+                    'Inform candidate dengan professional manner'
+                ];
+                break;
+                
+            default:
+                $steps = [
+                    'Review hasil assessment lebih detail',
+                    'Konsultasi dengan tim recruitment',
+                    'Tentukan langkah selanjutnya'
+                ];
+        }
+        
+        // Add specific steps based on weaknesses
+        if (!empty($weaknesses) && in_array($decisionStatus, ['DIREKOMENDASIKAN', 'PERLU PERTIMBANGAN'])) {
+            $weaknessTypes = array_column($weaknesses, 'type');
+            
+            if (in_array('field_test', $weaknessTypes)) {
+                $steps[] = 'Siapkan technical training program untuk knowledge gap';
+            }
+            
+            if (in_array('kraeplin', $weaknessTypes)) {
+                $steps[] = 'Pertimbangkan role yang tidak memerlukan konsentrasi tinggi';
+            }
+            
+            if (in_array('basic_math', $weaknessTypes)) {
+                $steps[] = 'Evaluasi mathematical requirement untuk role tersebut';
+            }
+        }
+        
+        return $steps;
+    }
+
+    /**
+     * Get comprehensive risk assessment
+     */
+    private function getRiskAssessment($overallScore, $weaknesses)
+    {
+        $riskFactors = [];
+        $riskLevel = 'RENDAH';
+        $riskScore = 0;
+        
+        // Score-based risk
+        if ($overallScore < 50) {
+            $riskFactors[] = 'Skor keseluruhan sangat rendah';
+            $riskScore += 40;
+        } elseif ($overallScore < 65) {
+            $riskFactors[] = 'Skor keseluruhan di bawah standar optimal';
+            $riskScore += 25;
+        } elseif ($overallScore < 75) {
+            $riskFactors[] = 'Skor keseluruhan cukup namun ada ruang improvement';
+            $riskScore += 15;
+        }
+        
+        // Weakness-based risk
+        $criticalWeaknesses = 0;
+        foreach ($weaknesses as $weakness) {
+            if ($weakness['score'] < 40) {
+                $criticalWeaknesses++;
+                $riskFactors[] = "Sangat lemah dalam {$weakness['category']} ({$weakness['score']}%)";
+                $riskScore += 20;
+            } elseif ($weakness['score'] < 55) {
+                $riskFactors[] = "Perlu improvement dalam {$weakness['category']} ({$weakness['score']}%)";
+                $riskScore += 10;
+            }
+        }
+        
+        // Category-specific risks
+        foreach ($weaknesses as $weakness) {
+            switch ($weakness['type']) {
+                case 'field_test':
+                    $riskFactors[] = 'Risk tinggi pada kompetensi teknis job-specific';
+                    $riskScore += 25;
+                    break;
+                case 'kraeplin':
+                    $riskFactors[] = 'Potensi kesulitan dalam pekerjaan yang memerlukan konsentrasi tinggi';
+                    $riskScore += 15;
+                    break;
+                case 'basic_math':
+                    $riskFactors[] = 'Kemungkinan kesulitan dalam analisis numerik';
+                    $riskScore += 10;
+                    break;
+            }
+        }
+        
+        // Determine risk level
+        if ($riskScore >= 60) {
+            $riskLevel = 'TINGGI';
+        } elseif ($riskScore >= 30) {
+            $riskLevel = 'SEDANG';
+        } else {
+            $riskLevel = 'RENDAH';
+        }
+        
+        return [
+            'level' => $riskLevel,
+            'score' => $riskScore,
+            'factors' => $riskFactors,
+            'mitigation' => $this->getRiskMitigation($riskLevel, $riskFactors)
+        ];
+    }
+
+    /**
+     * Get risk mitigation strategies
+     */
+    private function getRiskMitigation($riskLevel, $riskFactors)
+    {
+        $mitigation = [];
+        
+        switch ($riskLevel) {
+            case 'TINGGI':
+                $mitigation = [
+                    'Extended probation period (6-12 bulan)',
+                    'Intensive mentoring dan coaching program',
+                    'Monthly performance review dan feedback',
+                    'Specific training program untuk skill gap',
+                    'Clear milestone dan improvement target',
+                    'Consider alternative role yang lebih sesuai'
+                ];
+                break;
+                
+            case 'SEDANG':
+                $mitigation = [
+                    'Standard probation period dengan close monitoring',
+                    'Regular mentoring session',
+                    'Targeted training untuk area weakness',
+                    'Quarterly performance review',
+                    'Pair dengan senior team member untuk guidance'
+                ];
+                break;
+                
+            case 'RENDAH':
+                $mitigation = [
+                    'Standard onboarding process',
+                    'Regular check-in selama 3 bulan pertama',
+                    'Optional training sesuai kebutuhan development',
+                    'Standard performance review cycle'
+                ];
+                break;
+        }
+        
+        // Add specific mitigation based on risk factors
+        foreach ($riskFactors as $factor) {
+            if (str_contains($factor, 'field_test') || str_contains($factor, 'kompetensi teknis')) {
+                $mitigation[] = 'Sediakan technical reference materials dan tools';
+                $mitigation[] = 'Arrange shadowing dengan expert dalam bidang tersebut';
+            }
+            
+            if (str_contains($factor, 'kraeplin') || str_contains($factor, 'konsentrasi')) {
+                $mitigation[] = 'Berikan lingkungan kerja yang mendukung fokus';
+                $mitigation[] = 'Avoid multitasking yang berlebihan di awal';
+            }
+            
+            if (str_contains($factor, 'matematika') || str_contains($factor, 'numerik')) {
+                $mitigation[] = 'Sediakan calculator dan spreadsheet template';
+                $mitigation[] = 'Double-check system untuk perhitungan penting';
+            }
+        }
+        
+        return array_unique($mitigation);
+    }
+
+    /**
+     * Generate comprehensive development plan
+     */
+    private function getDevelopmentPlan($weaknesses)
+    {
+        if (empty($weaknesses)) {
+            return [
+                'priority' => 'MAINTENANCE',
+                'duration' => '3 bulan',
+                'focus_areas' => ['Continuous improvement', 'Skill enhancement'],
+                'training_modules' => ['Advanced skills sesuai role'],
+                'timeline' => [
+                    'Month 1-3' => 'Focus pada excellence dan leadership development'
+                ]
+            ];
+        }
+        
+        $developmentPlan = [
+            'priority' => 'HIGH',
+            'duration' => '6-12 bulan',
+            'focus_areas' => [],
+            'training_modules' => [],
+            'timeline' => [],
+            'success_metrics' => [],
+            'resources_needed' => []
+        ];
+        
+        // Analyze weaknesses and create specific development plan
+        $criticalWeaknesses = array_filter($weaknesses, function($w) { return $w['score'] < 40; });
+        $moderateWeaknesses = array_filter($weaknesses, function($w) { return $w['score'] >= 40 && $w['score'] < 60; });
+        
+        if (!empty($criticalWeaknesses)) {
+            $developmentPlan['priority'] = 'CRITICAL';
+            $developmentPlan['duration'] = '12-18 bulan';
+        } elseif (!empty($moderateWeaknesses)) {
+            $developmentPlan['priority'] = 'HIGH';
+            $developmentPlan['duration'] = '6-9 bulan';
+        } else {
+            $developmentPlan['priority'] = 'MEDIUM';
+            $developmentPlan['duration'] = '3-6 bulan';
+        }
+        
+        // Create focus areas and training modules based on weakness types
+        foreach ($weaknesses as $weakness) {
+            switch ($weakness['type']) {
+                case 'field_test':
+                    $developmentPlan['focus_areas'][] = 'Technical Competency Enhancement';
+                    $developmentPlan['training_modules'][] = 'Job-specific technical training';
+                    $developmentPlan['training_modules'][] = 'Industry best practices workshop';
+                    $developmentPlan['training_modules'][] = 'Certification program terkait bidang';
+                    $developmentPlan['success_metrics'][] = 'Improvement dalam technical assessment score > 70%';
+                    $developmentPlan['resources_needed'][] = 'Technical training budget';
+                    $developmentPlan['resources_needed'][] = 'Subject matter expert mentor';
+                    break;
+                    
+                case 'kraeplin':
+                    $developmentPlan['focus_areas'][] = 'Concentration & Accuracy Improvement';
+                    $developmentPlan['training_modules'][] = 'Concentration enhancement training';
+                    $developmentPlan['training_modules'][] = 'Speed vs accuracy balance workshop';
+                    $developmentPlan['training_modules'][] = 'Stress management program';
+                    $developmentPlan['success_metrics'][] = 'Improvement dalam Kraeplin score > Grade C';
+                    $developmentPlan['resources_needed'][] = 'Concentration training tools';
+                    break;
+                    
+                case 'basic_math':
+                    $developmentPlan['focus_areas'][] = 'Quantitative Skills Development';
+                    $developmentPlan['training_modules'][] = 'Basic mathematics refresher';
+                    $developmentPlan['training_modules'][] = 'Business mathematics application';
+                    $developmentPlan['training_modules'][] = 'Excel and calculation tools training';
+                    $developmentPlan['success_metrics'][] = 'Mathematical assessment score > 70%';
+                    $developmentPlan['resources_needed'][] = 'Online learning platform';
+                    break;
+                    
+                case 'visual_sequence':
+                    $developmentPlan['focus_areas'][] = 'Pattern Recognition & Logical Thinking';
+                    $developmentPlan['training_modules'][] = 'Logical reasoning enhancement';
+                    $developmentPlan['training_modules'][] = 'Pattern recognition training';
+                    $developmentPlan['success_metrics'][] = 'Visual sequence score > 75%';
+                    break;
+                    
+                case 'synonym_antonym':
+                    $developmentPlan['focus_areas'][] = 'Verbal & Communication Skills';
+                    $developmentPlan['training_modules'][] = 'Vocabulary building program';
+                    $developmentPlan['training_modules'][] = 'Reading comprehension improvement';
+                    $developmentPlan['training_modules'][] = 'Business communication workshop';
+                    $developmentPlan['success_metrics'][] = 'Verbal reasoning score > 75%';
+                    $developmentPlan['resources_needed'][] = 'Language learning resources';
+                    break;
+            }
+        }
+        
+        // Create timeline
+        $developmentPlan['timeline'] = [
+            'Month 1-2' => 'Assessment baseline dan kickoff training program',
+            'Month 3-4' => 'Intensive training pada area kritis',
+            'Month 5-6' => 'Praktik aplikasi dan on-job training',
+            'Month 7-9' => 'Advanced training dan skill refinement (jika diperlukan)',
+            'Month 10-12' => 'Evaluation dan continuous improvement'
+        ];
+        
+        // Remove duplicates
+        $developmentPlan['focus_areas'] = array_unique($developmentPlan['focus_areas']);
+        $developmentPlan['training_modules'] = array_unique($developmentPlan['training_modules']);
+        $developmentPlan['success_metrics'] = array_unique($developmentPlan['success_metrics']);
+        $developmentPlan['resources_needed'] = array_unique($developmentPlan['resources_needed']);
+        
+        return $developmentPlan;
+    }
+
+    /**
+     * Generate job-oriented detailed recommendation
+     */
+    private function generateDetailedRecommendation($overallScore, $strengths, $weaknesses, $sessionResults, $decision, $schedule)
+    {
+        $recommendation = [];
+        $candidateName = $schedule->candidates->name;
+        $jobTitle = $schedule->candidates->jobs->title ?? 'N/A';
+        
+        // Header dengan decision
+        $recommendation[] = "KEPUTUSAN: {$decision['status']}";
+        $recommendation[] = "Tingkat keyakinan: {$decision['confidence']}%";
+        $recommendation[] = "";
+        
+        // Work Performance Prediction
+        $recommendation[] = "PREDIKSI KINERJA KERJA:";
+        $workPrediction = $this->predictWorkPerformance($sessionResults);
+        foreach ($workPrediction as $prediction) {
+            $recommendation[] = "• {$prediction}";
+        }
+        $recommendation[] = "";
+        
+        // Division & Role Recommendation
+        $divisionRecommendation = $this->analyzeDivisionFit($sessionResults);
+        $recommendation[] = "REKOMENDASI PENEMPATAN:";
+        $recommendation[] = "• Divisi Terbaik: {$divisionRecommendation['primary_division']}";
+        $recommendation[] = "  - Alasan: {$divisionRecommendation['reasoning']}";
+        $recommendation[] = "  - Confidence Level: {$divisionRecommendation['confidence']}%";
+        if (isset($divisionRecommendation['alternative'])) {
+            $recommendation[] = "• Divisi Alternatif: {$divisionRecommendation['alternative']}";
+        }
+        $recommendation[] = "";
+        
+        // EPPS Personality Analysis for Work
+        $personalityAnalysis = $this->analyzeEPPSForWork($sessionResults);
+        if ($personalityAnalysis) {
+            $recommendation[] = "ANALISIS KEPRIBADIAN (EPPS) & IMPACT KERJA:";
+            $recommendation[] = "• Tipe Kepribadian: {$personalityAnalysis['personality_type']}";
+            $recommendation[] = "• Gaya Kerja: {$personalityAnalysis['work_style']}";
+            $recommendation[] = "• Motivasi Utama: {$personalityAnalysis['primary_motivation']}";
+            $recommendation[] = "• Cara Berkomunikasi: {$personalityAnalysis['communication_style']}";
+            $recommendation[] = "• Leadership Style: {$personalityAnalysis['leadership_style']}";
+            $recommendation[] = "• Team Dynamics: {$personalityAnalysis['team_fit']}";
+            $recommendation[] = "";
+            
+            $recommendation[] = "KEKUATAN KEPRIBADIAN DI TEMPAT KERJA:";
+            foreach ($personalityAnalysis['workplace_strengths'] as $strength) {
+                $recommendation[] = "• {$strength}";
+            }
+            $recommendation[] = "";
+            
+            if (!empty($personalityAnalysis['potential_challenges'])) {
+                $recommendation[] = "POTENSI TANTANGAN KEPRIBADIAN:";
+                foreach ($personalityAnalysis['potential_challenges'] as $challenge) {
+                    $recommendation[] = "• {$challenge}";
+                }
+                $recommendation[] = "";
+            }
+        }
+        
+        // Work Behavior Prediction based on all tests
+        $workBehavior = $this->predictWorkBehavior($sessionResults);
+        $recommendation[] = "PREDIKSI PERILAKU KERJA:";
+        $recommendation[] = "• Saat Menangani Detail: {$workBehavior['attention_to_detail']}";
+        $recommendation[] = "• Dalam Situasi Tekanan: {$workBehavior['under_pressure']}";
+        $recommendation[] = "• Dalam Tim: {$workBehavior['teamwork']}";
+        $recommendation[] = "• Menghadapi Deadline: {$workBehavior['deadline_management']}";
+        $recommendation[] = "• Problem Solving: {$workBehavior['problem_solving']}";
+        $recommendation[] = "";
+        
+        // Management & Development Recommendations
+        $managementTips = $this->getManagementRecommendations($sessionResults, $personalityAnalysis);
+        $recommendation[] = "CARA MENGELOLA KANDIDAT INI:";
+        foreach ($managementTips as $tip) {
+            $recommendation[] = "• {$tip}";
+        }
+        $recommendation[] = "";
+        
+        // Development Plan for Job Performance
+        $jobDevelopment = $this->getJobDevelopmentPlan($weaknesses, $sessionResults);
+        $recommendation[] = "RENCANA PENGEMBANGAN UNTUK PERFORMA KERJA:";
+        $recommendation[] = "• Fokus Utama: {$jobDevelopment['primary_focus']}";
+        $recommendation[] = "• Timeline: {$jobDevelopment['timeline']}";
+        $recommendation[] = "• Training yang Dibutuhkan:";
+        foreach ($jobDevelopment['required_training'] as $training) {
+            $recommendation[] = "  - {$training}";
+        }
+        $recommendation[] = "";
+        
+        // Final Decision Reasoning
+        $recommendation[] = "KESIMPULAN & NEXT STEPS:";
+        foreach ($decision['reasoning'] as $reason) {
+            $recommendation[] = "• {$reason}";
+        }
+        
+        if (!empty($decision['conditions'])) {
+            $recommendation[] = "";
+            $recommendation[] = "SYARAT KHUSUS:";
+            foreach ($decision['conditions'] as $condition) {
+                $recommendation[] = "• {$condition}";
+            }
+        }
+        
+        return implode("\n", $recommendation);
+    }
+
+    /**
+     * Predict work performance based on test results
+     */
+    private function predictWorkPerformance($sessionResults)
+    {
+        $predictions = [];
+        
+        foreach ($sessionResults as $result) {
+            $categoryType = $result['category_type'];
+            $percentage = $result['percentage'];
+            
+            switch ($categoryType) {
+                case 'kraeplin':
+                    if (isset($result['kraeplin_analysis'])) {
+                        $accuracy = $result['kraeplin_analysis']['accuracy'];
+                        $speed = $result['kraeplin_analysis']['speed_score'];
+                        
+                        if ($accuracy >= 90) {
+                            $predictions[] = "Akan sangat teliti dalam pekerjaan detail dan perhitungan";
+                        } elseif ($accuracy >= 70) {
+                            $predictions[] = "Cukup teliti namun perlu double-check untuk pekerjaan kritis";
+                        } else {
+                            $predictions[] = "Memerlukan sistem kontrol kualitas untuk pekerjaan detail";
+                        }
+                        
+                        if ($speed >= 70) {
+                            $predictions[] = "Mampu bekerja dengan pace yang baik di lingkungan fast-paced";
+                        } else {
+                            $predictions[] = "Lebih cocok untuk pekerjaan yang tidak mengejar deadline ketat";
+                        }
+                    }
+                    break;
+                    
+                case 'field_test':
+                    if (isset($result['field_analysis']['field_percentages'])) {
+                        $fieldScores = $result['field_analysis']['field_percentages'];
+                        $bestField = array_keys($fieldScores, max($fieldScores))[0];
+                        $bestScore = max($fieldScores);
+                        
+                        if ($bestScore >= 70) {
+                            $predictions[] = "Akan unggul dalam pekerjaan {$bestField}-related";
+                        } else {
+                            $predictions[] = "Memerlukan intensive training untuk kompetensi teknis";
+                        }
+                    }
+                    break;
+                    
+                case 'basic_math':
+                    if ($percentage >= 80) {
+                        $predictions[] = "Mampu menangani analisis finansial dan perhitungan kompleks";
+                    } elseif ($percentage >= 60) {
+                        $predictions[] = "Dapat menangani perhitungan dasar dengan bantuan tools";
+                    } else {
+                        $predictions[] = "Memerlukan support untuk tugas-tugas yang melibatkan angka";
+                    }
+                    break;
+                    
+                case 'synonym_antonym':
+                    if ($percentage >= 80) {
+                        $predictions[] = "Komunikasi tertulis dan verbal akan sangat baik";
+                    } else {
+                        $predictions[] = "Perlu improvement dalam komunikasi dan dokumentasi";
+                    }
+                    break;
+            }
+        }
+        
+        return $predictions;
+    }
+
+    /**
+     * Analyze division fit based on field test results
+     */
+    private function analyzeDivisionFit($sessionResults)
+    {
+        $divisionFit = [
+            'primary_division' => 'General',
+            'reasoning' => 'Belum dapat menentukan divisi spesifik',
+            'confidence' => 50,
+            'alternative' => null
+        ];
+        
+        foreach ($sessionResults as $result) {
+            if ($result['category_type'] === 'field_test' && isset($result['field_analysis']['field_percentages'])) {
+                $fieldScores = $result['field_analysis']['field_percentages'];
+                arsort($fieldScores);
+                
+                $topField = array_keys($fieldScores)[0];
+                $topScore = $fieldScores[$topField];
+                $secondField = array_keys($fieldScores)[1] ?? null;
+                $secondScore = $fieldScores[$secondField] ?? 0;
+                
+                // Determine division
+                switch ($topField) {
+                    case 'audit':
+                        $divisionFit['primary_division'] = 'Audit Division';
+                        if ($topScore >= 70) {
+                            $divisionFit['reasoning'] = "Skor audit sangat baik ({$topScore}%), menunjukkan pemahaman prosedur audit dan analytical thinking yang kuat";
+                            $divisionFit['confidence'] = 90;
+                        } elseif ($topScore >= 60) {
+                            $divisionFit['reasoning'] = "Skor audit cukup baik ({$topScore}%), dengan training dapat develop menjadi auditor yang kompeten";
+                            $divisionFit['confidence'] = 75;
+                        } else {
+                            $divisionFit['reasoning'] = "Skor audit rendah ({$topScore}%), namun masih yang terbaik dibanding area lain";
+                            $divisionFit['confidence'] = 60;
+                        }
+                        break;
+                        
+                    case 'tax':
+                        $divisionFit['primary_division'] = 'Tax Division';
+                        if ($topScore >= 70) {
+                            $divisionFit['reasoning'] = "Skor tax excellent ({$topScore}%), menunjukkan pemahaman regulasi dan perhitungan pajak yang solid";
+                            $divisionFit['confidence'] = 90;
+                        } else {
+                            $divisionFit['reasoning'] = "Skor tax terbaik ({$topScore}%), cocok untuk tax consultant dengan additional training";
+                            $divisionFit['confidence'] = 75;
+                        }
+                        break;
+                        
+                    case 'accounting':
+                        $divisionFit['primary_division'] = 'Accounting Division';
+                        if ($topScore >= 70) {
+                            $divisionFit['reasoning'] = "Skor accounting tinggi ({$topScore}%), menunjukkan pemahaman prinsip akuntansi dan financial reporting";
+                            $divisionFit['confidence'] = 90;
+                        } else {
+                            $divisionFit['reasoning'] = "Skor accounting terbaik ({$topScore}%), suitable untuk staff accounting dengan mentoring";
+                            $divisionFit['confidence'] = 75;
+                        }
+                        break;
+                }
+                
+                // Alternative division
+                if ($secondField && $secondScore >= 50) {
+                    $divisionFit['alternative'] = ucfirst($secondField) . " Division (score: {$secondScore}%)";
+                }
+                
+                break;
+            }
+        }
+        
+        return $divisionFit;
+    }
+
+    /**
+     * Analyze EPPS results for workplace behavior
+     */
+    private function analyzeEPPSForWork($sessionResults)
+    {
+        foreach ($sessionResults as $result) {
+            if ($result['category_type'] === 'epps_test' && isset($result['epps_analysis']['dominant_traits'])) {
+                $dominantTraits = $result['epps_analysis']['dominant_traits'];
+                $dimensionScores = $result['epps_analysis']['dimension_scores'] ?? [];
+                
+                return $this->interpretEPPSForWorkplace($dominantTraits, $dimensionScores);
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Interpret EPPS results for workplace context
+     */
+    private function interpretEPPSForWorkplace($dominantTraits, $dimensionScores)
+    {
+        $analysis = [
+            'personality_type' => '',
+            'work_style' => '',
+            'primary_motivation' => '',
+            'communication_style' => '',
+            'leadership_style' => '',
+            'team_fit' => '',
+            'workplace_strengths' => [],
+            'potential_challenges' => []
+        ];
+        
+        // Analyze based on dominant traits
+        $topTraits = array_slice($dominantTraits, 0, 3);
+        
+        // Personality Type
+        if (in_array('dominance', $topTraits) && in_array('achievement', $topTraits)) {
+            $analysis['personality_type'] = 'Leader-Achiever';
+            $analysis['leadership_style'] = 'Directive leadership, suka mengambil inisiatif dan memimpin tim';
+        } elseif (in_array('affiliation', $topTraits) && in_array('deference', $topTraits)) {
+            $analysis['personality_type'] = 'Team Player-Supporter';
+            $analysis['leadership_style'] = 'Collaborative leadership, fokus pada harmony dan team building';
+        } elseif (in_array('autonomy', $topTraits) && in_array('endurance', $topTraits)) {
+            $analysis['personality_type'] = 'Independent-Persistent';
+            $analysis['leadership_style'] = 'Expert leadership, memimpin melalui keahlian dan konsistensi';
+        } elseif (in_array('order', $topTraits) && in_array('endurance', $topTraits)) {
+            $analysis['personality_type'] = 'Systematic-Reliable';
+            $analysis['leadership_style'] = 'Process-oriented leadership, fokus pada sistem dan procedures';
+        } else {
+            $analysis['personality_type'] = 'Balanced Professional';
+            $analysis['leadership_style'] = 'Situational leadership, adaptable sesuai kondisi';
+        }
+        
+        // Work Style
+        foreach ($topTraits as $trait) {
+            switch ($trait) {
+                case 'achievement':
+                    $analysis['work_style'] = 'Goal-oriented, driven by results dan personal excellence';
+                    $analysis['primary_motivation'] = 'Pencapaian target dan recognition atas prestasi';
+                    break;
+                case 'order':
+                    $analysis['work_style'] = 'Systematic dan detail-oriented, suka struktur dan planning';
+                    $analysis['primary_motivation'] = 'Lingkungan kerja yang terorganisir dan predictable';
+                    break;
+                case 'autonomy':
+                    $analysis['work_style'] = 'Independent worker, prefer minimal supervision';
+                    $analysis['primary_motivation'] = 'Kebebasan dalam mengatur cara kerja dan decision making';
+                    break;
+                case 'affiliation':
+                    $analysis['work_style'] = 'Collaborative, thrive dalam team environment';
+                    $analysis['primary_motivation'] = 'Hubungan kerja yang harmonis dan team collaboration';
+                    break;
+                case 'dominance':
+                    $analysis['work_style'] = 'Leadership-oriented, suka mengambil charge dalam projects';
+                    $analysis['primary_motivation'] = 'Positions of responsibility dan influence';
+                    break;
+            }
+            
+            if ($analysis['work_style']) break;
+        }
+        
+        // Communication Style
+        if (in_array('exhibition', $topTraits)) {
+            $analysis['communication_style'] = 'Assertive dan expressive, comfortable dalam presentations';
+        } elseif (in_array('deference', $topTraits)) {
+            $analysis['communication_style'] = 'Respectful dan diplomatic, good listener';
+        } elseif (in_array('dominance', $topTraits)) {
+            $analysis['communication_style'] = 'Direct dan confident, clear dalam instructions';
+        } else {
+            $analysis['communication_style'] = 'Balanced communicator, adaptable style';
+        }
+        
+        // Team Fit
+        if (in_array('affiliation', $topTraits)) {
+            $analysis['team_fit'] = 'Excellent team player, natural collaborator';
+        } elseif (in_array('autonomy', $topTraits)) {
+            $analysis['team_fit'] = 'Independent contributor, works well with minimal team interaction';
+        } elseif (in_array('dominance', $topTraits)) {
+            $analysis['team_fit'] = 'Natural team leader, good for project management roles';
+        } else {
+            $analysis['team_fit'] = 'Flexible team member, dapat adapt dengan various team dynamics';
+        }
+        
+        // Workplace Strengths
+        foreach ($topTraits as $trait) {
+            switch ($trait) {
+                case 'achievement':
+                    $analysis['workplace_strengths'][] = 'Highly motivated untuk exceed expectations';
+                    $analysis['workplace_strengths'][] = 'Self-driven dalam continuous improvement';
+                    break;
+                case 'order':
+                    $analysis['workplace_strengths'][] = 'Excellent dalam organizing dan planning tasks';
+                    $analysis['workplace_strengths'][] = 'Detail-oriented dengan quality control mindset';
+                    break;
+                case 'endurance':
+                    $analysis['workplace_strengths'][] = 'Persistent dalam long-term projects';
+                    $analysis['workplace_strengths'][] = 'Reliable untuk tasks yang memerlukan consistency';
+                    break;
+                case 'dominance':
+                    $analysis['workplace_strengths'][] = 'Natural leadership abilities';
+                    $analysis['workplace_strengths'][] = 'Good dalam decision-making under pressure';
+                    break;
+                case 'affiliation':
+                    $analysis['workplace_strengths'][] = 'Excellent interpersonal skills';
+                    $analysis['workplace_strengths'][] = 'Good team builder dan conflict resolver';
+                    break;
+            }
+        }
+        
+        // Potential Challenges
+        foreach ($topTraits as $trait) {
+            switch ($trait) {
+                case 'dominance':
+                    if (($dimensionScores['dominance'] ?? 0) > 80) {
+                        $analysis['potential_challenges'][] = 'Mungkin too assertive, perlu balance dalam team collaboration';
+                    }
+                    break;
+                case 'autonomy':
+                    if (($dimensionScores['autonomy'] ?? 0) > 80) {
+                        $analysis['potential_challenges'][] = 'Prefer independence, might resist micromanagement';
+                    }
+                    break;
+                case 'exhibition':
+                    if (($dimensionScores['exhibition'] ?? 0) > 80) {
+                        $analysis['potential_challenges'][] = 'Might seek too much attention, perlu channel positively';
+                    }
+                    break;
+                case 'change':
+                    if (($dimensionScores['change'] ?? 0) > 80) {
+                        $analysis['potential_challenges'][] = 'High need for variety, might get bored dengan routine tasks';
+                    }
+                    break;
+            }
+        }
+        
+        return $analysis;
+    }
+
+    /**
+     * Predict work behavior based on all test results
+     */
+    private function predictWorkBehavior($sessionResults)
+    {
+        $behavior = [
+            'under_pressure' => 'Respons normal terhadap tekanan',
+            'attention_to_detail' => 'Tingkat detail cukup baik',
+            'teamwork' => 'Dapat bekerja dalam tim',
+            'deadline_management' => 'Mampu mengelola deadline dengan baik',
+            'problem_solving' => 'Pendekatan problem solving sistematis'
+        ];
+        
+        foreach ($sessionResults as $result) {
+            $categoryType = $result['category_type'];
+            
+            switch ($categoryType) {
+                case 'kraeplin':
+                    if (isset($result['kraeplin_analysis'])) {
+                        $accuracy = $result['kraeplin_analysis']['accuracy'];
+                        $speed = $result['kraeplin_analysis']['speed_score'];
+                        $consistency = $result['kraeplin_analysis']['consistency_score'];
+                        
+                        if ($accuracy >= 90 && $consistency >= 80) {
+                            $behavior['under_pressure'] = 'Sangat calm dan accurate bahkan under pressure';
+                            $behavior['attention_to_detail'] = 'Extremely detail-oriented, jarang membuat kesalahan';
+                        } elseif ($speed < 50) {
+                            $behavior['deadline_management'] = 'Prefer quality over speed, butuh realistic timeline';
+                        }
+                        
+                        if ($consistency < 60) {
+                            $behavior['under_pressure'] = 'Performance bisa inconsistent saat tekanan tinggi';
+                        }
+                    }
+                    break;
+                    
+                case 'epps_test':
+                    if (isset($result['epps_analysis']['dominant_traits'])) {
+                        $traits = $result['epps_analysis']['dominant_traits'];
+                        
+                        if (in_array('affiliation', $traits)) {
+                            $behavior['teamwork'] = 'Excellent team player, thrives dalam collaborative environment';
+                        }
+                        if (in_array('dominance', $traits)) {
+                            $behavior['teamwork'] = 'Natural leader dalam tim, good untuk coordinate projects';
+                        }
+                        if (in_array('autonomy', $traits)) {
+                            $behavior['teamwork'] = 'Independent worker, prefer individual contributions';
+                        }
+                        if (in_array('endurance', $traits)) {
+                            $behavior['deadline_management'] = 'Excellent perseverance, reliable untuk long-term projects';
+                        }
+                        if (in_array('change', $traits)) {
+                            $behavior['problem_solving'] = 'Creative problem solver, open untuk innovative solutions';
+                        }
+                        if (in_array('order', $traits)) {
+                            $behavior['problem_solving'] = 'Systematic problem solver, methodical approach';
+                        }
+                    }
+                    break;
+                    
+                case 'visual_sequence':
+                    if ($result['percentage'] >= 80) {
+                        $behavior['problem_solving'] = 'Strong logical thinking, good untuk analytical tasks';
+                    }
+                    break;
+                    
+                case 'synonym_antonym':
+                    if ($result['percentage'] >= 80) {
+                        $behavior['teamwork'] = 'Good communication skills, effective dalam team discussions';
+                    }
+                    break;
+            }
+        }
+        
+        return $behavior;
+    }
+
+    /**
+     * Get management recommendations based on test results and personality
+     */
+    private function getManagementRecommendations($sessionResults, $personalityAnalysis)
+    {
+        $recommendations = [];
+        
+        if ($personalityAnalysis) {
+            // Based on personality type
+            switch ($personalityAnalysis['personality_type']) {
+                case 'Leader-Achiever':
+                    $recommendations[] = 'Berikan challenging projects dan clear targets untuk achievement';
+                    $recommendations[] = 'Allow untuk take ownership of projects';
+                    $recommendations[] = 'Provide regular feedback dan recognition';
+                    break;
+                    
+                case 'Team Player-Supporter':
+                    $recommendations[] = 'Integrate dengan tim dengan good team dynamics';
+                    $recommendations[] = 'Assign untuk collaborative projects';
+                    $recommendations[] = 'Provide supportive dan encouraging management style';
+                    break;
+                    
+                case 'Independent-Persistent':
+                    $recommendations[] = 'Give autonomy dalam cara kerja dengan clear deliverables';
+                    $recommendations[] = 'Minimize micromanagement';
+                    $recommendations[] = 'Provide long-term projects yang memerlukan persistence';
+                    break;
+                    
+                case 'Systematic-Reliable':
+                    $recommendations[] = 'Provide clear processes dan procedures';
+                    $recommendations[] = 'Give structured tasks dengan detailed guidelines';
+                    $recommendations[] = 'Appreciate consistency dan reliability mereka';
+                    break;
+            }
+            
+            // Based on dominant traits
+            $dominantTraits = $personalityAnalysis['dominant_traits'] ?? [];
+            if (in_array('exhibition', $dominantTraits)) {
+                $recommendations[] = 'Give opportunities untuk presentations atau client interactions';
+            }
+            if (in_array('change', $dominantTraits)) {
+                $recommendations[] = 'Provide variety dalam assignments untuk avoid boredom';
+            }
+        }
+        
+        // Based on test performance
+        foreach ($sessionResults as $result) {
+            if ($result['category_type'] === 'kraeplin') {
+                if (isset($result['kraeplin_analysis']['speed_score']) && $result['kraeplin_analysis']['speed_score'] < 60) {
+                    $recommendations[] = 'Allow sufficient time untuk tasks, avoid unnecessary time pressure';
+                }
+            }
+        }
+        
+        if (empty($recommendations)) {
+            $recommendations[] = 'Apply standard management approach dengan regular check-ins';
+        }
+        
+        return $recommendations;
+    }
+
+    /**
+     * Get job-specific development plan
+     */
+    private function getJobDevelopmentPlan($weaknesses, $sessionResults)
+    {
+        $plan = [
+            'primary_focus' => 'General skill enhancement',
+            'timeline' => '3-6 bulan',
+            'required_training' => ['Basic orientation program']
+        ];
+        
+        // Focus on most critical weakness
+        if (!empty($weaknesses)) {
+            $criticalWeakness = $weaknesses[0]; // Most critical
+            
+            switch ($criticalWeakness['type']) {
+                case 'field_test':
+                    $plan['primary_focus'] = 'Technical competency dalam audit/tax/accounting';
+                    $plan['timeline'] = '6-9 bulan';
+                    $plan['required_training'] = [
+                        'Intensive technical training untuk area terlemah',
+                        'Mentoring dengan senior staff',
+                        'Certification program sesuai divisi placement',
+                        'Hands-on practice dengan real cases',
+                        'Regular assessment dan feedback sessions'
+                    ];
+                    break;
+                    
+                case 'kraeplin':
+                    $plan['primary_focus'] = 'Concentration dan accuracy improvement';
+                    $plan['timeline'] = '3-6 bulan';
+                    $plan['required_training'] = [
+                        'Concentration enhancement exercises',
+                        'Time management training',
+                        'Stress management workshop',
+                        'Quality control procedures training'
+                    ];
+                    break;
+                    
+                case 'basic_math':
+                    $plan['primary_focus'] = 'Numerical analysis dan calculation skills';
+                    $plan['timeline'] = '4-6 bulan';
+                    $plan['required_training'] = [
+                        'Business mathematics refresher',
+                        'Excel advanced training',
+                        'Financial calculation workshops',
+                        'Practice dengan real financial data'
+                    ];
+                    break;
+            }
+        }
+        
+        return $plan;
     }
 }
