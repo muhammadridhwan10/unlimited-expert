@@ -24,183 +24,160 @@ class ReimbursmentPersonalController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->get('show_entries', 10);
+        
+        // Get filter parameters
+        $filters = [
+            'employee_filter' => $request->get('employee_filter'),
+            'client_filter' => $request->get('client_filter'),
+            'reimbursement_type_filter' => $request->get('reimbursement_type_filter'),
+            'status_filter' => $request->get('status_filter'),
+            'date_from' => $request->get('date_from'),
+            'date_to' => $request->get('date_to'),
+            'month' => $request->get('month'),
+            'employee_id' => $request->get('employee_id'), // Keep existing functionality
+            'search' => $request->get('search'),
+        ];
 
         if(\Auth::user()->type == 'admin')
         {
-            $reimbursment   = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->get();
-
+            $reimbursment = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->get();
             $employee = Employee::all();
-            $employee = $employee->pluck('id');
-            $employeeReimbursment = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->whereIn('employee_id', $employee);
-
-            if (!empty($request->month)) {
-                $month = date('m', strtotime($request->month));
-                $year  = date('Y', strtotime($request->month));
-
-                $start_date = date($year . '-' . $month . '-01');
-                $end_date   = date($year . '-' . $month . '-t');
-
-                $employeeReimbursment->whereBetween('date', [$start_date, $end_date]);
-            } 
-
-            if (!empty($request->employee_id)) {
-                $employeeReimbursment->where('employee_id', $request->employee_id);
-            }
-
-            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate($perPage)->appends([
-                'month' => $request->month,
-                'employee_id' => $request->employee_id,
-                'show_entries' => $perPage,
-            ]); 
+            $employee_ids = $employee->pluck('id');
+            
+            // Build query with filters
+            $employeeReimbursment_query = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')
+                                                    ->whereIn('employee_id', $employee_ids);
+            $employeeReimbursment_query = $this->applyPersonalFilters($employeeReimbursment_query, $filters);
+            $employeeReimbursment = $employeeReimbursment_query->orderByDesc('id')->paginate($perPage);
 
             $employees = Employee::all()->pluck('name','id');
+            $users = \Auth::user();
+            $approval = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')
+                                    ->where('approval', '=', $users->id)
+                                    ->where('status','=', 'Pending')
+                                    ->orderByDesc('id')
+                                    ->get();
 
-
-            $users        = \Auth::user();
-            $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
+            // Get data for filter dropdowns
+            $employees_list = Employee::all();
+            $clients = \App\Models\User::whereIn('type', ['client', 'staff_client'])->get();
+            $reimbursement_types = Reimbursment::$reimbursment_type;
         }
         elseif(\Auth::user()->type == 'company')
         {
-            $reimbursment   = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->get();
-
+            $reimbursment = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->get();
             $employee = Employee::all();
-            $employee = $employee->pluck('id');
-            $employeeReimbursment = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->whereIn('employee_id', $employee);
-
-            if (!empty($request->month)) {
-                $month = date('m', strtotime($request->month));
-                $year  = date('Y', strtotime($request->month));
-
-                $start_date = date($year . '-' . $month . '-01');
-                $end_date   = date($year . '-' . $month . '-t');
-
-                $employeeReimbursment->whereBetween('date', [$start_date, $end_date]);
-            } 
-
-            if (!empty($request->employee_id)) {
-                $employeeReimbursment->where('employee_id', $request->employee_id);
-            }
-
-            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate($perPage)->appends([
-                'month' => $request->month,
-                'employee_id' => $request->employee_id,
-                'show_entries' => $perPage,
-            ]);  
+            $employee_ids = $employee->pluck('id');
+            
+            // Build query with filters
+            $employeeReimbursment_query = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')
+                                                    ->whereIn('employee_id', $employee_ids);
+            $employeeReimbursment_query = $this->applyPersonalFilters($employeeReimbursment_query, $filters);
+            $employeeReimbursment = $employeeReimbursment_query->orderByDesc('id')->paginate($perPage);
 
             $employees = Employee::all()->pluck('name','id');
+            $users = \Auth::user();
+            $approval = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')
+                                    ->where('approval', '=', $users->id)
+                                    ->where('status','=', 'Pending')
+                                    ->orderByDesc('id')
+                                    ->get();
 
-
-            $users        = \Auth::user();
-            $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
+            // Get data for filter dropdowns
+            $employees_list = Employee::all();
+            $clients = \App\Models\User::whereIn('type', ['client', 'staff_client'])->get();
+            $reimbursement_types = Reimbursment::$reimbursment_type;
         }
         elseif(\Auth::user()->type == 'senior accounting')
         {
-            $reimbursment   = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->get();
-
+            $reimbursment = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->get();
             $employee = Employee::all();
-            $employee = $employee->pluck('id');
-            $employeeReimbursment = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->whereIn('employee_id', $employee);
-
-            if (!empty($request->month)) {
-                $month = date('m', strtotime($request->month));
-                $year  = date('Y', strtotime($request->month));
-
-                $start_date = date($year . '-' . $month . '-01');
-                $end_date   = date($year . '-' . $month . '-t');
-
-                $employeeReimbursment->whereBetween('date', [$start_date, $end_date]);
-            } 
-
-            if (!empty($request->employee_id)) {
-                $employeeReimbursment->where('employee_id', $request->employee_id);
-            }
-
-            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate($perPage)->appends([
-                'month' => $request->month,
-                'employee_id' => $request->employee_id,
-                'show_entries' => $perPage,
-            ]); 
+            $employee_ids = $employee->pluck('id');
+            
+            // Build query with filters
+            $employeeReimbursment_query = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')
+                                                    ->whereIn('employee_id', $employee_ids);
+            $employeeReimbursment_query = $this->applyPersonalFilters($employeeReimbursment_query, $filters);
+            $employeeReimbursment = $employeeReimbursment_query->orderByDesc('id')->paginate($perPage);
 
             $employees = Employee::all()->pluck('name','id');
+            $users = \Auth::user();
+            $approval = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')
+                                    ->where('approval', '=', $users->id)
+                                    ->where('status','=', 'Pending')
+                                    ->orderByDesc('id')
+                                    ->get();
 
-
-            $users        = \Auth::user();
-            $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
+            // Get data for filter dropdowns
+            $employees_list = Employee::all();
+            $clients = \App\Models\User::whereIn('type', ['client', 'staff_client'])->get();
+            $reimbursement_types = Reimbursment::$reimbursment_type;
         }
-        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff IT' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'intern' )
+        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff IT' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'intern')
         {
+            $employee = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('id');
+            
+            // Build query with filters
+            $employeeReimbursment_query = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')
+                                                    ->whereIn('employee_id', $employee);
+            $employeeReimbursment_query = $this->applyPersonalFilters($employeeReimbursment_query, $filters);
+            $employeeReimbursment = $employeeReimbursment_query->orderByDesc('id')->paginate($perPage);
 
+            $employees = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name','id');
+            $users = \Auth::user();
+            $employee_detail = Employee::where('user_id', '=', $users->id)->first();
+            $reimbursment = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')
+                                    ->where('employee_id', '=', $employee_detail->id)
+                                    ->get();
+            $approval = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')
+                                    ->where('approval', '=', $users->id)
+                                    ->where('status','=', 'Pending')
+                                    ->orderByDesc('id')
+                                    ->get();
 
-            $employee                      = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('id');
-            $employeeReimbursment = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->whereIn('employee_id', $employee);
-
-            if (!empty($request->month)) {
-                $month = date('m', strtotime($request->month));
-                $year  = date('Y', strtotime($request->month));
-
-                $start_date = date($year . '-' . $month . '-01');
-                $end_date   = date($year . '-' . $month . '-t');
-
-                $employeeReimbursment->whereBetween('date', [$start_date, $end_date]);
-            } 
-
-            if (!empty($request->employee_id)) {
-                $employeeReimbursment->where('employee_id', $request->employee_id);
-            }
-
-            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate($perPage)->appends([
-                'month' => $request->month,
-                'employee_id' => $request->employee_id,
-                'show_entries' => $perPage,
-            ]);  
-
-            $employees = Employee::where('user_id', '=', \Auth::user()->id)->first()->pluck('name','id');
-
-
-            $users        = \Auth::user();
-            $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $reimbursment   = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->where('employee_id', '=', $employee->id)->get();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
+            // Get data for filter dropdowns (limited to current employee)
+            $employees_list = collect([$employee_detail]); // Only current employee
+            $clients = \App\Models\User::whereIn('type', ['client', 'staff_client'])->get();
+            $reimbursement_types = Reimbursment::$reimbursment_type;
         }
         else
         {
-            $reimbursment   = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->get();
+            $reimbursment = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->get();
+            $employee = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('id');
+            
+            // Build query with filters
+            $employeeReimbursment_query = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')
+                                                    ->whereIn('employee_id', $employee);
+            $employeeReimbursment_query = $this->applyPersonalFilters($employeeReimbursment_query, $filters);
+            $employeeReimbursment = $employeeReimbursment_query->orderByDesc('id')->paginate($perPage);
 
-            $employee                      = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('id');
-            $employeeReimbursment = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->whereIn('employee_id', $employee);
+            $employees = Employee::where('user_id', '=', \Auth::user()->id)->get()->pluck('name','id');
+            $users = \Auth::user();
+            $employee_detail = Employee::where('user_id', '=', \Auth::user()->id)->first();
+            $approval = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')
+                                    ->where('approval', '=', \Auth::user()->id)
+                                    ->where('status','=', 'Pending')
+                                    ->orderByDesc('id')
+                                    ->get();
 
-            if (!empty($request->month)) {
-                $month = date('m', strtotime($request->month));
-                $year  = date('Y', strtotime($request->month));
-
-                $start_date = date($year . '-' . $month . '-01');
-                $end_date   = date($year . '-' . $month . '-t');
-
-                $employeeReimbursment->whereBetween('date', [$start_date, $end_date]);
-            } 
-
-            if (!empty($request->employee_id)) {
-                $employeeReimbursment->where('employee_id', $request->employee_id);
-            }
-
-            $employeeReimbursment = $employeeReimbursment->orderByDesc('id')->paginate($perPage)->appends([
-                'month' => $request->month,
-                'employee_id' => $request->employee_id,
-                'show_entries' => $perPage,
-            ]); 
-
-            $employees = Employee::where('user_id', '=', \Auth::user()->id)->first()->pluck('name','id');
-
-
-            $users        = \Auth::user();
-            $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = Reimbursment::where('reimbursment_type', '=', 'Reimbursment Personal')->where('approval', '=', \Auth::user()->id)->where('status','=', 'Pending')->orderByDesc('id')->get();
+            // Get data for filter dropdowns
+            $employees_list = collect([$employee_detail]); // Only current employee
+            $clients = \App\Models\User::whereIn('type', ['client', 'staff_client'])->get();
+            $reimbursement_types = Reimbursment::$reimbursment_type;
         }
 
-        return view('reimbursment-personal.index', compact('reimbursment','approval','employeeReimbursment','employees'));
+        // Append query parameters to pagination links
+        $employeeReimbursment->appends($request->query());
+
+        return view('reimbursment-personal.index', compact(
+            'reimbursment',
+            'approval',
+            'employeeReimbursment',
+            'employees',
+            'employees_list',
+            'clients',
+            'reimbursement_types'
+        ));
     }
 
     /**
@@ -547,5 +524,67 @@ class ReimbursmentPersonalController extends Controller
         }
 
         return redirect()->route('reimbursment-personal.index')->with('success', __('Reimbursment Personal successfully updated.'));
+    }
+
+    private function applyPersonalFilters($query, $filters)
+    {
+        // Employee filter (existing functionality)
+        if (!empty($filters['employee_id'])) {
+            $query->where('employee_id', $filters['employee_id']);
+        }
+
+        // New employee filter
+        if (!empty($filters['employee_filter'])) {
+            $query->where('employee_id', $filters['employee_filter']);
+        }
+
+        // Client filter
+        if (!empty($filters['client_filter'])) {
+            $query->where('client_id', $filters['client_filter']);
+        }
+
+        // Reimbursement type filter
+        if (!empty($filters['reimbursement_type_filter'])) {
+            $query->where('reimbursment_type', $filters['reimbursement_type_filter']);
+        }
+
+        // Status filter
+        if (!empty($filters['status_filter'])) {
+            $query->where('status', $filters['status_filter']);
+        }
+
+        // Date range filter
+        if (!empty($filters['date_from']) && !empty($filters['date_to'])) {
+            $query->whereBetween('date', [$filters['date_from'], $filters['date_to']]);
+        } elseif (!empty($filters['date_from'])) {
+            $query->where('date', '>=', $filters['date_from']);
+        } elseif (!empty($filters['date_to'])) {
+            $query->where('date', '<=', $filters['date_to']);
+        }
+
+        // Month filter (existing functionality)
+        if (!empty($filters['month'])) {
+            $month = date('m', strtotime($filters['month']));
+            $year = date('Y', strtotime($filters['month']));
+            $start_date = date($year . '-' . $month . '-01');
+            $end_date = date($year . '-' . $month . '-t');
+            $query->whereBetween('date', [$start_date, $end_date]);
+        }
+
+        // Search filter (search in employee name, client name, or description)
+        if (!empty($filters['search'])) {
+            $searchTerm = '%' . $filters['search'] . '%';
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('description', 'LIKE', $searchTerm)
+                ->orWhereHas('employee', function($employeeQuery) use ($searchTerm) {
+                    $employeeQuery->where('name', 'LIKE', $searchTerm);
+                })
+                ->orWhereHas('client', function($clientQuery) use ($searchTerm) {
+                    $clientQuery->where('name', 'LIKE', $searchTerm);
+                });
+            });
+        }
+
+        return $query;
     }
 }

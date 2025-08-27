@@ -17,37 +17,88 @@ use Illuminate\Support\Facades\Mail;
 
 class LeaveController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-
         if(\Auth::user()->can('manage leave'))
         {
             $leaves = Leave::all();
+            
+            // Get filter parameters
+            $filters = [
+                'employee_filter' => $request->get('employee_filter'),
+                'leave_type_filter' => $request->get('leave_type_filter'),
+                'status_filter' => $request->get('status_filter'),
+                'attendance_type_filter' => $request->get('attendance_type_filter'),
+                'date_from' => $request->get('date_from'),
+                'date_to' => $request->get('date_to'),
+                'leave_start_from' => $request->get('leave_start_from'),
+                'leave_start_to' => $request->get('leave_start_to'),
+                'search' => $request->get('search'),
+            ];
+
             if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern' || \Auth::user()->type == 'support' ||  \Auth::user()->type == 'staff') 
             {
-                $user     = \Auth::user();
+                $user = \Auth::user();
                 $employee = Employee::where('user_id', '=', $user->id)->first();
-                $absence_leave  = Leave::where('employee_id', '=', $employee->id)->where('absence_type', '=', 'leave')->orderByDesc('id')->paginate(10);
-                $approval      = Leave::where('approval', '=', $user->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
+                
+                // Build query for absence_leave with filters
+                $absence_leave_query = Leave::where('employee_id', '=', $employee->id)
+                                        ->where('absence_type', '=', 'leave');
+                
+                // Apply filters
+                $absence_leave_query = $this->applyFilters($absence_leave_query, $filters);
+                $absence_leave = $absence_leave_query->orderByDesc('id')->paginate(10);
+                
+                $approval = Leave::where('approval', '=', $user->id)
+                            ->where('status','=', 'Pending')
+                            ->orderByDesc('id')
+                            ->paginate(10);
+
+                // Get data for filter dropdowns (limited to current employee)
+                $employees = collect([$employee]); // Only current employee
+                $leave_types = \App\Models\LeaveType::all();
             }
             elseif(\Auth::user()->type == 'admin')
             {
-                $employee      = Employee::all();
-                $absence_leave = Leave::where('absence_type', '=', 'leave')->orderByDesc('id')->paginate(10);
-                $users         = \Auth::user();
-                $approval      = Leave::where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
+                $employee = Employee::all();
                 
+                // Build query for absence_leave with filters
+                $absence_leave_query = Leave::where('absence_type', '=', 'leave');
+                $absence_leave_query = $this->applyFilters($absence_leave_query, $filters);
+                $absence_leave = $absence_leave_query->orderByDesc('id')->paginate(10);
+                
+                $users = \Auth::user();
+                $approval = Leave::where('approval', '=', $users->id)
+                            ->where('status','=', 'Pending')
+                            ->orderByDesc('id')
+                            ->paginate(10);
+
+                // Get data for filter dropdowns
+                $employees = Employee::all();
+                $leave_types = \App\Models\LeaveType::all();
             }
             elseif(\Auth::user()->type == 'company')
             {
-                $employee      = Employee::all();
-                $absence_leave = Leave::where('absence_type', '=', 'leave')->orderByDesc('id')->paginate(10);
-                $users         = \Auth::user();  
-                $approval      = Leave::where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
+                $employee = Employee::all();
+                
+                // Build query for absence_leave with filters
+                $absence_leave_query = Leave::where('absence_type', '=', 'leave');
+                $absence_leave_query = $this->applyFilters($absence_leave_query, $filters);
+                $absence_leave = $absence_leave_query->orderByDesc('id')->paginate(10);
+                
+                $users = \Auth::user();  
+                $approval = Leave::where('approval', '=', $users->id)
+                            ->where('status','=', 'Pending')
+                            ->orderByDesc('id')
+                            ->paginate(10);
+
+                // Get data for filter dropdowns
+                $employees = Employee::all();
+                $leave_types = \App\Models\LeaveType::all();
             }
             elseif(\Auth::user()->type == 'partners')
             {
-                
+                // Get employees based on branch
                 if(\Auth::user()->employee->branch_id == 2)
                 {
                     $employee = Employee::where('branch_id', 2)->get();
@@ -60,22 +111,49 @@ class LeaveController extends Controller
                 {
                     $employee = Employee::all();
                 }
-                $employee = $employee->pluck('id');
+                
+                $employee_ids = $employee->pluck('id');
 
-                $absence_leave  = Leave::whereIn('employee_id', $employee)->where('absence_type', '=', 'leave')->orderByDesc('id')->paginate(10);
-                $users         = \Auth::user();  
-                $approval      = Leave::where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
+                // Build query for absence_leave with filters
+                $absence_leave_query = Leave::whereIn('employee_id', $employee_ids)
+                                        ->where('absence_type', '=', 'leave');
+                $absence_leave_query = $this->applyFilters($absence_leave_query, $filters);
+                $absence_leave = $absence_leave_query->orderByDesc('id')->paginate(10);
+                
+                $users = \Auth::user();  
+                $approval = Leave::where('approval', '=', $users->id)
+                            ->where('status','=', 'Pending')
+                            ->orderByDesc('id')
+                            ->paginate(10);
+
+                // Get data for filter dropdowns (limited to branch employees)
+                $employees = $employee;
+                $leave_types = \App\Models\LeaveType::all();
             }
             else
             {
-                $employee      = Employee::where('created_by', '=', \Auth::user()->creatorId())->get();
-                $absence_leave = Leave::where('absence_type', '=', 'leave')->where('created_by', '=', \Auth::user()->creatorId())->orderByDesc('id')->paginate(10);
-                $approval      = Leave::where('approval', '=', \Auth::user()->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
+                $employee = Employee::where('created_by', '=', \Auth::user()->creatorId())->get();
+                
+                // Build query for absence_leave with filters
+                $absence_leave_query = Leave::where('absence_type', '=', 'leave')
+                                        ->where('created_by', '=', \Auth::user()->creatorId());
+                $absence_leave_query = $this->applyFilters($absence_leave_query, $filters);
+                $absence_leave = $absence_leave_query->orderByDesc('id')->paginate(10);
+                
+                $approval = Leave::where('approval', '=', \Auth::user()->id)
+                            ->where('status','=', 'Pending')
+                            ->orderByDesc('id')
+                            ->paginate(10);
 
+                // Get data for filter dropdowns
+                $employees = $employee;
+                $leave_types = \App\Models\LeaveType::all();
             }
 
-            return view('leave.index', compact('absence_leave', 'employee', 'approval'));
+            // Append query parameters to pagination links
+            $absence_leave->appends($request->query());
 
+            return view('leave.index', compact('absence_leave', 'employee', 'approval', 'employees', 'leave_types'));
         }
         else
         {
@@ -383,6 +461,60 @@ class LeaveController extends Controller
         return $leave_counts;
 
 
+    }
+
+    private function applyFilters($query, $filters)
+    {
+        // Employee filter
+        if (!empty($filters['employee_filter'])) {
+            $query->where('employee_id', $filters['employee_filter']);
+        }
+
+        // Leave type filter
+        if (!empty($filters['leave_type_filter'])) {
+            $query->where('leave_type_id', $filters['leave_type_filter']);
+        }
+
+        // Status filter
+        if (!empty($filters['status_filter'])) {
+            $query->where('status', $filters['status_filter']);
+        }
+
+        // Attendance type filter
+        if (!empty($filters['attendance_type_filter'])) {
+            $query->where('absence_type', $filters['attendance_type_filter']);
+        }
+
+        // Applied date range filter
+        if (!empty($filters['date_from']) && !empty($filters['date_to'])) {
+            $query->whereBetween('applied_on', [$filters['date_from'], $filters['date_to']]);
+        } elseif (!empty($filters['date_from'])) {
+            $query->where('applied_on', '>=', $filters['date_from']);
+        } elseif (!empty($filters['date_to'])) {
+            $query->where('applied_on', '<=', $filters['date_to']);
+        }
+
+        // Leave start date range filter
+        if (!empty($filters['leave_start_from']) && !empty($filters['leave_start_to'])) {
+            $query->whereBetween('start_date', [$filters['leave_start_from'], $filters['leave_start_to']]);
+        } elseif (!empty($filters['leave_start_from'])) {
+            $query->where('start_date', '>=', $filters['leave_start_from']);
+        } elseif (!empty($filters['leave_start_to'])) {
+            $query->where('start_date', '<=', $filters['leave_start_to']);
+        }
+
+        // Search filter (search in employee name or leave reason)
+        if (!empty($filters['search'])) {
+            $searchTerm = '%' . $filters['search'] . '%';
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('leave_reason', 'LIKE', $searchTerm)
+                ->orWhereHas('employees', function($employeeQuery) use ($searchTerm) {
+                    $employeeQuery->where('name', 'LIKE', $searchTerm);
+                });
+            });
+        }
+
+        return $query;
     }
 
 }

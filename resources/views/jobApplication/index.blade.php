@@ -696,10 +696,6 @@
                                 {{ Form::select('gender', ['' => __('Select Gender'), 'male' => __('Male'), 'female' => __('Female')], isset($_GET['gender']) ? $_GET['gender'] : '', ['class' => 'form-control']) }}
                             </div>
                             <div>
-                                {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
-                                {{ Form::select('status', ['' => __('Select Status')] + collect($stages)->pluck('title', 'id')->toArray(), isset($_GET['status']) ? $_GET['status'] : '', ['class' => 'form-control']) }}
-                            </div>
-                            <div>
                                 {{ Form::label('applied_from', __('Applied From'), ['class' => 'form-label']) }}
                                 {{ Form::date('applied_from', isset($_GET['applied_from']) ? $_GET['applied_from'] : '', ['class' => 'form-control', 'placeholder' => __('Start Date')]) }}
                             </div>

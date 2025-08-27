@@ -40,4 +40,18 @@ class UserOvertime extends Model
         return $this->belongsTo(Project::class, "project_id", "id");
     }
 
+
+    public function calculateTimeDifference($start_time, $end_time) {
+        if ($end_time === '00:00:00') {
+            $end_time = '24:00:00';
+        }
+    
+        $start = \Carbon\Carbon::parse($start_time);
+        $end = \Carbon\Carbon::parse($end_time);
+        
+        $difference = $start->diffInSeconds($end);
+    
+        return gmdate('H:i:s', $difference);
+    }
+
 }

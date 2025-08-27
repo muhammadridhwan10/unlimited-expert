@@ -42,6 +42,16 @@ class Employee extends Model
         return $this->hasOne(EmployeeDetail::class, 'employee_id');
     }
 
+    public function reimbursments()
+    {
+        return $this->hasMany(Reimbursment::class, 'employee_id');
+    }
+
+    public function sickLeaves()
+    {
+        return $this->hasMany(Leave::class, 'employee_id')->where('absence_type', 'sick');
+    }
+
 
     public function documents()
     {

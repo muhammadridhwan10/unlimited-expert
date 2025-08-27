@@ -17,37 +17,82 @@ use Illuminate\Support\Facades\Mail;
 
 class SickLetterController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-
         if(\Auth::user()->can('manage leave'))
         {
             $leaves = Leave::all();
+            
+            // Get filter parameters
+            $filters = [
+                'employee_filter' => $request->get('employee_filter'),
+                'date_from' => $request->get('date_from'),
+                'date_to' => $request->get('date_to'),
+                'sick_date_from' => $request->get('sick_date_from'),
+                'sick_date_to' => $request->get('sick_date_to'),
+                'search' => $request->get('search'),
+            ];
+
             if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern' || \Auth::user()->type == 'support' ||  \Auth::user()->type == 'staff') 
             {
-                $user     = \Auth::user();
+                $user = \Auth::user();
                 $employee = Employee::where('user_id', '=', $user->id)->first();
-                $absence_sick   = Leave::where('employee_id', '=', $employee->id)->where('absence_type', '=', 'sick')->orderByDesc('id')->paginate(10);
-                $approval      = Leave::where('approval', '=', $user->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
+                
+                // Build query for absence_sick with filters
+                $absence_sick_query = Leave::where('employee_id', '=', $employee->id)
+                                        ->where('absence_type', '=', 'sick');
+                
+                // Apply filters
+                $absence_sick_query = $this->applySickFilters($absence_sick_query, $filters);
+                $absence_sick = $absence_sick_query->orderByDesc('id')->paginate(10);
+                
+                $approval = Leave::where('approval', '=', $user->id)
+                            ->where('status','=', 'Pending')
+                            ->orderByDesc('id')
+                            ->paginate(10);
+
+                // Get data for filter dropdowns (limited to current employee)
+                $employees = collect([$employee]); // Only current employee
             }
             elseif(\Auth::user()->type == 'admin')
             {
-                $employee      = Employee::all();
-                $absence_sick  = Leave::where('absence_type', '=', 'sick')->orderByDesc('id')->paginate(10);
-                $users         = \Auth::user();
-                $approval      = Leave::where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
+                $employee = Employee::all();
                 
+                // Build query for absence_sick with filters
+                $absence_sick_query = Leave::where('absence_type', '=', 'sick');
+                $absence_sick_query = $this->applySickFilters($absence_sick_query, $filters);
+                $absence_sick = $absence_sick_query->orderByDesc('id')->paginate(10);
+                
+                $users = \Auth::user();
+                $approval = Leave::where('approval', '=', $users->id)
+                            ->where('status','=', 'Pending')
+                            ->orderByDesc('id')
+                            ->paginate(10);
+
+                // Get data for filter dropdowns
+                $employees = Employee::all();
             }
             elseif(\Auth::user()->type == 'company')
             {
-                $employee      = Employee::all();
-                $absence_sick  = Leave::where('absence_type', '=', 'sick')->orderByDesc('id')->paginate(10);
-                $users         = \Auth::user();  
-                $approval      = Leave::where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
+                $employee = Employee::all();
+                
+                // Build query for absence_sick with filters
+                $absence_sick_query = Leave::where('absence_type', '=', 'sick');
+                $absence_sick_query = $this->applySickFilters($absence_sick_query, $filters);
+                $absence_sick = $absence_sick_query->orderByDesc('id')->paginate(10);
+                
+                $users = \Auth::user();  
+                $approval = Leave::where('approval', '=', $users->id)
+                            ->where('status','=', 'Pending')
+                            ->orderByDesc('id')
+                            ->paginate(10);
+
+                // Get data for filter dropdowns
+                $employees = Employee::all();
             }
             elseif(\Auth::user()->type == 'partners')
             {
-                
+                // Get employees based on branch
                 if(\Auth::user()->employee->branch_id == 2)
                 {
                     $employee = Employee::where('branch_id', 2)->get();
@@ -60,22 +105,47 @@ class SickLetterController extends Controller
                 {
                     $employee = Employee::all();
                 }
-                $employee = $employee->pluck('id');
+                
+                $employee_ids = $employee->pluck('id');
 
-                $absence_sick   = Leave::whereIn('employee_id', $employee)->where('absence_type', '=', 'sick')->orderByDesc('id')->paginate(10);
-                $users         = \Auth::user();  
-                $approval      = Leave::where('approval', '=', $users->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
+                // Build query for absence_sick with filters
+                $absence_sick_query = Leave::whereIn('employee_id', $employee_ids)
+                                        ->where('absence_type', '=', 'sick');
+                $absence_sick_query = $this->applySickFilters($absence_sick_query, $filters);
+                $absence_sick = $absence_sick_query->orderByDesc('id')->paginate(10);
+                
+                $users = \Auth::user();  
+                $approval = Leave::where('approval', '=', $users->id)
+                            ->where('status','=', 'Pending')
+                            ->orderByDesc('id')
+                            ->paginate(10);
+
+                // Get data for filter dropdowns (limited to branch employees)
+                $employees = $employee;
             }
             else
             {
-                $employee      = Employee::where('created_by', '=', \Auth::user()->creatorId())->get();
-                $absence_sick  = Leave::where('absence_type', '=', 'sick')->where('created_by', '=', \Auth::user()->creatorId())->orderByDesc('id')->paginate(10);
-                $approval      = Leave::where('approval', '=', \Auth::user()->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
+                $employee = Employee::where('created_by', '=', \Auth::user()->creatorId())->get();
+                
+                // Build query for absence_sick with filters
+                $absence_sick_query = Leave::where('absence_type', '=', 'sick')
+                                        ->where('created_by', '=', \Auth::user()->creatorId());
+                $absence_sick_query = $this->applySickFilters($absence_sick_query, $filters);
+                $absence_sick = $absence_sick_query->orderByDesc('id')->paginate(10);
+                
+                $approval = Leave::where('approval', '=', \Auth::user()->id)
+                            ->where('status','=', 'Pending')
+                            ->orderByDesc('id')
+                            ->paginate(10);
 
+                // Get data for filter dropdowns
+                $employees = $employee;
             }
 
-            return view('sick-letter.index', compact('absence_sick', 'employee', 'approval'));
+            // Append query parameters to pagination links
+            $absence_sick->appends($request->query());
 
+            return view('sick-letter.index', compact('absence_sick', 'employee', 'approval', 'employees'));
         }
         else
         {
@@ -454,6 +524,45 @@ class SickLetterController extends Controller
         $absence_sick   = Leave::find($request->id);
         $images         = Leave::where('id',$request->id)->get();
         return view('sick-letter.images',compact('images','absence_sick'));
+    }
+
+    /**
+     * Apply filters to the sick letter query
+     */
+    private function applySickFilters($query, $filters)
+    {
+        // Employee filter
+        if (!empty($filters['employee_filter'])) {
+            $query->where('employee_id', $filters['employee_filter']);
+        }
+
+        // Applied date range filter (if you have applied_on field for sick letters)
+        if (!empty($filters['date_from']) && !empty($filters['date_to'])) {
+            $query->whereBetween('applied_on', [$filters['date_from'], $filters['date_to']]);
+        } elseif (!empty($filters['date_from'])) {
+            $query->where('applied_on', '>=', $filters['date_from']);
+        } elseif (!empty($filters['date_to'])) {
+            $query->where('applied_on', '<=', $filters['date_to']);
+        }
+
+        // Sick letter date range filter
+        if (!empty($filters['sick_date_from']) && !empty($filters['sick_date_to'])) {
+            $query->whereBetween('date_sick_letter', [$filters['sick_date_from'], $filters['sick_date_to']]);
+        } elseif (!empty($filters['sick_date_from'])) {
+            $query->where('date_sick_letter', '>=', $filters['sick_date_from']);
+        } elseif (!empty($filters['sick_date_to'])) {
+            $query->where('date_sick_letter', '<=', $filters['sick_date_to']);
+        }
+
+        // Search filter (search in employee name)
+        if (!empty($filters['search'])) {
+            $searchTerm = '%' . $filters['search'] . '%';
+            $query->whereHas('employees', function($employeeQuery) use ($searchTerm) {
+                $employeeQuery->where('name', 'LIKE', $searchTerm);
+            });
+        }
+
+        return $query;
     }
 
 }

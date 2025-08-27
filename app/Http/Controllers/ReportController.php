@@ -5032,164 +5032,180 @@ class ReportController extends Controller
     public function overtime(Request $request)
     {
         $user = Auth::user();
-        if(\Auth::user()->can('manage report'))
-        {
+        
+        if (!\Auth::user()->can('manage report')) {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+
+        try {
+            // Get branches for filter dropdown
             $branch = Branch::get()->pluck('name', 'id');
             $branch->prepend('Select Branch', '');
 
-            $employees = Employee::select('id', 'name')
-            ->whereHas('user', function($query) {
-                $query->where('is_active', 1);
-            });
-            
-            if(!empty($request->employee_id) && $request->employee_id[0]!=0){
-                $employees->whereIn('id', $request->employee_id);
-            }
-            $employees=$employees;
-
-            if(!empty($request->branch))
-            {
-                $employees->where('branch_id', $request->branch);
-                $data['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
-            }
-
-            // if(!empty($request->department))
-            // {
-            //     $employees->where('department_id', $request->department);
-            //     $data['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
-            // }
-
-            $employees = $employees->get()->pluck('name', 'id');
-            // dd($employees);
-
-            if(!empty($request->month))
-            {
-                $currentdate = strtotime($request->month);
-                $month       = date('m', $currentdate);
-                $year        = date('Y', $currentdate);
-                $curMonth    = date('M-Y', strtotime($request->month));
-
-            }
-            else
-            {
-                $month    = date('m');
-                $year     = date('Y');
+            // Validate and set month/year
+            if (!empty($request->month)) {
+                $currentDate = strtotime($request->month);
+                $month = date('m', $currentDate);
+                $year = date('Y', $currentDate);
+                $curMonth = date('M-Y', strtotime($request->month));
+            } else {
+                $month = date('m');
+                $year = date('Y');
                 $curMonth = date('M-Y', strtotime($year . '-' . $month));
             }
 
+            // Validate month/year
+            if ($month < 1 || $month > 12 || $year < 2020 || $year > date('Y')) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', __('Invalid month/year selected.'));
+            }
 
+            // Build employee query - KEEPING ORIGINAL LOGIC
+            $employees = Employee::select('id', 'name')
+                ->whereHas('user', function($query) {
+                    $query->where('is_active', 1);
+                });
+            
+            // Apply employee filter (from original code)
+            if (!empty($request->employee_id) && $request->employee_id[0] != 0) {
+                $employees->whereIn('id', $request->employee_id);
+            }
+
+            // Apply branch filter
+            if (!empty($request->branch)) {
+                $employees->where('branch_id', $request->branch);
+            }
+
+            $employees = $employees->get()->pluck('name', 'id');
+
+            if ($employees->isEmpty()) {
+                return view('report.overtime', compact('branch'))
+                    ->with('employeesAttendance', [])
+                    ->with('dates', [])
+                    ->with('data', []);
+            }
+
+            // Generate dates for the month
             $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
-            for($i = 1; $i <= $num_of_days; $i++)
-            {
+            $dates = [];
+            for ($i = 1; $i <= $num_of_days; $i++) {
                 $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
             }
 
+            // Get employee IDs for optimized queries
+            $employeeIds = array_keys($employees->toArray());
+
+            // Bulk fetch attendance data for performance
+            $attendanceData = AttendanceEmployee::whereIn('employee_id', $employeeIds)
+                ->whereBetween('date', [
+                    $year . '-' . $month . '-01',
+                    $year . '-' . $month . '-' . $num_of_days
+                ])
+                ->select('employee_id', 'date', 'status', 'overtime', 'early_leaving', 'late')
+                ->get()
+                ->groupBy('employee_id');
+
+            // Bulk fetch overtime data for performance
+            $overtimeData = UserOvertime::whereIn('user_id', $employeeIds)
+                ->where('status', 'Approved')
+                ->whereYear('updated_at', $year)
+                ->whereMonth('updated_at', $month)
+                ->select('user_id', 'total_time', 'updated_at')
+                ->get()
+                ->groupBy('user_id');
+
             $employeesAttendance = [];
-            $totalPresent        = $totalLeave = $totalEarlyLeave = 0;
-            $ovetimeHours        = $overtimeMins = $earlyleaveHours = $earlyleaveMins = $lateHours = $lateMins = 0;
-            
-            foreach($employees as $id => $employee)
-            {
+            $totalPresent = $totalLeave = $totalEarlyLeave = 0;
+            $ovetimeHours = $overtimeMins = $earlyleaveHours = $earlyleaveMins = $lateHours = $lateMins = 0;
+
+            foreach ($employees as $id => $employee) {
                 $attendances['id'] = $id;
                 $attendances['name'] = $employee;
+                
+                // Initialize counters - KEEPING ORIGINAL LOGIC
                 $totalOvertimeDays = 0;
                 $totalOverTime = 0;
                 $overtimeHours = 0;
                 $overtimeMins = 0;
                 $totalOvertimeHours = 0;
                 $totalOvertimeMins = 0;
+                $attendanceStatus = [];
 
+                // Get employee's data from bulk queries
+                $employeeAttendances = $attendanceData->get($id, collect());
+                $employeeOvertimes = $overtimeData->get($id, collect());
 
-                foreach($dates as $date)
-                {
+                foreach ($dates as $date) {
                     $dateFormat = $year . '-' . $month . '-' . $date;
 
-                    if($dateFormat <= date('Y-m-d'))
-                    {
-                        $employeeAttendance = AttendanceEmployee::where('employee_id', $id)->where('date', $dateFormat)->first();
-                        $overtimes = UserOvertime::where('user_id', $id)->where('status', 'Approved')->whereYear('updated_at', $year)->whereMonth('updated_at', $month)->get();
+                    if ($dateFormat <= date('Y-m-d')) {
+                        // Find attendance for this specific date
+                        $employeeAttendance = $employeeAttendances->where('date', $dateFormat)->first();
+                        
+                        // Get all overtimes for this employee in the month (original logic)
+                        $overtimes = $employeeOvertimes;
 
-                        if(!empty($employeeAttendance) && $employeeAttendance->status == 'Present')
-                        {
+                        if (!empty($employeeAttendance) && $employeeAttendance->status == 'Present') {
                             $attendanceStatus[$date] = 'P';
-                            $totalPresent            += 1;
+                            $totalPresent += 1;
 
-                            // if($employeeAttendance->overtime > 0)
-                            // {
-                            //     $ovetimeHours += date('h', strtotime($employeeAttendance->overtime));
-                            //     $overtimeMins += date('i', strtotime($employeeAttendance->overtime));
-                            // }
-
-                            foreach($overtimes as $overtime)
-                            {
+                            // Calculate total overtime hours for summary (original logic)
+                            foreach ($overtimes as $overtime) {
                                 $totalOvertimeHours += (int)date('H', strtotime($overtime->total_time));
                                 $totalOvertimeMins  += (int)date('i', strtotime($overtime->total_time));
                             }
 
-                            if($employeeAttendance->early_leaving > 0)
-                            {
+                            if ($employeeAttendance->early_leaving > 0) {
                                 $earlyleaveHours += date('h', strtotime($employeeAttendance->early_leaving));
                                 $earlyleaveMins  += date('i', strtotime($employeeAttendance->early_leaving));
                             }
 
-                            if($employeeAttendance->late > 0)
-                            {
+                            if ($employeeAttendance->late > 0) {
                                 $lateHours += date('h', strtotime($employeeAttendance->late));
                                 $lateMins  += date('i', strtotime($employeeAttendance->late));
                             }
-
-                        }
-                        elseif(!empty($employeeAttendance) && $employeeAttendance->status == 'Leave')
-                        {
+                        } elseif (!empty($employeeAttendance) && $employeeAttendance->status == 'Leave') {
                             $attendanceStatus[$date] = 'A';
-                            $totalLeave              += 1;
-                        }
-                        else
-                        {
+                            $totalLeave += 1;
+                        } else {
                             $attendanceStatus[$date] = '';
                         }
 
-                        // Hitung jumlah hari lembur berdasarkan start_date
-
+                        // ORIGINAL LOGIC: Count overtime days based on updated_at date
                         foreach ($overtimes as $overtime) {
-                            // Format updated_at menjadi Y-m-d
                             $updatedAtDate = $overtime->updated_at->format('Y-m-d');
 
                             if ($updatedAtDate == $dateFormat) {
                                 $totalOvertimeDays += 1;
 
-                                // Hitung total_time
+                                // Calculate total overtime time
                                 $totalOverTime += strtotime($overtime->total_time) - strtotime('00:00:00');
                                 $overtimeHours += (int) date('H', strtotime($overtime->total_time));
                                 $overtimeMins  += (int) date('i', strtotime($overtime->total_time));
                             }
                         }
-
-                        
-                        
-                        
-                    }
-                    else
-                    {
+                    } else {
                         $attendanceStatus[$date] = '';
                     }
-   
                 }
 
+                // Format total overtime duration (original logic)
                 $totalOvertimeDuration = sprintf("%02d:%02d:%02d", $overtimeHours, $overtimeMins, 0);
+                
                 $attendances['status'] = $attendanceStatus;
-                $attendances['overtime'] = $totalOvertimeDays;
+                $attendances['overtime'] = $totalOvertimeDays; // This should now match the detail view
                 $attendances['total_overtime'] = $totalOvertimeDuration;
+                
+                // Count present days (original logic)
                 $attendanceCounts = array_count_values($attendanceStatus);
                 $totalPresents = isset($attendanceCounts['P']) ? $attendanceCounts['P'] : 0;
                 $attendances['present'] = $totalPresents;
-                $employeesAttendance[] = $attendances;
-
                 
+                $employeesAttendance[] = $attendances;
             }
 
-            
-
+            // Calculate summary data (original logic)
             $totalOverTime   = $ovetimeHours + ($overtimeMins / 60);
             $totalEarlyleave = $earlyleaveHours + ($earlyleaveMins / 60);
             $totalLate       = $lateHours + ($lateMins / 60);
@@ -5202,12 +5218,13 @@ class ReportController extends Controller
             $data['curMonth']        = $curMonth;
 
             return view('report.overtime', compact('employeesAttendance', 'branch', 'dates', 'data'));
-        }
-        else
-        {
-            return redirect()->back()->with('error', __('Permission denied.'));
+
+        } catch (\Exception $e) {
+            \Log::error("Error in overtime report: " . $e->getMessage());
+            return redirect()->back()->with('error', __('An error occurred while generating the report. Please try again.'));
         }
     }
+
 
     public function projects(Request $request)
     {
@@ -5352,33 +5369,73 @@ class ReportController extends Controller
 
     }
 
-    public function employeeOvertime(Request $request, $employee_id, $month)
+    public function employeeOvertime(Request $request, $employee_id, $month = null)
     {
-        if(\Auth::user()->can('manage report'))
-        {
-            $employee_overtime = UserOvertime::where('user_id', $employee_id)
-                ->where('status', '=', 'Approved');
-
-            $m = date('m', strtotime($month));
-            $y = date('Y', strtotime($month));
-
-            $employee_overtime->whereMonth('updated_at', $m)
-                ->whereYear('updated_at', $y);
-
-            $employee_overtime = $employee_overtime->get();
-
-            return view('report.overtimeShow', compact('employee_overtime'));
-        }
-        else
-        {
+        if (!\Auth::user()->can('manage report')) {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
 
+        try {
+            // Validate employee ID
+            $employee = Employee::find($employee_id);
+            if (!$employee) {
+                return response()->json(['error' => __('Employee not found.')], 404);
+            }
 
+            // Validate and set month/year - KEEP ORIGINAL LOGIC
+            if ($month) {
+                $m = date('m', strtotime($month));
+                $y = date('Y', strtotime($month));
+            } else {
+                $m = date('m');
+                $y = date('Y');
+            }
+
+            // Get overtime records - EXACT SAME QUERY AS ORIGINAL
+            $employee_overtime = UserOvertime::where('user_id', $employee_id)
+                ->where('status', '=', 'Approved')
+                ->whereMonth('updated_at', $m)
+                ->whereYear('updated_at', $y)
+                ->orderBy('updated_at', 'desc')
+                ->get();
+
+            // Calculate summary data
+            $totalOvertimeSeconds = 0;
+            $totalOvertimeDays = $employee_overtime->count();
+            
+            foreach ($employee_overtime as $overtime) {
+                if ($overtime->total_time && $overtime->total_time !== '00:00:00') {
+                    $timeParts = explode(':', $overtime->total_time);
+                    if (count($timeParts) === 3) {
+                        $hours = (int) $timeParts[0];
+                        $minutes = (int) $timeParts[1];
+                        $seconds = (int) $timeParts[2];
+                        $totalOvertimeSeconds += ($hours * 3600) + ($minutes * 60) + $seconds;
+                    }
+                }
+            }
+
+            $summaryData = [
+                'employee_name' => $employee->name,
+                'employee_id' => $employee_id,
+                'total_overtime_days' => $totalOvertimeDays,
+                'total_overtime_hours' => $this->formatSecondsToTime($totalOvertimeSeconds),
+                'period' => date('M Y', strtotime($y . '-' . $m)),
+                'average_overtime_per_day' => $totalOvertimeDays > 0 ? 
+                    $this->formatSecondsToTime($totalOvertimeSeconds / $totalOvertimeDays) : '00:00:00',
+                'total_working_days' => 0 // You can calculate this if needed
+            ];
+
+            return view('report.overtimeShow', compact('employee_overtime', 'summaryData'));
+
+        } catch (\Exception $e) {
+            \Log::error("Error in employeeOvertime: " . $e->getMessage());
+            return response()->json(['error' => __('An error occurred while loading overtime details.')], 500);
+        }
     }
 
     public function reimbursment(Request $request)
-    {
+    {   
         $user = Auth::user();
         if(\Auth::user()->can('manage report'))
         {
@@ -5388,142 +5445,121 @@ class ReportController extends Controller
             $client = User::where('type','=','client')->get()->pluck('name', 'id');
             $client->prepend('Select Client', '');
 
-            $employees = Employee::select('id', 'name');
-            if(!empty($request->employee_id) && $request->employee_id[0]!=0){
-                $employees->whereIn('id', $request->employee_id);
-            }
-            $employees=$employees;
-
-            if(!empty($request->branch))
-            {
-                $employees->where('branch_id', $request->branch);
-                $data['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
-            }
-
-            // if(!empty($request->department))
-            // {
-            //     $employees->where('department_id', $request->department);
-            //     $data['department'] = !empty(Department::find($request->department)) ? Department::find($request->department)->name : '';
-            // }
-
-            $employees = $employees->get()->pluck('name', 'id');
-            // dd($employees);
-
-            // Filter berdasarkan reimbursment_type
-            if (!empty($request->reimbursment_type)) {
-                $reimbursmentType = $request->reimbursment_type;
-                $employees = $employees->filter(function ($value, $key) use ($reimbursmentType) {
-                    $reimbursments = Reimbursment::where('employee_id', $key)
-                        ->where('reimbursment_type', $reimbursmentType)
-                        ->exists();
-
-                    return $reimbursments;
-                });
-            }
-
-            if (!empty($request->client_id)) {
-                $reimbursmentclient = $request->client_id;
-                $employees = $employees->filter(function ($value, $key) use ($reimbursmentclient) {
-                    $reimbursments = Reimbursment::where('employee_id', $key)
-                        ->where('client_id', $reimbursmentclient)
-                        ->exists();
-
-                    return $reimbursments;
-                });
-            }
-
-            if(!empty($request->month))
-            {
-                $currentdate = strtotime($request->month);
-                $month       = date('m', $currentdate);
-                $year        = date('Y', $currentdate);
-                $curMonth    = date('M-Y', strtotime($request->month));
-
-            }
-            else
-            {
-                $month    = date('m');
-                $year     = date('Y');
-                $curMonth = date('M-Y', strtotime($year . '-' . $month));
-            }
-
-
-            $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
-            for($i = 1; $i <= $num_of_days; $i++)
-            {
-                $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
-            }
-
+            // Initialize empty result for initial load
             $employeesReimbursment = [];
-            $totalPresent = $totalLeave = $totalEarlyLeave = 0;
-            $ovetimeHours = $overtimeMins = $earlyleaveHours = $earlyleaveMins = $lateHours = $lateMins = 0;
+            $dates = [];
+            $summaryData = [
+                'total_employees' => 0,
+                'total_amount' => 0,
+                'total_paid' => 0,
+                'total_unpaid' => 0,
+                'total_transactions' => 0
+            ];
 
-            foreach ($employees as $id => $employee) {
-                $reimbursments = [];
-                $reimbursments['id'] = $id;
-                $reimbursments['name'] = $employee;
-                $totalReimbursment = 0;
-                $totalPendingAmount = 0;
-                $totalReimbursmentCount = 0;
-
-                foreach ($dates as $date) {
-                    $dateFormat = $year . '-' . $month . '-' . $date;
-                    $reimbursmentType = $request->reimbursment_type;
-
-                    if ($dateFormat <= date('Y-m-d')) {
-                        $reimbursment = Reimbursment::where('employee_id', '=', $id)
-                            ->where('status', '=', 'Paid')
-                            ->where('date', $dateFormat)
-                            ->where('reimbursment_type', $reimbursmentType)
-                            ->get();
-
-                        // Hitung jumlah hari lembur berdasarkan start_date
-
-                        foreach ($reimbursment as $reimbursmentss) {
-                            if ($reimbursmentss->date == $dateFormat) {
-                                $totalReimbursment += $reimbursmentss->amount;
-                            }
-                        }
-
-                        $pendingReimbursments = Reimbursment::where('employee_id', '=', $id)
-                            ->where('status', '=', 'Pending')
-                            ->where('date', $dateFormat)
-                            ->where('reimbursment_type', $reimbursmentType)
-                            ->get();
-
-                        foreach ($pendingReimbursments as $pendingreimbursment) {
-                            if ($pendingreimbursment->date == $dateFormat) {
-                                $totalPendingAmount += $pendingreimbursment->amount;
-                            }
-                        }
-
-                        $total_reimbursment = Reimbursment::where('employee_id', '=', $id)
-                            ->where('date', $dateFormat)
-                            ->where('reimbursment_type', $reimbursmentType)
-                            ->get();
-
-                        // Hitung jumlah reimbursment berdasarkan start_date
-
-                        foreach ($total_reimbursment as $total_reimbursments) {
-                            if ($total_reimbursments->date == $dateFormat) {
-                                $totalReimbursmentCount++;
-                            }
-                        }
-
-                    }
+            // Only process data if filters are applied
+            if ($request->has('reimbursment_type') && !empty($request->reimbursment_type)) {
+                
+                // Get month and year
+                if(!empty($request->month))
+                {
+                    $currentdate = strtotime($request->month);
+                    $month       = date('m', $currentdate);
+                    $year        = date('Y', $currentdate);
+                    $curMonth    = date('M-Y', strtotime($request->month));
+                }
+                else
+                {
+                    $month    = date('m');
+                    $year     = date('Y');
+                    $curMonth = date('M-Y', strtotime($year . '-' . $month));
                 }
 
-                $totalAmountReimbursment = $totalReimbursment;
-                $totalAmountPendingReimbursment = $totalPendingAmount;
-                $reimbursments['total_reimbursment'] = $totalAmountReimbursment + $totalAmountPendingReimbursment;
-                $reimbursments['paid_amount'] = $totalAmountReimbursment;
-                $reimbursments['unpaid_amount'] = $totalAmountPendingReimbursment;
-                $reimbursments['total_reimbursment_count'] = $totalReimbursmentCount;
-                $employeesReimbursment[] = $reimbursments;
+                // Generate dates for the month
+                $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
+                for($i = 1; $i <= $num_of_days; $i++)
+                {
+                    $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
+                }
+
+                // Build optimized employee query
+                $employees_query = Employee::select('id', 'name');
+                
+                // Apply branch filter first
+                if(!empty($request->branch))
+                {
+                    $employees_query->where('branch_id', $request->branch);
+                }
+
+                // Get employees who have reimbursements in the specified period
+                $reimbursment_type = $request->reimbursment_type;
+                $start_date = $year . '-' . $month . '-01';
+                $end_date = $year . '-' . $month . '-' . $num_of_days;
+
+                // Optimize query by joining with reimbursments table
+                $employees_query->whereHas('reimbursments', function($query) use ($reimbursment_type, $start_date, $end_date, $request) {
+                    $query->where('reimbursment_type', $reimbursment_type)
+                        ->whereBetween('date', [$start_date, $end_date]);
+                    
+                    if (!empty($request->client_id)) {
+                        $query->where('client_id', $request->client_id);
+                    }
+                });
+
+                $employees = $employees_query->get();
+
+                // Get all reimbursements for the period in one query
+                $reimbursments_query = Reimbursment::where('reimbursment_type', $reimbursment_type)
+                                                ->whereBetween('date', [$start_date, $end_date])
+                                                ->whereIn('employee_id', $employees->pluck('id'));
+
+                if (!empty($request->client_id)) {
+                    $reimbursments_query->where('client_id', $request->client_id);
+                }
+
+                $all_reimbursments = $reimbursments_query->get()
+                                                    ->groupBy('employee_id');
+
+                // Process data more efficiently
+                foreach ($employees as $employee) {
+                    $employee_reimbursments = $all_reimbursments->get($employee->id, collect());
+                    
+                    $totalReimbursment = $employee_reimbursments->where('status', 'Paid')->sum('amount');
+                    $totalPendingAmount = $employee_reimbursments->where('status', 'Pending')->sum('amount');
+                    $totalReimbursmentCount = $employee_reimbursments->count();
+
+                    $reimbursment_data = [
+                        'id' => $employee->id,
+                        'name' => $employee->name,
+                        'total_reimbursment' => $totalReimbursment + $totalPendingAmount,
+                        'paid_amount' => $totalReimbursment,
+                        'unpaid_amount' => $totalPendingAmount,
+                        'total_reimbursment_count' => $totalReimbursmentCount
+                    ];
+
+                    $employeesReimbursment[] = $reimbursment_data;
+
+                    // Update summary
+                    $summaryData['total_amount'] += $reimbursment_data['total_reimbursment'];
+                    $summaryData['total_paid'] += $reimbursment_data['paid_amount'];
+                    $summaryData['total_unpaid'] += $reimbursment_data['unpaid_amount'];
+                    $summaryData['total_transactions'] += $reimbursment_data['total_reimbursment_count'];
+                }
+
+                $summaryData['total_employees'] = count($employeesReimbursment);
+
+                // Sort by total amount descending
+                usort($employeesReimbursment, function($a, $b) {
+                    return $b['total_reimbursment'] <=> $a['total_reimbursment'];
+                });
             }
 
-
-            return view('report.reimbursment', compact('employeesReimbursment', 'branch', 'dates', 'client'));
+            return view('report.reimbursment', compact(
+                'employeesReimbursment', 
+                'branch', 
+                'dates', 
+                'client', 
+                'summaryData'
+            ));
         }
         else
         {
@@ -5695,84 +5731,109 @@ class ReportController extends Controller
             $branch = Branch::get()->pluck('name', 'id');
             $branch->prepend('Select Branch', '');
 
-            $employees = Employee::select('id', 'name')
-            ->whereHas('user', function($query) {
-                $query->where('is_active', 1);
-            });
-            if(!empty($request->employee_id) && $request->employee_id[0]!=0){
-                $employees->whereIn('id', $request->employee_id);
-            }
-            $employees=$employees;
+            // Initialize empty result for initial load
+            $employeesSick = [];
+            $dates = [];
+            $summaryData = [
+                'total_employees' => 0,
+                'total_sick_days' => 0,
+                'total_sick_letters' => 0,
+                'avg_sick_days' => 0
+            ];
 
-            if(!empty($request->branch))
-            {
-                $employees->where('branch_id', $request->branch);
-                $data['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
-            }
+            // Only process data if month is provided
+            if ($request->has('month') || $request->hasAny(['branch'])) {
+                
+                // Get month and year
+                if(!empty($request->month))
+                {
+                    $currentdate = strtotime($request->month);
+                    $month       = date('m', $currentdate);
+                    $year        = date('Y', $currentdate);
+                    $curMonth    = date('M-Y', strtotime($request->month));
+                }
+                else
+                {
+                    $month    = date('m');
+                    $year     = date('Y');
+                    $curMonth = date('M-Y', strtotime($year . '-' . $month));
+                }
 
-            $employees = $employees->get()->pluck('name', 'id');
+                // Generate dates for the month
+                $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
+                for($i = 1; $i <= $num_of_days; $i++)
+                {
+                    $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
+                }
 
-            if(!empty($request->month))
-            {
-                $currentdate = strtotime($request->month);
-                $month       = date('m', $currentdate);
-                $year        = date('Y', $currentdate);
-                $curMonth    = date('M-Y', strtotime($request->month));
+                // Build optimized employee query
+                $employees_query = Employee::select('id', 'name')
+                                        ->whereHas('user', function($query) {
+                                            $query->where('is_active', 1);
+                                        });
 
-            }
-            else
-            {
-                $month    = date('m');
-                $year     = date('Y');
-                $curMonth = date('M-Y', strtotime($year . '-' . $month));
-            }
+                // Apply branch filter
+                if(!empty($request->branch))
+                {
+                    $employees_query->where('branch_id', $request->branch);
+                }
 
+                // Get employees who have sick leave in the specified period
+                $start_date = $year . '-' . $month . '-01';
+                $end_date = $year . '-' . $month . '-' . $num_of_days;
 
-            $num_of_days = date('t', mktime(0, 0, 0, $month, 1, $year));
-            for($i = 1; $i <= $num_of_days; $i++)
-            {
-                $dates[] = str_pad($i, 2, '0', STR_PAD_LEFT);
-            }
+                // Optimize by only getting employees with sick records
+                $employees_query->whereHas('sickLeaves', function($query) use ($start_date, $end_date) {
+                    $query->where('absence_type', 'sick')
+                        ->whereBetween('applied_on', [$start_date, $end_date]);
+                });
 
-            $employeesSick = [];            
-            foreach($employees as $id => $employee)
-            {
-                $sick['id'] = $id;
-                $sick['name'] = $employee;
-                $totalSickDays = 0;
-                $totalSickLetter = 0;
+                $employees = $employees_query->get();
 
-                foreach ($dates as $date) {
-                    $dateFormat = $year . '-' . $month . '-' . $date;
+                // Get all sick leaves for the period in one optimized query
+                $sick_leaves = Leave::where('absence_type', 'sick')
+                                ->whereBetween('applied_on', [$start_date, $end_date])
+                                ->whereIn('employee_id', $employees->pluck('id'))
+                                ->select('employee_id', 'total_sick_days', 'sick_letter', 'applied_on')
+                                ->get()
+                                ->groupBy('employee_id');
 
-                    if ($dateFormat <= date('Y-m-d')) {
+                // Process data more efficiently
+                foreach ($employees as $employee) {
+                    $employee_sick_leaves = $sick_leaves->get($employee->id, collect());
+                    
+                    $totalSickDays = $employee_sick_leaves->sum('total_sick_days') ?? 0;
+                    $totalSickLetter = $employee_sick_leaves->where('sick_letter', '!=', null)->count();
 
-                        $total_sick_days = Leave::where('employee_id', '=', $id)
-                            ->where('applied_on', $dateFormat)
-                            ->where('absence_type', '=', 'sick')
-                            ->sum('total_sick_days');
+                    $sick_data = [
+                        'id' => $employee->id,
+                        'name' => $employee->name,
+                        'sick' => $totalSickDays,
+                        'total_sick_letter' => $totalSickLetter
+                    ];
 
-                        $totalSickDays += $total_sick_days;
-
-                        $total_sick_letter = Leave::where('employee_id', '=', $id)
-                            ->where('applied_on', $dateFormat)
-                            ->where('absence_type', '=', 'sick')
-                            ->whereNotNull('sick_letter')
-                            ->count();
-
-                        $totalSickLetter += $total_sick_letter;
-
+                    // Only include employees with sick data
+                    if ($totalSickDays > 0 || $totalSickLetter > 0) {
+                        $employeesSick[] = $sick_data;
+                        
+                        // Update summary
+                        $summaryData['total_sick_days'] += $totalSickDays;
+                        $summaryData['total_sick_letters'] += $totalSickLetter;
                     }
                 }
 
-                $sick['sick'] = $totalSickDays;
-                $sick['total_sick_letter'] = $totalSickLetter;
-                $employeesSick[] = $sick;
+                $summaryData['total_employees'] = count($employeesSick);
+                $summaryData['avg_sick_days'] = $summaryData['total_employees'] > 0 
+                                            ? round($summaryData['total_sick_days'] / $summaryData['total_employees'], 2) 
+                                            : 0;
 
-    
+                // Sort by sick days descending
+                usort($employeesSick, function($a, $b) {
+                    return $b['sick'] <=> $a['sick'];
+                });
             }
 
-            return view('report.sick', compact('employeesSick', 'branch', 'dates'));
+            return view('report.sick', compact('employeesSick', 'branch', 'dates', 'summaryData'));
         }
         else
         {
@@ -6448,129 +6509,309 @@ class ReportController extends Controller
     public function timesheet(Request $request)
     {
         $user = Auth::user();
-        if (\Auth::user()->can('manage report')) {
+        
+        if (!\Auth::user()->can('manage report')) {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
+
+        try {
+            // Get branches for filter dropdown
             $branch = Branch::get()->pluck('name', 'id');
             $branch->prepend('Select Branch', '');
-        
-            $employees = Employee::select('user_id', 'name')
+
+            // Build employee query with proper error handling
+            $employees = Employee::select('user_id', 'name', 'id')
                 ->whereHas('user', function ($query) {
                     $query->where('is_active', 1);
                 });
-        
-            if (!empty($request->employee_id) && $request->employee_id[0] != 0) {
+
+            // Apply branch filter if specified
+            if (!empty($request->branch) && $request->branch !== '') {
+                $employees->where('branch_id', $request->branch);
+            }
+
+            // Apply employee filter if specified (this seems to be missing from your original code)
+            if (!empty($request->employee_id) && is_array($request->employee_id) && $request->employee_id[0] != 0) {
                 $employees->whereIn('id', $request->employee_id);
             }
-        
-            if (!empty($request->branch)) {
-                $employees->where('branch_id', $request->branch);
-                $data['branch'] = !empty(Branch::find($request->branch)) ? Branch::find($request->branch)->name : '';
-            }
-        
-            $employees = $employees->get()->pluck('name', 'user_id');
-        
-            $startDate = !empty($request->start_date) ? $request->start_date : null;
-            $endDate = !empty($request->end_date) ? $request->end_date : null;
-        
-            $employeesAttendance = [];
+
+            $employees = $employees->get();
+
+            // Validate and set date range
+            $startDate = null;
+            $endDate = null;
             
-            foreach ($employees as $userId => $employeeName) {
-                $timesheetQuery = Timesheet::where('created_by', $userId);
-                $meetingQuery = Meeting::where('created_by', $userId);
+            if (!empty($request->start_date) && !empty($request->end_date)) {
+                $startDate = Carbon::parse($request->start_date)->format('Y-m-d');
+                $endDate = Carbon::parse($request->end_date)->format('Y-m-d');
                 
-                if ($startDate && $endDate) {
-                    $timesheetQuery->whereBetween('date', [$startDate, $endDate]);
-                    $meetingQuery->whereBetween('date', [$startDate, $endDate]);
-                } else {
-                    $month = date('m');
-                    $year = date('Y');
-                    $curMonth = date('M-Y', strtotime($year . '-' . $month));
+                // Validate date range
+                if ($startDate > $endDate) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('error', __('Start date cannot be greater than end date.'));
+                }
+                
+                // Check if date range is too large (performance consideration)
+                $daysDiff = Carbon::parse($startDate)->diffInDays(Carbon::parse($endDate));
+                if ($daysDiff > 365) {
+                    return redirect()->back()
+                        ->withInput()
+                        ->with('warning', __('Date range is quite large. This may affect performance.'));
+                }
+            } else {
+                // Default to current month if no dates specified
+                $startDate = Carbon::now()->startOfMonth()->format('Y-m-d');
+                $endDate = Carbon::now()->endOfMonth()->format('Y-m-d');
+            }
+
+            $employeesAttendance = [];
+
+            foreach ($employees as $employee) {
+                if (!$employee->user_id) {
+                    continue; // Skip employees without user_id
+                }
+
+                try {
+                    // Build timesheet query
+                    $timesheetQuery = Timesheet::where('created_by', $employee->user_id);
                     
-                    $timesheetQuery->whereMonth('date', $month)->whereYear('date', $year);
-                    $meetingQuery->whereMonth('date', $month)->whereYear('date', $year);
+                    // Build meeting query  
+                    $meetingQuery = Meeting::where('created_by', $employee->user_id);
+                    
+                    // Apply date filters
+                    if ($startDate && $endDate) {
+                        $timesheetQuery->whereBetween('date', [$startDate, $endDate]);
+                        $meetingQuery->whereBetween('date', [$startDate, $endDate]);
+                    }
+
+                    // Get the data
+                    $timesheetData = $timesheetQuery->get();
+                    $meetingData = $meetingQuery->get();
+
+                    // Calculate total working hours
+                    $totalWorkingSeconds = 0;
+                    foreach ($timesheetData as $timesheet) {
+                        if ($timesheet->time && $timesheet->time !== '00:00:00') {
+                            $timeParts = explode(':', $timesheet->time);
+                            if (count($timeParts) === 3) {
+                                $hours = (int) $timeParts[0];
+                                $minutes = (int) $timeParts[1];
+                                $seconds = (int) $timeParts[2];
+                                $totalWorkingSeconds += ($hours * 3600) + ($minutes * 60) + $seconds;
+                            }
+                        }
+                    }
+
+                    // Calculate total meeting hours
+                    $totalMeetingSeconds = 0;
+                    foreach ($meetingData as $meeting) {
+                        if ($meeting->time && $meeting->time !== '00:00:00') {
+                            $timeParts = explode(':', $meeting->time);
+                            if (count($timeParts) === 3) {
+                                $hours = (int) $timeParts[0];
+                                $minutes = (int) $timeParts[1];
+                                $seconds = (int) $timeParts[2];
+                                $totalMeetingSeconds += ($hours * 3600) + ($minutes * 60) + $seconds;
+                            }
+                        }
+                    }
+
+                    // Format time display
+                    $formattedWorkingHours = $this->formatSecondsToTime($totalWorkingSeconds);
+                    $formattedMeetingHours = $this->formatSecondsToTime($totalMeetingSeconds);
+
+                    // Only include employees with timesheet or meeting data
+                    if ($totalWorkingSeconds > 0 || $totalMeetingSeconds > 0) {
+                        $employeesAttendance[] = [
+                            'id' => $employee->user_id,
+                            'name' => $employee->name ?? 'Unknown Employee',
+                            'total_working_hours' => $formattedWorkingHours,
+                            'total_meeting_hours' => $formattedMeetingHours,
+                            'working_seconds' => $totalWorkingSeconds,
+                            'meeting_seconds' => $totalMeetingSeconds,
+                        ];
+                    }
+
+                } catch (\Exception $e) {
+                    // Log the error but continue processing other employees
+                    \Log::error("Error processing timesheet for employee {$employee->id}: " . $e->getMessage());
+                    continue;
                 }
-        
-                $timesheetData = $timesheetQuery->get();
-                $meetingData = $meetingQuery->get();
-        
-                $totalWorkingHours = 0;
-                $totalMeetingHours = 0;
-        
-                foreach ($timesheetData as $timesheet) {
-                    list($hours, $minutes, $seconds) = explode(':', $timesheet->time);
-                    $totalWorkingHours += ($hours * 3600) + ($minutes * 60) + $seconds;
-                }
-        
-                foreach ($meetingData as $meeting) {
-                    list($hours, $minutes, $seconds) = explode(':', $meeting->time);
-                    $totalMeetingHours += ($hours * 3600) + ($minutes * 60) + $seconds;
-                }
-        
-                $formattedWorkingHours = sprintf('%02d:%02d:%02d', floor($totalWorkingHours / 3600), floor(($totalWorkingHours % 3600) / 60), ($totalWorkingHours % 60));
-                $formattedMeetingHours = sprintf('%02d:%02d:%02d', floor($totalMeetingHours / 3600), floor(($totalMeetingHours % 3600) / 60), ($totalMeetingHours % 60));
-        
-                $employeesAttendance[] = [
-                    'name' => $employeeName,
-                    'total_working_hours' => $formattedWorkingHours,
-                    'total_meeting_hours' => $formattedMeetingHours,
-                    'id' => $userId,
-                ];
             }
 
-        
-            return view('report.timesheet', compact('employeesAttendance', 'branch', ));
-        } else {
-            return redirect()->back()->with('error', __('Permission denied.'));
+            // Sort by total hours (working + meeting) descending
+            usort($employeesAttendance, function($a, $b) {
+                $totalA = $a['working_seconds'] + $a['meeting_seconds'];
+                $totalB = $b['working_seconds'] + $b['meeting_seconds'];
+                return $totalB <=> $totalA;
+            });
+
+            return view('report.timesheet', compact('employeesAttendance', 'branch'));
+
+        } catch (\Exception $e) {
+            \Log::error("Error in timesheet report: " . $e->getMessage());
+            return redirect()->back()->with('error', __('An error occurred while generating the report. Please try again.'));
         }
-        
     }
 
-    public function employeeTimesheet(Request $request, $employee_id, $startdate, $enddate)
+    public function employeeTimesheet(Request $request, $employee_id, $startdate = null, $enddate = null)
     {
-        if(\Auth::user()->can('manage report'))
-        {
-            $employee_timesheet   = Timesheet::where('created_by', $employee_id);
+        if (!\Auth::user()->can('manage report')) {
+            return redirect()->back()->with('error', __('Permission denied.'));
+        }
 
-            if($startdate && $enddate)
-            {
-                $employee_timesheet->whereBetween('date', [$startdate, $enddate]);
+        try {
+            // Validate employee ID
+            $employee = Employee::where('user_id', $employee_id)->first();
+            if (!$employee) {
+                return response()->json(['error' => __('Employee not found.')], 404);
             }
 
-            $employee_timesheet = $employee_timesheet->get();
+            // Build timesheet query
+            $employee_timesheet = Timesheet::where('created_by', $employee_id);
 
+            // Apply date filters with validation
+            if ($startdate && $enddate) {
+                try {
+                    $startDate = Carbon::parse($startdate)->format('Y-m-d');
+                    $endDate = Carbon::parse($enddate)->format('Y-m-d');
+                    
+                    if ($startDate <= $endDate) {
+                        $employee_timesheet->whereBetween('date', [$startDate, $endDate]);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error("Invalid date format in employeeTimesheet: " . $e->getMessage());
+                    // Continue without date filter if dates are invalid
+                }
+            }
 
-            return view('report.timesheetShow', compact('employee_timesheet'));
-        }
-        else
-        {
-            return redirect()->back()->with('error', __('Permission denied.'));
-        }
+            // Get timesheets ordered by date
+            $employee_timesheet = $employee_timesheet
+                ->orderBy('date', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->get();
 
-
-    }
-
-    public function employeeMeeting(Request $request, $employee_id, $startdate, $enddate)
-    {
-        if(\Auth::user()->can('manage report'))
-        {
-            $employee_meeting   = Meeting::where('created_by', $employee_id);
+            // Calculate summary data
+            $totalHours = 0;
+            $totalEntries = $employee_timesheet->count();
             
-            if($startdate && $enddate)
-            {
-                $employee_meeting->whereBetween('date', [$startdate, $enddate]);
+            foreach ($employee_timesheet as $timesheet) {
+                if ($timesheet->time && $timesheet->time !== '00:00:00') {
+                    $timeParts = explode(':', $timesheet->time);
+                    if (count($timeParts) === 3) {
+                        $hours = (int) $timeParts[0];
+                        $minutes = (int) $timeParts[1];
+                        $seconds = (int) $timeParts[2];
+                        $totalHours += ($hours * 3600) + ($minutes * 60) + $seconds;
+                    }
+                }
             }
 
-            $employee_meeting = $employee_meeting->get();
+            $summaryData = [
+                'employee_name' => $employee->name,
+                'total_entries' => $totalEntries,
+                'total_hours' => $this->formatSecondsToTime($totalHours),
+                'period' => $startdate && $enddate ? 
+                    Carbon::parse($startdate)->format('d M Y') . ' - ' . Carbon::parse($enddate)->format('d M Y') : 
+                    'All Time',
+                'average_daily_hours' => $totalEntries > 0 ? 
+                    $this->formatSecondsToTime($totalHours / $totalEntries) : '00:00:00'
+            ];
 
+            return view('report.timesheetShow', compact('employee_timesheet', 'summaryData'));
 
-            return view('report.meetingShow', compact('employee_meeting'));
+        } catch (\Exception $e) {
+            \Log::error("Error in employeeTimesheet: " . $e->getMessage());
+            return response()->json(['error' => __('An error occurred while loading timesheet details.')], 500);
         }
-        else
-        {
+    }
+
+    public function employeeMeeting(Request $request, $employee_id, $startdate = null, $enddate = null)
+    {
+        if (!\Auth::user()->can('manage report')) {
             return redirect()->back()->with('error', __('Permission denied.'));
         }
 
+        try {
+            // Validate employee ID
+            $employee = Employee::where('user_id', $employee_id)->first();
+            if (!$employee) {
+                return response()->json(['error' => __('Employee not found.')], 404);
+            }
 
+            // Build meeting query
+            $employee_meetings = Meeting::where('created_by', $employee_id);
+
+            // Apply date filters with validation
+            if ($startdate && $enddate) {
+                try {
+                    $startDate = Carbon::parse($startdate)->format('Y-m-d');
+                    $endDate = Carbon::parse($enddate)->format('Y-m-d');
+                    
+                    if ($startDate <= $endDate) {
+                        $employee_meetings->whereBetween('date', [$startDate, $endDate]);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error("Invalid date format in employeeMeeting: " . $e->getMessage());
+                    // Continue without date filter if dates are invalid
+                }
+            }
+
+            // Get meetings ordered by date
+            $employee_meetings = $employee_meetings
+                ->orderBy('date', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Calculate summary data
+            $totalHours = 0;
+            $totalMeetings = $employee_meetings->count();
+            
+            foreach ($employee_meetings as $meeting) {
+                if ($meeting->time && $meeting->time !== '00:00:00') {
+                    $timeParts = explode(':', $meeting->time);
+                    if (count($timeParts) === 3) {
+                        $hours = (int) $timeParts[0];
+                        $minutes = (int) $timeParts[1];
+                        $seconds = (int) $timeParts[2];
+                        $totalHours += ($hours * 3600) + ($minutes * 60) + $seconds;
+                    }
+                }
+            }
+
+            $summaryData = [
+                'employee_name' => $employee->name,
+                'total_meetings' => $totalMeetings,
+                'total_hours' => $this->formatSecondsToTime($totalHours),
+                'period' => $startdate && $enddate ? 
+                    Carbon::parse($startdate)->format('d M Y') . ' - ' . Carbon::parse($enddate)->format('d M Y') : 
+                    'All Time',
+                'average_meeting_duration' => $totalMeetings > 0 ? 
+                    $this->formatSecondsToTime($totalHours / $totalMeetings) : '00:00:00'
+            ];
+
+            return view('report.meetingShow', compact('employee_meetings', 'summaryData'));
+
+        } catch (\Exception $e) {
+            \Log::error("Error in employeeMeeting: " . $e->getMessage());
+            return response()->json(['error' => __('An error occurred while loading meeting details.')], 500);
+        }
     }
+
+    private function formatSecondsToTime($seconds)
+    {
+        if ($seconds <= 0) {
+            return '00:00:00';
+        }
+        
+        $hours = floor($seconds / 3600);
+        $minutes = floor(($seconds % 3600) / 60);
+        $remainingSeconds = $seconds % 60;
+        
+        return sprintf('%02d:%02d:%02d', $hours, $minutes, $remainingSeconds);
+    }
+
 
 
 

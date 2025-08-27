@@ -117,4 +117,105 @@ class JobApplication extends Model
         'updated_at' => 'datetime',
         'dob' => 'date',
     ];
+
+    public function psychotestSchedule()
+    {
+        return $this->hasOne(PsychotestSchedule::class, 'candidate', 'id');
+    }
+
+    /**
+     * Get the latest psychotest schedule for this candidate
+     */
+    public function latestPsychotestSchedule()
+    {
+        return $this->hasOne(PsychotestSchedule::class, 'candidate', 'id')
+                    ->latest();
+    }
+
+    /**
+     * Get psychotest results for this candidate
+     */
+    public function psychotestResults()
+    {
+        return $this->hasManyThrough(
+            PsychotestResult::class,
+            PsychotestSchedule::class,
+            'candidate', // Foreign key on PsychotestSchedule table
+            'schedule_id', // Foreign key on PsychotestResult table
+            'id', // Local key on JobApplication table
+            'id' // Local key on PsychotestSchedule table
+        );
+    }
+
+    /**
+     * Check if candidate has psychotest scheduled
+     */
+    public function hasPsychotestScheduled()
+    {
+        return $this->psychotestSchedule()->exists();
+    }
+
+    /**
+     * Get psychotest status for display
+     */
+    public function getPsychotestStatusAttribute()
+    {
+        if ($this->stage != 2) {
+            return null;
+        }
+
+        $schedule = $this->psychotestSchedule;
+        
+        if (!$schedule) {
+            return [
+                'status' => 'not_scheduled',
+                'text' => 'Not Scheduled',
+                'class' => 'text-muted',
+                'icon' => 'ti-calendar-plus'
+            ];
+        }
+
+        switch ($schedule->status) {
+            case 'scheduled':
+                return [
+                    'status' => 'scheduled',
+                    'text' => 'Scheduled',
+                    'class' => 'text-warning',
+                    'icon' => 'ti-clock',
+                    'start_time' => $schedule->start_time,
+                    'end_time' => $schedule->end_time
+                ];
+            case 'in_progress':
+                return [
+                    'status' => 'in_progress',
+                    'text' => 'In Progress',
+                    'class' => 'text-primary',
+                    'icon' => 'ti-play',
+                    'started_at' => $schedule->started_at
+                ];
+            case 'completed':
+                return [
+                    'status' => 'completed',
+                    'text' => 'Completed',
+                    'class' => 'text-success',
+                    'icon' => 'ti-check',
+                    'started_at' => $schedule->started_at,
+                    'completed_at' => $schedule->completed_at
+                ];
+            case 'expired':
+                return [
+                    'status' => 'expired',
+                    'text' => 'Expired',
+                    'class' => 'text-danger',
+                    'icon' => 'ti-clock-off'
+                ];
+            default:
+                return [
+                    'status' => $schedule->status,
+                    'text' => ucfirst($schedule->status),
+                    'class' => 'text-muted',
+                    'icon' => 'ti-help'
+                ];
+        }
+    }
 }

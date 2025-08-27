@@ -20,93 +20,89 @@ class OvertimeController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->get('show_entries', 10);
+        
+        // Get filter parameters
+        $filters = [
+            'employee_filter' => $request->get('employee_filter'),
+            'project_filter' => $request->get('project_filter'),
+            'status_filter' => $request->get('status_filter'),
+            'date_from' => $request->get('date_from'),
+            'date_to' => $request->get('date_to'),
+            'month' => $request->get('month'),
+            'search' => $request->get('search'),
+        ];
 
         if(\Auth::user()->type == 'admin')
         {
-            $overtimes   = UserOvertime::all();
-
+            $overtimes = UserOvertime::all();
             $employee = Employee::all();
-            $employee = $employee->pluck('id');
-            $employeeOvertimes = UserOvertime::whereIn('user_id', $employee);
+            $employee_ids = $employee->pluck('id');
+            
+            // Build query with filters
+            $employeeOvertimes_query = UserOvertime::whereIn('user_id', $employee_ids);
+            $employeeOvertimes_query = $this->applyOvertimeFilters($employeeOvertimes_query, $filters);
+            $employeeOvertimes = $employeeOvertimes_query->orderByDesc('id')->paginate($perPage);
 
-            if (!empty($request->month)) {
-                $month = date('m', strtotime($request->month));
-                $year  = date('Y', strtotime($request->month));
+            $users = \Auth::user();
+            $employee_detail = Employee::where('user_id', '=', $users->id)->first();
+            $approval = UserOvertime::where('approval', '=', $employee_detail->id)
+                                    ->where('status','=', 'Pending')
+                                    ->orderByDesc('id')
+                                    ->paginate(10);
 
-                $start_date = date($year . '-' . $month . '-01');
-                $end_date   = date($year . '-' . $month . '-t');
-
-                $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
-            } 
-
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate($perPage)->appends([
-                'month' => $request->month,
-                'show_entries' => $perPage,
-            ]);
-
-
-            $users        = \Auth::user();
-            $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
+            // Get data for filter dropdowns
+            $employees = Employee::all();
+            $projects = \App\Models\Project::all();
         }
         elseif(\Auth::user()->type == 'company')
         {
-            $overtimes   = UserOvertime::all();
-
+            $overtimes = UserOvertime::all();
             $employee = Employee::all();
-            $employee = $employee->pluck('id');
-            $employeeOvertimes = UserOvertime::whereIn('user_id', $employee);
+            $employee_ids = $employee->pluck('id');
+            
+            // Build query with filters
+            $employeeOvertimes_query = UserOvertime::whereIn('user_id', $employee_ids);
+            $employeeOvertimes_query = $this->applyOvertimeFilters($employeeOvertimes_query, $filters);
+            $employeeOvertimes = $employeeOvertimes_query->orderByDesc('id')->paginate($perPage);
 
-            if (!empty($request->month)) {
-                $month = date('m', strtotime($request->month));
-                $year  = date('Y', strtotime($request->month));
+            $users = \Auth::user();
+            $employee_detail = Employee::where('user_id', '=', $users->id)->first();
+            $approval = UserOvertime::where('approval', '=', $employee_detail->id)
+                                    ->where('status','=', 'Pending')
+                                    ->orderByDesc('id')
+                                    ->paginate(10);
 
-                $start_date = date($year . '-' . $month . '-01');
-                $end_date   = date($year . '-' . $month . '-t');
-
-                $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
-            } 
-
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate($perPage)->appends([
-                'month' => $request->month,
-                'show_entries' => $perPage, 
-            ]);  
-
-            $users        = \Auth::user();
-            $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
+            // Get data for filter dropdowns
+            $employees = Employee::all();
+            $projects = \App\Models\Project::all();
         }
         elseif(\Auth::user()->type == 'senior accounting')
         {
-            $overtimes   = UserOvertime::all();
-
+            $overtimes = UserOvertime::all();
             $employee = Employee::all();
-            $employee = $employee->pluck('id');
-            $employeeOvertimes = UserOvertime::whereIn('user_id', $employee);
+            $employee_ids = $employee->pluck('id');
+            
+            // Build query with filters
+            $employeeOvertimes_query = UserOvertime::whereIn('user_id', $employee_ids);
+            $employeeOvertimes_query = $this->applyOvertimeFilters($employeeOvertimes_query, $filters);
+            $employeeOvertimes = $employeeOvertimes_query->orderByDesc('id')->paginate($perPage);
 
-            if (!empty($request->month)) {
-                $month = date('m', strtotime($request->month));
-                $year  = date('Y', strtotime($request->month));
+            $users = \Auth::user();
+            $employee_detail = Employee::where('user_id', '=', $users->id)->first();
+            $approval = UserOvertime::where('approval', '=', $employee_detail->id)
+                                    ->where('status','=', 'Pending')
+                                    ->orderByDesc('id')
+                                    ->paginate(10);
 
-                $start_date = date($year . '-' . $month . '-01');
-                $end_date   = date($year . '-' . $month . '-t');
-
-                $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
-            } 
-
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate($perPage)->appends([
-                'month' => $request->month,
-                'show_entries' => $perPage, 
-            ]);    
-
-            $users        = \Auth::user();
-            $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
+            // Get data for filter dropdowns
+            $employees = Employee::all();
+            $projects = \App\Models\Project::all();
         }
         elseif(\Auth::user()->type == 'partners')
         {
-            $overtimes   = UserOvertime::all();
+            $overtimes = UserOvertime::all();
             
+            // Get employees based on branch
             if(\Auth::user()->employee->branch_id == 2)
             {
                 $employee = Employee::where('branch_id', 2)->get();
@@ -119,85 +115,73 @@ class OvertimeController extends Controller
             {
                 $employee = Employee::all();
             }
-            $employee = $employee->pluck('id');
-            $employeeOvertimes = UserOvertime::whereIn('user_id', $employee);
+            $employee_ids = $employee->pluck('id');
+            
+            // Build query with filters
+            $employeeOvertimes_query = UserOvertime::whereIn('user_id', $employee_ids);
+            $employeeOvertimes_query = $this->applyOvertimeFilters($employeeOvertimes_query, $filters);
+            $employeeOvertimes = $employeeOvertimes_query->orderByDesc('id')->paginate($perPage);
 
-            if (!empty($request->month)) {
-                $month = date('m', strtotime($request->month));
-                $year  = date('Y', strtotime($request->month));
+            $users = \Auth::user();
+            $employee_detail = Employee::where('user_id', '=', $users->id)->first();
+            $approval = UserOvertime::where('approval', '=', $employee_detail->id)
+                                    ->where('status','=', 'Pending')
+                                    ->orderByDesc('id')
+                                    ->paginate(10);
 
-                $start_date = date($year . '-' . $month . '-01');
-                $end_date   = date($year . '-' . $month . '-t');
-
-                $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
-            } 
-
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate($perPage)->appends([
-                'month' => $request->month,
-                'show_entries' => $perPage, 
-            ]);    
-
-            $users        = \Auth::user();
-            $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
+            // Get data for filter dropdowns (limited to branch employees)
+            $employees = $employee;
+            $projects = \App\Models\Project::all();
         }
-        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff')
+        elseif(\Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'staff')
         {
+            $users = \Auth::user();
+            $employee = Employee::where('user_id', '=', $users->id);
+            $employee_ids = $employee->pluck('id');
+            
+            // Build query with filters
+            $employeeOvertimes_query = UserOvertime::whereIn('user_id', $employee_ids);
+            $employeeOvertimes_query = $this->applyOvertimeFilters($employeeOvertimes_query, $filters);
+            $employeeOvertimes = $employeeOvertimes_query->orderByDesc('id')->paginate($perPage);
 
-            $users        = \Auth::user();
-            $employee     = Employee::where('user_id', '=', $users->id);
-            $employee = $employee->pluck('id');
-            $employeeOvertimes = UserOvertime::whereIn('user_id', $employee);
+            $employee_detail = Employee::where('user_id', '=', $users->id)->first();
+            $overtimes = UserOvertime::where('user_id', '=', $users->id)->get();
+            $approval = UserOvertime::where('approval', '=', $employee_detail->id)
+                                    ->where('status','=', 'Pending')
+                                    ->orderByDesc('id')
+                                    ->paginate(10);
 
-            if (!empty($request->month)) {
-                $month = date('m', strtotime($request->month));
-                $year  = date('Y', strtotime($request->month));
-
-                $start_date = date($year . '-' . $month . '-01');
-                $end_date   = date($year . '-' . $month . '-t');
-
-                $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
-            } 
-
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate($perPage)->appends([
-                'month' => $request->month,
-                'show_entries' => $perPage, 
-            ]);   
-
-            $users        = \Auth::user();
-            $employee     = Employee::where('user_id', '=', $users->id)->first();
-            $overtimes    = UserOvertime::where('user_id', '=', $users->id)->get();
-            $approval     = UserOvertime::where('approval', '=', $employee->id)->where('status','=', 'Pending')->orderByDesc('id')->paginate(10);
+            // Get data for filter dropdowns (limited to current employee)
+            $employees = collect([$employee_detail]); // Only current employee
+            $projects = \App\Models\Project::all();
         }
         else
         {
-            $employees    = Employee::all();
+            $employees_all = Employee::all();
+            $employee = $employees_all->where('user_id', '=', \Auth::user()->id)->pluck('id');
+            
+            // Build query with filters
+            $employeeOvertimes_query = UserOvertime::whereIn('user_id', $employee);
+            $employeeOvertimes_query = $this->applyOvertimeFilters($employeeOvertimes_query, $filters);
+            $employeeOvertimes = $employeeOvertimes_query->orderByDesc('id')->paginate($perPage);
 
-            $employee = $employees->where('user_id', '=', \Auth::user()->id)->pluck('id');
-            $employeeOvertimes = UserOvertime::whereIn('user_id', $employee);
+            $employee_detail = Employee::where('user_id', '=', \Auth::user()->id)->first();
+            $overtimes = UserOvertime::where('user_id', '=', $employee_detail->id)->get();
+            $approval = UserOvertime::where('approval', '=', \Auth::user()->id)
+                                    ->orderByDesc('id')
+                                    ->paginate(10);
 
-            if (!empty($request->month)) {
-                $month = date('m', strtotime($request->month));
-                $year  = date('Y', strtotime($request->month));
-
-                $start_date = date($year . '-' . $month . '-01');
-                $end_date   = date($year . '-' . $month . '-t');
-
-                $employeeOvertimes->whereBetween('start_date', [$start_date, $end_date]);
-            } 
-
-            $employeeOvertimes = $employeeOvertimes->orderByDesc('id')->paginate($perPage)->appends([
-                'month' => $request->month,
-                'show_entries' => $perPage, 
-            ]);    
-
-            $employee     = Employee::where('user_id', '=', \Auth::user()->id)->first();
-            $overtimes    = UserOvertime::where('user_id', '=', $employee->id)->get();
-            $approval     = UserOvertime::where('approval', '=', \Auth::user()->id)->orderByDesc('id')->paginate(10);
+            // Get data for filter dropdowns
+            $employees = collect([$employee_detail]); // Only current employee
+            $projects = \App\Models\Project::all();
         }
 
-        return view('overtime.index', compact('overtimes','approval','employeeOvertimes'));
+        // Append query parameters to pagination links
+        $employeeOvertimes->appends($request->query());
+
+        return view('overtime.index', compact('overtimes','approval','employeeOvertimes', 'employees', 'projects'));
     }
+
 
     public function create()
     {
@@ -296,17 +280,17 @@ class OvertimeController extends Controller
 
     public function changeaction(Request $request)
     {
-
         $overtime = UserOvertime::find($request->overtime_id);
 
-        $overtime->status = $request->status;
-        if($overtime->status == 'Approval')
-        {
-            $start_time = $overtime->start_time;
-            $end_time = $overtime->end_time;
-            $time_difference = $this->calculateTimeDifference($start_time, $end_time);
+        $overtime->start_time = $request->start_time;
+        $overtime->end_time = $request->end_time;
+
+        if ($request->status == 'Approval') {
+            $time_difference = $this->calculateTimeDifference($request->start_time, $request->end_time);
             $overtime->total_time = $time_difference;
-            $overtime->status           = 'Approved';
+            $overtime->status = 'Approved';
+        } else {
+            $overtime->status = $request->status;
         }
 
         $overtime->save();
@@ -573,5 +557,60 @@ class OvertimeController extends Controller
         }
 
         return redirect()->route('overtime.index')->with('success', __('Overtime successfully updated.'));
+    }
+
+    /**
+     * Apply filters to the overtime query
+     */
+    private function applyOvertimeFilters($query, $filters)
+    {
+        // Employee filter
+        if (!empty($filters['employee_filter'])) {
+            $query->where('user_id', $filters['employee_filter']);
+        }
+
+        // Project filter
+        if (!empty($filters['project_filter'])) {
+            $query->where('project_id', $filters['project_filter']);
+        }
+
+        // Status filter
+        if (!empty($filters['status_filter'])) {
+            $query->where('status', $filters['status_filter']);
+        }
+
+        // Date range filter
+        if (!empty($filters['date_from']) && !empty($filters['date_to'])) {
+            $query->whereBetween('start_date', [$filters['date_from'], $filters['date_to']]);
+        } elseif (!empty($filters['date_from'])) {
+            $query->where('start_date', '>=', $filters['date_from']);
+        } elseif (!empty($filters['date_to'])) {
+            $query->where('start_date', '<=', $filters['date_to']);
+        }
+
+        // Month filter (existing functionality)
+        if (!empty($filters['month'])) {
+            $month = date('m', strtotime($filters['month']));
+            $year = date('Y', strtotime($filters['month']));
+            $start_date = date($year . '-' . $month . '-01');
+            $end_date = date($year . '-' . $month . '-t');
+            $query->whereBetween('start_date', [$start_date, $end_date]);
+        }
+
+        // Search filter (search in employee name, project name, or note)
+        if (!empty($filters['search'])) {
+            $searchTerm = '%' . $filters['search'] . '%';
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('note', 'LIKE', $searchTerm)
+                ->orWhereHas('employee', function($employeeQuery) use ($searchTerm) {
+                    $employeeQuery->where('name', 'LIKE', $searchTerm);
+                })
+                ->orWhereHas('project', function($projectQuery) use ($searchTerm) {
+                    $projectQuery->where('project_name', 'LIKE', $searchTerm);
+                });
+            });
+        }
+
+        return $query;
     }
 }
