@@ -1,43 +1,28 @@
 <?php
 
+// JobApplication.php Model - Add these relationships and attributes
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class JobApplication extends Model
 {
     protected $fillable = [
-        'job',
-        'name',
-        'email',
-        'phone',
-        'profile',
-        'resume',
-        'cover_letter',
-        'dob',
-        'gender',
-        'country',
-        'state',
-        'city',
-        'stage',
-        'order',
-        'skill',
-        'rating',
-        'is_archive',
-        'custom_question',
-        'kk',
-        'ktp',
-        'transkrip_nilai',
-        'ipk',
-        'ijazah',
-        'year_graduated',
-        'latest_education',
-        'major',
-        'university',
-        'latest_work_experience',
-        'length_of_last_job',
-        'certificate',
-        'created_by',
+        'job', 'name', 'email', 'phone', 'profile', 'resume', 'kk', 'ktp', 
+        'transkrip_nilai', 'ijazah', 'certificate', 'cover_letter', 'dob', 
+        'gender', 'country', 'state', 'city', 'year_graduated', 'last_education', 
+        'major', 'university', 'latest_work_experience', 'length_of_last_job', 
+        'ipk', 'stage', 'custom_question', 'created_by'
+    ];
+
+    // Existing IPK options
+    public static $ipk = [
+        '4' => '4.00',
+        '3' => '3.00 - 3.99', 
+        '2' => '2.00 - 2.99',
+        '1' => 'Below 2.00'
     ];
 
     public function jobs()
@@ -45,53 +30,91 @@ class JobApplication extends Model
         return $this->hasOne('App\Models\Job', 'id', 'job');
     }
 
+    // Relationship to JobStage
     public function stage_status()
     {
-        return $this->hasOne('App\Models\JobStage', 'id', 'stage');
+        return $this->belongsTo(JobStage::class, 'stage', 'id');
     }
 
-    public static $ipk = [
-        '0.0' => '0.0',
-        '0.1' => '0.1',
-        '0.2' => '0.2',
-        '0.3' => '0.3',
-        '0.4' => '0.4',
-        '0.5' => '0.5',
-        '0.6' => '0.6',
-        '0.7' => '0.7',
-        '0.8' => '0.8',
-        '0.9' => '0.9',
-        '1.0' => '1.0',
-        '1.1' => '1.1',
-        '1.2' => '1.2',
-        '1.3' => '1.3',
-        '1.4' => '1.4',
-        '1.5' => '1.5',
-        '1.6' => '1.6',
-        '1.7' => '1.7',
-        '1.8' => '1.8',
-        '1.9' => '1.9',
-        '2.0' => '1.0',
-        '2.1' => '2.1',
-        '2.2' => '2.2',
-        '2.3' => '2.3',
-        '2.4' => '2.4',
-        '2.5' => '2.5',
-        '2.6' => '2.6',
-        '2.7' => '2.7',
-        '2.8' => '2.8',
-        '2.9' => '2.9',
-        '3.0' => '3.0',
-        '3.1' => '3.1',
-        '3.2' => '3.2',
-        '3.3' => '3.3',
-        '3.4' => '3.4',
-        '3.5' => '3.5',
-        '3.6' => '3.6',
-        '3.7' => '3.7',
-        '3.8' => '3.8',
-        '3.9' => '3.9',
-        '4.0' => '4.0'
-    ];
+    // Relationship to Job
+    public function job_detail()
+    {
+        return $this->belongsTo(Job::class, 'job', 'id');
+    }
 
+    // Relationship to User (who created this application)
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by', 'id');
+    }
+
+    // NEW: Accessor for formatted applied date
+    public function getAppliedAtAttribute()
+    {
+        return $this->created_at;
+    }
+
+    // NEW: Accessor for formatted applied date (human readable)
+    public function getAppliedAtFormattedAttribute()
+    {
+        return $this->created_at->format('d M Y, H:i');
+    }
+
+    // NEW: Accessor for applied date only
+    public function getAppliedDateAttribute()
+    {
+        return $this->created_at->format('Y-m-d');
+    }
+
+    // NEW: Scope for filtering by applied date range
+    public function scopeAppliedBetween($query, $startDate, $endDate)
+    {
+        return $query->whereBetween('created_at', [$startDate, $endDate]);
+    }
+
+    // NEW: Scope for filtering by applied date from
+    public function scopeAppliedFrom($query, $date)
+    {
+        return $query->whereDate('created_at', '>=', $date);
+    }
+
+    // NEW: Scope for filtering by applied date to
+    public function scopeAppliedTo($query, $date)
+    {
+        return $query->whereDate('created_at', '<=', $date);
+    }
+
+    // NEW: Scope for recent applications (last 30 days)
+    public function scopeRecent($query)
+    {
+        return $query->where('created_at', '>=', Carbon::now()->subDays(30));
+    }
+
+    // NEW: Scope for this month applications
+    public function scopeThisMonth($query)
+    {
+        return $query->whereMonth('created_at', Carbon::now()->month)
+                    ->whereYear('created_at', Carbon::now()->year);
+    }
+
+    // NEW: Scope for today's applications
+    public function scopeToday($query)
+    {
+        return $query->whereDate('created_at', Carbon::today());
+    }
+
+    // Mutator for dates
+    public function setDobAttribute($value)
+    {
+        if ($value) {
+            $this->attributes['dob'] = Carbon::createFromFormat('Y-m-d', $value)->format('Y-m-d');
+        }
+    }
+
+    // Cast dates
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'dob' => 'date',
+    ];
 }

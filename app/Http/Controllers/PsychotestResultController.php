@@ -774,17 +774,37 @@ class PsychotestResultController extends Controller
      */
     private function exportToPDF($schedule, $sessionResults, $performanceMetrics)
     {
-        // Implementation for PDF export
-        // You can use libraries like DomPDF or TCPDF
-        
-        return response()->json([
-            'message' => 'PDF export feature will be implemented with DomPDF library',
-            'data' => [
-                'candidate' => $schedule->candidates->name,
-                'overall_score' => $performanceMetrics['overall_score'] ?? 0,
-                'grade' => $performanceMetrics['grade'] ?? 'N/A'
-            ]
-        ]);
+        try {
+            // Install DomPDF jika belum ada: composer require barryvdh/laravel-dompdf
+            $pdf = \PDF::loadView('psychotest.results.pdf-export', [
+                'schedule' => $schedule,
+                'sessionResults' => $sessionResults,
+                'performanceMetrics' => $performanceMetrics,
+                'exportDate' => now(),
+                'categoryAnalysis' => $this->getDetailedCategoryAnalysis($sessionResults),
+                'workPredictions' => $this->predictWorkPerformance($sessionResults),
+                'divisionRecommendation' => $this->analyzeDivisionFit($sessionResults),
+                'personalityAnalysis' => $this->analyzeEPPSForWork($sessionResults),
+                'riskAssessment' => $performanceMetrics['risk_details'] ?? null,
+            ]);
+
+            // Set paper size dan orientation
+            $pdf->setPaper('A4', 'portrait');
+            
+            // Set options
+            $pdf->getDomPDF()->set_option('enable_php', true);
+            $pdf->getDomPDF()->set_option('enable_javascript', true);
+            $pdf->getDomPDF()->set_option('enable_remote', true);
+
+            $candidateName = str_replace(' ', '_', $schedule->candidates->name);
+            $filename = "Psychotest_Report_{$candidateName}_" . now()->format('Y-m-d') . ".pdf";
+
+            return $pdf->download($filename);
+
+        } catch (\Exception $e) {
+            \Log::error('PDF Export Error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to generate PDF report: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -2712,5 +2732,144 @@ class PsychotestResultController extends Controller
         }
         
         return $plan;
+    }
+
+    /**
+     * Get detailed category analysis for PDF
+     */
+    private function getDetailedCategoryAnalysis($sessionResults)
+    {
+        $analysis = [];
+        
+        foreach ($sessionResults as $result) {
+            $categoryType = $result['category_type'];
+            $category = $result['category'];
+            
+            $categoryAnalysis = [
+                'category_name' => $category->name,
+                'category_type' => $categoryType,
+                'description' => $category->description,
+                'duration_minutes' => $category->duration_minutes,
+                'total_questions' => $result['total_questions'],
+                'answered_questions' => $result['answered_questions'],
+                'percentage' => $result['percentage'],
+                'points' => [
+                    'earned' => $result['earned_points'],
+                    'total' => $result['total_points']
+                ],
+                'time_spent' => $result['time_spent_formatted'],
+                'status' => $result['status'],
+                'performance_level' => $this->getCategoryPerformanceLevel($result['percentage'], $categoryType),
+                'insights' => []
+            ];
+
+            // Add category-specific insights
+            switch ($categoryType) {
+                case 'kraeplin':
+                    if (isset($result['kraeplin_analysis'])) {
+                        $kraeplin = $result['kraeplin_analysis'];
+                        $categoryAnalysis['insights'] = [
+                            "Grade Kraeplin: {$kraeplin['grade']}",
+                            "Akurasi: {$kraeplin['accuracy']}%",
+                            "Kecepatan: {$kraeplin['speed_score']}%",
+                            "Konsistensi: {$kraeplin['consistency_score']}%",
+                            "Konsentrasi: {$kraeplin['concentration_score']}%",
+                        ];
+                        $categoryAnalysis['recommendations'] = $kraeplin['recommendation'] ?? [];
+                        $categoryAnalysis['interpretation'] = $kraeplin['interpretation'] ?? [];
+                    }
+                    break;
+                    
+                case 'epps_test':
+                    if (isset($result['epps_analysis'])) {
+                        $epps = $result['epps_analysis'];
+                        $categoryAnalysis['insights'] = [
+                            "Completion Rate: {$epps['completion_rate']}%",
+                            "Dominant Traits: " . implode(', ', array_slice($epps['dominant_traits'], 0, 5)),
+                        ];
+                        $categoryAnalysis['personality_profile'] = $epps['personality_profile'] ?? [];
+                        $categoryAnalysis['dimension_scores'] = $epps['dimension_scores'] ?? [];
+                    }
+                    break;
+                    
+                case 'field_test':
+                    if (isset($result['field_analysis'])) {
+                        $field = $result['field_analysis'];
+                        $categoryAnalysis['insights'] = [
+                            "Recommended Field: {$field['recommended_field']}",
+                        ];
+                        foreach ($field['field_percentages'] as $fieldName => $percentage) {
+                            $categoryAnalysis['insights'][] = ucfirst($fieldName) . ": {$percentage}%";
+                        }
+                        $categoryAnalysis['field_breakdown'] = $field['field_percentages'] ?? [];
+                    }
+                    break;
+                    
+                default:
+                    if (isset($result['standard_analysis'])) {
+                        $standard = $result['standard_analysis'];
+                        $categoryAnalysis['insights'] = [
+                            "Accuracy Rate: {$standard['accuracy_rate']}%",
+                            "Interpretation: {$standard['interpretation']}"
+                        ];
+                    }
+                    break;
+            }
+            
+            $analysis[] = $categoryAnalysis;
+        }
+        
+        return $analysis;
+    }
+
+    /**
+     * Get category performance level
+     */
+    private function getCategoryPerformanceLevel($percentage, $categoryType)
+    {
+        // Different thresholds for different category types
+        $thresholds = [
+            'kraeplin' => ['excellent' => 85, 'good' => 70, 'fair' => 55, 'poor' => 40],
+            'field_test' => ['excellent' => 80, 'good' => 65, 'fair' => 50, 'poor' => 35],
+            'epps_test' => ['excellent' => 95, 'good' => 80, 'fair' => 65, 'poor' => 50],
+            'default' => ['excellent' => 85, 'good' => 70, 'fair' => 55, 'poor' => 40]
+        ];
+        
+        $threshold = $thresholds[$categoryType] ?? $thresholds['default'];
+        
+        if ($percentage >= $threshold['excellent']) return 'SANGAT BAIK';
+        if ($percentage >= $threshold['good']) return 'BAIK';
+        if ($percentage >= $threshold['fair']) return 'CUKUP';
+        if ($percentage >= $threshold['poor']) return 'KURANG';
+        return 'SANGAT KURANG';
+    }
+
+    // Tambahkan method untuk mendukung export PDF
+    private function generatePDFSummary($schedule, $sessionResults, $performanceMetrics)
+    {
+        $summary = [
+            'candidate_info' => [
+                'name' => $schedule->candidates->name,
+                'email' => $schedule->candidates->email,
+                'position_applied' => $schedule->candidates->jobs->title ?? 'N/A',
+                'test_date' => $schedule->start_time->format('d F Y'),
+                'test_time' => $schedule->start_time->format('H:i') . ' - ' . $schedule->end_time->format('H:i'),
+            ],
+            'overall_performance' => [
+                'overall_score' => $performanceMetrics['overall_score'] ?? 0,
+                'grade' => $performanceMetrics['grade'] ?? 'N/A',
+                'total_time' => $performanceMetrics['total_time'] ?? '0 minutes',
+                'decision_status' => $performanceMetrics['decision_status'] ?? 'Under Review',
+                'confidence_level' => $performanceMetrics['decision_confidence'] ?? 0,
+                'risk_level' => $performanceMetrics['risk_level'] ?? 'MEDIUM',
+            ],
+            'strengths' => $performanceMetrics['strengths'] ?? [],
+            'weaknesses' => $performanceMetrics['weaknesses'] ?? [],
+            'recommendation' => $performanceMetrics['recommendation'] ?? 'No specific recommendations available.',
+            'category_breakdown' => $this->getDetailedCategoryAnalysis($sessionResults),
+            'insights' => $performanceMetrics['insights'] ?? [],
+        ];
+
+        return $summary;
     }
 }

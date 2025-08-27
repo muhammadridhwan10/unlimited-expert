@@ -27,4 +27,10 @@ class JobStage extends Model
 
         return $application;
     }
+
+    // Count applications in this stage
+    public function getApplicationsCountAttribute()
+    {
+        return $this->applications()->count();
+    }
 }

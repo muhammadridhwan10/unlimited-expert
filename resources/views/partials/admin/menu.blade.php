@@ -430,11 +430,11 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                                 </li>
                                                 @endcan
                                                 
-                                                @can('create job')
+                                                {{-- @can('create job')
                                                 <li class="dash-item {{ ( Request::route()->getName() == 'job.create' ? 'active' : '')}} ">
                                                     <a class="dash-link" href="{{route('job.create')}}">{{__('Job Create')}}</a>
                                                 </li>
-                                                @endcan
+                                                @endcan --}}
                                                 
                                                 @can('manage job application')
                                                 <li class="dash-item {{ (request()->is('job-application*') ? 'active' : '')}}">

@@ -235,9 +235,9 @@
                                 @endif
                                 @if(!empty($job->applicant) && in_array('university',explode(',',$job->applicant)))
                                     <div class="form-group col-md-6 ">
-                                        {!! Form::label('university', __('Univercity'),['class'=>'form-label']) !!}<span class="text-danger">*</span>
+                                        {!! Form::label('university', __('University'),['class'=>'form-label']) !!}<span class="text-danger">*</span>
                                         <select id="university" name="university" class="form-control select2">
-                                            <option value="">Select Univercity</option>
+                                            <option value="">Select University</option>
                                             @foreach($univercity as $university)
                                                 <option value="{{ $university->name }}">{{ $university->name }}</option>
                                             @endforeach
@@ -252,7 +252,7 @@
                                 @endif
                                  @if(!empty($job->applicant) && in_array('ipk',explode(',',$job->applicant)))
                                     <div class="form-group col-md-6 ">
-                                        {!! Form::label('ipk', __('Final Ipk or Temporary Ipk'),['class'=>'form-label']) !!}<span class="text-danger">*</span><span> example (3.41)</span>
+                                        {!! Form::label('ipk', __('Final IPK or Temporary IPK'),['class'=>'form-label']) !!}<span class="text-danger">*</span><span> example (3.41)</span>
                                         {!! Form::text('ipk',null,array('class'=>'form-control')) !!}
                                     </div>
                                 @endif
@@ -341,7 +341,7 @@
                                 @endif
                                 @if(!empty($job->visibility) && in_array('certificate',explode(',',$job->visibility)))
                                     <div class="form-group col-md-6 ">
-                                        {{Form::label('certificate',__('Certificate'),['class'=>'col-form-label'])}}<span class="text-danger">*</span>
+                                        {{Form::label('certificate',__('Certificate (Accomplishments, Professional Recognitions, etc)'),['class'=>'col-form-label'])}}<span class="text-danger">*</span>
 
                                         {{--                                                <label for="resume" class="form-label">--}}
                                         <input type="file" accept=".png, .jpg, .jpeg, .pdf" class="form-control" name="certificate" id="certificate" data-filename="certificate_create" onchange="document.getElementById('blah6').src = window.URL.createObjectURL(this.files[0])" required>
