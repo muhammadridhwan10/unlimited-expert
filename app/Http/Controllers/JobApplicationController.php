@@ -32,23 +32,23 @@ class JobApplicationController extends Controller
 
     public function index(Request $request)
     {
-
         $user = \Auth::user();
         if(\Auth::user()->can('manage job application'))
         {
-            if($user->type = 'admin'){
+            if($user->type == 'admin'){
                 $stages = JobStage::all();
 
                 $jobs = Job::all()->pluck('title', 'id');
                 $jobs->prepend('All', '');
-                $univercity =   University::get()->pluck('name','name');
+                $univercity = University::get()->pluck('name','name');
 
-                $applicants      = JobApplication::where('created_by', 1); 
+                // Start building the query
+                $applicants = JobApplication::where('created_by', 1);
 
                 $ipk = JobApplication::$ipk;
 
+                // Apply filters
                 if (!empty($request->university)) {
-                
                     $applicants->where('university', $request->university);
                 }
 
@@ -57,29 +57,121 @@ class JobApplicationController extends Controller
                     $applicants->where('ipk', 'like', $selectedIpk.'%');
                 }
 
-                $applicants = $applicants->get();
-    
-    
-            }elseif($user->type = 'company')
+                if (!empty($request->gender)) {
+                    $applicants->where('gender', $request->gender);
+                }
+
+                if (!empty($request->status)) {
+                    $applicants->where('stage', $request->status);
+                }
+
+                // NEW: Applied date range filter
+                if (!empty($request->applied_from)) {
+                    $applicants->whereDate('created_at', '>=', $request->applied_from);
+                }
+
+                if (!empty($request->applied_to)) {
+                    $applicants->whereDate('created_at', '<=', $request->applied_to);
+                }
+
+                // Order by latest applications first
+                $applicants->orderBy('created_at', 'desc');
+
+                // NEW: Add pagination (15 items per page)
+                $applicants = $applicants->paginate(15);
+
+            }elseif($user->type == 'company')
             {
                 $stages = JobStage::all();
 
                 $jobs = Job::all()->pluck('title', 'id');
                 $jobs->prepend('All', '');
-                $univercity =   University::get()->pluck('name','id');
-    
-                $applicants      = JobApplication::all();  
+                $univercity = University::get()->pluck('name','id');
+
+                // Start building the query
+                $applicants = JobApplication::query();
+
+                $ipk = JobApplication::$ipk;
+
+                // Apply filters
+                if (!empty($request->university)) {
+                    $applicants->where('university', $request->university);
+                }
+
+                if (!empty($request->ipk)) {
+                    $selectedIpk = $request->ipk;
+                    $applicants->where('ipk', 'like', $selectedIpk.'%');
+                }
+
+                if (!empty($request->gender)) {
+                    $applicants->where('gender', $request->gender);
+                }
+
+                if (!empty($request->status)) {
+                    $applicants->where('stage', $request->status);
+                }
+
+                // NEW: Applied date range filter
+                if (!empty($request->applied_from)) {
+                    $applicants->whereDate('created_at', '>=', $request->applied_from);
+                }
+
+                if (!empty($request->applied_to)) {
+                    $applicants->whereDate('created_at', '<=', $request->applied_to);
+                }
+
+                // Order by latest applications first
+                $applicants->orderBy('created_at', 'desc');
+
+                // NEW: Add pagination
+                $applicants = $applicants->paginate(15);
             }
             else{
                 $stages = JobStage::where('created_by', '=', \Auth::user()->creatorId())->get();
 
                 $jobs = Job::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
                 $jobs->prepend('All', '');
-                $univercity =   University::get()->pluck('name','id');
-    
-                $applicants      = JobApplication::all();  
-    
+                $univercity = University::get()->pluck('name','id');
+
+                // Start building the query
+                $applicants = JobApplication::where('created_by', \Auth::user()->creatorId());
+
+                $ipk = JobApplication::$ipk;
+
+                // Apply filters
+                if (!empty($request->university)) {
+                    $applicants->where('university', $request->university);
+                }
+
+                if (!empty($request->ipk)) {
+                    $selectedIpk = $request->ipk;
+                    $applicants->where('ipk', 'like', $selectedIpk.'%');
+                }
+
+                if (!empty($request->gender)) {
+                    $applicants->where('gender', $request->gender);
+                }
+
+                if (!empty($request->status)) {
+                    $applicants->where('stage', $request->status);
+                }
+
+                // NEW: Applied date range filter
+                if (!empty($request->applied_from)) {
+                    $applicants->whereDate('created_at', '>=', $request->applied_from);
+                }
+
+                if (!empty($request->applied_to)) {
+                    $applicants->whereDate('created_at', '<=', $request->applied_to);
+                }
+
+                // Order by latest applications first
+                $applicants->orderBy('created_at', 'desc');
+
+                // NEW: Add pagination
+                $applicants = $applicants->paginate(15);
             }
+
             return view('jobApplication.index', compact('stages', 'jobs', 'applicants', 'univercity', 'ipk'));
         }
         else
