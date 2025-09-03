@@ -1,10 +1,37 @@
 @extends('layouts.admin')
 @section('page-title')
     {{ucwords($project->project_name)}}
+    @can('edit project')
+        <a href="#" data-size="lg" data-url="{{ route('projects.edit', $project->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Edit Project')}}" class="btn btn-sm">
+            <i class="ti ti-pencil"></i>
+        </a>
+    @endcan
 @endsection
 @push('css-page')
     <style>
         @import url({{ asset('css/font-awesome.css') }});
+
+        .deadline-badge {
+            display: inline-block;
+        }
+
+        @media (max-width: 768px) {
+            .deadline-badge {
+                display: block !important;
+                width: 100% !important;
+                text-align: center !important;
+                margin: 0 !important;
+                border-radius: 8px !important;
+                padding: 12px 15px !important;
+                font-size: 1rem !important;
+            }
+            
+
+        }
+
+        .text-purple {
+            color: #6f42c1 !important;
+        }
 
         .dropdown-menu {
             max-height: 200px;
@@ -1076,6 +1103,281 @@
             });
         });
 
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update notification badge on tab
+            function updateNotificationBadge() {
+                fetch(`${baseUrl}/api/document-review/notification-summary`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const badge = document.querySelector('#review-approval-tab .badge');
+                        const totalNotifications = data.pending_approvals || 0;
+                        
+                        if (totalNotifications > 0) {
+                            if (badge) {
+                                badge.textContent = totalNotifications;
+                                badge.classList.remove('d-none');
+                            } else {
+                                // Create badge if doesn't exist
+                                const newBadge = document.createElement('span');
+                                newBadge.className = 'badge bg-danger ms-1';
+                                newBadge.textContent = totalNotifications;
+                                document.querySelector('#review-approval-tab').appendChild(newBadge);
+                            }
+                        } else {
+                            if (badge) {
+                                badge.classList.add('d-none');
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error fetching notifications:', error));
+            }
+
+            // Update badge when page loads
+            updateNotificationBadge();
+
+            // Update badge every 30 seconds
+            setInterval(updateNotificationBadge, 30000);
+
+            // Update badge when document review tab is shown
+            const reviewTab = document.querySelector('#review-approval-tab');
+            if (reviewTab) {
+                reviewTab.addEventListener('shown.bs.tab', updateNotificationBadge);
+            }
+        });
+
+        // Toast notification function for real-time feedback
+        function showNotificationToast(type, message) {
+            const toastContainer = document.getElementById('toast-container') || createToastContainer();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast align-items-center text-white bg-${type} border-0`;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="ti ti-${getToastIcon(type)} me-2"></i>${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            const bsToast = new bootstrap.Toast(toast, {
+                autohide: true,
+                delay: 5000
+            });
+            bsToast.show();
+            
+            // Remove toast element after it's hidden
+            toast.addEventListener('hidden.bs.toast', () => {
+                toast.remove();
+            });
+        }
+
+        function createToastContainer() {
+            const container = document.createElement('div');
+            container.id = 'toast-container';
+            container.className = 'toast-container position-fixed top-0 end-0 p-3';
+            container.style.zIndex = '1055';
+            document.body.appendChild(container);
+            return container;
+        }
+
+        function getToastIcon(type) {
+            const icons = {
+                'success': 'check-circle',
+                'danger': 'alert-circle',
+                'warning': 'alert-triangle',
+                'info': 'info-circle'
+            };
+            return icons[type] || 'info-circle';
+        }
+
+        // Enhanced comment form with notification feedback
+        if (document.getElementById('add-comment-form')) {
+            document.getElementById('add-comment-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="ti ti-loader animate-spin me-1"></i>{{__("Adding...")}}';
+                
+                fetch(this.action || window.location.href + '/comment', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Add comment to UI (existing code)
+                        // ...
+                        
+                        // Show notification feedback
+                        if (data.notification_sent) {
+                            showNotificationToast('success', '{{__("Comment added and notifications sent!")}}');
+                        } else {
+                            showNotificationToast('warning', '{{__("Comment added but email notification failed")}}');
+                        }
+                        
+                        this.reset();
+                    } else {
+                        showNotificationToast('danger', data.error || '{{__("Error adding comment")}}');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotificationToast('danger', '{{__("Network error occurred")}}');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                });
+            });
+        }
+
+        // Bulk approval functionality
+        function initBulkApproval() {
+            const bulkApproveBtn = document.getElementById('bulk-approve-btn');
+            const documentCheckboxes = document.querySelectorAll('.document-checkbox');
+            
+            if (!bulkApproveBtn || !documentCheckboxes.length) return;
+            
+            // Update bulk button state
+            function updateBulkButton() {
+                const checkedBoxes = document.querySelectorAll('.document-checkbox:checked');
+                bulkApproveBtn.disabled = checkedBoxes.length === 0;
+                bulkApproveBtn.textContent = `{{__("Approve")}} (${checkedBoxes.length})`;
+            }
+            
+            // Add event listeners to checkboxes
+            documentCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', updateBulkButton);
+            });
+            
+            // Bulk approve action
+            bulkApproveBtn.addEventListener('click', function() {
+                const checkedBoxes = document.querySelectorAll('.document-checkbox:checked');
+                const documentIds = Array.from(checkedBoxes).map(cb => cb.value);
+                
+                if (documentIds.length === 0) return;
+                
+                const comment = prompt('{{__("Approval comment (optional):")}}');
+                
+                if (confirm(`{{__("Approve")}} ${documentIds.length} {{__("documents?")}}}`)) {
+                    fetch(`${baseUrl}/api/document-review/bulk-approve`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            document_ids: documentIds,
+                            comment: comment
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            showNotificationToast('success', data.message);
+                            // Refresh page or update UI
+                            location.reload();
+                        } else {
+                            showNotificationToast('danger', data.error || '{{__("Bulk approval failed")}}');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showNotificationToast('danger', '{{__("Network error occurred")}}');
+                    });
+                }
+            });
+            
+            updateBulkButton();
+        }
+
+        // Initialize bulk approval if on appropriate page
+        if (window.location.pathname.includes('document-review')) {
+            document.addEventListener('DOMContentLoaded', initBulkApproval);
+        }
+
+        // Real-time notification polling (optional - for high-frequency updates)
+        class DocumentNotificationPoller {
+            constructor(interval = 60000) { // 1 minute default
+                this.interval = interval;
+                this.isPolling = false;
+                this.lastNotificationCount = 0;
+            }
+            
+            start() {
+                if (this.isPolling) return;
+                
+                this.isPolling = true;
+                this.poll();
+                this.intervalId = setInterval(() => this.poll(), this.interval);
+            }
+            
+            stop() {
+                this.isPolling = false;
+                if (this.intervalId) {
+                    clearInterval(this.intervalId);
+                }
+            }
+            
+            async poll() {
+                try {
+                    const response = await fetch(`${baseUrl}/api/document-review/notification-summary`);
+                    const data = await response.json();
+                    
+                    // Check for new notifications
+                    const currentCount = data.total_notifications || 0;
+                    if (currentCount > this.lastNotificationCount && this.lastNotificationCount > 0) {
+                        const newNotifications = currentCount - this.lastNotificationCount;
+                        showNotificationToast('info', `{{__("You have")}} ${newNotifications} {{__("new document notifications")}}`);
+                    }
+                    
+                    this.lastNotificationCount = currentCount;
+                    
+                    // Update UI badges
+                    this.updateNotificationUI(data);
+                    
+                } catch (error) {
+                    console.error('Notification polling error:', error);
+                }
+            }
+            
+            updateNotificationUI(data) {
+                // Update main notification badge
+                const mainBadge = document.querySelector('#review-approval-tab .badge');
+                if (mainBadge) {
+                    const total = data.pending_approvals || 0;
+                    mainBadge.textContent = total;
+                    mainBadge.style.display = total > 0 ? 'inline' : 'none';
+                }
+                
+                // Update other notification indicators
+                const pendingBadge = document.getElementById('my-pending-count');
+                if (pendingBadge) {
+                    pendingBadge.textContent = data.pending_approvals || 0;
+                }
+            }
+        }
+
+        // Start notification polling if user is on document review pages
+        if (window.location.pathname.includes('document-review') || window.location.pathname.includes('projects')) {
+            const poller = new DocumentNotificationPoller(30000); // 30 seconds
+            poller.start();
+            
+            // Stop polling when user leaves page
+            window.addEventListener('beforeunload', () => poller.stop());
+        }
+
 
     </script>
     <script>
@@ -1160,7 +1462,292 @@
             }
         });
 
+        function refreshFolderSheet(projectId) {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            
+            // Show loading
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ __("Processing...") }}';
+            btn.disabled = true;
+            
+            fetch(`/projects/${projectId}/refresh-folder-sheet`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', '{{ __("FOLDER sheet refreshed successfully!") }}');
+                } else {
+                    showAlert('error', data.error || '{{ __("Failed to refresh FOLDER sheet") }}');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('error', '{{ __("An error occurred while refreshing FOLDER sheet") }}');
+            })
+            .finally(() => {
+                // Restore button
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+
+        function updateGoogleDriveFiles(projectId) {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            
+            // Show loading
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ __("Updating...") }}';
+            btn.disabled = true;
+            
+            fetch(`/projects/${projectId}/update-google-drive-files`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', data.success);
+                } else {
+                    showAlert('error', data.error || '{{ __("Failed to update files list") }}');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('error', '{{ __("An error occurred while updating files list") }}');
+            })
+            .finally(() => {
+                // Restore button
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+
+        function syncTemplateFiles(projectId) {
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            
+            // Show loading
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ __("Syncing...") }}';
+            btn.disabled = true;
+            
+            fetch(`/projects/${projectId}/sync-template-files`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const message = data.new_files_count > 0 
+                        ? `{{ __("Template sync completed!") }} ${data.new_files_count} {{ __("new files added.") }}`
+                        : '{{ __("Template sync completed! No new files to add.") }}';
+                    showAlert('success', message);
+                } else {
+                    showAlert('error', data.error || '{{ __("Failed to sync template files") }}');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('error', '{{ __("An error occurred while syncing template files") }}');
+            })
+            .finally(() => {
+                // Restore button
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
+        }
+
     </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const reviewApprovalTab = document.querySelector('#review-approval-tab');
+            
+            // Load document review data when tab is shown
+            reviewApprovalTab.addEventListener('shown.bs.tab', function() {
+                loadDocumentReviewData();
+                loadMyPendingApprovals();
+            });
+
+            function loadDocumentReviewData() {
+                const baseUrl = "{{ url('/') }}";
+                const projectId = {{ $project->id }};
+                
+                
+                // Load statistics
+                fetch(`${baseUrl}/api/projects/${projectId}/document-review/statistics`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('total-documents').textContent = data.total || 0;
+                        document.getElementById('submitted-documents').textContent = data.submitted || 0;
+                        document.getElementById('review-documents').textContent = data.under_review || 0;
+                        document.getElementById('approved-documents').textContent = data.approved || 0;
+                        document.getElementById('rejected-documents').textContent = data.rejected || 0;
+                        document.getElementById('revision-documents').textContent = data.revision_required || 0;
+                    })
+                    .catch(error => {
+                        console.error('Error loading statistics:', error);
+                    });
+
+                // Load recent documents
+                fetch(`{{ route('projects.document-review.index', $project->id) }}?ajax=1&limit=5`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const tbody = document.getElementById('documents-list');
+                        tbody.innerHTML = '';
+
+                        if (data.documents && data.documents.length > 0) {
+                            data.documents.forEach(doc => {
+                                const row = `
+                                    <tr>
+                                        <td>
+                                            <div>
+                                                <strong>${doc.document_name}</strong>
+                                                ${doc.description ? `<br><small class="text-muted">${doc.description.substring(0, 50)}${doc.description.length > 50 ? '...' : ''}</small>` : ''}
+                                            </div>
+                                        </td>
+                                        <td><span class="badge bg-light text-dark">${doc.category_name}</span></td>
+                                        <td>${doc.submitter_name}</td>
+                                        <td>${getStatusBadge(doc.status)}</td>
+                                        <td>${formatDate(doc.submission_date)}</td>
+                                        <td>
+                                            <div class="btn-group" role="group">
+                                                <a href="${baseUrl}/projects/${projectId}/document-review/${doc.id}" class="btn btn-sm btn-outline-primary" title="{{__('View Details')}}">
+                                                    <i class="ti ti-eye"></i>
+                                                </a>
+                                                <a href="${doc.document_link}" target="_blank" class="btn btn-sm btn-outline-info" title="{{__('Open Document')}}">
+                                                    <i class="ti ti-external-link"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                `;
+                                tbody.insertAdjacentHTML('beforeend', row);
+                            });
+                        } else {
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">
+                                        <i class="ti ti-file-x text-muted" style="font-size: 2rem;"></i>
+                                        <p class="text-muted mt-2">{{__('No documents submitted yet')}}</p>
+                                        <a href="{{ route('projects.document-review.create', $project->id) }}" class="btn btn-sm btn-primary">
+                                            <i class="ti ti-plus"></i> {{__('Submit First Document')}}
+                                        </a>
+                                    </td>
+                                </tr>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading documents:', error);
+                        document.getElementById('documents-list').innerHTML = `
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-danger">
+                                    <i class="ti ti-alert-circle"></i> {{__('Error loading documents')}}
+                                </td>
+                            </tr>
+                        `;
+                    });
+            }
+
+            function loadMyPendingApprovals() {
+                @if(Auth::user()->type !== 'client')
+                fetch(`${baseUrl}/api/document-review/pending-approvals`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const tbody = document.getElementById('my-approvals-list');
+                        const countBadge = document.getElementById('my-pending-count');
+                        
+                        tbody.innerHTML = '';
+                        
+                        if (data && data.length > 0) {
+                            countBadge.textContent = data.length;
+                            
+                            data.forEach(doc => {
+                                if (doc.project.id === {{ $project->id }}) { // Only show documents from current project
+                                    const row = `
+                                        <tr class="table-warning">
+                                            <td>
+                                                <strong>${doc.document_name}</strong>
+                                                <br><small class="text-muted">Project: ${doc.project.project_name}</small>
+                                            </td>
+                                            <td>${doc.submitter.name}</td>
+                                            <td><span class="badge bg-light text-dark">${doc.category_name}</span></td>
+                                            <td>${formatDate(doc.submission_date)}</td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="${baseUrl}/projects/${doc.project.id}/document-review/${doc.id}" class="btn btn-sm btn-warning">
+                                                        <i class="ti ti-eye"></i> {{__('Review')}}
+                                                    </a>
+                                                    <a href="${doc.document_link}" target="_blank" class="btn btn-sm btn-outline-info">
+                                                        <i class="ti ti-external-link"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    `;
+                                    tbody.insertAdjacentHTML('beforeend', row);
+                                }
+                            });
+                            
+                            if (tbody.children.length === 0) {
+                                tbody.innerHTML = `
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4">
+                                            <i class="ti ti-check-circle text-success" style="font-size: 2rem;"></i>
+                                            <p class="text-muted mt-2">{{__('No pending approvals for this project')}}</p>
+                                        </td>
+                                    </tr>
+                                `;
+                            }
+                        } else {
+                            countBadge.textContent = '0';
+                            tbody.innerHTML = `
+                                <tr>
+                                    <td colspan="5" class="text-center py-4">
+                                        <i class="ti ti-check-circle text-success" style="font-size: 2rem;"></i>
+                                        <p class="text-muted mt-2">{{__('No pending approvals')}}</p>
+                                    </td>
+                                </tr>
+                            `;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading pending approvals:', error);
+                    });
+                @endif
+            }
+
+            function getStatusBadge(status) {
+                const badges = {
+                    'submitted': '<span class="badge bg-info">{{__("Submitted")}}</span>',
+                    'under_review': '<span class="badge bg-warning">{{__("Under Review")}}</span>',
+                    'approved': '<span class="badge bg-success">{{__("Approved")}}</span>',
+                    'rejected': '<span class="badge bg-danger">{{__("Rejected")}}</span>',
+                    'revision_required': '<span class="badge bg-secondary">{{__("Revision Required")}}</span>'
+                };
+                return badges[status] || '<span class="badge bg-light text-dark">{{__("Unknown")}}</span>';
+            }
+
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-GB', { 
+                    day: '2-digit', 
+                    month: 'short', 
+                    year: 'numeric' 
+                });
+            }
+        });
+        </script>
 @endpush
 @push('script-page')
     <script>
@@ -1355,76 +1942,113 @@
     <li class="breadcrumb-item mt-2"><a href="{{route('projects.index')}}">{{__('Project')}}</a></li>
     <li class="breadcrumb-item mt-2">{{ucwords($project->project_name)}}</li>
 @endsection
+
 @section('action-btn')
     <div class="float-end mt-3">
-        {{-- @can('view grant chart')
-            <a href="{{ route('projects.gantt',$project->id) }}" class="btn btn-sm btn-primary">
-                {{__('Gantt Chart')}}
-            </a>
-        @endcan --}}
-        @if(\Auth::user()->type!='client' || (\Auth::user()->type=='client' ))
-            <a href="{{ route('projecttime.tracker', \Crypt::encrypt($project->id)) }}" class="btn btn-sm btn-primary">
-                {{__('Tracker')}}
-            </a>
-        @endif
-        {{-- @can('view expense')
-            <a href="{{ route('projects.expenses.index',$project->id) }}" class="btn btn-sm btn-primary">
-                {{__('Expense')}}
-            </a>
-        @endcan --}}
-        @can('manage invoice')
-            <a href="{{ route('projects.invoice', \Crypt::encrypt($project->id)) }}" class="btn btn-sm btn-primary">
-                {{__('Invoice')}}
-            </a>
-        @endcan
-        @if(\Auth::user()->type != 'client')
-            @can('view timesheet')
-                <a href="{{ route('project.timesheet', \Crypt::encrypt($project->id)) }}" class="btn btn-sm btn-primary">
-                    {{__('Timesheet')}}
-                </a>
-            @endcan
-        @endif
-        <!-- @can('manage bug report')
-            <a href="{{ route('task.bug',$project->id) }}" class="btn btn-sm btn-primary">
-                {{__('Bug Report')}}
-            </a>
-        @endcan -->
-        @if (\Auth::user()->type != 'client' && \Auth::user()->type != 'staff_client')
-            @can('edit project task')
-                <a href="{{ route('projects.tasks.index', \Crypt::encrypt($project->id)) }}" class="btn btn-sm btn-primary">
-                    {{__('Task')}}
-                </a>
-            @endcan
-        @endif
+        @php
+            $endDate = \Carbon\Carbon::parse($project->end_date);
+            $daysLeft = \Carbon\Carbon::today()->diffInDays($endDate, false);
+            
+            if ($daysLeft > 0) {
+                $badgeClass = $daysLeft <= 7 ? 'bg-danger' : ($daysLeft <= 30 ? 'bg-warning' : 'bg-success');
+                $icon = 'ti ti-clock';
+                $text = $daysLeft . ' days left';
+            } elseif ($daysLeft == 0) {
+                $badgeClass = 'bg-warning';
+                $icon = 'ti ti-alert-triangle';
+                $text = 'Due today';
+            } else {
+                $badgeClass = 'bg-danger';
+                $icon = 'ti ti-alert-circle';
+                $text = abs($daysLeft) . ' days overdue';
+            }
+        @endphp
         
-        @can('edit project')
-            <a href="#" data-size="lg" data-url="{{ route('projects.edit', $project->id) }}" data-ajax-popup="true" data-bs-toggle="tooltip" title="{{__('Edit Project')}}" class="btn btn-sm btn-primary">
-                <i class="ti ti-pencil"></i>
-            </a>
-        @endcan
-
+        <span class="badge {{ $badgeClass }} px-3 py-2 fs-6 deadline-badge">
+            <i class="{{ $icon }}"></i> {{ $text }}
+        </span>
     </div>
 @endsection
 
 @section('content')
-
     <div class="container mt-4">
         <ul class="nav nav-tabs" id="projectTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab" aria-controls="dashboard" aria-selected="true">Dashboard</button>
+                <button class="nav-link active text-primary" id="dashboard-tab" data-bs-toggle="tab" data-bs-target="#dashboard" type="button" role="tab" aria-controls="dashboard" aria-selected="true">
+                    <i class="ti ti-dashboard"></i> Dashboard
+                </button>
+            </li>
+            @if (\Auth::user()->type != 'client' && \Auth::user()->type != 'staff_client')
+                @can('edit project task')
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link text-warning" href="{{ route('projects.tasks.index', \Crypt::encrypt($project->id)) }}" target="_blank">
+                            <i class="ti ti-list-check"></i> {{__('Task')}}
+                        </a>
+                    </li>
+                @endcan
+            @endif
+            @if(\Auth::user()->type != 'client')
+                @can('view timesheet')
+                    <li class="nav-item" role="presentation">
+                        <a class="nav-link text-info" href="{{ route('project.timesheet', \Crypt::encrypt($project->id)) }}" target="_blank">
+                            <i class="ti ti-calendar-time"></i> {{__('Timesheet')}}
+                        </a>
+                    </li>
+                @endcan
+            @endif
+            <li class="nav-item" role="presentation">
+                <button class="nav-link text-success" id="comments-tab" data-bs-toggle="tab" data-bs-target="#comments" type="button" role="tab" aria-controls="comments" aria-selected="false">
+                    <i class="ti ti-message-circle"></i> Communication
+                </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="comments-tab" data-bs-toggle="tab" data-bs-target="#comments" type="button" role="tab" aria-controls="comments" aria-selected="false">Communication</button>
+                <button class="nav-link text-purple" id="planning-tab" data-bs-toggle="tab" data-bs-target="#planning" type="button" role="tab" aria-controls="planning" aria-selected="false">
+                    <i class="ti ti-calendar-event"></i> Planning
+                </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="planning-tab" data-bs-toggle="tab" data-bs-target="#planning" type="button" role="tab" aria-controls="planning" aria-selected="false">Planning</button>
+                <button class="nav-link text-secondary" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab" aria-controls="notes" aria-selected="false">
+                    <i class="ti ti-notes"></i> Notes
+                </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="notes-tab" data-bs-toggle="tab" data-bs-target="#notes" type="button" role="tab" aria-controls="notes" aria-selected="false">Notes</button>
+                <button class="nav-link text-dark" id="review-approval-tab" data-bs-toggle="tab" data-bs-target="#review-approval" type="button" role="tab" aria-controls="review-approval" aria-selected="false">
+                    <i class="ti ti-clipboard-check"></i> Review & Approval
+                    @php
+                        $pendingCount = App\Models\DocumentReview::where('project_id', $project->id)
+                            ->where(function($q) {
+                                $q->where('approver_id', Auth::id())
+                                ->whereIn('status', ['submitted', 'under_review']);
+                            })
+                            ->count();
+                    @endphp
+                    @if($pendingCount > 0)
+                        <span class="badge bg-danger ms-1">{{ $pendingCount }}</span>
+                    @endif
+                </button>
             </li>
             <li class="nav-item" role="presentation">
-                <a class="nav-link" id="reports-tab" data-bs-toggle="tab" href="#reports" role="tab">{{__('Reports')}}</a>
+                <button class="nav-link text-danger" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports" type="button" role="tab" aria-controls="reports" aria-selected="false">
+                    <i class="ti ti-chart-bar"></i> {{__('Reports')}}
+                </button>
             </li>
+            
+            <!-- Action Links -->
+            @if(\Auth::user()->type!='client' || (\Auth::user()->type=='client' ))
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link text-primary" href="{{ route('projecttime.tracker', \Crypt::encrypt($project->id)) }}" target="_blank">
+                        <i class="ti ti-clock"></i> {{__('Tracker')}}
+                    </a>
+                </li>
+            @endif
+            
+            @can('manage invoice')
+                <li class="nav-item" role="presentation">
+                    <a class="nav-link text-success" href="{{ route('projects.invoice', \Crypt::encrypt($project->id)) }}" target="_blank">
+                        <i class="ti ti-file-invoice"></i> {{__('Invoice')}}
+                    </a>
+                </li>
+            @endcan
         </ul>
         <div class="tab-content" id="projectTabsContent">
             <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
@@ -1744,6 +2368,90 @@
                             </div>
                         </div>
                     </div>
+                    @if($project->google_drive_folder_id)
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">{{ __('Google Drive Integration') }}</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="d-grid gap-2">
+                                            <a href="{{ $project->google_drive_folder_url }}" 
+                                            target="_blank" 
+                                            class="btn btn-primary">
+                                                <i class="fas fa-folder-open"></i>
+                                                {{ __('Open Project Folder') }}
+                                            </a>
+                                            
+                                            <a href="{{ $project->google_drive_leadsheet_url }}" 
+                                            target="_blank" 
+                                            class="btn btn-success">
+                                                <i class="fas fa-table"></i>
+                                                {{ __('Open Leadsheet') }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="d-grid gap-2">
+                                            <button type="button" 
+                                                    class="btn btn-info" 
+                                                    onclick="refreshFolderSheet({{ $project->id }})">
+                                                <i class="fas fa-sync-alt"></i>
+                                                {{ __('Refresh FOLDER Sheet') }}
+                                            </button>
+                                            
+                                            <button type="button" 
+                                                    class="btn btn-warning" 
+                                                    onclick="updateGoogleDriveFiles({{ $project->id }})">
+                                                <i class="fas fa-cloud-upload-alt"></i>
+                                                {{ __('Update Files List') }}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <div class="alert alert-info">
+                                            <small>
+                                                <strong>{{ __('Info') }}:</strong><br>
+                                                • {{ __('Refresh FOLDER Sheet: Update file links in leadsheet') }}<br>
+                                                • {{ __('Update Files List: Sync current files from Google Drive folders') }}<br>
+                                                • {{ __('Use this when you add/remove files in Google Drive folders') }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Project Details --}}
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <h6>{{ __('Project Details') }}</h6>
+                                        <table class="table table-sm table-bordered">
+                                            <tr>
+                                                <td><strong>{{ __('Company Code') }}</strong></td>
+                                                <td>{{ $project->project_name . ' ' . $project->book_year . ' - ' . $project->label ?? 'N/A' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>{{ __('Project Year') }}</strong></td>
+                                                <td>{{ $project->book_year ?? 'N/A' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>{{ __('Folder ID') }}</strong></td>
+                                                <td><code>{{ $project->google_drive_folder_id }}</code></td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>{{ __('Leadsheet ID') }}</strong></td>
+                                                <td><code>{{ $project->google_drive_leadsheet_id }}</code></td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     @if(Auth::user()->type == "admin" || Auth::user()->type == "company")
                         <div class="col-md-6">
                             <div class="card">
@@ -2057,6 +2765,156 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="review-approval" role="tabpanel" aria-labelledby="review-approval-tab">
+                <div class="container-fluid mt-4">
+                    
+                    <!-- Action Buttons -->
+                    <div class="row mb-4">
+                        <div class="col-md-12 d-flex justify-content-between align-items-center">
+                            <h4>{{__('Document Review & Approval')}}</h4>
+                            @can('create project')
+                                <a href="{{ route('projects.document-review.create', $project->id) }}" class="btn btn-primary">
+                                    <i class="ti ti-plus"></i> {{__('Submit Document')}}
+                                </a>
+                            @endcan
+                        </div>
+                    </div>
+
+                    <!-- Statistics Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-2">
+                            <div class="card bg-primary text-white text-center">
+                                <div class="card-body py-3">
+                                    <h4 class="text-white mb-1" id="total-documents">0</h4>
+                                    <small>{{__('Total Documents')}}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="card bg-info text-white text-center">
+                                <div class="card-body py-3">
+                                    <h4 class="text-white mb-1" id="submitted-documents">0</h4>
+                                    <small>{{__('Submitted')}}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="card bg-warning text-white text-center">
+                                <div class="card-body py-3">
+                                    <h4 class="text-white mb-1" id="review-documents">0</h4>
+                                    <small>{{__('Under Review')}}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="card bg-success text-white text-center">
+                                <div class="card-body py-3">
+                                    <h4 class="text-white mb-1" id="approved-documents">0</h4>
+                                    <small>{{__('Approved')}}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="card bg-danger text-white text-center">
+                                <div class="card-body py-3">
+                                    <h4 class="text-white mb-1" id="rejected-documents">0</h4>
+                                    <small>{{__('Rejected')}}</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="card bg-secondary text-white text-center">
+                                <div class="card-body py-3">
+                                    <h4 class="text-white mb-1" id="revision-documents">0</h4>
+                                    <small>{{__('Revision Required')}}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Documents List -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">{{__('Recent Documents')}}</h5>
+                                    <a href="{{ route('projects.document-review.index', $project->id) }}" class="btn btn-sm btn-outline-primary">
+                                        {{__('View All')}} <i class="ti ti-arrow-right"></i>
+                                    </a>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover" id="documents-table">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>{{__('Document Name')}}</th>
+                                                    <th>{{__('Category')}}</th>
+                                                    <th>{{__('Submitted By')}}</th>
+                                                    <th>{{__('Status')}}</th>
+                                                    <th>{{__('Submission Date')}}</th>
+                                                    <th width="100">{{__('Action')}}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="documents-list">
+                                                <tr>
+                                                    <td colspan="6" class="text-center py-4">
+                                                        <div class="spinner-border text-primary" role="status">
+                                                            <span class="visually-hidden">Loading...</span>
+                                                        </div>
+                                                        <p class="mt-2 text-muted">{{__('Loading documents...')}}</p>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- My Pending Approvals -->
+                    @if(Auth::user()->type !== 'client')
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        {{__('Pending My Approval')}}
+                                        <span class="badge bg-warning ms-2" id="my-pending-count">0</span>
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead class="table-light">
+                                                <tr>
+                                                    <th>{{__('Document Name')}}</th>
+                                                    <th>{{__('Submitted By')}}</th>
+                                                    <th>{{__('Category')}}</th>
+                                                    <th>{{__('Submission Date')}}</th>
+                                                    <th>{{__('Action')}}</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="my-approvals-list">
+                                                <tr>
+                                                    <td colspan="5" class="text-center py-4">
+                                                        <div class="spinner-border text-warning" role="status">
+                                                            <span class="visually-hidden">Loading...</span>
+                                                        </div>
+                                                        <p class="mt-2 text-muted">{{__('Loading pending approvals...')}}</p>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
                 </div>
             </div>
             <div class="tab-pane fade" id="reports" role="tabpanel" aria-labelledby="reports-tab">
