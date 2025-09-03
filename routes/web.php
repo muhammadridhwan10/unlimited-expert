@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProjectReportController;
 use App\Http\Controllers\ProjectOrdersController;
 use App\Http\Controllers\AuditToolsController;
+use App\Http\Controllers\DocumentReviewController;
 use Illuminate\Http\Request;
 use App\Models\ProjectTask;
 use App\Services\GoogleDriveWorkspaceService;
@@ -3037,6 +3038,55 @@ Route::post(
 Route::get('/projects/activity', 'ProjectController@filterProjectActivity')->name('projects.activity.filter');
 Route::get('/projects/activity/export', 'ProjectController@exportProjectActivity')->name('projects.activity.export');
 Route::get('projects/activity/clear-cache', 'ProjectController::class@clearActivityCache')->name('projects.activity.clear_cache');
+
+Route::get('/projects/{project}/document-review', [DocumentReviewController::class, 'index'])
+    ->name('projects.document-review.index');
+
+Route::get('/projects/{project}/document-review/create', [DocumentReviewController::class, 'create'])
+    ->name('projects.document-review.create');
+
+Route::post('/projects/{project}/document-review', [DocumentReviewController::class, 'store'])
+    ->name('projects.document-review.store');
+
+Route::get('/projects/{project}/document-review/{document}', [DocumentReviewController::class, 'show'])
+    ->name('projects.document-review.show');
+
+Route::delete('/projects/{project}/document-review/{document}', [DocumentReviewController::class, 'destroy'])
+    ->name('projects.document-review.destroy');
+
+// Review Actions
+Route::post('/projects/{project}/document-review/{document}/approve', [DocumentReviewController::class, 'approve'])
+    ->name('projects.document-review.approve');
+
+Route::post('/projects/{project}/document-review/{document}/reject', [DocumentReviewController::class, 'reject'])
+    ->name('projects.document-review.reject');
+
+Route::post('/projects/{project}/document-review/{document}/revision', [DocumentReviewController::class, 'requireRevision'])
+    ->name('projects.document-review.revision');
+
+Route::post('/projects/{project}/document-review/{document}/comment', [DocumentReviewController::class, 'addComment'])
+    ->name('projects.document-review.comment');
+
+Route::patch('/projects/{project}/document-review/{document}/status', [DocumentReviewController::class, 'updateStatus'])
+    ->name('projects.document-review.status');
+
+// API Routes untuk statistics dan notifications
+Route::get('/api/projects/{project}/document-review/statistics', [DocumentReviewController::class, 'getStatistics'])
+    ->name('api.projects.document-review.statistics');
+
+Route::get('/api/document-review/pending-approvals', [DocumentReviewController::class, 'getPendingApprovals'])
+    ->name('api.document-review.pending-approvals');
+
+Route::get('/api/document-review/notification-summary', [DocumentReviewController::class, 'getNotificationSummary'])
+    ->name('api.document-review.notification-summary');
+
+# Route untuk bulk actions
+Route::post('/api/document-review/bulk-approve', [DocumentReviewController::class, 'bulkApprove'])
+    ->name('api.document-review.bulk-approve');
+
+# Route untuk testing notifications (hanya development)
+Route::post('/api/document-review/{document}/test-notification', [DocumentReviewController::class, 'testNotification'])
+    ->name('api.document-review.test-notification');
 Route::resource('projects', 'ProjectController')->middleware(
     [
         'auth',

@@ -4,7 +4,7 @@
     <div class="row">
         @if($id==0)
             <div class="form-group col-md-12">
-                {{Form::label('application',__('Interviewer'),['class'=>'form-label'])}}
+                {{Form::label('application',__('Candidate'),['class'=>'form-label'])}}
                 {{Form::select('application',$applications,null,array('class'=>'form-control select','required'=>'required'))}}
             </div>
         @endif

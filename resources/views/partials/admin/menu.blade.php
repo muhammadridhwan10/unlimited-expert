@@ -185,7 +185,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
 
                             @if(\Auth::user()->type == 'staff IT' || \Auth::user()->type == 'partners' || \Auth::user()->type == 'staff' || \Auth::user()->type == 'junior audit' || \Auth::user()->type == 'senior audit' || \Auth::user()->type == 'junior accounting' || \Auth::user()->type == 'senior accounting' || \Auth::user()->type == 'manager audit' || \Auth::user()->type == 'intern')
                             <li class="dash-item dash-hasmenu {{ (Request::segment(1) == 'leave' || Request::segment(1) == 'overtime' || Request::segment(1) == 'leave' || Request::segment(1) == 'report-hrm' || Request::segment(1) == 'medical-allowance' || Request::segment(1) == 'reimbursment-personal' || Request::segment(1) == 'reimbursment-client')?'active dash-trigger':''}}">
-                                <a href="#!" class="dash-link "><span class="dash-micon"><i class="ti ti-user"></i></span><span class="dash-mtext">{{__('HRM')}}</span><span class="dash-arrow">
+                                <a href="#!" class="dash-link "><span class="dash-micon"><i class="ti ti-user"></i></span><span class="dash-mtext">{{__('HR')}}</span><span class="dash-arrow">
                                         <i data-feather="chevron-right"></i></span>
                                 </a>
                                 <ul class="dash-submenu">
@@ -294,7 +294,7 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                             || Request::segment(1) == 'job-category' || Request::segment(1) == 'terminationtype' || Request::segment(1) == 'awardtype' || Request::segment(1) == 'trainingtype' ||
                                             Request::segment(1) == 'goaltype' || Request::segment(1) == 'paysliptype' || Request::segment(1) == 'allowanceoption' || Request::segment(1) == 'competencies' || Request::segment(1) == 'loanoption'
                                             || Request::segment(1) == 'deductionoption')?'active dash-trigger':''}}">
-                                <a href="#!" class="dash-link "><span class="dash-micon"><i class="ti ti-user"></i></span><span class="dash-mtext">{{__('HRM')}}</span><span class="dash-arrow">
+                                <a href="#!" class="dash-link "><span class="dash-micon"><i class="ti ti-user"></i></span><span class="dash-mtext">{{__('HR')}}</span><span class="dash-arrow">
                                         <i data-feather="chevron-right"></i></span>
                                 </a>
                                 <ul class="dash-submenu">

@@ -36,8 +36,7 @@ class JobApplicationController extends Controller
         if(\Auth::user()->can('manage job application'))
         {
             if($user->type == 'admin'){
-                $stages = JobStage::all(); // Only stage 1
-
+                $stages = JobStage::all();
                 $jobs = Job::all()->pluck('title', 'id');
                 $jobs->prepend('All', '');
                 $univercity = University::get()->pluck('name','name');
@@ -47,7 +46,21 @@ class JobApplicationController extends Controller
 
                 $ipk = JobApplication::$ipk;
 
-                // Apply filters
+                // Apply search filter first
+                if (!empty($request->search)) {
+                    $search = $request->search;
+                    $applicants->where(function($query) use ($search) {
+                        $query->where('name', 'LIKE', '%' . $search . '%')
+                            ->orWhere('email', 'LIKE', '%' . $search . '%')
+                            ->orWhere('phone', 'LIKE', '%' . $search . '%')
+                            ->orWhere('city', 'LIKE', '%' . $search . '%')
+                            ->orWhere('university', 'LIKE', '%' . $search . '%')
+                            ->orWhere('ipk', 'LIKE', '%' . $search . '%')
+                            ->orWhere('gender', 'LIKE', '%' . $search . '%');
+                    });
+                }
+
+                // Apply other filters
                 if (!empty($request->university)) {
                     $applicants->where('university', $request->university);
                 }
@@ -60,8 +73,6 @@ class JobApplicationController extends Controller
                 if (!empty($request->gender)) {
                     $applicants->where('gender', $request->gender);
                 }
-
-                // Note: Status filter removed since we only show stage 1
 
                 // Applied date range filter
                 if (!empty($request->applied_from)) {
@@ -81,7 +92,6 @@ class JobApplicationController extends Controller
             }elseif($user->type == 'company')
             {
                 $stages = JobStage::all();
-
                 $jobs = Job::all()->pluck('title', 'id');
                 $jobs->prepend('All', '');
                 $univercity = University::get()->pluck('name','name');
@@ -91,7 +101,21 @@ class JobApplicationController extends Controller
 
                 $ipk = JobApplication::$ipk;
 
-                // Apply filters
+                // Apply search filter first
+                if (!empty($request->search)) {
+                    $search = $request->search;
+                    $applicants->where(function($query) use ($search) {
+                        $query->where('name', 'LIKE', '%' . $search . '%')
+                            ->orWhere('email', 'LIKE', '%' . $search . '%')
+                            ->orWhere('phone', 'LIKE', '%' . $search . '%')
+                            ->orWhere('city', 'LIKE', '%' . $search . '%')
+                            ->orWhere('university', 'LIKE', '%' . $search . '%')
+                            ->orWhere('ipk', 'LIKE', '%' . $search . '%')
+                            ->orWhere('gender', 'LIKE', '%' . $search . '%');
+                    });
+                }
+
+                // Apply other filters
                 if (!empty($request->university)) {
                     $applicants->where('university', $request->university);
                 }
@@ -121,9 +145,7 @@ class JobApplicationController extends Controller
                 $applicants = $applicants->paginate(15);
             }
             else{
-                $stages = JobStage::where('created_by', '=', \Auth::user()->creatorId())
-                                ->get(); // Only stage 1
-
+                $stages = JobStage::where('created_by', '=', \Auth::user()->creatorId())->get();
                 $jobs = Job::where('created_by', \Auth::user()->creatorId())->get()->pluck('title', 'id');
                 $jobs->prepend('All', '');
                 $univercity = University::get()->pluck('name','name');
@@ -134,7 +156,21 @@ class JobApplicationController extends Controller
 
                 $ipk = JobApplication::$ipk;
 
-                // Apply filters
+                // Apply search filter first
+                if (!empty($request->search)) {
+                    $search = $request->search;
+                    $applicants->where(function($query) use ($search) {
+                        $query->where('name', 'LIKE', '%' . $search . '%')
+                            ->orWhere('email', 'LIKE', '%' . $search . '%')
+                            ->orWhere('phone', 'LIKE', '%' . $search . '%')
+                            ->orWhere('city', 'LIKE', '%' . $search . '%')
+                            ->orWhere('university', 'LIKE', '%' . $search . '%')
+                            ->orWhere('ipk', 'LIKE', '%' . $search . '%')
+                            ->orWhere('gender', 'LIKE', '%' . $search . '%');
+                    });
+                }
+
+                // Apply other filters
                 if (!empty($request->university)) {
                     $applicants->where('university', $request->university);
                 }
@@ -596,7 +632,6 @@ class JobApplicationController extends Controller
 
     }
 
-
     public function candidate(Request $request)
     {
         $user = \Auth::user();
@@ -614,7 +649,27 @@ class JobApplicationController extends Controller
 
                 $ipk = JobApplication::$ipk;
 
-                // Apply filters
+                // Apply search filter first
+                if (!empty($request->search)) {
+                    $search = $request->search;
+                    $candidates->where(function($query) use ($search) {
+                        $query->where('name', 'LIKE', '%' . $search . '%')
+                            ->orWhere('email', 'LIKE', '%' . $search . '%')
+                            ->orWhere('phone', 'LIKE', '%' . $search . '%')
+                            ->orWhere('city', 'LIKE', '%' . $search . '%')
+                            ->orWhere('university', 'LIKE', '%' . $search . '%')
+                            ->orWhere('ipk', 'LIKE', '%' . $search . '%')
+                            ->orWhere('gender', 'LIKE', '%' . $search . '%')
+                            ->orWhereHas('jobs', function($jobQuery) use ($search) {
+                                $jobQuery->where('title', 'LIKE', '%' . $search . '%');
+                            })
+                            ->orWhereHas('stage_status', function($stageQuery) use ($search) {
+                                $stageQuery->where('title', 'LIKE', '%' . $search . '%');
+                            });
+                    });
+                }
+
+                // Apply other filters
                 if (!empty($request->university)) {
                     $candidates->where('university', $request->university);
                 }
@@ -660,7 +715,27 @@ class JobApplicationController extends Controller
 
                 $ipk = JobApplication::$ipk;
 
-                // Apply filters
+                // Apply search filter first
+                if (!empty($request->search)) {
+                    $search = $request->search;
+                    $candidates->where(function($query) use ($search) {
+                        $query->where('name', 'LIKE', '%' . $search . '%')
+                            ->orWhere('email', 'LIKE', '%' . $search . '%')
+                            ->orWhere('phone', 'LIKE', '%' . $search . '%')
+                            ->orWhere('city', 'LIKE', '%' . $search . '%')
+                            ->orWhere('university', 'LIKE', '%' . $search . '%')
+                            ->orWhere('ipk', 'LIKE', '%' . $search . '%')
+                            ->orWhere('gender', 'LIKE', '%' . $search . '%')
+                            ->orWhereHas('jobs', function($jobQuery) use ($search) {
+                                $jobQuery->where('title', 'LIKE', '%' . $search . '%');
+                            })
+                            ->orWhereHas('stage_status', function($stageQuery) use ($search) {
+                                $stageQuery->where('title', 'LIKE', '%' . $search . '%');
+                            });
+                    });
+                }
+
+                // Apply other filters
                 if (!empty($request->university)) {
                     $candidates->where('university', $request->university);
                 }
@@ -705,7 +780,27 @@ class JobApplicationController extends Controller
 
                 $ipk = JobApplication::$ipk;
 
-                // Apply filters
+                // Apply search filter first
+                if (!empty($request->search)) {
+                    $search = $request->search;
+                    $candidates->where(function($query) use ($search) {
+                        $query->where('name', 'LIKE', '%' . $search . '%')
+                            ->orWhere('email', 'LIKE', '%' . $search . '%')
+                            ->orWhere('phone', 'LIKE', '%' . $search . '%')
+                            ->orWhere('city', 'LIKE', '%' . $search . '%')
+                            ->orWhere('university', 'LIKE', '%' . $search . '%')
+                            ->orWhere('ipk', 'LIKE', '%' . $search . '%')
+                            ->orWhere('gender', 'LIKE', '%' . $search . '%')
+                            ->orWhereHas('jobs', function($jobQuery) use ($search) {
+                                $jobQuery->where('title', 'LIKE', '%' . $search . '%');
+                            })
+                            ->orWhereHas('stage_status', function($stageQuery) use ($search) {
+                                $stageQuery->where('title', 'LIKE', '%' . $search . '%');
+                            });
+                    });
+                }
+
+                // Apply other filters
                 if (!empty($request->university)) {
                     $candidates->where('university', $request->university);
                 }

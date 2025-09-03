@@ -75,6 +75,61 @@ class User extends Authenticatable
         'standard_profesional_akuntan_publik' => 'Standard Profesional Akuntan Publik',
     ];
 
+    /**
+     * Documents submitted by this user
+     */
+    public function submittedDocuments()
+    {
+        return $this->hasMany(DocumentReview::class, 'submitted_by');
+    }
+
+    /**
+     * Documents to be approved by this user
+     */
+    public function documentsToApprove()
+    {
+        return $this->hasMany(DocumentReview::class, 'approver_id');
+    }
+
+    /**
+     * Documents this user contributed to
+     */
+    public function contributedDocuments()
+    {
+        return $this->hasManyThrough(
+            DocumentReview::class, 
+            DocumentContributor::class, 
+            'user_id', 
+            'id', 
+            'id', 
+            'document_review_id'
+        );
+    }
+
+    /**
+     * Get pending approvals count for this user
+     */
+    public function getPendingApprovalsCount()
+    {
+        return $this->documentsToApprove()
+            ->whereIn('status', ['submitted', 'under_review'])
+            ->count();
+    }
+
+    /**
+     * Get user's document review activity stats
+     */
+    public function getDocumentReviewActivity()
+    {
+        return [
+            'submitted_count' => $this->submittedDocuments()->count(),
+            'pending_approvals' => $this->getPendingApprovalsCount(),
+            'approved_count' => $this->documentsToApprove()->where('status', 'approved')->count(),
+            'rejected_count' => $this->documentsToApprove()->where('status', 'rejected')->count(),
+            'contributed_count' => $this->contributedDocuments()->count()
+        ];
+    }
+
     public function plans()
     {
         return $this->hasMany(Planning::class, 'user_id');
