@@ -672,6 +672,12 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                                     </li>
                                     @endcan
 
+                                    <li class="dash-item {{ request()->is('all-report') ? 'active' : '' }}">
+                                        <a href="{{route('all-report.index')}}" class="dash-link">
+                                           <span class="dash-mtext">{{__('All Report HR')}}</span>
+                                        </a>
+                                    </li>
+
                                     <li class="dash-item {{ (Request::segment(1) == 'leavetype' || Request::segment(1) == 'reimbursmenttype' || Request::segment(1) == 'document' || Request::segment(1) == 'performanceType' || Request::segment(1) == 'branch' || Request::segment(1) == 'department'
                                                                             || Request::segment(1) == 'designation' || Request::segment(1) == 'job-stage'|| Request::segment(1) == 'performanceType'  || Request::segment(1) == 'job-category' || Request::segment(1) == 'terminationtype' ||
                                                                         Request::segment(1) == 'awardtype' || Request::segment(1) == 'trainingtype' || Request::segment(1) == 'goaltype' || Request::segment(1) == 'paysliptype' ||

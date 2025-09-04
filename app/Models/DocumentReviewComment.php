@@ -20,7 +20,8 @@ class DocumentReviewComment extends Model
         'general' => 'General',
         'approval' => 'Approval',
         'rejection' => 'Rejection',
-        'revision' => 'Revision Request'
+        'revision' => 'Revision Request',
+        'review' => 'Under Review'
     ];
 
     public function documentReview()

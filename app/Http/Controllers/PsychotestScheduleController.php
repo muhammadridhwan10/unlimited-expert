@@ -36,11 +36,11 @@ class PsychotestScheduleController extends Controller
     {
         $user = \Auth::user();
         if ($user->type == 'admin') {
-            $candidates = JobApplication::with('jobs')->get();
+            $candidates = JobApplication::where('stage', 2)->with('jobs')->get();
         } elseif ($user->type == 'company') {
-            $candidates = JobApplication::with('jobs')->get();
+            $candidates = JobApplication::where('stage', 2)->with('jobs')->where('stage', 2)->get();
         } else {
-            $candidates = JobApplication::where('created_by', \Auth::user()->creatorId())
+            $candidates = JobApplication::where('created_by', \Auth::user()->creatorId())->where('stage', 2)
                 ->with('jobs')->get();
         }
 

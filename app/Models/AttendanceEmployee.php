@@ -32,4 +32,9 @@ class AttendanceEmployee extends Model
     {
         return $this->hasOne('App\Models\Employee', 'id', 'employee_id');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 }

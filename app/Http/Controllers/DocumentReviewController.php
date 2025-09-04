@@ -343,7 +343,6 @@ class DocumentReviewController extends Controller
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
 
-        $document->update(['status' => 'under_review']);
         $document->approve(Auth::id(), $request->comment);
 
         $notificationSent = $this->notificationService->notifyDocumentStatusUpdated(
@@ -373,7 +372,6 @@ class DocumentReviewController extends Controller
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
 
-        $document->update(['status' => 'under_review']);
         $document->reject($request->rejection_reason, Auth::id(), $request->comment);
 
         $notificationSent = $this->notificationService->notifyDocumentStatusUpdated(
@@ -402,7 +400,6 @@ class DocumentReviewController extends Controller
             return redirect()->back()->with('error', __('Permission Denied.'));
         }
 
-        $document->update(['status' => 'under_review']);
         $document->requireRevision($request->comment, Auth::id());
 
         $notificationSent = $this->notificationService->notifyDocumentStatusUpdated(
@@ -413,6 +410,35 @@ class DocumentReviewController extends Controller
         );
 
         return redirect()->back()->with('success', __('Revision requested successfully!'));
+    }
+
+    public function underReview(Request $request, $projectId, $documentId)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'comment' => 'required|string'
+        ]);
+
+        if($validator->fails()) {
+            return redirect()->back()->with('error', Utility::errorFormat($validator->getMessageBag()));
+        }
+
+        $document = DocumentReview::findOrFail($documentId);
+        
+        if($document->approver_id !== Auth::id() && !Auth::user()->can('edit project')) {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+
+        $document->underReview($request->comment, Auth::id());
+
+        $notificationSent = $this->notificationService->notifyDocumentStatusUpdated(
+            $document, 
+            'under_review', 
+            $request->comment, 
+            Auth::user()
+        );
+
+        return redirect()->back()->with('success', __('Review started successfully!'));
     }
 
     public function addComment(Request $request, $projectId, $documentId)

@@ -32,6 +32,26 @@ class Employee extends Model
         'created_by',
     ];
 
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function attendances()
+    {
+        return $this->hasMany(AttendanceEmployee::class, 'employee_id');
+    }
+
+    public function leaves()
+    {
+        return $this->hasMany(Leave::class, 'employee_id');
+    }
+
     public function meeting()
     {
         return $this->belongsTo(Meeting::class, 'id', 'employee_id');
@@ -268,11 +288,6 @@ class Employee extends Model
         return !empty($employee) ? $employee->id + 1 : 1;
     }
 
-    public function branch()
-    {
-        return $this->hasOne('App\Models\Branch', 'id', 'branch_id');
-    }
-
     public function department()
     {
         return $this->hasOne('App\Models\Department', 'id', 'department_id');
@@ -286,11 +301,6 @@ class Employee extends Model
     public function salaryType()
     {
         return $this->hasOne('App\Models\PayslipType', 'id', 'salary_type');
-    }
-
-    public function user()
-    {
-        return $this->hasOne('App\Models\User', 'id', 'user_id');
     }
 
     public function paySlip()

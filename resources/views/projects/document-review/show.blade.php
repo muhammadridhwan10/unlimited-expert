@@ -31,6 +31,11 @@
                             </a>
                         </li>
                         <li>
+                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                                <i class="ti ti-eye text-secondary"></i> {{__('Under Review')}}
+                            </a>
+                        </li>
+                        <li>
                             <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#revisionModal">
                                 <i class="ti ti-edit text-warning"></i> {{__('Request Revision')}}
                             </a>
@@ -385,6 +390,9 @@
                         <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#approveModal">
                             <i class="ti ti-check me-1"></i>{{__('Approve')}}
                         </button>
+                        <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                            <i class="ti ti-eye me-1"></i>{{__('Under Review')}}
+                        </button>
                         <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#revisionModal">
                             <i class="ti ti-edit me-1"></i>{{__('Request Revision')}}
                         </button>
@@ -509,6 +517,41 @@
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">{{__('Cancel')}}</button>
                     <button type="submit" class="btn btn-danger">
                         <i class="ti ti-x me-1"></i>{{__('Reject Work/Document')}}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="reviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title text-white"><i class="ti ti-eye me-2"></i>{{__('Under Review')}}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ route('projects.document-review.underreview', [$project->id, $document->id]) }}">
+                @csrf
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <div class="theme-avtar bg-secondary mx-auto">
+                            <i class="ti ti-eye"></i>
+                        </div>
+                        <h6 class="mt-2">{{__('Document is ready for review')}}</h6>
+                        <p class="text-muted">{{__('This document is waiting to be reviewed by the assigned reviewer.')}}</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>{{__('Comment')}} <span class="text-danger">*</span></label>
+                        <textarea name="comment" class="form-control" rows="4" required 
+                                  placeholder="{{__('OK, I will review it soon')}}"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">{{__('Cancel')}}</button>
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="ti ti-edit me-1"></i>{{__('Send Notification to Contributor')}}
                     </button>
                 </div>
             </form>

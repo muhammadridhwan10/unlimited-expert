@@ -203,6 +203,23 @@ class DocumentReview extends Model
         $this->addLog('revision_required', $comment, $userId);
     }
 
+    public function underReview($comment, $userId = null)
+    {
+        $this->update([
+            'status' => 'under_review'
+        ]);
+
+        if ($comment) {
+            $this->comments()->create([
+                'user_id' => $userId ?? auth()->id(),
+                'comment' => $comment,
+                'type' => 'review'
+            ]);
+        }
+
+        $this->addLog('under_review', $comment, $userId);
+    }
+
     // Static methods for statistics
     public static function getStatusStatistics($projectId = null)
     {

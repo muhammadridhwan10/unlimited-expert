@@ -2220,7 +2220,7 @@ Route::get('job-onboard/edit/{id}', 'JobApplicationController@jobBoardEdit')->na
         'XSS',
     ]
 );
-Route::post('job-onboard/update/{id}', 'JobApplicationController@jobBoardUpdate')->name('job.on.board.update')->middleware(
+Route::put('job-onboard/update/{id}', 'JobApplicationController@jobBoardUpdate')->name('job.on.board.update')->middleware(
     [
         'auth',
         'XSS',
@@ -2253,6 +2253,9 @@ Route::post('job-application/stage/change', 'JobApplicationController@stageChang
 );
 
 Route::resource('custom-question', 'CustomQuestionController')->middleware(['auth','XSS',]);
+Route::get('all-report', 'AllReportController@index')->name('all-report.index');
+    Route::post('all-report/export', 'AllReportController@export')->name('all-report.export');
+    Route::get('all-report/employees-by-branch', 'AllReportController@getEmployeesByBranch')->name('all-report.employees-by-branch');
 Route::resource('interview-schedule', 'InterviewScheduleController')->middleware(['auth','XSS',]);
 Route::get('interview-schedule/create/{id?}', 'InterviewScheduleController@create')->name('interview-schedule.create')->middleware(['auth','XSS',]);
 Route::get(
@@ -3063,6 +3066,9 @@ Route::post('/projects/{project}/document-review/{document}/reject', [DocumentRe
 
 Route::post('/projects/{project}/document-review/{document}/revision', [DocumentReviewController::class, 'requireRevision'])
     ->name('projects.document-review.revision');
+
+Route::post('/projects/{project}/document-review/{document}/under_review', [DocumentReviewController::class, 'underReview'])
+    ->name('projects.document-review.underreview');
 
 Route::post('/projects/{project}/document-review/{document}/comment', [DocumentReviewController::class, 'addComment'])
     ->name('projects.document-review.comment');
