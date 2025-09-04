@@ -1,5 +1,5 @@
 <?php
-// app/Http/Controllers/PsychotestScheduleController.php - Updated
+// app/Http/Controllers/PsychotestScheduleController.php - Updated with Multiple Candidate Support
 namespace App\Http\Controllers;
 
 use App\Models\JobApplication;
@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\PsychotestScheduled;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class PsychotestScheduleController extends Controller
 {
@@ -38,7 +39,7 @@ class PsychotestScheduleController extends Controller
         if ($user->type == 'admin') {
             $candidates = JobApplication::where('stage', 2)->with('jobs')->get();
         } elseif ($user->type == 'company') {
-            $candidates = JobApplication::where('stage', 2)->with('jobs')->where('stage', 2)->get();
+            $candidates = JobApplication::where('stage', 2)->with('jobs')->get();
         } else {
             $candidates = JobApplication::where('created_by', \Auth::user()->creatorId())->where('stage', 2)
                 ->with('jobs')->get();
@@ -55,13 +56,15 @@ class PsychotestScheduleController extends Controller
         $validator = \Validator::make(
             $request->all(),
             [
-                'candidate' => 'required|exists:job_applications,id',
+                'candidates' => 'required|array|min:1',
+                'candidates.*' => 'exists:job_applications,id',
                 'start_time' => 'required|date|after:now',
                 'end_time' => 'required|date|after:start_time',
                 'duration_minutes' => 'required|integer|min:15|max:300',
                 'selected_categories' => 'nullable|array',
                 'selected_categories.*' => 'exists:psychotest_categories,id',
                 'auto_select_by_job' => 'boolean',
+                'selection_mode' => 'required|in:single,multiple,all',
             ]
         );
 
@@ -69,19 +72,85 @@ class PsychotestScheduleController extends Controller
             return redirect()->back()->with('error', $validator->getMessageBag()->first());
         }
 
-        // Check if candidate already has active schedule
-        $existingSchedule = PsychotestSchedule::where('candidate', $request->candidate)
+        $candidateIds = $request->candidates;
+        
+        // Check if any candidate already has active schedule
+        $existingSchedules = PsychotestSchedule::whereIn('candidate', $candidateIds)
             ->whereIn('status', ['scheduled', 'in_progress'])
-            ->first();
+            ->with('candidates')
+            ->get();
 
-        if ($existingSchedule) {
-            return redirect()->back()->with('error', __('Candidate already has an active psychotest schedule.'));
+        if ($existingSchedules->count() > 0) {
+            $candidateNames = $existingSchedules->pluck('candidates.name')->implode(', ');
+            return redirect()->back()->with('error', __('Some candidates already have active psychotest schedules: ') . $candidateNames);
         }
 
-        $candidate = JobApplication::find($request->candidate);
+        $successCount = 0;
+        $errorCount = 0;
+        $errors = [];
 
-        // Determine selected categories
+        DB::beginTransaction();
+        
+        try {
+            foreach ($candidateIds as $candidateId) {
+                $candidate = JobApplication::find($candidateId);
+                
+                if (!$candidate) {
+                    $errorCount++;
+                    continue;
+                }
+
+                // Determine selected categories for each candidate
+                $selectedCategories = $this->determineCategories($request, $candidate);
+
+                // Generate unique username and password
+                $username = strtolower(str_replace(' ', '', $candidate->name)) . '@' . rand(1000, 9999) . '@gmail.com';
+                $password = strtoupper(Str::random(6)) . rand(10, 99);
+
+                $schedule = PsychotestSchedule::create([
+                    'candidate' => $candidateId,
+                    'username' => $username,
+                    'password' => $password,
+                    'start_time' => $request->start_time,
+                    'end_time' => $request->end_time,
+                    'duration_minutes' => $request->duration_minutes,
+                    'selected_categories' => $selectedCategories,
+                    'instructions' => null,
+                    'created_by' => \Auth::user()->id,
+                ]);
+
+                // Send email notification
+                try {
+                    Mail::to($candidate->email)->send(new \App\Mail\PsychotestScheduled($schedule, $password));
+                    $schedule->update(['email_sent' => true]);
+                    $successCount++;
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send psychotest email to ' . $candidate->email . ': ' . $e->getMessage());
+                    $errors[] = 'Failed to send email to ' . $candidate->name;
+                    $successCount++; // Still count as success since schedule was created
+                }
+            }
+
+            DB::commit();
+
+            $message = __('Successfully created :count psychotest schedules.', ['count' => $successCount]);
+            if (!empty($errors)) {
+                $message .= ' ' . __('However, some emails failed to send: ') . implode(', ', $errors);
+            }
+
+            return redirect()->route('psychotest-schedule.index')->with('success', $message);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            \Log::error('Failed to create psychotest schedules: ' . $e->getMessage());
+            return redirect()->back()->with('error', __('Failed to create psychotest schedules. Please try again.'));
+        }
+    }
+
+    private function determineCategories($request, $candidate)
+    {
         $selectedCategories = null;
+        
         if ($request->has('auto_select_by_job') && $request->auto_select_by_job) {
             // Auto select based on job title
             $jobTitle = $candidate->jobs->title ?? '';
@@ -115,34 +184,10 @@ class PsychotestScheduleController extends Controller
             $selectedCategories = $request->selected_categories;
         }
 
-        // Generate unique username and password
-        $username = strtolower(str_replace(' ', '', $candidate->name)) . '@' . rand(1000, 9999) . '@gmail.com';
-        $password = strtoupper(Str::random(6)) . rand(10, 99);
-
-        $schedule = PsychotestSchedule::create([
-            'candidate' => $request->candidate,
-            'username' => $username,
-            'password' => $password,
-            'start_time' => $request->start_time,
-            'end_time' => $request->end_time,
-            'duration_minutes' => $request->duration_minutes,
-            'selected_categories' => $selectedCategories,
-            'instructions' => null,
-            'created_by' => \Auth::user()->id,
-        ]);
-
-        // Send email notification
-        try {
-            Mail::to($candidate->email)->send(new \App\Mail\PsychotestScheduled($schedule, $password));
-            $schedule->update(['email_sent' => true]);
-        } catch (\Exception $e) {
-            \Log::error('Failed to send psychotest email: ' . $e->getMessage());
-        }
-
-        return redirect()->route('psychotest-schedule.index')
-            ->with('success', __('Psychotest schedule successfully created and email sent.'));
+        return $selectedCategories;
     }
 
+    // Rest of the existing methods remain the same...
     public function show($id)
     {
         $schedule = PsychotestSchedule::with(['candidates', 'candidates.jobs', 'answers.question', 'result'])
@@ -203,39 +248,7 @@ class PsychotestScheduleController extends Controller
         }
 
         // Determine selected categories
-        $selectedCategories = null;
-        if ($request->has('auto_select_by_job') && $request->auto_select_by_job) {
-            // Auto select based on job title
-            $jobTitle = $schedule->candidates->jobs->title ?? '';
-            $categories = PsychotestCategory::active()
-                ->ordered()
-                ->where(function($query) use ($jobTitle) {
-                    $query->where('is_job_specific', false);
-                    
-                    if ($jobTitle) {
-                        $query->orWhere(function($q) use ($jobTitle) {
-                            $q->where('is_job_specific', true);
-                            
-                            $jobTitleLower = strtolower($jobTitle);
-                            $keywords = ['auditor', 'audit', 'tax', 'taxation', 'accounting', 'akuntan', 'perpajakan'];
-                            
-                            foreach ($keywords as $keyword) {
-                                if (strpos($jobTitleLower, $keyword) !== false) {
-                                    $q->whereJsonContains('target_job_keywords', $keyword);
-                                    break;
-                                }
-                            }
-                        });
-                    }
-                })
-                ->pluck('id')
-                ->toArray();
-            
-            $selectedCategories = $categories;
-        } elseif ($request->selected_categories && !empty($request->selected_categories)) {
-            // Use manually selected categories
-            $selectedCategories = $request->selected_categories;
-        }
+        $selectedCategories = $this->determineCategories($request, $schedule->candidates);
 
         $schedule->update([
             'start_time' => $request->start_time,
@@ -300,116 +313,207 @@ class PsychotestScheduleController extends Controller
 
     // Get categories for specific candidate/job (AJAX)
     public function getCategoriesForCandidate($candidateId)
-{
-    try {
-        if (!$candidateId) {
+    {
+        try {
+            if (!$candidateId) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Candidate ID is required'
+                ], 400);
+            }
+
+            $candidate = \App\Models\JobApplication::with('jobs')->find($candidateId);
+            
+            if (!$candidate) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Candidate not found'
+                ], 404);
+            }
+
+            $jobTitle = $candidate->jobs->title ?? '';
+            
+            // Get all categories
+            $allCategories = \App\Models\PsychotestCategory::where('is_active', true)
+                ->orderBy('order')
+                ->get();
+            
+            $applicableCategoryIds = $this->getApplicableCategoryIds($jobTitle);
+
+            return response()->json([
+                'success' => true,
+                'candidate' => [
+                    'name' => $candidate->name,
+                    'job_title' => $jobTitle
+                ],
+                'all_categories' => $allCategories->map(function($cat) {
+                    return [
+                        'id' => $cat->id,
+                        'name' => $cat->name,
+                        'description' => $cat->description,
+                        'duration_minutes' => $cat->duration_minutes,
+                        'total_questions' => $cat->total_questions,
+                        'is_job_specific' => $cat->is_job_specific ?? false,
+                        'type' => $cat->type
+                    ];
+                }),
+                'applicable_categories' => $applicableCategoryIds,
+                'has_field_specific' => $this->hasFieldSpecificCategories($jobTitle)
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error getting categories for candidate: ' . $e->getMessage());
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Candidate ID is required'
-            ], 400);
+                'message' => 'Internal server error: ' . $e->getMessage()
+            ], 500);
         }
+    }
 
-        $candidate = \App\Models\JobApplication::with('jobs')->find($candidateId);
-        
-        if (!$candidate) {
+    // New method to get categories for multiple candidates
+    public function getCategoriesForMultipleCandidates(Request $request)
+    {
+        try {
+            $candidateIds = $request->candidate_ids;
+            
+            if (!$candidateIds || !is_array($candidateIds)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Candidate IDs are required'
+                ], 400);
+            }
+
+            $candidates = JobApplication::with('jobs')->whereIn('id', $candidateIds)->get();
+            
+            if ($candidates->count() !== count($candidateIds)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Some candidates not found'
+                ], 404);
+            }
+
+            // Get all categories
+            $allCategories = PsychotestCategory::where('is_active', true)
+                ->orderBy('order')
+                ->get();
+            
+            // Analyze job positions
+            $jobTitles = $candidates->pluck('jobs.title')->filter()->unique();
+            $commonCategories = [];
+            $jobSpecificCategories = [];
+            
+            // Find categories that apply to all job positions
+            foreach ($allCategories as $category) {
+                if (!$category->is_job_specific) {
+                    $commonCategories[] = $category->id;
+                } else {
+                    // Check if this job-specific category applies to any of the jobs
+                    foreach ($jobTitles as $jobTitle) {
+                        if ($this->categoryAppliestoJob($category, $jobTitle)) {
+                            $jobSpecificCategories[] = $category->id;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            $applicableCategories = array_unique(array_merge($commonCategories, $jobSpecificCategories));
+
+            return response()->json([
+                'success' => true,
+                'candidates' => $candidates->map(function($candidate) {
+                    return [
+                        'id' => $candidate->id,
+                        'name' => $candidate->name,
+                        'job_title' => $candidate->jobs->title ?? ''
+                    ];
+                }),
+                'job_positions' => $jobTitles->values(),
+                'all_categories' => $allCategories->map(function($cat) {
+                    return [
+                        'id' => $cat->id,
+                        'name' => $cat->name,
+                        'description' => $cat->description,
+                        'duration_minutes' => $cat->duration_minutes,
+                        'total_questions' => $cat->total_questions,
+                        'is_job_specific' => $cat->is_job_specific ?? false,
+                        'type' => $cat->type
+                    ];
+                }),
+                'applicable_categories' => $applicableCategories,
+                'common_categories' => $commonCategories,
+                'job_specific_categories' => $jobSpecificCategories
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error getting categories for multiple candidates: ' . $e->getMessage());
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Candidate not found'
-            ], 404);
+                'message' => 'Internal server error: ' . $e->getMessage()
+            ], 500);
         }
+    }
 
-        $jobTitle = $candidate->jobs->title ?? '';
-        
-        // Get all categories
-        $allCategories = \App\Models\PsychotestCategory::where('is_active', true)
-            ->orderBy('order')
-            ->get();
-        
-        // PERBAIKAN: Pisahkan query untuk job-specific categories
+    private function getApplicableCategoryIds($jobTitle)
+    {
         $applicableCategoryIds = [];
         
-        // Tambahkan semua general categories (not job specific)
-        $generalCategories = \App\Models\PsychotestCategory::where('is_active', true)
+        // Add general categories
+        $generalCategories = PsychotestCategory::where('is_active', true)
             ->where('is_job_specific', false)
             ->pluck('id')
             ->toArray();
         
         $applicableCategoryIds = array_merge($applicableCategoryIds, $generalCategories);
         
-        // Jika ada job title, cari job-specific categories
+        // Add job-specific categories if applicable
         if ($jobTitle) {
-            $jobTitleLower = strtolower($jobTitle);
-            $keywords = ['auditor', 'audit', 'tax', 'taxation', 'accounting', 'akuntan', 'perpajakan'];
+            $jobSpecificCategories = PsychotestCategory::where('is_active', true)
+                ->where('is_job_specific', true)
+                ->get()
+                ->filter(function($category) use ($jobTitle) {
+                    return $this->categoryAppliestoJob($category, $jobTitle);
+                })
+                ->pluck('id')
+                ->toArray();
             
-            $hasJobSpecificKeyword = false;
-            foreach ($keywords as $keyword) {
-                if (strpos($jobTitleLower, $keyword) !== false) {
-                    $hasJobSpecificKeyword = true;
-                    break;
-                }
-            }
-            
-            // Jika job title mengandung keyword yang relevan
-            if ($hasJobSpecificKeyword) {
-                $jobSpecificCategories = \App\Models\PsychotestCategory::where('is_active', true)
-                    ->where('is_job_specific', true)
-                    ->get()
-                    ->filter(function($category) use ($keywords, $jobTitleLower) {
-                        if (!$category->target_job_keywords) {
-                            return false;
-                        }
-                        
-                        // Check if any keyword matches
-                        foreach ($category->target_job_keywords as $targetKeyword) {
-                            foreach ($keywords as $jobKeyword) {
-                                if (strpos($jobTitleLower, strtolower($jobKeyword)) !== false && 
-                                    strtolower($targetKeyword) === strtolower($jobKeyword)) {
-                                    return true;
-                                }
-                            }
-                        }
-                        return false;
-                    })
-                    ->pluck('id')
-                    ->toArray();
-                
-                $applicableCategoryIds = array_merge($applicableCategoryIds, $jobSpecificCategories);
-            }
+            $applicableCategoryIds = array_merge($applicableCategoryIds, $jobSpecificCategories);
         }
         
-        // Remove duplicates
-        $applicableCategoryIds = array_unique($applicableCategoryIds);
-
-        return response()->json([
-            'success' => true,
-            'candidate' => [
-                'name' => $candidate->name,
-                'job_title' => $jobTitle
-            ],
-            'all_categories' => $allCategories->map(function($cat) {
-                return [
-                    'id' => $cat->id,
-                    'name' => $cat->name,
-                    'description' => $cat->description,
-                    'duration_minutes' => $cat->duration_minutes,
-                    'total_questions' => $cat->total_questions,
-                    'is_job_specific' => $cat->is_job_specific ?? false,
-                    'type' => $cat->type
-                ];
-            }),
-            'applicable_categories' => $applicableCategoryIds,
-            'has_field_specific' => count(array_diff($applicableCategoryIds, $generalCategories)) > 0
-        ]);
-
-    } catch (\Exception $e) {
-        \Log::error('Error getting categories for candidate: ' . $e->getMessage());
-        \Log::error('Stack trace: ' . $e->getTraceAsString());
-        
-        return response()->json([
-            'success' => false,
-            'message' => 'Internal server error: ' . $e->getMessage()
-        ], 500);
+        return array_unique($applicableCategoryIds);
     }
-}
 
+    private function categoryAppliestoJob($category, $jobTitle)
+    {
+        if (!$category->target_job_keywords || !$jobTitle) {
+            return false;
+        }
+        
+        $jobTitleLower = strtolower($jobTitle);
+        $keywords = ['auditor', 'audit', 'tax', 'taxation', 'accounting', 'akuntan', 'perpajakan'];
+        
+        foreach ($category->target_job_keywords as $targetKeyword) {
+            foreach ($keywords as $jobKeyword) {
+                if (strpos($jobTitleLower, strtolower($jobKeyword)) !== false && 
+                    strtolower($targetKeyword) === strtolower($jobKeyword)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private function hasFieldSpecificCategories($jobTitle)
+    {
+        $generalCategories = PsychotestCategory::where('is_active', true)
+            ->where('is_job_specific', false)
+            ->pluck('id')
+            ->toArray();
+        
+        $allApplicableCategories = $this->getApplicableCategoryIds($jobTitle);
+        
+        return count(array_diff($allApplicableCategories, $generalCategories)) > 0;
+    }
 }

@@ -4945,7 +4945,13 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('psychotest-schedule', 'PsychotestScheduleController');
     Route::get('psychotest-schedule/{id}/cancel', 'PsychotestScheduleController@cancel')->name('psychotest-schedule.cancel');
     Route::get('psychotest-schedule/{id}/resend-email', 'PsychotestScheduleController@resendEmail')->name('psychotest-schedule.resend-email');
-   Route::get('psychotest-categories/by-candidate/{candidateId}', 'PsychotestScheduleController@getCategoriesForCandidate')->name('psychotest.categories-by-candidate');
+    Route::get('psychotest-categories/by-candidate/{candidateId}', 'PsychotestScheduleController@getCategoriesForCandidate')->name('psychotest.categories-by-candidate');
+
+    // New route for multiple candidate categories
+    Route::post('psychotest-categories/multiple', 'PsychotestScheduleController@getCategoriesForMultipleCandidates')->name('psychotest-categories.multiple');
+
+    // Existing single candidate category route
+    Route::get('psychotest-categories/by-candidate/{candidateId}', 'PsychotestScheduleController@getCategoriesForCandidate');
     
     // Psychotest Question Management
     Route::resource('psychotest-question', 'PsychotestQuestionController');
