@@ -13,11 +13,13 @@ use App\Models\El;
 use App\Models\Utility;
 use App\Models\Bug;
 use App\Models\BugStatus;
+use App\Models\LabelProject;
 use App\Models\BugFile;
 use App\Models\BugComment;
 use App\Models\CategoryTemplate;
 use App\Models\Milestone;
 use App\Models\ProjectTaskTemplate;
+use App\Models\AttendanceEmployee;
 use App\Models\PublicAccountant;
 use App\Models\AppraisalEmployee;
 use App\Models\ProductServiceCategory;
@@ -42,6 +44,7 @@ use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Log;
 
 class ProjectController extends Controller
 {
@@ -75,12 +78,17 @@ class ProjectController extends Controller
             $clients = User::where('type', '=', 'client')->get()->pluck('name', 'id');
             $tasktemplate = CategoryTemplate::get()->pluck('name', 'id');
             $public_accountant = PublicAccountant::get()->pluck('name', 'id');
+            
+            // Get service types from database instead of static array
+            $service_types = LabelProject::getActiveServiceTypes();
+            
             $public_accountant->prepend('Select Partner', '');
             $clients->prepend('Select Client', '');
             $users->prepend('Select User', '');
             $tasktemplate->prepend('Select Task Template', '');
+            $service_types->prepend('Select Project Service', '');
 
-            return view('projects.create', compact('clients','users','public_accountant','tasktemplate'));
+            return view('projects.create', compact('clients','users','public_accountant','tasktemplate','service_types'));
         }
         else
         {
@@ -479,10 +487,15 @@ class ProjectController extends Controller
             $project = Project::findOrfail($project->id);
             $tasktemplate = CategoryTemplate::get()->pluck('name', 'id');
             $public_accountant = PublicAccountant::get()->pluck('name', 'id');
+            
+            // Get service types from database
+            $service_types = LabelProject::getActiveServiceTypes();
+            
             $public_accountant->prepend('Select Partner', '');
             $tasktemplate->prepend('Select Task Template', '');
+            $service_types->prepend('Select Project Service', '');
 
-            return view('projects.edit', compact('tasktemplate','public_accountant','project', 'clients'));
+            return view('projects.edit', compact('tasktemplate','public_accountant','project', 'clients', 'service_types'));
         }
         else
         {
@@ -785,6 +798,18 @@ class ProjectController extends Controller
         //         'invited_by' => $authuser->id,
         //     ]
         // );
+
+        Notification::createNotification(
+            $request->user_id,
+            'project_invitation',
+            [
+                'project_id' => $request->project_id,
+                'project_name' => $project->project_name,
+                'invited_by' => $authuser->name,
+                'updated_by' => $authuser->id
+            ],
+            Notification::PRIORITY_NORMAL
+        );
 
         $users = User::where('id', $request->user_id)->pluck('name');
 
@@ -2203,6 +2228,1373 @@ class ProjectController extends Controller
             'task_details' => $taskDetails,
         ]);
     }
-    
+
+    /**
+     * Filter project activity by time and branch
+     */
+    public function filterProjectActivity(Request $request)
+    {
+        if(!\Auth::user()->can('manage project')) {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+
+        $timeFilter = $request->input('time_filter', 'today');
+        $branchFilter = $request->input('branch_filter', 'PUSAT'); // Default ke PUSAT
+        $page = $request->input('page', 1);
+        $perPage = 100;
+        $userType = \Auth::user()->type;
+        $currentUserId = \Auth::user()->id;
+
+        try {
+            // Cache key dengan page
+            $cacheKey = "activity_report_{$userType}_{$currentUserId}_{$timeFilter}_{$branchFilter}_{$page}";
+            $cacheTime = 180;
+            
+            if (\Cache::has($cacheKey) && !$request->has('refresh')) {
+                $result = \Cache::get($cacheKey);
+            } else {
+                $result = $this->getOptimizedActivityData($timeFilter, $branchFilter, $userType, $currentUserId, $page, $perPage);
+                \Cache::put($cacheKey, $result, $cacheTime);
+            }
+            
+            // Pastikan summary selalu ada dengan default values
+            $defaultSummary = [
+                'total_users' => 0,
+                'total_projects' => 0,
+                'active_today' => 0,
+                'no_tracker_today' => 0,
+                'absent_today' => 0,
+                'no_data_today' => 0
+            ];
+            
+            $summary = isset($result['summary']) && is_array($result['summary']) 
+                    ? array_merge($defaultSummary, $result['summary'])
+                    : $defaultSummary;
+            
+            $viewData = [
+                'groupedActivities' => $result['data'] ?? [],
+                'timeFilter' => $timeFilter,
+                'branchFilter' => $branchFilter,
+                'pagination' => $result['pagination'] ?? [
+                    'current_page' => (int)$page,
+                    'per_page' => $perPage,
+                    'total' => 0,
+                    'last_page' => 1,
+                    'has_more_pages' => false
+                ],
+                'totalUsers' => $result['total_users'] ?? 0,
+                'summary' => $summary
+            ];
+            
+            if($request->ajax()) {
+                $returnHTML = view('projects.activity_filter', $viewData)->render();
+                return response()->json([
+                    'success' => true,
+                    'html' => $returnHTML,
+                    'pagination' => $viewData['pagination'],
+                    'summary' => $summary
+                ]);
+            }
+
+            return view('projects.activity_index', $viewData);
+            
+        } catch (\Exception $e) {
+            \Log::error('Activity Filter Error: ' . $e->getMessage());
+            
+            // Default data untuk error case
+            $errorData = [
+                'groupedActivities' => [],
+                'timeFilter' => $timeFilter,
+                'branchFilter' => $branchFilter,
+                'pagination' => [
+                    'current_page' => (int)$page,
+                    'per_page' => $perPage,
+                    'total' => 0,
+                    'last_page' => 1,
+                    'has_more_pages' => false
+                ],
+                'totalUsers' => 0,
+                'summary' => [
+                    'total_users' => 0,
+                    'total_projects' => 0,
+                    'active_today' => 0,
+                    'no_tracker_today' => 0,
+                    'absent_today' => 0,
+                    'no_data_today' => 0
+                ],
+                'error' => 'Error loading activity data'
+            ];
+            
+            if($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Error loading activity data',
+                    'html' => view('projects.activity_filter', $errorData)->render()
+                ]);
+            }
+            
+            return view('projects.activity_index', $errorData);
+        }
+    }
+
+    /**
+     * Get optimized activity data with pagination
+     */
+    private function getOptimizedActivityData($timeFilter, $branchFilter, $userType, $currentUserId, $page, $perPage)
+    {
+        $dateRange = $this->getDateRange($timeFilter);
+        
+        // Step 1: Get user-project combinations with improved filtering
+        $userProjectQuery = $this->buildOptimizedUserProjectQuery($branchFilter, $userType, $currentUserId, $dateRange);
+        
+        // Total count BEFORE pagination
+        $totalCount = $userProjectQuery->count();
+        
+        // Apply pagination
+        $offset = ($page - 1) * $perPage;
+        $userProjects = $userProjectQuery->offset($offset)->limit($perPage)->get();
+        
+        // Step 2: Get activity data only for current page
+        $activities = $this->getActivityDataForUsers($userProjects, $dateRange);
+        
+        // Step 3: Group by branch (using employee branch)
+        $groupedData = $this->groupActivitiesByBranchAndUser($activities, $dateRange);
+        
+        // Step 4: Generate summary
+        $summary = $this->generateActivitySummary($activities);
+        
+        return [
+            'data' => $groupedData,
+            'pagination' => [
+                'current_page' => (int)$page,
+                'per_page' => $perPage,
+                'total' => $totalCount,
+                'last_page' => ceil($totalCount / $perPage),
+                'has_more_pages' => $page < ceil($totalCount / $perPage),
+                'from' => $totalCount > 0 ? $offset + 1 : 0,
+                'to' => min($offset + $perPage, $totalCount)
+            ],
+            'total_users' => $totalCount,
+            'summary' => $summary
+        ];
+    }
+
+
+    /**
+     * Get date range based on filter
+     */
+    private function getDateRange($timeFilter)
+    {
+        $today = \Carbon\Carbon::now();
+        
+        switch($timeFilter) {
+            case 'today':
+                $startDate = $today->copy();
+                $endDate = $today->copy();
+                break;
+            case '7days':
+                // 7 hari yang lalu dari hari ini (termasuk hari ini)
+                $startDate = $today->copy()->subDays(6); // 6 hari yang lalu + hari ini = 7 hari
+                $endDate = $today->copy();
+                break;
+            case '1month':
+                // CORRECTED: 1 bulan penuh hari kerja
+                // Dari 1 bulan yang lalu sampai hari ini
+                $startDate = $today->copy()->subMonth();
+                $endDate = $today->copy();
+                break;
+            default:
+                $startDate = $today->copy();
+                $endDate = $today->copy();
+        }
+        
+        return [
+            'start' => $startDate->format('Y-m-d'),
+            'end' => $endDate->format('Y-m-d')
+        ];
+    }
+
+    /**
+     * Build activity query based on user type and filters
+     */
+    private function buildActivityQuery($dateRange, $branchFilter, $userType, $currentUserId)
+    {
+        // Base query untuk mendapatkan semua user yang relevan
+        $userQuery = User::select([
+            'users.id', 
+            'users.name', 
+            'users.type',
+            'projects.id as project_id',
+            'projects.project_name',
+            'projects.tags as branch'
+        ])
+        ->leftJoin('project_users', 'users.id', '=', 'project_users.user_id')
+        ->leftJoin('projects', 'project_users.project_id', '=', 'projects.id')
+        ->where('users.type', '!=', 'client')
+        ->where('users.type', '!=', 'staff_client');
+
+        // Filter berdasarkan user type
+        if($userType !== 'admin' && $userType !== 'company') {
+            // Untuk user biasa, hanya tampilkan project yang sama
+            $userProjectIds = ProjectUser::where('user_id', $currentUserId)->pluck('project_id')->toArray();
+            $userQuery->whereIn('projects.id', $userProjectIds);
+        }
+
+        // Filter berdasarkan branch
+        if($branchFilter !== 'all') {
+            $userQuery->where('projects.tags', $branchFilter);
+        }
+
+        // Ambil data user dan project
+        $userProjects = $userQuery->get();
+
+        // Untuk setiap user-project combination, ambil data timesheet, timetracker, dan attendance
+        $activities = collect();
+
+        foreach($userProjects as $userProject) {
+            if(!$userProject->project_id) continue;
+
+            // Cek timesheet
+            $timesheets = Timesheet::where('created_by', $userProject->id)
+                ->where('project_id', $userProject->project_id)
+                ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
+                ->get();
+
+            // Cek timetracker
+            $timetrackers = TimeTracker::where('created_by', $userProject->id)
+                ->where('project_id', $userProject->project_id)
+                ->whereBetween('start_time', [$dateRange['start'] . ' 00:00:00', $dateRange['end'] . ' 23:59:59'])
+                ->get();
+
+            // Cek attendance untuk periode yang sama
+            $attendances = AttendanceEmployee::whereHas('employee', function($q) use ($userProject) {
+                    $q->where('user_id', $userProject->id);
+                })
+                ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
+                ->get();
+
+            // Group by date untuk analisis
+            $dateActivity = $this->analyzeUserActivity($userProject, $timesheets, $timetrackers, $attendances, $dateRange);
+            
+            $activities->push([
+                'user' => $userProject,
+                'project_id' => $userProject->project_id,
+                'project_name' => $userProject->project_name,
+                'branch' => $userProject->branch,
+                'daily_activity' => $dateActivity
+            ]);
+        }
+
+        return $activities;
+    }
+
+    /**
+     * Analyze user activity per date
+     */
+    private function analyzeUserActivity($user, $timesheets, $timetrackers, $attendances, $dateRange)
+    {
+        $period = new \DatePeriod(
+            new \DateTime($dateRange['start']),
+            new \DateInterval('P1D'),
+            new \DateTime($dateRange['end'] . ' +1 day')
+        );
+
+        $dailyActivity = [];
+
+        foreach($period as $date) {
+            $currentDate = $date->format('Y-m-d');
+            
+            // Cek timesheet untuk tanggal ini
+            $dayTimesheet = $timesheets->where('date', $currentDate)->first();
+            
+            // Cek timetracker untuk tanggal ini
+            $dayTimetracker = $timetrackers->filter(function($item) use ($currentDate) {
+                return \Carbon\Carbon::parse($item->start_time)->format('Y-m-d') === $currentDate;
+            })->first();
+
+            // Cek attendance untuk tanggal ini
+            $dayAttendance = $attendances->where('date', $currentDate)->first();
+
+            // Analisis status
+            $status = $this->determineActivityStatus($dayTimesheet, $dayTimetracker, $dayAttendance);
+            
+            $dailyActivity[$currentDate] = [
+                'date' => $currentDate,
+                'status' => $status,
+                'timesheet' => $dayTimesheet,
+                'timetracker' => $dayTimetracker,
+                'attendance' => $dayAttendance,
+                'work_hours' => $dayTimesheet ? $dayTimesheet->time : '00:00:00',
+                'tracker_hours' => $dayTimetracker ? $this->calculateTrackerHours($dayTimetracker) : '00:00:00'
+            ];
+        }
+
+        return $dailyActivity;
+    }
+
+
+    /**
+     * Determine activity status based on data availability
+     */
+    private function determineActivityStatus($timesheet, $timetracker, $attendance)
+    {
+        // Jika ada timesheet atau timetracker, berarti aktif
+        if($timesheet || $timetracker) {
+            return 'active';
+        }
+
+        // Jika tidak ada timesheet/tracker tapi ada attendance, berarti tidak menyalakan tracker
+        if($attendance && $attendance->status === 'present') {
+            return 'no_tracker';
+        }
+
+        // Jika tidak ada attendance atau status absent
+        if(!$attendance || $attendance->status === 'absent') {
+            return 'absent';
+        }
+
+        return 'no_data';
+    }
+
+    /**
+     * Calculate total hours from timetracker
+     */
+    private function calculateTrackerHours($timetracker)
+    {
+        if(!$timetracker->start_time || !$timetracker->end_time) {
+            return '00:00:00';
+        }
+
+        $start = \Carbon\Carbon::parse($timetracker->start_time);
+        $end = \Carbon\Carbon::parse($timetracker->end_time);
+        
+        $diff = $start->diffInSeconds($end);
+        $hours = floor($diff / 3600);
+        $minutes = floor(($diff % 3600) / 60);
+        $seconds = $diff % 60;
+
+        return sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+    }
+
+    /**
+     * Group activities by branch and user
+     */
+    private function groupActivitiesByBranchAndUser($activities, $dateRange)
+    {
+        $grouped = [];
+        
+        // Get semua branch yang ada dalam data
+        $availableBranches = $activities->pluck('branch_name')->unique()->sort();
+        
+        // Jika tidak ada data, ambil dari database
+        if ($availableBranches->isEmpty()) {
+            $availableBranches = \DB::table('branches')->pluck('name')->sort();
+        }
+
+        foreach($availableBranches as $branchName) {
+            $branchActivities = $activities->where('branch_name', $branchName);
+            
+            if($branchActivities->count() > 0) {
+                $users = [];
+                $groupedByUser = $branchActivities->groupBy('user_id');
+                
+                foreach($groupedByUser as $userId => $userActivities) {
+                    $firstActivity = $userActivities->first();
+                    
+                    // IMPORTANT: Generate combined activity for the user
+                    $combinedDailyActivity = $this->combineUserDailyActivities($userActivities);
+                    
+                    $users[] = [
+                        'user' => (object)[
+                            'id' => $firstActivity['user_id'],
+                            'name' => $firstActivity['user_name'],
+                            'type' => $firstActivity['user_type'],
+                            'avatar' => $firstActivity['user_avatar']
+                        ],
+                        'projects' => $userActivities->map(function($activity) {
+                            return [
+                                'project_name' => $activity['project_name'],
+                                'daily_activity' => $activity['daily_activity']
+                            ];
+                        })->values()->toArray(),
+                        'combined_activity' => $combinedDailyActivity // This is crucial!
+                    ];
+                }
+                
+                $grouped[$branchName] = [
+                    'branch_name' => $branchName,
+                    'users' => $users
+                ];
+            }
+        }
+
+        return $grouped;
+    }
+
+
+    /**
+     * Export project activity report
+     */
+    public function exportProjectActivity(Request $request)
+    {
+        if(!\Auth::user()->can('manage project')) {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+
+        $timeFilter = $request->input('time_filter', 'today'); // Ganti get() dengan input()
+        $branchFilter = $request->input('branch_filter', 'all'); // Ganti get() dengan input()
+        $userType = \Auth::user()->type;
+        $currentUserId = \Auth::user()->id;
+
+        // Get data sama seperti di filter method
+        $dateRange = $this->getDateRange($timeFilter);
+        $activities = $this->buildActivityQuery($dateRange, $branchFilter, $userType, $currentUserId);
+        $groupedActivities = $this->groupActivitiesByBranchAndUser($activities, $dateRange);
+
+        // Prepare data for export
+        $exportData = [];
+        $headers = ['Branch', 'User', 'Project'];
+        
+        // Add date columns based on filter
+        if($timeFilter == 'today') {
+            $headers[] = 'Today (' . date('d/m/Y') . ')';
+        } elseif($timeFilter == '7days') {
+            for($i = 6; $i >= 0; $i--) {
+                $headers[] = date('d/m/Y', strtotime('-'.$i.' days'));
+            }
+        } elseif($timeFilter == '1month') {
+            for($i = 30; $i >= 0; $i--) {
+                if($i % 3 == 0) {
+                    $headers[] = date('d/m/Y', strtotime('-'.$i.' days'));
+                }
+            }
+        }
+        
+        $headers[] = 'Active Days';
+        $headers[] = 'No Tracker Days';
+        $headers[] = 'Absent Days';
+
+        $exportData[] = $headers;
+
+        // Build data rows
+        foreach($groupedActivities as $branchName => $branchData) {
+            foreach($branchData['users'] as $userData) {
+                $user = $userData['user'];
+                $projects = $userData['projects'];
+                
+                foreach($projects as $project) {
+                    $row = [];
+                    $row[] = $branchName;
+                    $row[] = $user->name;
+                    $row[] = $project['project_name'] ?? 'No Project';
+                    
+                    // Add activity status for each date
+                    if($timeFilter == 'today') {
+                        $todayDate = date('Y-m-d');
+                        $todayActivity = $project['daily_activity'][$todayDate] ?? null;
+                        $row[] = $todayActivity ? $this->getActivityStatusText($todayActivity) : 'No Data';
+                    } elseif($timeFilter == '7days') {
+                        for($i = 6; $i >= 0; $i--) {
+                            $date = date('Y-m-d', strtotime('-'.$i.' days'));
+                            $dayActivity = $project['daily_activity'][$date] ?? null;
+                            $row[] = $dayActivity ? $this->getActivityStatusText($dayActivity) : 'No Data';
+                        }
+                    } elseif($timeFilter == '1month') {
+                        for($i = 30; $i >= 0; $i--) {
+                            if($i % 3 == 0) {
+                                $date = date('Y-m-d', strtotime('-'.$i.' days'));
+                                $dayActivity = $project['daily_activity'][$date] ?? null;
+                                $row[] = $dayActivity ? $this->getActivityStatusText($dayActivity) : 'No Data';
+                            }
+                        }
+                    }
+                    
+                    // Add summary
+                    $summary = $this->calculateActivitySummary($project['daily_activity']);
+                    $row[] = $summary['active'];
+                    $row[] = $summary['no_tracker'];
+                    $row[] = $summary['absent'];
+                    
+                    $exportData[] = $row;
+                }
+            }
+        }
+
+        // Generate Excel file
+        return $this->generateExcelExport($exportData, $timeFilter, $branchFilter);
+    }
+
+    /**
+     * Get activity status as text for export
+     */
+    private function getActivityStatusText($activity)
+    {
+        switch($activity['status']) {
+            case 'active':
+                $hours = $activity['work_hours'] ?: $activity['tracker_hours'];
+                return 'Active (' . $hours . ')';
+            case 'no_tracker':
+                return 'No Tracker';
+            case 'absent':
+                return 'Absent';
+            default:
+                return 'No Data';
+        }
+    }
+
+    /**
+     * Generate Excel export
+     */
+    private function generateExcelExport($data, $timeFilter, $branchFilter)
+    {
+        $filename = 'project_activity_report_' . $branchFilter . '_' . $timeFilter . '_' . date('Y-m-d_H-i-s') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function() use ($data) {
+            $file = fopen('php://output', 'w');
+            
+            // Add BOM for UTF-8 encoding
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            foreach ($data as $row) {
+                fputcsv($file, $row);
+            }
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Get activity status badge HTML
+     */
+    public function getActivityStatusBadge($activity) 
+    {
+        switch($activity['status']) {
+            case 'active':
+                $hours = $activity['work_hours'] ?: $activity['tracker_hours'];
+                return '<span class="badge bg-success" title="Work Hours: '.$hours.'">Active<br><small>'.$hours.'</small></span>';
+            case 'no_tracker':
+                return '<span class="badge bg-warning" title="Present but no tracker">No Tracker</span>';
+            case 'absent':
+                return '<span class="badge bg-danger" title="Absent">Absent</span>';
+            default:
+                return '<span class="badge bg-secondary" title="No data">No Data</span>';
+        }
+    }
+
+    /**
+     * Get activity status icon HTML
+     */
+    public function getActivityStatusIcon($activity) 
+    {
+        switch($activity['status']) {
+            case 'active':
+                return '<i class="ti ti-circle-check text-success" title="Active - '.$activity['work_hours'].'"></i>';
+            case 'no_tracker':
+                return '<i class="ti ti-clock-off text-warning" title="Present but no tracker"></i>';
+            case 'absent':
+                return '<i class="ti ti-circle-x text-danger" title="Absent"></i>';
+            default:
+                return '<i class="ti ti-minus text-muted" title="No data"></i>';
+        }
+    }
+
+    /**
+     * Calculate activity summary
+     */
+    public function calculateActivitySummary($dailyActivity) 
+    {
+        $summary = ['active' => 0, 'no_tracker' => 0, 'absent' => 0, 'no_data' => 0];
+        
+        foreach($dailyActivity as $day) {
+            if(isset($summary[$day['status']])) {
+                $summary[$day['status']]++;
+            }
+        }
+        
+        return $summary;
+    }
+
+    /**
+     * Get activity data for specific users and date range
+     */
+    private function getActivityDataForUsers($userProjects, $dateRange)
+    {
+        if($userProjects->isEmpty()) {
+            return collect();
+        }
+
+        $userIds = $userProjects->pluck('user_id')->unique();
+        $projectIds = $userProjects->pluck('project_id')->unique();
+
+        // Batch query untuk timesheet - hanya dalam date range
+        $timesheets = \DB::table('timesheets')
+            ->whereIn('created_by', $userIds)
+            ->whereIn('project_id', $projectIds)
+            ->whereBetween('date', [$dateRange['start'], $dateRange['end']])
+            ->get()
+            ->groupBy(['created_by', 'project_id', 'date']);
+
+        // Batch query untuk timetracker - hanya dalam date range  
+        $timetrackers = \DB::table('time_trackers')
+            ->whereIn('created_by', $userIds)
+            ->whereIn('project_id', $projectIds)
+            ->whereBetween('start_time', [$dateRange['start'] . ' 00:00:00', $dateRange['end'] . ' 23:59:59'])
+            ->get()
+            ->groupBy(['created_by', 'project_id']);
+
+        // Batch query untuk attendance
+        $attendances = \DB::table('attendance_employees')
+            ->join('employees', 'attendance_employees.employee_id', '=', 'employees.id')
+            ->whereIn('employees.user_id', $userIds)
+            ->whereBetween('attendance_employees.date', [$dateRange['start'], $dateRange['end']])
+            ->select('employees.user_id', 'attendance_employees.*')
+            ->get()
+            ->groupBy(['user_id', 'date']);
+
+        // Process data untuk setiap user-project
+        $activities = collect();
+        foreach($userProjects as $userProject) {
+            // Pastikan user benar-benar punya aktivitas di project ini dalam date range
+            $hasActivity = $this->userHasActivityInRange($userProject, $timesheets, $timetrackers, $dateRange);
+            
+            if ($hasActivity) {
+                $dailyActivity = $this->buildDailyActivityOptimized(
+                    $userProject, 
+                    $timesheets, 
+                    $timetrackers, 
+                    $attendances, 
+                    $dateRange
+                );
+                
+                $activities->push([
+                    'user_id' => $userProject->user_id,
+                    'user_name' => $userProject->user_name,
+                    'user_type' => $userProject->user_type,
+                    'user_avatar' => $userProject->user_avatar,
+                    'project_id' => $userProject->project_id,
+                    'project_name' => $userProject->project_name,
+                    'branch_id' => $userProject->branch_id,
+                    'branch_name' => $userProject->branch_name,
+                    'daily_activity' => $dailyActivity
+                ]);
+            }
+        }
+
+        return $activities;
+    }
+
+    /**
+     * Build daily activity data optimized
+     */
+    private function buildDailyActivityOptimized($userProject, $timesheets, $timetrackers, $attendances, $dateRange)
+    {
+        $period = new \DatePeriod(
+            new \DateTime($dateRange['start']),
+            new \DateInterval('P1D'),
+            new \DateTime($dateRange['end'] . ' +1 day')
+        );
+
+        $dailyActivity = [];
+        foreach($period as $date) {
+            $currentDate = $date->format('Y-m-d');
+            
+            // SKIP WEEKENDS (Saturday = 6, Sunday = 0)
+            $dayOfWeek = $date->format('w');
+            if ($dayOfWeek == 0 || $dayOfWeek == 6) {
+                continue; // Skip weekends
+            }
+            
+            // Check timesheet untuk project ini
+            $dayTimesheet = $timesheets->get($userProject->user_id, collect())
+                ->get($userProject->project_id, collect())
+                ->get($currentDate, collect())
+                ->first();
+            
+            // Check timetracker untuk project ini
+            $dayTimetracker = $timetrackers->get($userProject->user_id, collect())
+                ->get($userProject->project_id, collect())
+                ->filter(function($item) use ($currentDate) {
+                    return \Carbon\Carbon::parse($item->start_time)->format('Y-m-d') === $currentDate;
+                })
+                ->first();
+            
+            // Check attendance untuk user ini (global, bukan per project)
+            $dayAttendance = $attendances->get($userProject->user_id, collect())
+                ->get($currentDate, collect())
+                ->first();
+            
+            // Per-project status (akan digabung nanti di combineUserDailyActivities)
+            if($dayTimesheet || $dayTimetracker) {
+                $status = 'active'; // Project ini aktif
+            } else {
+                // Project ini tidak aktif, tapi attendance tetap disimpan untuk referensi
+                $status = 'no_activity'; // Status sementara per project
+            }
+            
+            $dailyActivity[$currentDate] = [
+                'date' => $currentDate,
+                'status' => $status,
+                'work_hours' => $dayTimesheet ? $dayTimesheet->time : '00:00:00',
+                'has_tracker' => $dayTimetracker ? true : false,
+                'attendance_status' => $dayAttendance ? $dayAttendance->status : null
+            ];
+        }
+
+        return $dailyActivity;
+    }
+
+    private function determineActivityStatusImproved($timesheet, $timetracker, $attendance)
+    {
+        // 1. Jika ada timesheet atau timetracker = ACTIVE
+        if($timesheet || $timetracker) {
+            return 'active';
+        }
+        
+        // 2. Jika tidak ada timesheet/tracker tapi ada attendance record
+        if($attendance) {
+            if($attendance->status === 'present') {
+                return 'no_tracker'; // Hadir tapi tidak menyalakan tracker
+            } else {
+                return 'absent'; // Ada record attendance tapi status absent/etc
+            }
+        }
+        
+        // 3. Jika tidak ada timesheet/tracker DAN tidak ada attendance record
+        return 'absent'; // Tidak ada data attendance = dianggap absent
+    }
+
+    /**
+     * Determine activity status optimized
+     */
+    private function determineActivityStatusOptimized($timesheet, $timetracker, $attendance)
+    {
+        if($timesheet || $timetracker) {
+            return 'active';
+        }
+        
+        if($attendance && $attendance->status === 'present') {
+            return 'no_tracker';
+        }
+        
+        if($attendance && $attendance->status === 'absent') {
+            return 'absent';
+        }
+        
+        return 'no_data';
+    }
+
+    /**
+     * Group activities optimized
+     */
+    private function groupActivitiesOptimized($activities)
+    {
+        $grouped = [];
+        $branches = ['PUSAT', 'BEKASI', 'MALANG'];
+
+        foreach($branches as $branch) {
+            $branchActivities = $activities->where('branch', $branch);
+            
+            if($branchActivities->count() > 0) {
+                $users = [];
+                $groupedByUser = $branchActivities->groupBy('user_id');
+                
+                foreach($groupedByUser as $userId => $userActivities) {
+                    $firstActivity = $userActivities->first();
+                    $projects = $userActivities->map(function($activity) {
+                        return [
+                            'project_name' => $activity['project_name'],
+                            'daily_activity' => $activity['daily_activity']
+                        ];
+                    })->toArray();
+                    
+                    $users[] = [
+                        'user' => (object)[
+                            'id' => $firstActivity['user_id'],
+                            'name' => $firstActivity['user_name'],
+                            'type' => $firstActivity['user_type'],
+                            'avatar' => $firstActivity['user_avatar'] // Include avatar
+                        ],
+                        'projects' => $projects
+                    ];
+                }
+                
+                $grouped[$branch] = [
+                    'branch_name' => $branch,
+                    'users' => $users
+                ];
+            }
+        }
+
+        return $grouped;
+    }
+
+    /**
+     * Generate activity summary
+     */
+    private function generateActivitySummary($activities)
+    {
+        $today = date('Y-m-d');
+        
+        // Skip if today is weekend
+        $todayDayOfWeek = \Carbon\Carbon::parse($today)->format('w');
+        $isWeekend = ($todayDayOfWeek == 0 || $todayDayOfWeek == 6);
+        
+        $summary = [
+            'total_users' => 0,
+            'total_projects' => 0,
+            'active_today' => 0,
+            'no_tracker_today' => 0,
+            'absent_today' => 0,
+            'no_data_today' => 0,
+            'projects_with_activity' => 0,
+            'is_weekend' => $isWeekend
+        ];
+
+        if ($activities->isEmpty()) {
+            return $summary;
+        }
+
+        $summary['total_users'] = $activities->groupBy('user_id')->count();
+        $summary['total_projects'] = $activities->count();
+        $summary['projects_with_activity'] = $activities->filter(function($activity) {
+            return !empty($activity['daily_activity']);
+        })->count();
+
+        // Count today's activity status - SKIP WEEKENDS and COUNT USERS NOT PROJECTS
+        if (!$isWeekend) {
+            // Group by user first, then check their combined activity
+            $userActivities = $activities->groupBy('user_id');
+            
+            foreach($userActivities as $userId => $userProjects) {
+                $combinedActivity = $this->combineUserDailyActivities($userProjects);
+                
+                if(isset($combinedActivity[$today])) {
+                    $status = $combinedActivity[$today]['status'];
+                    
+                    switch($status) {
+                        case 'active':
+                            $summary['active_today']++;
+                            break;
+                        case 'no_tracker':
+                            $summary['no_tracker_today']++;
+                            break;
+                        case 'absent':
+                            $summary['absent_today']++;
+                            break;
+                        default:
+                            $summary['no_data_today']++;
+                            break;
+                    }
+                } else {
+                    // No data for today = check if there's any attendance record
+                    $hasAttendanceRecord = false;
+                    foreach($userProjects as $project) {
+                        if(isset($project['daily_activity'][$today]['attendance_status'])) {
+                            $hasAttendanceRecord = true;
+                            break;
+                        }
+                    }
+                    
+                    if($hasAttendanceRecord) {
+                        $summary['no_tracker_today']++; // Present but no activity
+                    } else {
+                        $summary['absent_today']++; // No attendance record
+                    }
+                }
+            }
+        }
+
+        return $summary;
+    }
+
+    /**
+     * Clear activity cache
+     */
+    public function clearActivityCache()
+    {
+        $pattern = "activity_report_*";
+        $keys = \Cache::getRedis()->keys($pattern);
+        foreach($keys as $key) {
+            \Cache::forget($key);
+        }
+        
+        return response()->json(['success' => true, 'message' => 'Cache cleared']);
+    }
+
+    private function userHasActivityInRange($userProject, $timesheets, $timetrackers, $dateRange)
+    {
+        // Check timesheet activity
+        $userTimesheets = $timesheets->get($userProject->user_id, collect())
+                                    ->get($userProject->project_id, collect());
+        
+        if ($userTimesheets->isNotEmpty()) {
+            return true;
+        }
+
+        // Check timetracker activity
+        $userTimetrackers = $timetrackers->get($userProject->user_id, collect())
+                                    ->get($userProject->project_id, collect());
+        
+        if ($userTimetrackers->isNotEmpty()) {
+            foreach ($userTimetrackers as $tracker) {
+                $trackerDate = \Carbon\Carbon::parse($tracker->start_time)->format('Y-m-d');
+                if ($trackerDate >= $dateRange['start'] && $trackerDate <= $dateRange['end']) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private function combineUserDailyActivities($userActivities)
+    {
+        $combinedActivity = [];
+        
+        // Get date range dari aktivitas pertama
+        $firstActivity = $userActivities->first();
+        if (!$firstActivity || !isset($firstActivity['daily_activity'])) {
+            return $combinedActivity;
+        }
+        
+        // Kumpulkan semua tanggal dari semua project user ini
+        $allDates = collect();
+        foreach($userActivities as $activity) {
+            if(isset($activity['daily_activity'])) {
+                $allDates = $allDates->merge(array_keys($activity['daily_activity']));
+            }
+        }
+        
+        $uniqueDates = $allDates->unique()->sort();
+        
+        foreach($uniqueDates as $date) {
+            // Check if it's weekend
+            $dayOfWeek = \Carbon\Carbon::parse($date)->format('w');
+            if ($dayOfWeek == 0 || $dayOfWeek == 6) {
+                continue; // Skip weekends
+            }
+            
+            // FIXED LOGIC: Check user's overall activity for this date
+            $hasAnyActivity = false;
+            $hasAnyTracker = false;
+            $bestWorkHours = '00:00:00';
+            $userAttendanceStatus = null;
+            
+            // Check aktivitas di SEMUA project untuk tanggal ini
+            foreach($userActivities as $activity) {
+                if(isset($activity['daily_activity'][$date])) {
+                    $dayData = $activity['daily_activity'][$date];
+                    
+                    // Jika ada aktivitas di project manapun = user active
+                    if($dayData['status'] === 'active') {
+                        $hasAnyActivity = true;
+                        if($dayData['has_tracker']) {
+                            $hasAnyTracker = true;
+                        }
+                        // Ambil work hours terbaik dari semua project
+                        if($dayData['work_hours'] && $dayData['work_hours'] !== '00:00:00') {
+                            $bestWorkHours = $dayData['work_hours'];
+                        }
+                    }
+                    
+                    // Ambil attendance status (asumsi sama untuk user di hari yang sama)
+                    if($dayData['attendance_status']) {
+                        $userAttendanceStatus = $dayData['attendance_status'];
+                    }
+                }
+            }
+            
+            // CORRECTED: Tentukan status berdasarkan user secara keseluruhan
+            if($hasAnyActivity) {
+                // User punya aktivitas di minimal 1 project = ACTIVE
+                $status = 'active';
+            } else {
+                // User tidak punya aktivitas timesheet/tracker di project manapun
+                // Cek attendance status
+                if($userAttendanceStatus === 'present') {
+                    $status = 'no_tracker'; // Hadir tapi tidak ada tracker
+                } else {
+                    $status = 'absent'; // Tidak ada attendance atau status bukan present
+                }
+            }
+            
+            $combinedActivity[$date] = [
+                'date' => $date,
+                'status' => $status,
+                'work_hours' => $bestWorkHours,
+                'has_tracker' => $hasAnyTracker,
+                'attendance_status' => $userAttendanceStatus
+            ];
+        }
+        
+        return $combinedActivity;
+    }
+
+    public function getWeekdaysInRange($startDate, $endDate)
+    {
+        $period = new \DatePeriod(
+            new \DateTime($startDate),
+            new \DateInterval('P1D'),
+            new \DateTime($endDate . ' +1 day')
+        );
+        
+        $weekdays = [];
+        foreach($period as $date) {
+            $dayOfWeek = $date->format('w');
+            if ($dayOfWeek != 0 && $dayOfWeek != 6) { // Exclude Sunday (0) and Saturday (6)
+                $weekdays[] = [
+                    'date' => $date->format('Y-m-d'),
+                    'day' => $date->format('D'),
+                    'formatted' => $date->format('d/m'),
+                    'full' => $date->format('d M Y')
+                ];
+            }
+        }
+        
+        return $weekdays;
+    }
+
+    public function debugWeekdays(Request $request)
+    {
+        $timeFilter = $request->input('time_filter', '1month');
+        $dateRange = $this->getDateRange($timeFilter);
+        $weekdays = $this->getWeekdaysInRange($dateRange['start'], $dateRange['end']);
+        
+        return response()->json([
+            'time_filter' => $timeFilter,
+            'date_range' => $dateRange,
+            'total_weekdays' => count($weekdays),
+            'weekdays' => $weekdays,
+            'today' => date('Y-m-d'),
+            'example_calculation' => [
+                'today' => date('d M Y'),
+                'one_month_ago' => date('d M Y', strtotime('-1 month')),
+                'expected_range' => date('d M Y', strtotime('-1 month')) . ' to ' . date('d M Y')
+            ]
+        ]);
+    }
+
+    /**
+     * Build optimized user-project query with branch permission check
+     */
+    private function buildOptimizedUserProjectQuery($branchFilter, $userType, $currentUserId, $dateRange)
+    {
+        $query = \DB::table('users')
+            ->select([
+                'users.id as user_id',
+                'users.name as user_name',
+                'users.type as user_type',
+                'users.avatar as user_avatar',
+                'projects.id as project_id',
+                'projects.project_name',
+                'branches.id as branch_id',
+                'branches.name as branch_name'
+            ])
+            ->join('employees', 'users.id', '=', 'employees.user_id') // Join dengan employees
+            ->join('branches', 'employees.branch_id', '=', 'branches.id') // Join dengan branches
+            ->join('project_users', 'users.id', '=', 'project_users.user_id')
+            ->join('projects', 'project_users.project_id', '=', 'projects.id')
+            ->where('users.is_active', 1) // Hanya user yang aktif
+            ->where('users.type', '!=', 'client')
+            ->where('users.type', '!=', 'staff_client')
+            ->where('users.type', '!=', 'admin') // Exclude admin
+            ->where('users.type', '!=', 'company') // Exclude company
+            ->whereNotNull('projects.id')
+            ->whereNotNull('employees.branch_id'); // Pastikan ada branch
+
+        // UPDATED: Filter berdasarkan user type untuk permission
+        if($userType !== 'admin' && $userType !== 'company') {
+            // Get current user's branch
+            $currentUserBranch = \DB::table('users')
+                ->join('employees', 'users.id', '=', 'employees.user_id')
+                ->join('branches', 'employees.branch_id', '=', 'branches.id')
+                ->where('users.id', $currentUserId)
+                ->first();
+
+            if($currentUserBranch) {
+                // Limit to same branch only
+                $query->where('branches.id', $currentUserBranch->branch_id);
+            } else {
+                // If user doesn't have branch, return empty result
+                $query->where('branches.id', -1);
+            }
+            
+            // Also limit to projects that current user is involved in
+            $userProjectIds = \DB::table('project_users')
+                ->where('user_id', $currentUserId)
+                ->pluck('project_id');
+            $query->whereIn('projects.id', $userProjectIds);
+        }
+
+        // Filter berdasarkan branch selection - hanya berlaku untuk admin/company
+        if($branchFilter !== 'all' && ($userType === 'admin' || $userType === 'company')) {
+            if(is_numeric($branchFilter)) {
+                // Jika branch_id (numeric)
+                $query->where('branches.id', $branchFilter);
+            } else {
+                // Jika branch name (string)
+                $query->where('branches.name', $branchFilter);
+            }
+        }
+
+        // FILTER PROJECT: Hanya tampilkan project yang user kerjakan dalam periode filter
+        $query->where(function($q) use ($dateRange) {
+            $q->whereExists(function($subQuery) use ($dateRange) {
+                $subQuery->select(\DB::raw(1))
+                        ->from('timesheets')
+                        ->whereRaw('timesheets.created_by = users.id')
+                        ->whereRaw('timesheets.project_id = projects.id')
+                        ->whereBetween('timesheets.date', [$dateRange['start'], $dateRange['end']]);
+            })
+            ->orWhereExists(function($subQuery) use ($dateRange) {
+                $subQuery->select(\DB::raw(1))
+                        ->from('time_trackers')
+                        ->whereRaw('time_trackers.created_by = users.id')
+                        ->whereRaw('time_trackers.project_id = projects.id')
+                        ->whereBetween('time_trackers.start_time', [$dateRange['start'] . ' 00:00:00', $dateRange['end'] . ' 23:59:59']);
+            });
+        });
+
+        return $query->orderBy('branches.name')->orderBy('users.name');
+    }
+
+    /**
+     * Updated getBranchStats with branch permission check
+     */
+    private function getBranchStats($dateRange, $userType, $currentUserId)
+    {
+        $stats = [];
+        $today = date('Y-m-d');
+
+        // Check if user has branch restriction
+        if($userType !== 'admin' && $userType !== 'company') {
+            // Get current user's branch only
+            $currentUserBranch = \DB::table('users')
+                ->join('employees', 'users.id', '=', 'employees.user_id')
+                ->join('branches', 'employees.branch_id', '=', 'branches.id')
+                ->where('users.id', $currentUserId)
+                ->select('branches.id', 'branches.name')
+                ->first();
+
+            if($currentUserBranch) {
+                $branches = collect([$currentUserBranch->id => $currentUserBranch->name]);
+            } else {
+                return []; // No branch access
+            }
+        } else {
+            // Admin/Company can see all branches
+            $branches = \DB::table('branches')->pluck('name', 'id');
+        }
+
+        foreach($branches as $branchId => $branchName) {
+            $branchQuery = \DB::table('users')
+                ->join('employees', 'users.id', '=', 'employees.user_id')
+                ->join('branches', 'employees.branch_id', '=', 'branches.id')
+                ->join('project_users', 'users.id', '=', 'project_users.user_id')
+                ->join('projects', 'project_users.project_id', '=', 'projects.id')
+                ->where('users.is_active', 1) // Hanya user aktif
+                ->where('users.type', '!=', 'client')
+                ->where('users.type', '!=', 'staff_client')
+                ->where('users.type', '!=', 'admin') // Exclude admin
+                ->where('users.type', '!=', 'company') // Exclude company
+                ->where('branches.id', $branchId); // Filter by branch
+
+            // Additional project filter for non-admin users
+            if($userType !== 'admin' && $userType !== 'company') {
+                $userProjectIds = \DB::table('project_users')
+                    ->where('user_id', $currentUserId)
+                    ->pluck('project_id');
+                $branchQuery->whereIn('projects.id', $userProjectIds);
+            }
+
+            // Hanya user yang punya aktivitas dalam periode
+            $branchQuery->where(function($q) use ($dateRange) {
+                $q->whereExists(function($subQuery) use ($dateRange) {
+                    $subQuery->select(\DB::raw(1))
+                            ->from('timesheets')
+                            ->whereRaw('timesheets.created_by = users.id')
+                            ->whereBetween('timesheets.date', [$dateRange['start'], $dateRange['end']]);
+                })
+                ->orWhereExists(function($subQuery) use ($dateRange) {
+                    $subQuery->select(\DB::raw(1))
+                            ->from('time_trackers')
+                            ->whereRaw('time_trackers.created_by = users.id')
+                            ->whereBetween('time_trackers.start_time', [$dateRange['start'] . ' 00:00:00', $dateRange['end'] . ' 23:59:59']);
+                });
+            });
+
+            $totalInBranch = $branchQuery->distinct('users.id')->count('users.id');
+            
+            // Active in this branch today
+            $activeInBranch = clone $branchQuery;
+            $activeInBranch->where(function($q) use ($today) {
+                $q->whereExists(function($query) use ($today) {
+                    $query->select(\DB::raw(1))
+                        ->from('timesheets')
+                        ->whereRaw('timesheets.created_by = users.id')
+                        ->where('timesheets.date', $today);
+                })
+                ->orWhereExists(function($query) use ($today) {
+                    $query->select(\DB::raw(1))
+                        ->from('time_trackers')
+                        ->whereRaw('time_trackers.created_by = users.id')
+                        ->whereDate('time_trackers.start_time', $today);
+                });
+            });
+
+            $activeCount = $activeInBranch->distinct('users.id')->count('users.id');
+
+            $stats[$branchName] = [
+                'total' => $totalInBranch,
+                'active' => $activeCount,
+                'rate' => $totalInBranch > 0 ? round(($activeCount / $totalInBranch) * 100, 1) : 0
+            ];
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Updated getActivityStats with branch permission
+     */
+    public function getActivityStats(Request $request)
+    {
+        $timeFilter = $request->input('time_filter', 'today');
+        $branchFilter = $request->input('branch_filter', 'all');
+        $userType = \Auth::user()->type;
+        $currentUserId = \Auth::user()->id;
+
+        $cacheKey = "activity_stats_{$userType}_{$currentUserId}_{$timeFilter}_{$branchFilter}";
+        
+        if (\Cache::has($cacheKey)) {
+            return response()->json(\Cache::get($cacheKey));
+        }
+
+        $dateRange = $this->getDateRange($timeFilter);
+        $today = date('Y-m-d');
+
+        // Quick stats query - with branch permission check
+        $baseQuery = \DB::table('users')
+            ->join('employees', 'users.id', '=', 'employees.user_id')
+            ->join('branches', 'employees.branch_id', '=', 'branches.id')
+            ->join('project_users', 'users.id', '=', 'project_users.user_id')
+            ->join('projects', 'project_users.project_id', '=', 'projects.id')
+            ->where('users.is_active', 1)
+            ->where('users.type', '!=', 'client')
+            ->where('users.type', '!=', 'staff_client')
+            ->where('users.type', '!=', 'admin')
+            ->where('users.type', '!=', 'company');
+
+        // UPDATED: Apply branch restriction for non-admin users
+        if($userType !== 'admin' && $userType !== 'company') {
+            // Get current user's branch
+            $currentUserBranch = \DB::table('users')
+                ->join('employees', 'users.id', '=', 'employees.user_id')
+                ->where('users.id', $currentUserId)
+                ->value('employees.branch_id');
+
+            if($currentUserBranch) {
+                $baseQuery->where('branches.id', $currentUserBranch);
+            } else {
+                // No branch access
+                return response()->json([
+                    'total_users' => 0,
+                    'active_today' => 0,
+                    'inactive_today' => 0,
+                    'activity_rate' => 0,
+                    'branches' => [],
+                    'period' => $timeFilter,
+                    'date_range' => $dateRange,
+                    'message' => 'User has no branch access'
+                ]);
+            }
+
+            $userProjectIds = \DB::table('project_users')
+                ->where('user_id', $currentUserId)
+                ->pluck('project_id');
+            $baseQuery->whereIn('projects.id', $userProjectIds);
+        } else {
+            // Admin/Company can filter by branch selection
+            if($branchFilter !== 'all') {
+                if(is_numeric($branchFilter)) {
+                    $baseQuery->where('branches.id', $branchFilter);
+                } else {
+                    $baseQuery->where('branches.name', $branchFilter);
+                }
+            }
+        }
+
+        // Hanya user yang punya aktivitas dalam periode
+        $baseQuery->where(function($q) use ($dateRange) {
+            $q->whereExists(function($subQuery) use ($dateRange) {
+                $subQuery->select(\DB::raw(1))
+                        ->from('timesheets')
+                        ->whereRaw('timesheets.created_by = users.id')
+                        ->whereBetween('timesheets.date', [$dateRange['start'], $dateRange['end']]);
+            })
+            ->orWhereExists(function($subQuery) use ($dateRange) {
+                $subQuery->select(\DB::raw(1))
+                        ->from('time_trackers')
+                        ->whereRaw('time_trackers.created_by = users.id')
+                        ->whereBetween('time_trackers.start_time', [$dateRange['start'] . ' 00:00:00', $dateRange['end'] . ' 23:59:59']);
+            });
+        });
+
+        $totalUsers = $baseQuery->distinct('users.id')->count('users.id');
+        
+        // Active users today (have timesheet or timetracker)
+        $activeUsersQuery = clone $baseQuery;
+        $activeUsersQuery->where(function($q) use ($today) {
+            $q->whereExists(function($query) use ($today) {
+                $query->select(\DB::raw(1))
+                    ->from('timesheets')
+                    ->whereRaw('timesheets.created_by = users.id')
+                    ->where('timesheets.date', $today);
+            })
+            ->orWhereExists(function($query) use ($today) {
+                $query->select(\DB::raw(1))
+                    ->from('time_trackers')
+                    ->whereRaw('time_trackers.created_by = users.id')
+                    ->whereDate('time_trackers.start_time', $today);
+            });
+        });
+
+        $activeCount = $activeUsersQuery->distinct('users.id')->count('users.id');
+
+        $stats = [
+            'total_users' => $totalUsers,
+            'active_today' => $activeCount,
+            'inactive_today' => $totalUsers - $activeCount,
+            'activity_rate' => $totalUsers > 0 ? round(($activeCount / $totalUsers) * 100, 1) : 0,
+            'branches' => $this->getBranchStats($dateRange, $userType, $currentUserId),
+            'period' => $timeFilter,
+            'date_range' => $dateRange,
+            'user_branch_only' => ($userType !== 'admin' && $userType !== 'company')
+        ];
+
+        \Cache::put($cacheKey, $stats, 600); // 10 minutes cache
+        return response()->json($stats);
+    }
+
+    /**
+     * Helper function to get current user's branch info
+     */
+    private function getCurrentUserBranch($userId)
+    {
+        return \DB::table('users')
+            ->join('employees', 'users.id', '=', 'employees.user_id')
+            ->join('branches', 'employees.branch_id', '=', 'branches.id')
+            ->where('users.id', $userId)
+            ->select('branches.id', 'branches.name')
+            ->first();
+    }
+        
 
 }

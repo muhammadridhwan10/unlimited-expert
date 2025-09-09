@@ -3040,7 +3040,7 @@ Route::post(
 );
 Route::get('/projects/activity', 'ProjectController@filterProjectActivity')->name('projects.activity.filter');
 Route::get('/projects/activity/export', 'ProjectController@exportProjectActivity')->name('projects.activity.export');
-Route::get('projects/activity/clear-cache', 'ProjectController::class@clearActivityCache')->name('projects.activity.clear_cache');
+Route::get('projects/activity/clear-cache', 'ProjectController@clearActivityCache')->name('projects.activity.clear_cache');
 
 Route::get('/projects/{project}/document-review', [DocumentReviewController::class, 'index'])
     ->name('projects.document-review.index');
@@ -4823,18 +4823,6 @@ Route::get('reports-absence-staff', 'ReportController@absence_user')->name('repo
         'XSS',
     ]
 );
-Route::resource('notifications', 'NotificationController')->middleware(
-    [
-        'auth',
-        'XSS',
-    ]
-);
-Route::post('/mark-as-read', 'NotificationController@markAsRead')->name('notifications.mark-read');
-Route::post('/mark-all-read', 'NotificationController@markAllAsRead')->name('notifications.mark-all-read');
-Route::post('/delete', 'NotificationController@delete')->name('notifications.delete');
-Route::get('/unread-count', 'NotificationController@getUnreadCount')->name('notifications.unread-count');
-Route::get('/recent', 'NotificationController@getRecentNotifications')->name('notifications.recent');
-Route::get('/{id}', 'NotificationController@show')->name('notifications.show');
 Route::post('/mark-notifications-read', 'NotificationController@markAsRead')->name('mark.notifications.read');
 Route::resource('form-response', 'FormResponseController')->middleware(
     [
@@ -4953,7 +4941,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/psychotest-result/{id}/export/{format?}', 'PsychotestResultController@export')->name('psychotest-result.export');
     Route::post('/psychotest-result/compare', 'PsychotestResultController@compare')->name('psychotest-result.compare');
 
-    Route::get('/psychotest-result/{id}/export/{format}', 'PsychotestResultController@export')->name('psychotest-result.export');
     Route::get('/psychotest-result/export/excel', 'PsychotestResultController@exportExcel')->name('psychotest-result.export-excel');
     Route::get('/psychotest-result/{id}/quick-info', 'PsychotestResultController@quickInfo')->name('psychotest-result.quick-info');
     
@@ -5067,3 +5054,23 @@ Route::get('audit-tools/project/{project}/sync-status', 'AuditToolsController@ge
 
 Route::post('audit-tools/project/{project}/files/{file}/retry-sync', 'AuditToolsController@retrySyncFile')
     ->name('audit-tools.files.retry-sync')->middleware(['auth', 'XSS']);
+
+Route::resource('notifications', 'NotificationController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::post('/mark-as-read', 'NotificationController@markAsRead')->name('notifications.mark-read');
+Route::post('/mark-all-read', 'NotificationController@markAllAsRead')->name('notifications.mark-all-read');
+Route::post('/delete', 'NotificationController@delete')->name('notifications.delete');
+Route::get('/unread-count', 'NotificationController@getUnreadCount')->name('notifications.unread-count');
+Route::get('/recent', 'NotificationController@getRecentNotifications')->name('notifications.recent');
+Route::get('/{id}', 'NotificationController@show')->name('notifications.show');
+Route::post('/mark-notifications-read', 'NotificationController@markAsRead')->name('mark.notifications.read');
+Route::resource('form-response', 'FormResponseController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);

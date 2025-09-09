@@ -21,12 +21,6 @@
                 {{ Form::date('end_date', null, ['class' => 'form-control']) }}
             </div>
         </div>
-        {{-- <div class="col-sm-6 col-md-6">
-            <div class="form-group">
-                {{ Form::label('total_days', __('Total Days Working'), ['class' => 'form-label']) }}
-                {{ Form::text('total_days', null, ['class' => 'form-control']) }}
-            </div>
-        </div> --}}
     </div>
     <div class="row">
         <div class="form-group col-sm-12 col-md-12">
@@ -34,7 +28,6 @@
             <div class="form-file mb-3">
                 <input type="file" accept=".png, .jpg, .jpeg" class="form-control" name="project_image">
             </div>
-
         </div>
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
@@ -48,12 +41,6 @@
                 {!! Form::select('client', $clients, null,array('class' => 'form-control select2','id'=>'choices-multiple1','required'=>'required')) !!}
             </div>
         </div>
-        {{-- <div class="col-sm-6 col-md-6">
-            <div class="form-group">
-                {{ Form::label('budget', __('Budget'), ['class' => 'form-label']) }}
-                {{ Form::number('budget', null, ['class' => 'form-control']) }}
-            </div>
-        </div> --}}
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
                 {{ Form::label('user', __('Team Leader'),['class'=>'form-label']) }}<span class="text-danger">*</span>
@@ -68,12 +55,8 @@
         </div>
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
-                {{ Form::label('label', __('Type Of Service'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
-                <select name="label" id="label" class="form-control main-element" required>
-                    @foreach(\App\Models\Project::$label as $k => $v)
-                        <option value="{{$k}}">{{__($v)}}</option>
-                    @endforeach
-                </select>
+                {{ Form::label('label', __('Project Service'), ['class' => 'form-label']) }}<span class="text-danger">*</span>
+                {!! Form::select('label', $service_types, null, array('class' => 'form-control select2','required'=>'required')) !!}
             </div>
         </div>
     </div>
@@ -88,12 +71,6 @@
                 </select>
             </div>
         </div>
-        {{-- <div class="col-sm-6 col-md-6">
-            <div class="form-group">
-                {{ Form::label('book_year', __('Book Year'),['class'=>'form-label']) }}
-                {{ Form::text('book_year', null, array('class' => 'form-control','placeholder'=>__('Enter Book Year'))) }}
-            </div>
-        </div> --}}
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
                 {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
@@ -113,18 +90,6 @@
             </div>
         </div>
     </div>
-    {{-- <div class="row">
-        <div class="col-sm-12 col-md-12">
-            <div class="form-group">
-                {{ Form::label('status', __('Status'), ['class' => 'form-label']) }}
-                <select name="status" id="status" class="form-control main-element">
-                    @foreach(\App\Models\Project::$project_status as $k => $v)
-                        <option value="{{$k}}">{{__($v)}}</option>
-                    @endforeach
-                </select>
-            </div>
-        </div>
-    </div> --}}
 </div>
 <div class="modal-footer">
     <input type="button" value="{{__('Cancel')}}" class="btn  btn-light" data-bs-dismiss="modal">

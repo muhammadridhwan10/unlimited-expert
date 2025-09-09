@@ -32,7 +32,7 @@ class Project extends Model
         'label',
         'total_days',
         'created_by',
-        'is_template'
+        'is_template',
     ];
 
     public static $project_status=[
@@ -85,6 +85,11 @@ class Project extends Model
         'complete' => 'success',
         'canceled' => 'danger',
     ];
+
+    public function serviceType()
+    {
+        return $this->belongsTo(LabelProject::class, 'service_type_id');
+    }
 
     public function client()
     {
@@ -677,6 +682,52 @@ class Project extends Model
         // Return 0 if $als is null or empty
         return $als ? $als->sum() : 0;
     }
+
+    /**
+     * Relationship dengan Document Reviews
+     */
+    public function documentReviews()
+    {
+        return $this->hasMany(DocumentReview::class);
+    }
+
+    /**
+     * Get documents by status
+     */
+    public function getDocumentsByStatus($status)
+    {
+        return $this->documentReviews()->where('status', $status)->get();
+    }
+
+    /**
+     * Get documents pending approval for specific user
+     */
+    public function getPendingApprovalsForUser($userId)
+    {
+        return $this->documentReviews()
+            ->where('approver_id', $userId)
+            ->whereIn('status', ['submitted', 'under_review'])
+            ->get();
+    }
+
+    /**
+     * Get document review statistics
+     */
+    public function getDocumentReviewStats()
+    {
+        $total = $this->documentReviews()->count();
+        
+        return [
+            'total' => $total,
+            'submitted' => $this->documentReviews()->where('status', 'submitted')->count(),
+            'under_review' => $this->documentReviews()->where('status', 'under_review')->count(),
+            'approved' => $this->documentReviews()->where('status', 'approved')->count(),
+            'rejected' => $this->documentReviews()->where('status', 'rejected')->count(),
+            'revision_required' => $this->documentReviews()->where('status', 'revision_required')->count(),
+            'completion_rate' => $total > 0 ? round(($this->documentReviews()->where('status', 'approved')->count() / $total) * 100, 1) : 0
+        ];
+    }
+
 
 
 

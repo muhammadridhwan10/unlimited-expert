@@ -58,12 +58,8 @@
     <div class="row">
         <div class="col-sm-6 col-md-6">
             <div class="form-group">
-                {{ Form::label('label', __('Type Of Service'), ['class' => 'form-label']) }}
-                <select name="label" id="label" class="form-control main-element select2" >
-                    @foreach(\App\Models\Project::$label as $k => $v)
-                        <option value="{{$k}}" {{ ($project->label == $k) ? 'selected' : ''}}>{{__($v)}}</option>
-                    @endforeach
-                </select>
+                {{ Form::label('label', __('Project Service'), ['class' => 'form-label']) }}
+                {!! Form::select('label', $service_types, $project->label, array('class' => 'form-control select2')) !!}
             </div>
         </div>
         <div class="col-sm-6 col-md-6">
