@@ -8,7 +8,9 @@ use App\Models\DocumentContributor;
 use App\Models\DocumentReviewComment;
 use App\Models\Project;
 use App\Models\User;
+use App\Models\Notification;
 use App\Services\DocumentNotificationService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -19,10 +21,12 @@ class DocumentReviewController extends Controller
 {
 
     protected $notificationService;
+    protected $systemNotificationService;
 
     public function __construct(DocumentNotificationService $notificationService)
     {
         $this->notificationService = $notificationService;
+        $this->systemNotificationService = new NotificationService();
     }
 
     public function create($projectId)
@@ -47,7 +51,7 @@ class DocumentReviewController extends Controller
             ->pluck('name', 'id');
 
         // Get available categories for this project
-        $categories = DocumentReviewCategory::getAvailableForProject($projectId);
+        $categories = DocumentReviewCategory::getAvailableForProject();
 
         return view('projects.document-review.create', compact('project', 'approvers', 'contributors', 'categories'));
     }
@@ -129,6 +133,47 @@ class DocumentReviewController extends Controller
             ]);
         }
 
+        // **ENHANCED NOTIFICATION SYSTEM: Create system notifications for document submission**
+        
+        // 1. Notify approver with HIGH priority
+        if ($documentReview->approver_id && $documentReview->approver_id != Auth::id()) {
+            Notification::createDocumentNotification(
+                $documentReview->approver_id,
+                'document_submitted',
+                $documentReview,
+                Notification::PRIORITY_HIGH
+            );
+        }
+
+        // 2. Notify contributors with NORMAL priority
+        foreach($request->contributors as $contributorId) {
+            if ($contributorId != Auth::id() && $contributorId != $documentReview->approver_id) {
+                Notification::createDocumentNotification(
+                    $contributorId,
+                    'document_submitted',
+                    $documentReview,
+                    Notification::PRIORITY_NORMAL
+                );
+            }
+        }
+
+        // 3. Notify project members (if they're not already notified)
+        $projectMembers = $project->projectUsers()->pluck('user_id')->toArray();
+        $alreadyNotified = array_merge(
+            [$documentReview->approver_id, Auth::id()], 
+            $request->contributors
+        );
+        
+        $additionalNotifyUsers = array_diff($projectMembers, $alreadyNotified);
+        foreach($additionalNotifyUsers as $userId) {
+            Notification::createDocumentNotification(
+                $userId,
+                'document_submitted',
+                $documentReview,
+                Notification::PRIORITY_LOW
+            );
+        }
+
         // Add initial comment if provided
         if($request->initial_comment) {
             $initialComment = DocumentReviewComment::create([
@@ -140,12 +185,29 @@ class DocumentReviewController extends Controller
 
             // Send comment notification to approver and contributors
             $this->notificationService->notifyDocumentComment($initialComment);
+            
+            // **ENHANCED: Create system notifications for initial comment**
+            $commentNotifyUsers = collect([$documentReview->approver_id])
+                ->merge($request->contributors)
+                ->unique()
+                ->filter(function($userId) {
+                    return $userId != Auth::id();
+                });
+            
+            foreach($commentNotifyUsers as $userId) {
+                Notification::createDocumentNotification(
+                    $userId,
+                    'document_comment',
+                    $documentReview,
+                    Notification::PRIORITY_LOW
+                );
+            }
         }
 
         // Log the submission
         $documentReview->addLog('submitted', 'Work/Document submitted for review');
 
-        // Send notification
+        // Send email notification (existing functionality)
         $notificationSent = $this->notificationService->notifyDocumentSubmitted($documentReview);
 
         $message = __('Work/Document submitted for review successfully!');
@@ -155,6 +217,311 @@ class DocumentReviewController extends Controller
 
         return redirect()->route('projects.document-review.index', $projectId)
             ->with('success', $message);
+    }
+
+    public function approve(Request $request, $projectId, $documentId)
+    {
+        $document = DocumentReview::findOrFail($documentId);
+        
+        if($document->approver_id !== Auth::id() && !Auth::user()->can('edit project')) {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+
+        $document->approve(Auth::id(), $request->comment);
+
+        // **ENHANCED NOTIFICATION SYSTEM: Document Approval Notifications**
+        
+        // 1. Notify submitter with HIGH priority (good news!)
+        if ($document->submitted_by && $document->submitted_by != Auth::id()) {
+            Notification::createDocumentNotification(
+                $document->submitted_by,
+                'document_approved',
+                $document,
+                Notification::PRIORITY_HIGH
+            );
+        }
+
+        // 2. Notify contributors with NORMAL priority
+        $contributors = $document->contributors()->pluck('user_id');
+        foreach($contributors as $contributorId) {
+            if ($contributorId != Auth::id() && $contributorId != $document->submitted_by) {
+                Notification::createDocumentNotification(
+                    $contributorId,
+                    'document_approved',
+                    $document,
+                    Notification::PRIORITY_NORMAL
+                );
+            }
+        }
+
+        // 3. Notify project stakeholders
+        $project = $document->project;
+        if ($project) {
+            $projectMembers = $project->projectUsers()->pluck('user_id')->toArray();
+            $alreadyNotified = array_merge(
+                [$document->submitted_by, Auth::id()], 
+                $contributors->toArray()
+            );
+            
+            $additionalNotifyUsers = array_diff($projectMembers, $alreadyNotified);
+            foreach($additionalNotifyUsers as $userId) {
+                Notification::createDocumentNotification(
+                    $userId,
+                    'document_approved',
+                    $document,
+                    Notification::PRIORITY_LOW
+                );
+            }
+        }
+
+        // Send email notification (existing functionality)
+        $notificationSent = $this->notificationService->notifyDocumentStatusUpdated(
+            $document, 
+            'approved', 
+            $request->comment, 
+            Auth::user()
+        );
+
+        return redirect()->back()->with('success', __('Work/Document approved successfully!'));
+    }
+
+    public function reject(Request $request, $projectId, $documentId)
+    {
+        $validator = Validator::make($request->all(), [
+            'rejection_reason' => 'required|string',
+            'comment' => 'required|string'
+        ]);
+
+        if($validator->fails()) {
+            return redirect()->back()->with('error', Utility::errorFormat($validator->getMessageBag()));
+        }
+
+        $document = DocumentReview::findOrFail($documentId);
+        
+        if($document->approver_id !== Auth::id() && !Auth::user()->can('edit project')) {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+
+        $document->reject($request->rejection_reason, Auth::id(), $request->comment);
+
+        // **ENHANCED NOTIFICATION SYSTEM: Document Rejection Notifications**
+        
+        // 1. Notify submitter with URGENT priority (needs immediate attention)
+        if ($document->submitted_by && $document->submitted_by != Auth::id()) {
+            Notification::createDocumentNotification(
+                $document->submitted_by,
+                'document_rejected',
+                $document,
+                Notification::PRIORITY_URGENT
+            );
+        }
+
+        // 2. Notify contributors with HIGH priority
+        $contributors = $document->contributors()->pluck('user_id');
+        foreach($contributors as $contributorId) {
+            if ($contributorId != Auth::id() && $contributorId != $document->submitted_by) {
+                Notification::createDocumentNotification(
+                    $contributorId,
+                    'document_rejected',
+                    $document,
+                    Notification::PRIORITY_HIGH
+                );
+            }
+        }
+
+        // Send email notification (existing functionality)
+        $notificationSent = $this->notificationService->notifyDocumentStatusUpdated(
+            $document, 
+            'rejected', 
+            $request->comment, 
+            Auth::user()
+        );
+
+        return redirect()->back()->with('success', __('Work/Document rejected successfully!'));
+    }
+
+    public function requireRevision(Request $request, $projectId, $documentId)
+    {
+        $validator = Validator::make($request->all(), [
+            'comment' => 'required|string'
+        ]);
+
+        if($validator->fails()) {
+            return redirect()->back()->with('error', Utility::errorFormat($validator->getMessageBag()));
+        }
+
+        $document = DocumentReview::findOrFail($documentId);
+        
+        if($document->approver_id !== Auth::id() && !Auth::user()->can('edit project')) {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+
+        $document->requireRevision($request->comment, Auth::id());
+
+        // **ENHANCED NOTIFICATION SYSTEM: Revision Required Notifications**
+        
+        // 1. Notify submitter with HIGH priority (action required)
+        if ($document->submitted_by && $document->submitted_by != Auth::id()) {
+            Notification::createDocumentNotification(
+                $document->submitted_by,
+                'document_revision_required',
+                $document,
+                Notification::PRIORITY_HIGH
+            );
+        }
+
+        // 2. Notify contributors with NORMAL priority
+        $contributors = $document->contributors()->pluck('user_id');
+        foreach($contributors as $contributorId) {
+            if ($contributorId != Auth::id() && $contributorId != $document->submitted_by) {
+                Notification::createDocumentNotification(
+                    $contributorId,
+                    'document_revision_required',
+                    $document,
+                    Notification::PRIORITY_NORMAL
+                );
+            }
+        }
+
+        // Send email notification (existing functionality)
+        $notificationSent = $this->notificationService->notifyDocumentStatusUpdated(
+            $document, 
+            'revision_required', 
+            $request->comment, 
+            Auth::user()
+        );
+
+        return redirect()->back()->with('success', __('Revision requested successfully!'));
+    }
+
+    public function underReview(Request $request, $projectId, $documentId)
+    {
+        $validator = Validator::make($request->all(), [
+            'comment' => 'required|string'
+        ]);
+
+        if($validator->fails()) {
+            return redirect()->back()->with('error', Utility::errorFormat($validator->getMessageBag()));
+        }
+
+        $document = DocumentReview::findOrFail($documentId);
+        
+        if($document->approver_id !== Auth::id() && !Auth::user()->can('edit project')) {
+            return redirect()->back()->with('error', __('Permission Denied.'));
+        }
+
+        $document->underReview($request->comment, Auth::id());
+
+        // **ENHANCED NOTIFICATION SYSTEM: Under Review Notifications**
+        
+        // 1. Notify submitter with NORMAL priority (informational)
+        if ($document->submitted_by && $document->submitted_by != Auth::id()) {
+            Notification::createDocumentNotification(
+                $document->submitted_by,
+                'document_under_review',
+                $document,
+                Notification::PRIORITY_NORMAL
+            );
+        }
+
+        // 2. Notify contributors with LOW priority
+        $contributors = $document->contributors()->pluck('user_id');
+        foreach($contributors as $contributorId) {
+            if ($contributorId != Auth::id() && $contributorId != $document->submitted_by) {
+                Notification::createDocumentNotification(
+                    $contributorId,
+                    'document_under_review',
+                    $document,
+                    Notification::PRIORITY_LOW
+                );
+            }
+        }
+
+        // Send email notification (existing functionality)
+        $notificationSent = $this->notificationService->notifyDocumentStatusUpdated(
+            $document, 
+            'under_review', 
+            $request->comment, 
+            Auth::user()
+        );
+
+        return redirect()->back()->with('success', __('Review started successfully!'));
+    }
+
+    public function addComment(Request $request, $projectId, $documentId)
+    {
+        $validator = Validator::make($request->all(), [
+            'comment' => 'required|string'
+        ]);
+
+        if($validator->fails()) {
+            return response()->json(['error' => $validator->errors()->first()], 422);
+        }
+
+        $document = DocumentReview::findOrFail($documentId);
+        
+        $comment = DocumentReviewComment::create([
+            'document_review_id' => $documentId,
+            'user_id' => Auth::id(),
+            'comment' => $request->comment,
+            'type' => 'general'
+        ]);
+
+        $document->addLog('commented', 'Added a comment');
+
+        // **ENHANCED NOTIFICATION SYSTEM: Comment Notifications**
+        
+        $notifyUsers = collect();
+        
+        // 1. Notify submitter
+        if ($document->submitted_by && $document->submitted_by != Auth::id()) {
+            $notifyUsers->push($document->submitted_by);
+        }
+        
+        // 2. Notify approver
+        if ($document->approver_id && $document->approver_id != Auth::id()) {
+            $notifyUsers->push($document->approver_id);
+        }
+        
+        // 3. Notify contributors
+        $contributors = $document->contributors()->pluck('user_id');
+        $notifyUsers = $notifyUsers->merge($contributors);
+        
+        // 4. Notify other commenters (to keep conversation active)
+        $otherCommenters = DocumentReviewComment::where('document_review_id', $documentId)
+            ->where('user_id', '!=', Auth::id())
+            ->distinct()
+            ->pluck('user_id');
+        $notifyUsers = $notifyUsers->merge($otherCommenters);
+        
+        // Remove duplicates and current user
+        $notifyUsers = $notifyUsers->unique()->filter(function($userId) {
+            return $userId != Auth::id();
+        });
+        
+        foreach($notifyUsers as $userId) {
+            Notification::createDocumentNotification(
+                $userId,
+                'document_comment',
+                $document,
+                Notification::PRIORITY_LOW
+            );
+        }
+
+        // Send email notification (existing functionality)
+        $notificationSent = $this->notificationService->notifyDocumentComment($comment);
+
+        return response()->json([
+            'success' => true,
+            'notification_sent' => $notificationSent,
+            'comment' => [
+                'id' => $comment->id,
+                'comment' => $comment->comment,
+                'user_name' => $comment->user->name,
+                'created_at' => $comment->created_at->format('d M Y H:i'),
+                'type' => $comment->type_name
+            ]
+        ]);
     }
 
     public function show($projectId, $documentId)
@@ -172,6 +539,15 @@ class DocumentReviewController extends Controller
             'comments.user', 
             'logs.user'
         ])->findOrFail($documentId);
+
+        // **ENHANCED: Mark related notifications as read when viewing document**
+        Notification::where('user_id', Auth::id())
+            ->where('data->document_id', $documentId)
+            ->where('is_read', false)
+            ->update([
+                'is_read' => true,
+                'read_at' => now()
+            ]);
 
         return view('projects.document-review.show', compact('project', 'document'));
     }
@@ -213,10 +589,11 @@ class DocumentReviewController extends Controller
         return view('projects.document-review.index', compact('project', 'documents'));
     }
 
-    // Category management methods
+    // Rest of the methods remain the same...
+    
     public function getCategories($projectId)
     {
-        $categories = DocumentReviewCategory::getAvailableForProject($projectId);
+        $categories = DocumentReviewCategory::getAvailableForProject();
         
         return response()->json([
             'categories' => $categories->map(function($category) {
@@ -334,149 +711,6 @@ class DocumentReviewController extends Controller
         ]);
     }
 
-    // Rest of the existing methods remain the same...
-    public function approve(Request $request, $projectId, $documentId)
-    {
-        $document = DocumentReview::findOrFail($documentId);
-        
-        if($document->approver_id !== Auth::id() && !Auth::user()->can('edit project')) {
-            return redirect()->back()->with('error', __('Permission Denied.'));
-        }
-
-        $document->approve(Auth::id(), $request->comment);
-
-        $notificationSent = $this->notificationService->notifyDocumentStatusUpdated(
-            $document, 
-            'approved', 
-            $request->comment, 
-            Auth::user()
-        );
-
-        return redirect()->back()->with('success', __('Work/Document approved successfully!'));
-    }
-
-    public function reject(Request $request, $projectId, $documentId)
-    {
-        $validator = Validator::make($request->all(), [
-            'rejection_reason' => 'required|string',
-            'comment' => 'required|string'
-        ]);
-
-        if($validator->fails()) {
-            return redirect()->back()->with('error', Utility::errorFormat($validator->getMessageBag()));
-        }
-
-        $document = DocumentReview::findOrFail($documentId);
-        
-        if($document->approver_id !== Auth::id() && !Auth::user()->can('edit project')) {
-            return redirect()->back()->with('error', __('Permission Denied.'));
-        }
-
-        $document->reject($request->rejection_reason, Auth::id(), $request->comment);
-
-        $notificationSent = $this->notificationService->notifyDocumentStatusUpdated(
-            $document, 
-            'rejected', 
-            $request->comment, 
-            Auth::user()
-        );
-
-        return redirect()->back()->with('success', __('Work/Document rejected successfully!'));
-    }
-
-    public function requireRevision(Request $request, $projectId, $documentId)
-    {
-        $validator = Validator::make($request->all(), [
-            'comment' => 'required|string'
-        ]);
-
-        if($validator->fails()) {
-            return redirect()->back()->with('error', Utility::errorFormat($validator->getMessageBag()));
-        }
-
-        $document = DocumentReview::findOrFail($documentId);
-        
-        if($document->approver_id !== Auth::id() && !Auth::user()->can('edit project')) {
-            return redirect()->back()->with('error', __('Permission Denied.'));
-        }
-
-        $document->requireRevision($request->comment, Auth::id());
-
-        $notificationSent = $this->notificationService->notifyDocumentStatusUpdated(
-            $document, 
-            'revision_required', 
-            $request->comment, 
-            Auth::user()
-        );
-
-        return redirect()->back()->with('success', __('Revision requested successfully!'));
-    }
-
-    public function underReview(Request $request, $projectId, $documentId)
-    {
-
-        $validator = Validator::make($request->all(), [
-            'comment' => 'required|string'
-        ]);
-
-        if($validator->fails()) {
-            return redirect()->back()->with('error', Utility::errorFormat($validator->getMessageBag()));
-        }
-
-        $document = DocumentReview::findOrFail($documentId);
-        
-        if($document->approver_id !== Auth::id() && !Auth::user()->can('edit project')) {
-            return redirect()->back()->with('error', __('Permission Denied.'));
-        }
-
-        $document->underReview($request->comment, Auth::id());
-
-        $notificationSent = $this->notificationService->notifyDocumentStatusUpdated(
-            $document, 
-            'under_review', 
-            $request->comment, 
-            Auth::user()
-        );
-
-        return redirect()->back()->with('success', __('Review started successfully!'));
-    }
-
-    public function addComment(Request $request, $projectId, $documentId)
-    {
-        $validator = Validator::make($request->all(), [
-            'comment' => 'required|string'
-        ]);
-
-        if($validator->fails()) {
-            return response()->json(['error' => $validator->errors()->first()], 422);
-        }
-
-        $document = DocumentReview::findOrFail($documentId);
-        
-        $comment = DocumentReviewComment::create([
-            'document_review_id' => $documentId,
-            'user_id' => Auth::id(),
-            'comment' => $request->comment,
-            'type' => 'general'
-        ]);
-
-        $document->addLog('commented', 'Added a comment');
-
-        $notificationSent = $this->notificationService->notifyDocumentComment($comment);
-
-        return response()->json([
-            'success' => true,
-            'notification_sent' => $notificationSent,
-            'comment' => [
-                'id' => $comment->id,
-                'comment' => $comment->comment,
-                'user_name' => $comment->user->name,
-                'created_at' => $comment->created_at->format('d M Y H:i'),
-                'type' => $comment->type_name
-            ]
-        ]);
-    }
-
     public function destroy($projectId, $documentId)
     {
         if(!Auth::user()->can('delete project')) {
@@ -488,6 +722,9 @@ class DocumentReviewController extends Controller
         if($document->status === 'approved') {
             return redirect()->back()->with('error', __('Cannot delete approved work/document.'));
         }
+
+        // **ENHANCED: Clean up related notifications when deleting document**
+        Notification::where('data->document_id', $documentId)->delete();
 
         $document->delete();
 

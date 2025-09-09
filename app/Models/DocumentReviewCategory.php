@@ -96,10 +96,9 @@ class DocumentReviewCategory extends Model
     }
 
     // Static methods
-    public static function getAvailableForProject($projectId)
+    public static function getAvailableForProject()
     {
         return self::active()
-            ->forProject($projectId)
             ->ordered()
             ->get();
     }
