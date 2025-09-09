@@ -12,6 +12,11 @@ use App\Models\Job;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class PsychotestResultController extends Controller
 {
@@ -49,7 +54,7 @@ class PsychotestResultController extends Controller
             $search = $request->candidate_search;
             $schedulesQuery->whereHas('candidates', function($query) use ($search) {
                 $query->where('name', 'like', '%' . $search . '%')
-                      ->orWhere('email', 'like', '%' . $search . '%');
+                    ->orWhere('email', 'like', '%' . $search . '%');
             });
         }
         
@@ -63,7 +68,40 @@ class PsychotestResultController extends Controller
             $schedulesQuery->where('status', $request->status_filter);
         }
 
+        // Additional filters
+        if ($request->filled('grade_filter')) {
+            $schedulesQuery->whereHas('result', function($query) use ($request) {
+                $query->where('grade', $request->grade_filter);
+            });
+        }
+
+        if ($request->filled('score_min')) {
+            $schedulesQuery->whereHas('result', function($query) use ($request) {
+                $query->where('percentage', '>=', $request->score_min);
+            });
+        }
+
+        if ($request->filled('score_max')) {
+            $schedulesQuery->whereHas('result', function($query) use ($request) {
+                $query->where('percentage', '<=', $request->score_max);
+            });
+        }
+
         $schedules = $schedulesQuery->orderBy('created_at', 'desc')->paginate(20);
+
+        // Process field breakdown for each schedule
+        $schedulesWithBreakdown = $schedules->getCollection()->map(function($schedule) {
+            $sessionResults = $this->getDetailedSessionResults($schedule);
+            $fieldBreakdown = $this->getFieldTestBreakdown($sessionResults);
+            
+            // Add field breakdown to schedule object
+            $schedule->field_breakdown = $fieldBreakdown;
+            
+            return $schedule;
+        });
+
+        // Replace the collection in paginator
+        $schedules->setCollection($schedulesWithBreakdown);
 
         // Get available jobs for filter
         $jobs = Job::where('created_by', Auth::user()->creatorId())->get();
@@ -2871,5 +2909,449 @@ class PsychotestResultController extends Controller
         ];
 
         return $summary;
+    }
+
+    /**
+     * Export results to Excel with detailed field breakdown
+     */
+    public function exportExcel(Request $request)
+    {
+
+        // Apply same filters as index
+        $user = Auth::user();
+        
+        $schedulesQuery = PsychotestSchedule::with([
+            'candidates.jobs', 
+            'result', 
+            'sessions.category'
+        ]);
+        
+        if ($user->type != 'admin' && $user->type != 'company') {
+            $schedulesQuery->where('created_by', Auth::user()->creatorId());
+        }
+
+        $schedulesQuery->whereIn('status', ['completed', 'in_progress']);
+
+        // Apply filters
+        if ($request->filled('date_from')) {
+            $schedulesQuery->whereDate('start_time', '>=', $request->date_from);
+        }
+        
+        if ($request->filled('date_to')) {
+            $schedulesQuery->whereDate('start_time', '<=', $request->date_to);
+        }
+        
+        if ($request->filled('candidate_search')) {
+            $search = $request->candidate_search;
+            $schedulesQuery->whereHas('candidates', function($query) use ($search) {
+                $query->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%');
+            });
+        }
+        
+        if ($request->filled('job_filter')) {
+            $schedulesQuery->whereHas('candidates.jobs', function($query) use ($request) {
+                $query->where('id', $request->job_filter);
+            });
+        }
+        
+        if ($request->filled('status_filter')) {
+            $schedulesQuery->where('status', $request->status_filter);
+        }
+
+        // Additional filters
+        if ($request->filled('grade_filter')) {
+            $schedulesQuery->whereHas('result', function($query) use ($request) {
+                $query->where('grade', $request->grade_filter);
+            });
+        }
+
+        if ($request->filled('score_min')) {
+            $schedulesQuery->whereHas('result', function($query) use ($request) {
+                $query->where('percentage', '>=', $request->score_min);
+            });
+        }
+
+        if ($request->filled('score_max')) {
+            $schedulesQuery->whereHas('result', function($query) use ($request) {
+                $query->where('percentage', '<=', $request->score_max);
+            });
+        }
+
+        $schedules = $schedulesQuery->orderBy('created_at', 'desc')->get();
+
+        return $this->generateExcelReport($schedules);
+    }
+
+    /**
+     * Generate Excel report with field test breakdown
+     */
+    private function generateExcelReport($schedules)
+    {
+        try {
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            
+            // Set document properties
+            $spreadsheet->getProperties()
+                ->setCreator('Psychotest System')
+                ->setLastModifiedBy('System')
+                ->setTitle('Psychotest Results Report')
+                ->setSubject('Psychotest Results')
+                ->setDescription('Detailed psychotest results with field breakdown');
+
+            // Header Row
+            $headers = [
+                'A1' => 'No',
+                'B1' => 'Candidate Name',
+                'C1' => 'Email', 
+                'D1' => 'Position Applied',
+                'E1' => 'Test Date',
+                'F1' => 'Status',
+                'G1' => 'Overall Score (%)',
+                'H1' => 'Grade',
+                'I1' => 'Total Time',
+                'J1' => 'Audit Score (%)',
+                'K1' => 'Accounting Score (%)',
+                'L1' => 'Tax Score (%)',
+                'M1' => 'Kraeplin Score (%)',
+                'N1' => 'Kraeplin Grade',
+                'O1' => 'EPPS Completion (%)',
+                'P1' => 'Math Score (%)',
+                'Q1' => 'Verbal Score (%)',
+                'R1' => 'Visual Score (%)',
+                'S1' => 'Decision',
+                'T1' => 'Risk Level',
+                'U1' => 'Recommended Division',
+                'V1' => 'Strengths',
+                'W1' => 'Weaknesses',
+                'X1' => 'Comments'
+            ];
+
+            // Set headers
+            foreach ($headers as $cell => $value) {
+                $sheet->setCellValue($cell, $value);
+            }
+
+            // Style headers
+            $headerRange = 'A1:X1';
+            $sheet->getStyle($headerRange)->applyFromArray([
+                'font' => [
+                    'bold' => true,
+                    'color' => ['rgb' => 'FFFFFF']
+                ],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '4CAF50']
+                ],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN
+                    ]
+                ]
+            ]);
+
+            // Data rows
+            $row = 2;
+            foreach ($schedules as $index => $schedule) {
+                $sessionResults = $this->getDetailedSessionResults($schedule);
+                $performanceMetrics = $this->calculatePerformanceMetrics($schedule);
+                
+                // Get field test breakdown
+                $fieldBreakdown = $this->getFieldTestBreakdown($sessionResults);
+                $categoryScores = $this->getCategoryScores($sessionResults);
+                
+                $sheet->setCellValue('A' . $row, $index + 1);
+                $sheet->setCellValue('B' . $row, $schedule->candidates->name);
+                $sheet->setCellValue('C' . $row, $schedule->candidates->email);
+                $sheet->setCellValue('D' . $row, $schedule->candidates->jobs->title ?? 'N/A');
+                $sheet->setCellValue('E' . $row, $schedule->start_time->format('d/m/Y H:i'));
+                $sheet->setCellValue('F' . $row, ucfirst($schedule->status));
+                $sheet->setCellValue('G' . $row, $schedule->result->percentage ?? 0);
+                $sheet->setCellValue('H' . $row, $schedule->result->grade ?? 'N/A');
+                $sheet->setCellValue('I' . $row, $performanceMetrics['total_time'] ?? '0 minutes');
+                
+                // Field test scores
+                $sheet->setCellValue('J' . $row, $fieldBreakdown['audit'] ?? 0);
+                $sheet->setCellValue('K' . $row, $fieldBreakdown['accounting'] ?? 0);
+                $sheet->setCellValue('L' . $row, $fieldBreakdown['tax'] ?? 0);
+                
+                // Category scores
+                $sheet->setCellValue('M' . $row, $categoryScores['kraeplin']['score'] ?? 0);
+                $sheet->setCellValue('N' . $row, $categoryScores['kraeplin']['grade'] ?? 'N/A');
+                $sheet->setCellValue('O' . $row, $categoryScores['epps']['completion'] ?? 0);
+                $sheet->setCellValue('P' . $row, $categoryScores['math']['score'] ?? 0);
+                $sheet->setCellValue('Q' . $row, $categoryScores['verbal']['score'] ?? 0);
+                $sheet->setCellValue('R' . $row, $categoryScores['visual']['score'] ?? 0);
+                
+                // Decision and recommendations
+                $sheet->setCellValue('S' . $row, $performanceMetrics['decision_status'] ?? 'Under Review');
+                $sheet->setCellValue('T' . $row, $performanceMetrics['risk_level'] ?? 'Medium');
+                $sheet->setCellValue('U' . $row, $this->getRecommendedDivision($schedule));
+                
+                // Strengths and weaknesses
+                $strengths = collect($performanceMetrics['strengths'] ?? [])->pluck('category')->implode(', ');
+                $weaknesses = collect($performanceMetrics['weaknesses'] ?? [])->pluck('category')->implode(', ');
+                $sheet->setCellValue('V' . $row, $strengths);
+                $sheet->setCellValue('W' . $row, $weaknesses);
+                
+                // Comments
+                $comments = substr($performanceMetrics['recommendation'] ?? '', 0, 200);
+                $sheet->setCellValue('X' . $row, $comments);
+                
+                // Color coding based on grade
+                $grade = $schedule->result->grade ?? 'F';
+                $gradeColors = [
+                    'A' => '4CAF50', // Green
+                    'B' => '2196F3', // Blue  
+                    'C' => 'FF9800', // Orange
+                    'D' => 'FF5722', // Red-Orange
+                    'E' => 'F44336', // Red
+                    'F' => '9E9E9E'  // Grey
+                ];
+                
+                $gradeColor = $gradeColors[$grade] ?? '9E9E9E';
+                $sheet->getStyle('H' . $row)->applyFromArray([
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['rgb' => $gradeColor]
+                    ],
+                    'font' => ['color' => ['rgb' => 'FFFFFF']]
+                ]);
+                
+                $row++;
+            }
+
+            // Auto-size columns
+            foreach (range('A', 'X') as $col) {
+                $sheet->getColumnDimension($col)->setAutoSize(true);
+            }
+
+            // Add borders to all data
+            $dataRange = 'A1:X' . ($row - 1);
+            $sheet->getStyle($dataRange)->applyFromArray([
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN
+                    ]
+                ]
+            ]);
+
+            // Create summary sheet
+            $this->createSummarySheet($spreadsheet, $schedules);
+
+            // Generate filename
+            $filename = 'Psychotest_Results_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+            
+            // === PERBAIKAN UTAMA: Gunakan storage Laravel ===
+            
+            // Buat direktori temp jika belum ada
+            $tempDir = storage_path('app/temp');
+            if (!file_exists($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
+            
+            // Buat file dengan nama unik
+            $tempFileName = 'psychotest_export_' . uniqid() . '.xlsx';
+            $tempFilePath = $tempDir . '/' . $tempFileName;
+            
+            // Create writer dan save
+            $writer = new Xlsx($spreadsheet);
+            $writer->save($tempFilePath);
+            
+            // Return response download
+            return response()->download($tempFilePath, $filename)->deleteFileAfterSend(true);
+            
+        } catch (\Exception $e) {
+            \Log::error('Excel Export Error: ' . $e->getMessage());
+            \Log::error('Excel Export Trace: ' . $e->getTraceAsString());
+            
+            return redirect()->back()->with('error', 'Failed to generate Excel report. Please try again.');
+        }
+    }
+
+    /**
+     * Get field test breakdown (audit, accounting, tax)
+     */
+    private function getFieldTestBreakdown($sessionResults)
+    {
+        $breakdown = [
+            'audit' => 0,
+            'accounting' => 0, 
+            'tax' => 0
+        ];
+        
+        foreach ($sessionResults as $result) {
+            if ($result['category_type'] === 'field_test' && isset($result['field_analysis']['field_percentages'])) {
+                $fieldPercentages = $result['field_analysis']['field_percentages'];
+                
+                $breakdown['audit'] = $fieldPercentages['audit'] ?? 0;
+                $breakdown['accounting'] = $fieldPercentages['accounting'] ?? 0;
+                $breakdown['tax'] = $fieldPercentages['tax'] ?? 0;
+                break;
+            }
+        }
+        
+        return $breakdown;
+    }
+
+    /**
+     * Get category scores breakdown
+     */
+    private function getCategoryScores($sessionResults)
+    {
+        $scores = [
+            'kraeplin' => ['score' => 0, 'grade' => 'N/A'],
+            'epps' => ['completion' => 0],
+            'math' => ['score' => 0],
+            'verbal' => ['score' => 0],
+            'visual' => ['score' => 0]
+        ];
+        
+        foreach ($sessionResults as $result) {
+            $categoryType = $result['category_type'];
+            
+            switch ($categoryType) {
+                case 'kraeplin':
+                    $scores['kraeplin']['score'] = $result['percentage'];
+                    if (isset($result['kraeplin_analysis']['grade'])) {
+                        $scores['kraeplin']['grade'] = $result['kraeplin_analysis']['grade'];
+                    }
+                    break;
+                    
+                case 'epps_test':
+                    if (isset($result['epps_analysis']['completion_rate'])) {
+                        $scores['epps']['completion'] = $result['epps_analysis']['completion_rate'];
+                    }
+                    break;
+                    
+                case 'basic_math':
+                    $scores['math']['score'] = $result['percentage'];
+                    break;
+                    
+                case 'synonym_antonym':
+                    $scores['verbal']['score'] = $result['percentage'];
+                    break;
+                    
+                case 'visual_sequence':
+                    $scores['visual']['score'] = $result['percentage'];
+                    break;
+            }
+        }
+        
+        return $scores;
+    }
+
+    /**
+     * Create summary sheet with statistics
+     */
+    private function createSummarySheet($spreadsheet, $schedules)
+    {
+        $summarySheet = $spreadsheet->createSheet();
+        $summarySheet->setTitle('Summary Statistics');
+        
+        // Summary statistics
+        $totalCandidates = $schedules->count();
+        $completedTests = $schedules->where('status', 'completed')->count();
+        $averageScore = $schedules->where('result')->avg('result.percentage');
+        
+        $gradeDistribution = $schedules->where('result')
+            ->groupBy('result.grade')
+            ->map(function($group) { return $group->count(); })
+            ->toArray();
+        
+        // Set summary data
+        $summaryData = [
+            ['Metric', 'Value'],
+            ['Total Candidates', $totalCandidates],
+            ['Completed Tests', $completedTests],
+            ['Completion Rate', $totalCandidates > 0 ? round(($completedTests / $totalCandidates) * 100, 1) . '%' : '0%'],
+            ['Average Score', round($averageScore, 1) . '%'],
+            [''],
+            ['Grade Distribution', ''],
+        ];
+        
+        foreach ($gradeDistribution as $grade => $count) {
+            $summaryData[] = ["Grade $grade", $count];
+        }
+        
+        // Field test averages
+        $summaryData[] = [''];
+        $summaryData[] = ['Field Test Averages', ''];
+        
+        $auditAvg = $this->calculateFieldAverage($schedules, 'audit');
+        $accountingAvg = $this->calculateFieldAverage($schedules, 'accounting');
+        $taxAvg = $this->calculateFieldAverage($schedules, 'tax');
+        
+        $summaryData[] = ['Audit Average', round($auditAvg, 1) . '%'];
+        $summaryData[] = ['Accounting Average', round($accountingAvg, 1) . '%'];
+        $summaryData[] = ['Tax Average', round($taxAvg, 1) . '%'];
+        
+        // Write summary data
+        $row = 1;
+        foreach ($summaryData as $rowData) {
+            $col = 'A';
+            foreach ($rowData as $cellData) {
+                $summarySheet->setCellValue($col . $row, $cellData);
+                $col++;
+            }
+            $row++;
+        }
+        
+        // Style summary sheet
+        $summarySheet->getStyle('A1:B1')->applyFromArray([
+            'font' => ['bold' => true],
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '2196F3']
+            ]
+        ]);
+        
+        $summarySheet->getColumnDimension('A')->setWidth(25);
+        $summarySheet->getColumnDimension('B')->setWidth(15);
+    }
+
+    /**
+     * Calculate field average
+     */
+    private function calculateFieldAverage($schedules, $field)
+    {
+        $scores = [];
+        
+        foreach ($schedules as $schedule) {
+            $sessionResults = $this->getDetailedSessionResults($schedule);
+            $fieldBreakdown = $this->getFieldTestBreakdown($sessionResults);
+            
+            if (isset($fieldBreakdown[$field]) && $fieldBreakdown[$field] > 0) {
+                $scores[] = $fieldBreakdown[$field];
+            }
+        }
+        
+        return count($scores) > 0 ? array_sum($scores) / count($scores) : 0;
+    }
+
+    /**
+     * Get quick info for modal
+     */
+    public function quickInfo($id)
+    {
+        $schedule = PsychotestSchedule::with([
+            'candidates.jobs',
+            'result',
+            'sessions.category'
+        ])->findOrFail($id);
+
+        $sessionResults = $this->getDetailedSessionResults($schedule);
+        $performanceMetrics = $this->calculatePerformanceMetrics($schedule);
+        $fieldBreakdown = $this->getFieldTestBreakdown($sessionResults);
+
+        $html = view('psychotest.results.quick-info', compact(
+            'schedule', 
+            'sessionResults', 
+            'performanceMetrics', 
+            'fieldBreakdown'
+        ))->render();
+
+        return response()->json(['html' => $html]);
     }
 }

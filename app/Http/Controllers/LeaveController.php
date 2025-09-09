@@ -14,6 +14,7 @@ use App\Mail\LeaveNotification;
 use App\Mail\LeaveApprovalNotification;
 use App\Mail\LeaveRejectNotification;
 use Illuminate\Support\Facades\Mail;
+use App\Models\Notification;
 
 class LeaveController extends Controller
 {
@@ -254,6 +255,22 @@ class LeaveController extends Controller
             $leave->leave_type_id = $request->leave_type_id;
             $leave->save();
 
+            if ($leave->approval) {
+                Notification::createNotification(
+                    $leave->approval,
+                    'leave_submitted',
+                    [
+                        'leave_id' => $leave->id,
+                        'employee_name' => $employee->name,
+                        'leave_type' => $leave->leaveType->title ?? 'Leave',
+                        'start_date' => $leave->start_date,
+                        'end_date' => $leave->end_date,
+                        'updated_by' => Auth::id()
+                    ],
+                    Notification::PRIORITY_NORMAL
+                );
+            }
+
             $user = User::where('id', $leave->approval)->first();
             $email = $user->employee->email;
             Mail::to($email)->send(new LeaveNotification($leave));
@@ -413,6 +430,19 @@ class LeaveController extends Controller
 
         if($leave->status == 'Approved')
         {
+            Notification::createNotification(
+                $leave->employee->user_id,
+                'leave_approved',
+                [
+                    'leave_id' => $leave->id,
+                    'leave_type' => $leave->leaveType->title ?? 'Leave',
+                    'start_date' => $leave->start_date,
+                    'end_date' => $leave->end_date,
+                    'updated_by' => Auth::id()
+                ],
+                Notification::PRIORITY_HIGH
+            );
+
             //Email Notification
             $employee = Employee::where('id', $leave->employee_id)->first();
             $email = $employee->email;
@@ -420,6 +450,18 @@ class LeaveController extends Controller
         }
         else
         {
+
+            Notification::createNotification(
+                $leave->employee->user_id,
+                'leave_rejected',
+                [
+                    'leave_id' => $leave->id,
+                    'leave_type' => $leave->leaveType->title ?? 'Leave',
+                    'updated_by' => Auth::id()
+                ],
+                Notification::PRIORITY_HIGH
+            );
+
             //Email Notification
             $employee = Employee::where('id', $leave->employee_id)->first();
             $email = $employee->email;

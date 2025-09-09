@@ -13,6 +13,7 @@ use App\Mail\ReimbursmentPersonalNotification;
 use App\Mail\ReimbursmentPersonalApprovalNotification;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Notification;
 
 class ReimbursmentPersonalController extends Controller
 {
@@ -313,6 +314,19 @@ class ReimbursmentPersonalController extends Controller
 
         $reimbursment->save();
 
+        Notification::createNotification(
+            $reimbursment->approval,
+            'reimbursement_submitted',
+            [
+                'reimbursement_id' => $reimbursment->id,
+                'employee_name' => $employee->name,
+                'amount' => $reimbursment->amount,
+                'type' => $reimbursment->reimbursment_type,
+                'updated_by' => Auth::id()
+            ],
+            Notification::PRIORITY_NORMAL
+        );
+
         //Email Notification
         $user = User::where('id', $reimbursment->approval)->first();
         $email = $user->email;
@@ -449,6 +463,19 @@ class ReimbursmentPersonalController extends Controller
 
         $reimbursment->save();
 
+        Notification::createNotification(
+            $reimbursment->approval,
+            'reimbursement_submitted',
+            [
+                'reimbursement_id' => $reimbursment->id,
+                'employee_name' => $employee->name,
+                'amount' => $reimbursment->amount,
+                'type' => $reimbursment->reimbursment_type,
+                'updated_by' => Auth::id()
+            ],
+            Notification::PRIORITY_NORMAL
+        );
+
         return redirect()->back()->with('success', __('Reimbursment Personal successfully updated.'));
 
     }
@@ -484,13 +511,42 @@ class ReimbursmentPersonalController extends Controller
 
         $reimbursment->save();
 
-        if($reimbursment->status == 'Paid')
-        {
-            //Email Notification
+        // Setelah $reimbursment->save();
+        if($reimbursment->status == 'Paid') {
+            // Notify employee
             $employee = Employee::where('id', $reimbursment->employee_id)->first();
             $email = $employee->email;
             Mail::to($email)->send(new ReimbursmentPersonalApprovalNotification($reimbursment));
-        }
+
+            if ($reimbursment->employee && $reimbursment->employee->user_id) {
+                Notification::createNotification(
+                    $reimbursment->employee->user_id,
+                    'reimbursement_approved',
+                    [
+                        'reimbursement_id' => $reimbursment->id,
+                        'type' => $reimbursment->reimbursment_type,
+                        'amount' => $reimbursment->amount,
+                        'updated_by' => Auth::id()
+                    ],
+                    Notification::PRIORITY_HIGH
+                );
+            }
+        } else {
+            // Notify employee for rejection
+            if ($reimbursment->employee && $reimbursment->employee->user_id) {
+                Notification::createNotification(
+                    $reimbursment->employee->user_id,
+                    'reimbursement_rejected',
+                    [
+                        'reimbursement_id' => $reimbursment->id,
+                        'type' => $reimbursment->reimbursment_type,
+                        'amount' => $reimbursment->amount,
+                        'updated_by' => Auth::id()
+                    ],
+                    Notification::PRIORITY_URGENT
+                );
+            }
+}
 
         return redirect()->route('reimbursment-personal.index')->with('success', __('Reimbursment Personal successfully updated.'));
     }

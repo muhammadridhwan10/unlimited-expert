@@ -1299,6 +1299,23 @@ $employee = \App\Models\Employee::where('user_id', Auth::user()->id)->first();
                             </li>
 
                         <li class="dash-item dash-hasmenu">
+                            @php
+                                $unreadNotifications = \App\Models\Notification::where('user_id', auth()->user()->id)
+                                                                            ->where('is_read', false)
+                                                                            ->count();
+                            @endphp
+                            <a href="{{route('notifications.index')}}" class="dash-link {{ (Request::segment(1) == 'notifications')?'active':''}}">
+                                <span class="dash-micon"><i class="ti ti-bell"></i></span>
+                                <span class="dash-mtext">
+                                    @if($unreadNotifications > 0)
+                                        <span class="notification-count-badge">{{ $unreadNotifications > 99 ? '99+' : $unreadNotifications }}</span>
+                                    @endif
+                                    {{__('Notifications')}}
+                                </span>
+                            </a>
+                        </li>
+
+                        <li class="dash-item dash-hasmenu">
                             <a href="{{route('support.index')}}" class="dash-link {{ (Request::segment(1) == 'support')?'active':''}}">
                                 <span class="dash-micon"><i class="ti ti-ticket"></i></span><span class="dash-mtext">{{__('Support Ticket')}}</span><sup style="color: red;">Beta</sup>
                             </a>

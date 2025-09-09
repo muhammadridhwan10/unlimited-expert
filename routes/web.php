@@ -4823,6 +4823,18 @@ Route::get('reports-absence-staff', 'ReportController@absence_user')->name('repo
         'XSS',
     ]
 );
+Route::resource('notifications', 'NotificationController')->middleware(
+    [
+        'auth',
+        'XSS',
+    ]
+);
+Route::post('/mark-as-read', 'NotificationController@markAsRead')->name('notifications.mark-read');
+Route::post('/mark-all-read', 'NotificationController@markAllAsRead')->name('notifications.mark-all-read');
+Route::post('/delete', 'NotificationController@delete')->name('notifications.delete');
+Route::get('/unread-count', 'NotificationController@getUnreadCount')->name('notifications.unread-count');
+Route::get('/recent', 'NotificationController@getRecentNotifications')->name('notifications.recent');
+Route::get('/{id}', 'NotificationController@show')->name('notifications.show');
 Route::post('/mark-notifications-read', 'NotificationController@markAsRead')->name('mark.notifications.read');
 Route::resource('form-response', 'FormResponseController')->middleware(
     [
@@ -4940,6 +4952,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/psychotest-result/{scheduleId}/category/{categoryId}', 'PsychotestResultController@showByCategory')->name('psychotest-result.category');
     Route::get('/psychotest-result/{id}/export/{format?}', 'PsychotestResultController@export')->name('psychotest-result.export');
     Route::post('/psychotest-result/compare', 'PsychotestResultController@compare')->name('psychotest-result.compare');
+
+    Route::get('/psychotest-result/{id}/export/{format}', 'PsychotestResultController@export')->name('psychotest-result.export');
+    Route::get('/psychotest-result/export/excel', 'PsychotestResultController@exportExcel')->name('psychotest-result.export-excel');
+    Route::get('/psychotest-result/{id}/quick-info', 'PsychotestResultController@quickInfo')->name('psychotest-result.quick-info');
     
     // Psychotest Schedule Management
     Route::resource('psychotest-schedule', 'PsychotestScheduleController');

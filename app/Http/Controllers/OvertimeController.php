@@ -252,18 +252,19 @@ class OvertimeController extends Controller
             $overtime->note             = $request->note;
             $overtime->save();
 
-            $notificationData = [
-                'user_id' => $request->approval,
-                'type' => 'create_overtime',
-                'data' => json_encode([
-                    'updated_by' => $user->id,
-                    'project_id' => $overtime->project_id,
-                    'name' => $user->name,
-                ]),
-                'is_read' => false,
-            ];
-
-            Notification::create($notificationData);
+            Notification::createNotification(
+                $overtime->approval,
+                'overtime_submitted',
+                [
+                    'overtime_id' => $overtime->id,
+                    'employee_name' => $employees->name,
+                    'project_name' => $overtime->project->project_name ?? 'Project',
+                    'date' => $overtime->start_date,
+                    'hours' => $overtime->total_time,
+                    'updated_by' => Auth::id()
+                ],
+                Notification::PRIORITY_NORMAL
+            );
 
             //Email Notification Client
             $user = Employee::where('id', $overtime->approval)->first();
@@ -289,6 +290,21 @@ class OvertimeController extends Controller
             $time_difference = $this->calculateTimeDifference($request->start_time, $request->end_time);
             $overtime->total_time = $time_difference;
             $overtime->status = 'Approved';
+
+            $employee = Employee::find($overtime->user_id);
+            if ($employee && $employee->user_id) {
+                Notification::createNotification(
+                    $employee->user_id,
+                    'overtime_approved',
+                    [
+                        'overtime_id' => $overtime->id,
+                        'project_name' => $overtime->project->project_name ?? 'Project',
+                        'hours' => $overtime->total_time,
+                        'updated_by' => Auth::id()
+                    ],
+                    Notification::PRIORITY_NORMAL
+                );
+            }
         } else {
             $overtime->status = $request->status;
         }

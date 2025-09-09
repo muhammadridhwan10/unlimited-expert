@@ -42,11 +42,21 @@ class EmployeeController extends Controller
             }
             elseif(Auth::user()->type == 'admin')
             {
-                $employees = Employee::all();
+                $employees = Employee::whereHas('user', function($query) {
+                    $query->where('is_active', 1)
+                        ->whereNotIn('type', ['admin', 'company']);
+                })
+                ->orderBy('name', 'asc')
+                ->get();
             }
             elseif(\Auth::user()->type == 'company')
             {
-                $employees = Employee::all();
+                $employees = Employee::whereHas('user', function($query) {
+                    $query->where('is_active', 1)
+                        ->whereNotIn('type', ['admin', 'company']);
+                })
+                ->orderBy('name', 'asc')
+                ->get();
             }
             else
             {

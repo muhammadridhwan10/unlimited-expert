@@ -84,6 +84,10 @@
                 </div>
             {{------------ End Status Filter ----------------}}
 
+                <a href="{{ route('projects.activity.filter') }}"  data-bs-toggle="tooltip" title="{{__('Project Activity')}}" class="btn btn-sm btn-primary">
+                   <span>{{__('Project Activity')}}</span>
+                </a>
+
             {{------------ Start Label Filter ----------------}}
                 <a href="#" class="btn btn-sm btn-primary action-item" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     <span class="btn-inner--icon">{{__('Type Of Service')}}</span>
