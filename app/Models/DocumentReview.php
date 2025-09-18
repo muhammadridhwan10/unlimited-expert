@@ -221,7 +221,7 @@ class DocumentReview extends Model
     }
 
     // Static methods for statistics
-    public static function getStatusStatistics($projectId = null)
+   public static function getStatusStatistics($projectId = null)
     {
         $query = self::query();
         
@@ -229,13 +229,23 @@ class DocumentReview extends Model
             $query->where('project_id', $projectId);
         }
 
+        // Hitung total keseluruhan
+        $total = $query->count();
+        
+        // Hitung per status
+        $submitted = (clone $query)->where('status', 'submitted')->count();
+        $under_review = (clone $query)->where('status', 'under_review')->count(); 
+        $approved = (clone $query)->where('status', 'approved')->count();
+        $rejected = (clone $query)->where('status', 'rejected')->count();
+        $revision_required = (clone $query)->where('status', 'revision_required')->count();
+
         return [
-            'total' => $query->count(),
-            'submitted' => $query->byStatus('submitted')->count(),
-            'under_review' => $query->byStatus('under_review')->count(),
-            'approved' => $query->byStatus('approved')->count(),
-            'rejected' => $query->byStatus('rejected')->count(),
-            'revision_required' => $query->byStatus('revision_required')->count(),
+            'total' => $total,
+            'submitted' => $submitted,
+            'under_review' => $under_review,
+            'approved' => $approved,
+            'rejected' => $rejected,
+            'revision_required' => $revision_required,
         ];
     }
 

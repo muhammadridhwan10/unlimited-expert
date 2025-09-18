@@ -732,36 +732,102 @@ class DocumentReviewController extends Controller
             ->with('success', __('Work/Document deleted successfully!'));
     }
 
+    public function getNotificationSummary()
+    {
+        if (!Auth::check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $userId = Auth::id();
+        
+        // Count pending approvals for current user
+        $pendingApprovals = DocumentReview::where('approver_id', $userId)
+            ->whereIn('status', ['submitted', 'under_review'])
+            ->count();
+        
+        // Count total unread notifications related to documents
+        $totalNotifications = Notification::where('user_id', $userId)
+            ->where('is_read', false)
+            ->whereIn('type', [
+                'document_submitted',
+                'document_approved', 
+                'document_rejected',
+                'document_revision_required',
+                'document_under_review',
+                'document_comment'
+            ])
+            ->count();
+
+        return response()->json([
+            'pending_approvals' => $pendingApprovals,
+            'total_notifications' => $totalNotifications,
+            'my_submitted_pending' => DocumentReview::where('submitted_by', $userId)
+                ->whereIn('status', ['submitted', 'under_review'])
+                ->count()
+        ]);
+    }
+
     public function getStatistics($projectId)
     {
-        $stats = DocumentReview::getStatusStatistics($projectId);
-        return response()->json($stats);
+        try {
+            // Validasi project exists dan user memiliki akses
+            $project = Project::findOrFail($projectId);
+            
+            // Check permission (opsional, sesuaikan dengan kebutuhan)
+            if (!Auth::user()->can('view project')) {
+                return response()->json(['error' => 'Permission denied'], 403);
+            }
+
+            $stats = DocumentReview::getStatusStatistics($projectId);
+            
+            return response()->json($stats);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in getStatistics: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Failed to fetch statistics',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function getPendingApprovals(Request $request)
     {
-        $projectId = $request->get('project_id');
-        $documents = DocumentReview::getPendingForApprover(Auth::id(), $projectId);
-        
-        $formattedDocuments = $documents->map(function($doc) {
-            return [
-                'id' => $doc->id,
-                'document_name' => $doc->document_name,
-                'category_name' => $doc->category_name,
-                'document_link' => $doc->document_link,
-                'status' => $doc->status,
-                'submission_date' => $doc->submission_date->format('Y-m-d'),
-                'project' => [
-                    'id' => $doc->project->id,
-                    'project_name' => $doc->project->project_name
-                ],
-                'submitter' => [
-                    'id' => $doc->submitter->id,
-                    'name' => $doc->submitter->name
-                ]
-            ];
-        });
+        try {
+            if (!Auth::check()) {
+                return response()->json(['error' => 'Unauthorized'], 401);
+            }
 
-        return response()->json($formattedDocuments);
+            $projectId = $request->get('project_id');
+            $documents = DocumentReview::getPendingForApprover(Auth::id(), $projectId);
+            
+            $formattedDocuments = $documents->map(function($doc) {
+                return [
+                    'id' => $doc->id,
+                    'document_name' => $doc->document_name,
+                    'category_name' => $doc->category_name,
+                    'document_link' => $doc->document_link,
+                    'status' => $doc->status,
+                    'submission_date' => $doc->submission_date->format('Y-m-d'),
+                    'project' => [
+                        'id' => $doc->project->id,
+                        'project_name' => $doc->project->project_name
+                    ],
+                    'submitter' => [
+                        'id' => $doc->submitter->id,
+                        'name' => $doc->submitter->name
+                    ]
+                ];
+            });
+
+            return response()->json($formattedDocuments);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error in getPendingApprovals: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Failed to fetch pending approvals',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

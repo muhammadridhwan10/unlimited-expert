@@ -1,8 +1,19 @@
 <div class="modal-header pb-2 pt-2">
     <h5 class="modal-title" id="exampleModalLongTitle">{{ 'El ' . $file->el_number }}</h5>
-    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-    </button>
+    <div class="modal-actions">
+        @foreach ($images as $image)
+            @if($image->file != NULL)
+                <a href="{{ Storage::disk('minio')->url($image->file) }}" 
+                   target="_blank" 
+                   class="btn btn-sm btn-primary me-2">
+                    <i class="ti ti-external-link"></i> Open in New Tab
+                </a>
+            @endif
+        @endforeach
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
 </div>
 <div class="modal-body p-1">
     <div class="row">
@@ -12,7 +23,12 @@
                     <div class="swiper-container product-slider mb-2 pb-2" style="border-bottom:solid 2px #f2f3f5">
                         <div class="swiper-wrapper">
                             <div class="swiper-slide" id="slide-{{ $image->id }}">
-                                <iframe src="{{ Storage::disk('s3')->url($image->file) }}" width="100%" height="500px" style="border: none;"></iframe>
+                                <iframe src="{{ Storage::disk('minio')->url($image->file) }}" 
+                                        width="100%" 
+                                        height="500px" 
+                                        style="border: none;"
+                                        onclick="window.open('{{ Storage::disk('minio')->url($image->file) }}', '_blank')">
+                                </iframe>
                             </div>
                         </div>
                     </div>

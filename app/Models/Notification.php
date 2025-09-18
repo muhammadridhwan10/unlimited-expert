@@ -176,6 +176,22 @@ class Notification extends Model
     public function toHtml()
     {
         $data = $this->data;
+    
+        // Decode JSON if data is string
+        if (is_string($data)) {
+            $decodedData = json_decode($data, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $data = $decodedData;
+            } else {
+                // Handle error jika JSON tidak valid
+                $data = [];
+            }
+        }
+        
+        // Pastikan $data adalah array
+        if (!is_array($data)) {
+            $data = [];
+        }
         $link = '#';
         $icon = 'fa fa-bell';
         $icon_color = 'bg-' . $this->getPriorityColor();
