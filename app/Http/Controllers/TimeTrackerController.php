@@ -179,45 +179,14 @@ class TimeTrackerController extends Controller
             $data['branch']     = __('All');
             $data['department'] = __('All');
 
-            $employee = Employee::where('user_id', \Auth::user()->id)->first();
+            // Hanya ambil data time tracker milik user yang sedang login
+            $employeeTimeTracker = TimeTracker::where('created_by', $user->id);
 
-            $employeebranch = Employee::where('branch_id', $employee->branch_id);
-            $employees = $employeebranch->pluck('user_id');
-
-            $employeeTimeTracker = TimeTracker::whereIn('created_by', $employees);
-
-            $client =   User::where('type','=','client')->pluck('name','id');
+            $client = User::where('type','=','client')->pluck('name','id');
             $filter_clients = $request->client_id;
 
-
-            if($employee->branch_id == 1)
-            {
-                $employess = User::whereIn('id', $employees)
-                ->where('type', '!=', 'client')
-                ->whereHas('employee', function ($query) {
-                    $query->where('branch_id', 1);
-                })
-                ->get()->pluck('name', 'id');
-            }
-            elseif($employee->branch_id  == 2)
-            {
-                $employess = User::whereIn('id', $employees)
-                ->where('type', '!=', 'client')
-                ->whereHas('employee', function ($query) {
-                    $query->where('branch_id', 2);
-                })
-                ->get()->pluck('name', 'id');
-            }
-            elseif($employee->branch_id  == 3)
-            {
-                $employess = User::whereIn('id', $employees)
-                ->where('type', '!=', 'client')
-                ->whereHas('employee', function ($query) {
-                    $query->where('branch_id', 3);
-                })
-                ->get()->pluck('name', 'id');
-            }
-
+            // Untuk dropdown employee, hanya tampilkan nama user yang sedang login
+            $employess = collect([$user->id => $user->name]);
 
             $status = Project::$project_status;
             $label = Project::$label;
@@ -227,19 +196,21 @@ class TimeTrackerController extends Controller
 
             // Filter start_date (hanya tanggal)
             if (isset($request->start_date) && !empty($request->start_date)) {
-                $startDate = $request->start_date; // Input sudah dalam format Y-m-d
+                $startDate = $request->start_date;
                 $employeeTimeTracker->whereDate('start_time', '>=', $startDate);
             }
 
             // Filter end_date (hanya tanggal)
             if (isset($request->end_date) && !empty($request->end_date)) {
-                $endDate = $request->end_date; // Input sudah dalam format Y-m-d
+                $endDate = $request->end_date;
                 $employeeTimeTracker->whereDate('start_time', '<=', $endDate);
             }
 
-            if (!empty($request->user_ids)) {
-                $selectedEmployees = $request->user_ids;
-                $employeeTimeTracker->where('created_by', $selectedEmployees);
+            // Untuk user biasa, user_ids filter tidak perlu karena sudah dibatasi ke user yang login
+            // Tapi tetap bisa digunakan untuk konsistensi UI
+            if (!empty($request->user_ids) && $request->user_ids != $user->id) {
+                // Jika ada filter user_ids tapi bukan ID user yang login, return empty result
+                $employeeTimeTracker->where('created_by', 0); // Force empty result
             }
 
             if (!empty($request->client_id)) {
